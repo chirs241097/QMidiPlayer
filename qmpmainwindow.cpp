@@ -1,0 +1,218 @@
+#include <cstdio>
+#include <QUrl>
+#include "qmpmainwindow.hpp"
+#include "ui_qmpmainwindow.h"
+#include "qmpmidiplay.hpp"
+
+qmpMainWindow::qmpMainWindow(QWidget *parent) :
+	QMainWindow(parent),
+	ui(new Ui::qmpMainWindow)
+{
+	ui->setupUi(this);player=new CMidiPlayer();
+	playing=false;stopped=true;dragging=false;
+	plistw=new qmpplistwindow(this);
+	ui->lbFileName->setText("");
+	timer=new QTimer(this);
+	connect(timer,SIGNAL(timeout()),this,SLOT(updateWidgets()));
+}
+
+qmpMainWindow::~qmpMainWindow()
+{
+	delete timer;
+	delete ui;
+}
+
+void qmpMainWindow::closeEvent(QCloseEvent *event)
+{
+	on_pbStop_clicked();
+	event->accept();
+}
+
+void qmpMainWindow::updateWidgets()
+{
+	if(player->isFinished()&&playerTh)
+	{
+		if(!plistw->getRepeat())
+		{
+			timer->stop();stopped=true;playing=false;
+			player->playerDeinit();playerTh->join();
+			delete playerTh;playerTh=NULL;
+			ui->pbPlayPause->setIcon(QIcon(":/img/play.png"));
+			ui->hsTimer->setValue(0);
+			ui->lbPolyphone->setText("Poly: 0/0");
+			ui->lbCurTime->setText("00:00");
+		}
+		else
+		{
+			timer->stop();player->playerDeinit();playerTh->join();
+			delete playerTh;playerTh=NULL;
+			ui->hsTimer->setValue(0);
+			QString fns=plistw->getNextItem();
+			ui->lbFileName->setText(QUrl(fns).fileName());
+			player->playerLoadFile(fns.toStdString().c_str());
+			char ts[100];
+			sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
+			ui->lbFinTime->setText(ts);
+			player->playerInit();player->setGain(ui->vsMasterVol->value()/250.);
+			playerTh=new std::thread(&CMidiPlayer::playerThread,player);
+			st=std::chrono::steady_clock::now();offset=0;
+			timer->start(100);
+		}
+	}
+	while(!player->isFinished()&&player->getTCeptr()>player->getStamp(ui->hsTimer->value())
+		  &&ui->hsTimer->value()<=100&&!dragging)
+		ui->hsTimer->setValue(ui->hsTimer->value()+1);
+	if(playing)
+	{
+		std::chrono::duration<double> elapsed=
+				std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::steady_clock::now()-st);
+		char ts[100];
+		sprintf(ts,"%02d:%02d",(int)(elapsed.count()+offset)/60,(int)(elapsed.count()+offset)%60);
+		ui->lbCurTime->setText(ts);
+		sprintf(ts,"Poly: %d/%d",player->getPolyphone(),player->getMaxPolyphone());
+		ui->lbPolyphone->setText(ts);
+	}
+}
+
+void qmpMainWindow::on_pbPlayPause_clicked()
+{
+	playing=!playing;
+	if(stopped)
+	{
+		QString fns=plistw->getFirstItem();
+		if(!fns.length())return(void)(playing=false);
+		ui->lbFileName->setText(QUrl(fns).fileName());
+		player->playerLoadFile(fns.toStdString().c_str());
+		char ts[100];
+		sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
+		ui->lbFinTime->setText(ts);
+		player->playerInit();player->setGain(ui->vsMasterVol->value()/250.);
+		playerTh=new std::thread(&CMidiPlayer::playerThread,player);
+		st=std::chrono::steady_clock::now();offset=0;
+		timer->start(100);
+		stopped=false;
+	}
+	else
+	{
+		if(!playing)
+		{
+			player->playerPanic();
+			offset=ui->hsTimer->value()/100.*player->getFtime();
+		}
+		else
+		{
+			st=std::chrono::steady_clock::now();
+			player->setResumed();
+		}
+		player->setTCpaused(!playing);
+	}
+	ui->pbPlayPause->setIcon(QIcon(playing?":/img/pause.png":":/img/play.png"));
+}
+
+void qmpMainWindow::on_hsTimer_sliderPressed()
+{
+	dragging=true;
+}
+
+void qmpMainWindow::on_hsTimer_sliderReleased()
+{
+	dragging=false;
+	if(playing)
+	{
+		if(ui->hsTimer->value()==100){on_pbNext_clicked();return;}
+		player->setTCeptr(player->getStamp(ui->hsTimer->value()));
+		player->playerPanic();
+		offset=ui->hsTimer->value()/100.*player->getFtime();
+		st=std::chrono::steady_clock::now();
+	}
+	else
+	{
+		player->setTCeptr(player->getStamp(ui->hsTimer->value()));
+		offset=ui->hsTimer->value()/100.*player->getFtime();
+		char ts[100];
+		sprintf(ts,"%02d:%02d",(int)(offset)/60,(int)(offset)%60);
+		ui->lbCurTime->setText(ts);
+	}
+}
+
+void qmpMainWindow::on_vsMasterVol_valueChanged()
+{
+	if(!stopped)player->setGain(ui->vsMasterVol->value()/250.);
+}
+
+void qmpMainWindow::on_pbStop_clicked()
+{
+	if(!stopped)
+	{
+		timer->stop();stopped=true;playing=false;
+		player->playerDeinit();
+		if(playerTh){playerTh->join();delete playerTh;playerTh=NULL;}
+		ui->pbPlayPause->setIcon(QIcon(":/img/play.png"));
+		ui->hsTimer->setValue(0);
+		ui->lbPolyphone->setText("Poly: 0/0");
+		ui->lbCurTime->setText("00:00");
+	}
+}
+
+void qmpMainWindow::dialogClosed()
+{
+	if(!plistw->isVisible())ui->pbPList->setChecked(false);
+}
+
+void qmpMainWindow::on_pbPList_clicked()
+{
+	if(ui->pbPList->isChecked())plistw->show();else plistw->close();
+}
+
+void qmpMainWindow::on_pbPrev_clicked()
+{
+	timer->stop();player->playerDeinit();
+	if(playerTh){playerTh->join();delete playerTh;playerTh=NULL;}
+	ui->hsTimer->setValue(0);
+	QString fns=plistw->getPrevItem();
+	ui->lbFileName->setText(QUrl(fns).fileName());
+	player->playerLoadFile(fns.toStdString().c_str());
+	char ts[100];
+	sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
+	ui->lbFinTime->setText(ts);
+	player->playerInit();player->setGain(ui->vsMasterVol->value()/250.);
+	playerTh=new std::thread(&CMidiPlayer::playerThread,player);
+	st=std::chrono::steady_clock::now();offset=0;
+	timer->start(100);
+}
+
+void qmpMainWindow::on_pbNext_clicked()
+{
+	timer->stop();player->playerDeinit();
+	if(playerTh){playerTh->join();delete playerTh;playerTh=NULL;}
+	ui->hsTimer->setValue(0);
+	QString fns=plistw->getNextItem();
+	ui->lbFileName->setText(QUrl(fns).fileName());
+	player->playerLoadFile(fns.toStdString().c_str());
+	char ts[100];
+	sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
+	ui->lbFinTime->setText(ts);
+	player->playerInit();player->setGain(ui->vsMasterVol->value()/250.);
+	playerTh=new std::thread(&CMidiPlayer::playerThread,player);
+	st=std::chrono::steady_clock::now();offset=0;
+	timer->start(100);
+}
+
+void qmpMainWindow::selectionChanged()
+{
+	stopped=false;playing=true;
+	ui->pbPlayPause->setIcon(QIcon(":/img/pause.png"));
+	timer->stop();player->playerDeinit();
+	if(playerTh){playerTh->join();delete playerTh;playerTh=NULL;}
+	ui->hsTimer->setValue(0);
+	QString fns=plistw->getSelectedItem();
+	ui->lbFileName->setText(QUrl(fns).fileName());
+	player->playerLoadFile(fns.toStdString().c_str());
+	char ts[100];
+	sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
+	ui->lbFinTime->setText(ts);
+	player->playerInit();player->setGain(ui->vsMasterVol->value()/250.);
+	playerTh=new std::thread(&CMidiPlayer::playerThread,player);
+	st=std::chrono::steady_clock::now();offset=0;
+	timer->start(100);
+}

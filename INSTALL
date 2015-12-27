@@ -1,0 +1,3 @@
+Use qmake or Qt Creator.
+Dependencies: libfluidsynth 1.1.4+, Qt5 (not sure whether 4 will work).
+C++11 is required to build the project.

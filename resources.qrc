@@ -1,0 +1,29 @@
+<RCC>
+    <qresource prefix="/">
+        <file>img/add.png</file>
+        <file>img/list.png</file>
+        <file>img/addfolder.png</file>
+        <file>img/channel.png</file>
+        <file>img/prev.png</file>
+        <file>img/qmidiplyr.png</file>
+        <file>img/remove.png</file>
+        <file>img/clear.png</file>
+        <file>img/down.png</file>
+        <file>img/effects.png</file>
+        <file>img/repeat-all.png</file>
+        <file>img/repeat-base.png</file>
+        <file>img/repeat-non.png</file>
+        <file>img/load.png</file>
+        <file>img/next.png</file>
+        <file>img/repeat-one.png</file>
+        <file>img/save.png</file>
+        <file>img/settings.png</file>
+        <file>img/pause.png</file>
+        <file>img/play.png</file>
+        <file>img/shuffle-off.png</file>
+        <file>img/shuffle.png</file>
+        <file>img/stop.png</file>
+        <file>img/up.png</file>
+        <file>img/visualization.png</file>
+    </qresource>
+</RCC>
