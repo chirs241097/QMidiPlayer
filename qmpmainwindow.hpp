@@ -8,6 +8,7 @@
 #include <chrono>
 #include "qmpmidiplay.hpp"
 #include "qmpplistwindow.hpp"
+#include "qmpchannelswindow.hpp"
 
 namespace Ui {
 	class qmpMainWindow;
@@ -21,6 +22,7 @@ class qmpMainWindow : public QMainWindow
 		explicit qmpMainWindow(QWidget *parent = 0);
 		void closeEvent(QCloseEvent *event);
 		~qmpMainWindow();
+		CMidiPlayer* getPlayer(){return player;}
 
 	private slots:
 		void on_pbPlayPause_clicked();
@@ -39,6 +41,8 @@ class qmpMainWindow : public QMainWindow
 
 		void on_pbNext_clicked();
 
+		void on_pbChannels_clicked();
+
 	public slots:
 		void dialogClosed();
 		void selectionChanged();
@@ -52,6 +56,7 @@ class qmpMainWindow : public QMainWindow
 		double offset;
 		CMidiPlayer *player;
 		qmpplistwindow *plistw;
+		qmpchannelswindow *chnlw;
 
 };
 

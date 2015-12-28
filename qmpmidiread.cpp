@@ -45,7 +45,6 @@ uint32_t CMidiFile::readVL()
 int CMidiFile::eventReader()//returns 0 if End of Track encountered
 {
 	uint32_t delta=readVL();curt+=delta;
-	//printf("event@%#lx, delta %u: ",ftell(f),delta);
 	char type=fgetc(f);++byteread;uint32_t p1,p2;
 	static char lasttype;
 retry:
@@ -54,7 +53,6 @@ retry:
 		case 0x80://Note Off
 			p1=fgetc(f);p2=fgetc(f);byteread+=2;
 			eventList[eventc++]=new SEvent(curid,curt,type,p1,p2);
-			//printf("Note off at ch#%d, note #%d, vel %d.\n",ch,p1,p2);
 		break;
 		case 0x90://Note On
 			p1=fgetc(f);p2=fgetc(f);byteread+=2;
@@ -65,32 +63,26 @@ retry:
 			}
 			else
 				eventList[eventc++]=new SEvent(curid,curt,(type&0x0F)|0x80,p1,p2);
-			//printf("Note on at ch#%d, note #%d, vel %d.\n",ch,p1,p2);
 		break;
 		case 0xA0://Note Aftertouch
 			p1=fgetc(f);p2=fgetc(f);byteread+=2;
 			eventList[eventc++]=new SEvent(curid,curt,type,p1,p2);
-			//printf("Note aftertouch at ch#%d, note #%d, vel %d.\n",ch,p1,p2);
 		break;
 		case 0xB0://Controller Change
 			p1=fgetc(f);p2=fgetc(f);byteread+=2;
 			eventList[eventc++]=new SEvent(curid,curt,type,p1,p2);
-			//printf("Controller change at ch#%d, cc #%d, val %d.\n",ch,p1,p2);
 		break;
 		case 0xC0://Patch Change
 			p1=fgetc(f);++byteread;
 			eventList[eventc++]=new SEvent(curid,curt,type,p1,0);
-			//printf("Patch change at ch#%d, pc #%d.\n",ch,p1);
 		break;
 		case 0xD0://Channel Aftertouch
 			p1=fgetc(f);++byteread;
 			eventList[eventc++]=new SEvent(curid,curt,type,p1,0);
-			//printf("Channel aftertouch at ch#%d, vel #%d.\n",ch,p1);
 		break;
 		case 0xE0://Pitch wheel
 			p1=fgetc(f);p2=fgetc(f);byteread+=2;
 			eventList[eventc++]=new SEvent(curid,curt,type,(p1|(p2<<7))&0x3FFF,0);
-			//printf("Pitch wheel at ch#%d, val %u.\n",type&0x0F,(p1|(p2<<7))&0x3FFF);
 		break;
 		case 0xF0:
 			if((type&0x0F)==0x0F)//Meta Event
@@ -101,22 +93,17 @@ retry:
 					case 0x00://Sequence Number
 						fgetc(f);fgetc(f);fgetc(f);
 						byteread+=3;
-						//printf("seqence number.\n");
 					break;
 					case 0x20://Channel Prefix
 						fgetc(f);fgetc(f);byteread+=2;
-						//printf("channel prefix.\n");
 					break;
 					case 0x2F://End of Track
 						fgetc(f);++byteread;
-						//printf("end of track.\n");
 						return 0;
 					break;
 					case 0x51://Set Tempo
-						//fgetc(f);fgetc(f);fgetc(f);fgetc(f);
 						p1=readDW();p1&=0x00FFFFFF;
 						eventList[eventc++]=new SEvent(curid,curt,type,metatype,p1);
-						//byteread+=4;
 					break;
 					case 0x54://SMTPE offset, not handled.
 						fgetc(f);fgetc(f);fgetc(f);

@@ -16,14 +16,17 @@ SOURCES += main.cpp\
 		qmpmainwindow.cpp \
 	qmpmidiplay.cpp \
 	qmpmidiread.cpp \
-    qmpplistwindow.cpp
+    qmpplistwindow.cpp \
+    qmpchannelswindow.cpp
 
 HEADERS  += qmpmainwindow.hpp \
 	qmpmidiplay.hpp \
-    qmpplistwindow.hpp
+    qmpplistwindow.hpp \
+    qmpchannelswindow.hpp
 
 FORMS    += qmpmainwindow.ui \
-    qmpplistwindow.ui
+    qmpplistwindow.ui \
+    qmpchannelswindow.ui
 
 QMAKE_CXXFLAGS += -std=c++11 -Wall
 LIBS += -lfluidsynth

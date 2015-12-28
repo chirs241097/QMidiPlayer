@@ -48,6 +48,8 @@ class CMidiPlayer
 	private:
 		CMidiFile *midiFile;
 		uint32_t stamps[101];
+		uint32_t ccstamps[101][16][132],ccc[16][132];//0..127:cc 128:pc 129:cp 130:pb 131:tempo
+		uint16_t mute,solo;
 		double ftime;
 		fluid_settings_t* settings;
 		fluid_synth_t* synth;
@@ -57,6 +59,7 @@ class CMidiPlayer
 		uint32_t tceptr,tcpaused,tcstop;
 		uint32_t finished,resumed;
 
+		void setBit(uint16_t &n,uint16_t bn,uint16_t b);
 		void fluidInitialize(const char* sf);
 		void fluidDeinitialize();
 		void processEvent(const SEvent *e);
@@ -74,7 +77,7 @@ class CMidiPlayer
 
 		uint32_t getStamp(int id);
 		uint32_t getTCeptr();
-		void setTCeptr(uint32_t ep);
+		void setTCeptr(uint32_t ep,uint32_t st);
 		uint32_t getTCpaused();
 		void setTCpaused(uint32_t ps);
 		double getFtime();
@@ -85,5 +88,9 @@ class CMidiPlayer
 		int getPolyphone();
 		int getMaxPolyphone();
 		void setMaxPolyphone(int p);
+
+		void getChannelPreset(int ch,int *b,int *p,char *name);
+		void setMute(int ch,bool m);
+		void setSolo(int ch,bool s);
 };
 #endif

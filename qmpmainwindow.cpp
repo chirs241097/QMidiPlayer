@@ -11,9 +11,11 @@ qmpMainWindow::qmpMainWindow(QWidget *parent) :
 	ui->setupUi(this);player=new CMidiPlayer();
 	playing=false;stopped=true;dragging=false;
 	plistw=new qmpplistwindow(this);
+	chnlw=new qmpchannelswindow(this);
 	ui->lbFileName->setText("");
 	timer=new QTimer(this);
 	connect(timer,SIGNAL(timeout()),this,SLOT(updateWidgets()));
+	connect(timer,SIGNAL(timeout()),chnlw,SLOT(channelWindowsUpdate()));
 }
 
 qmpMainWindow::~qmpMainWindow()
@@ -120,14 +122,14 @@ void qmpMainWindow::on_hsTimer_sliderReleased()
 	if(playing)
 	{
 		if(ui->hsTimer->value()==100){on_pbNext_clicked();return;}
-		player->setTCeptr(player->getStamp(ui->hsTimer->value()));
+		player->setTCeptr(player->getStamp(ui->hsTimer->value()),ui->hsTimer->value());
 		player->playerPanic();
 		offset=ui->hsTimer->value()/100.*player->getFtime();
 		st=std::chrono::steady_clock::now();
 	}
 	else
 	{
-		player->setTCeptr(player->getStamp(ui->hsTimer->value()));
+		player->setTCeptr(player->getStamp(ui->hsTimer->value()),ui->hsTimer->value());
 		offset=ui->hsTimer->value()/100.*player->getFtime();
 		char ts[100];
 		sprintf(ts,"%02d:%02d",(int)(offset)/60,(int)(offset)%60);
@@ -157,6 +159,7 @@ void qmpMainWindow::on_pbStop_clicked()
 void qmpMainWindow::dialogClosed()
 {
 	if(!plistw->isVisible())ui->pbPList->setChecked(false);
+	if(!chnlw->isVisible())ui->pbChannels->setChecked(false);
 }
 
 void qmpMainWindow::on_pbPList_clicked()
@@ -164,12 +167,17 @@ void qmpMainWindow::on_pbPList_clicked()
 	if(ui->pbPList->isChecked())plistw->show();else plistw->close();
 }
 
+void qmpMainWindow::on_pbChannels_clicked()
+{
+	if(ui->pbChannels->isChecked())chnlw->show();else chnlw->close();
+}
+
 void qmpMainWindow::on_pbPrev_clicked()
 {
 	timer->stop();player->playerDeinit();
 	if(playerTh){playerTh->join();delete playerTh;playerTh=NULL;}
 	ui->hsTimer->setValue(0);
-	QString fns=plistw->getPrevItem();
+	QString fns=plistw->getPrevItem();if(fns.length()==0)return on_pbStop_clicked();
 	ui->lbFileName->setText(QUrl(fns).fileName());
 	player->playerLoadFile(fns.toStdString().c_str());
 	char ts[100];
@@ -186,7 +194,7 @@ void qmpMainWindow::on_pbNext_clicked()
 	timer->stop();player->playerDeinit();
 	if(playerTh){playerTh->join();delete playerTh;playerTh=NULL;}
 	ui->hsTimer->setValue(0);
-	QString fns=plistw->getNextItem();
+	QString fns=plistw->getNextItem();if(fns.length()==0)return on_pbStop_clicked();
 	ui->lbFileName->setText(QUrl(fns).fileName());
 	player->playerLoadFile(fns.toStdString().c_str());
 	char ts[100];
