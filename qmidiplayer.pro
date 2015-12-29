@@ -17,16 +17,22 @@ SOURCES += main.cpp\
 	qmpmidiplay.cpp \
 	qmpmidiread.cpp \
     qmpplistwindow.cpp \
-    qmpchannelswindow.cpp
+    qmpchannelswindow.cpp \
+    qmppresetselect.cpp \
+    qmpchanneleditor.cpp
 
 HEADERS  += qmpmainwindow.hpp \
 	qmpmidiplay.hpp \
     qmpplistwindow.hpp \
-    qmpchannelswindow.hpp
+    qmpchannelswindow.hpp \
+    qmppresetselect.hpp \
+    qmpchanneleditor.hpp
 
 FORMS    += qmpmainwindow.ui \
     qmpplistwindow.ui \
-    qmpchannelswindow.ui
+    qmpchannelswindow.ui \
+    qmppresetselect.ui \
+    qmpchanneleditor.ui
 
 QMAKE_CXXFLAGS += -std=c++11 -Wall
 LIBS += -lfluidsynth

@@ -1,6 +1,10 @@
 2015-12-28 primitive version
+Implemented the channel preset chooser.
+
+2015-12-28 primitive version
 Partially implemented the channel window.
 Fixed a seeking bug.
+Minor cleanups.
 
 2015-12-27 primitive version
 Implemented the play list.

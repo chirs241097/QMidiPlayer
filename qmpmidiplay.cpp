@@ -220,6 +220,12 @@ void CMidiPlayer::getChannelPreset(int ch,int *b,int *p,char *name)
 	*b=info.bank;*p=info.program;
 	strcpy(name,info.name);
 }
+void CMidiPlayer::setChannelPreset(int ch,int b,int p)
+{
+	if(!synth)return;
+	fluid_synth_bank_select(synth,ch,b);
+	fluid_synth_program_change(synth,ch,p);
+}
 //16MSB..LSB1
 void CMidiPlayer::setBit(uint16_t &n, uint16_t bn, uint16_t b)
 {n^=(-b^n)&(1<<bn);}
@@ -231,3 +237,7 @@ void CMidiPlayer::setSolo(int ch,bool s)
 {
 	setBit(solo,ch,s?1:0);
 }
+int CMidiPlayer::getSFCount()
+{return synth?fluid_synth_sfcount(synth):0;}
+fluid_sfont_t* CMidiPlayer::getSFPtr(int sfid)
+{return synth&&sfid<getSFCount()?fluid_synth_get_sfont(synth,sfid):NULL;}

@@ -1,7 +1,6 @@
 #include <QCheckBox>
 #include <QPushButton>
 #include <QComboBox>
-#include <QLabel>
 #include "qmpchannelswindow.hpp"
 #include "ui_qmpchannelswindow.h"
 #include "qmpmainwindow.hpp"
@@ -11,6 +10,7 @@ qmpchannelswindow::qmpchannelswindow(QWidget *parent) :
 	ui(new Ui::qmpchannelswindow)
 {
 	ui->setupUi(this);
+	pselectw=new qmppresetselect(this);
 	connect(this,SIGNAL(dialogClosing()),parent,SLOT(dialogClosed()));
 	for(int i=0;i<16;++i)
 	{
@@ -22,7 +22,9 @@ qmpchannelswindow::qmpchannelswindow(QWidget *parent) :
 		QComboBox *cb=(QComboBox*)ui->twChannels->cellWidget(i,2);
 		//stub
 		cb->addItem("Internal fluidsynth");
-		ui->twChannels->setCellWidget(i,3,new QLabel(""));
+		ui->twChannels->setCellWidget(i,3,new QDCLabel(""));
+		((QDCLabel*)ui->twChannels->cellWidget(i,3))->setID(i);
+		connect(ui->twChannels->cellWidget(i,3),SIGNAL(onDoubleClick(int)),this,SLOT(showPresetWindow(int)));
 		ui->twChannels->setCellWidget(i,4,new QPushButton("..."));
 	}
 	ui->twChannels->setColumnWidth(0,32);
@@ -85,4 +87,10 @@ void qmpchannelswindow::on_pbUnsolo_clicked()
 		((QCheckBox*)ui->twChannels->cellWidget(i,1))->setChecked(false);
 		((qmpMainWindow*)this->parent())->getPlayer()->setSolo(i,false);
 	}
+}
+
+void qmpchannelswindow::showPresetWindow(int chid)
+{
+	pselectw->show();
+	pselectw->setupWindow(chid);
 }

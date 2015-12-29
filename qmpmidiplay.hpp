@@ -75,6 +75,7 @@ class CMidiPlayer
 		void playerThread();
 		void playerPanic();
 
+		//playing control methods
 		uint32_t getStamp(int id);
 		uint32_t getTCeptr();
 		void setTCeptr(uint32_t ep,uint32_t st);
@@ -89,8 +90,13 @@ class CMidiPlayer
 		int getMaxPolyphone();
 		void setMaxPolyphone(int p);
 
+		void setChannelPreset(int ch,int b,int p);
 		void getChannelPreset(int ch,int *b,int *p,char *name);
 		void setMute(int ch,bool m);
 		void setSolo(int ch,bool s);
+
+		//void pushSoundFont(const char* url);
+		int getSFCount();
+		fluid_sfont_t* getSFPtr(int sfid);
 };
 #endif
