@@ -11,6 +11,7 @@ qmpchannelswindow::qmpchannelswindow(QWidget *parent) :
 {
 	ui->setupUi(this);
 	pselectw=new qmppresetselect(this);
+	ceditw=new qmpchanneleditor(this);
 	connect(this,SIGNAL(dialogClosing()),parent,SLOT(dialogClosed()));
 	for(int i=0;i<16;++i)
 	{
@@ -25,7 +26,9 @@ qmpchannelswindow::qmpchannelswindow(QWidget *parent) :
 		ui->twChannels->setCellWidget(i,3,new QDCLabel(""));
 		((QDCLabel*)ui->twChannels->cellWidget(i,3))->setID(i);
 		connect(ui->twChannels->cellWidget(i,3),SIGNAL(onDoubleClick(int)),this,SLOT(showPresetWindow(int)));
-		ui->twChannels->setCellWidget(i,4,new QPushButton("..."));
+		ui->twChannels->setCellWidget(i,4,new QDCPushButton("..."));
+		((QDCLabel*)ui->twChannels->cellWidget(i,4))->setID(i);
+		connect(ui->twChannels->cellWidget(i,4),SIGNAL(onClick(int)),this,SLOT(showChannelEditorWindow(int)));
 	}
 	ui->twChannels->setColumnWidth(0,32);
 	ui->twChannels->setColumnWidth(1,32);
@@ -47,7 +50,7 @@ void qmpchannelswindow::channelWindowsUpdate()
 	{
 		char data[128],nm[24];
 		int b,p;
-		((qmpMainWindow*)this->parent())->getPlayer()->getChannelPreset(i,&b,&p,nm);
+		qmpMainWindow::getInstance()->getPlayer()->getChannelPreset(i,&b,&p,nm);
 		sprintf(data,"%d:%d %s",b,p,nm);
 		((QLabel*)ui->twChannels->cellWidget(i,3))->setText(data);
 	}
@@ -61,8 +64,8 @@ void qmpchannelswindow::channelMSChanged()
 		m=(QCheckBox*)ui->twChannels->cellWidget(i,0);
 		s=(QCheckBox*)ui->twChannels->cellWidget(i,1);
 		if(m->isChecked()&&s->isChecked())s->setChecked(false);
-		((qmpMainWindow*)this->parent())->getPlayer()->setMute(i,m->isChecked());
-		((qmpMainWindow*)this->parent())->getPlayer()->setSolo(i,s->isChecked());
+		qmpMainWindow::getInstance()->getPlayer()->setMute(i,m->isChecked());
+		qmpMainWindow::getInstance()->getPlayer()->setSolo(i,s->isChecked());
 	}
 }
 
@@ -76,7 +79,7 @@ void qmpchannelswindow::on_pbUnmute_clicked()
 	for(int i=0;i<16;++i)
 	{
 		((QCheckBox*)ui->twChannels->cellWidget(i,0))->setChecked(false);
-		((qmpMainWindow*)this->parent())->getPlayer()->setMute(i,false);
+		qmpMainWindow::getInstance()->getPlayer()->setMute(i,false);
 	}
 }
 
@@ -85,7 +88,7 @@ void qmpchannelswindow::on_pbUnsolo_clicked()
 	for(int i=0;i<16;++i)
 	{
 		((QCheckBox*)ui->twChannels->cellWidget(i,1))->setChecked(false);
-		((qmpMainWindow*)this->parent())->getPlayer()->setSolo(i,false);
+		qmpMainWindow::getInstance()->getPlayer()->setSolo(i,false);
 	}
 }
 
@@ -93,4 +96,10 @@ void qmpchannelswindow::showPresetWindow(int chid)
 {
 	pselectw->show();
 	pselectw->setupWindow(chid);
+}
+
+void qmpchannelswindow::showChannelEditorWindow(int chid)
+{
+	ceditw->show();
+	ceditw->setupWindow(chid);
 }

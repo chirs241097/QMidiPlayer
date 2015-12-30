@@ -4,6 +4,8 @@
 #include "ui_qmpmainwindow.h"
 #include "qmpmidiplay.hpp"
 
+qmpMainWindow* qmpMainWindow::ref=NULL;
+
 qmpMainWindow::qmpMainWindow(QWidget *parent) :
 	QMainWindow(parent),
 	ui(new Ui::qmpMainWindow)
@@ -13,7 +15,7 @@ qmpMainWindow::qmpMainWindow(QWidget *parent) :
 	plistw=new qmpplistwindow(this);
 	chnlw=new qmpchannelswindow(this);
 	ui->lbFileName->setText("");
-	timer=new QTimer(this);
+	timer=new QTimer(this);ref=this;
 	connect(timer,SIGNAL(timeout()),this,SLOT(updateWidgets()));
 	connect(timer,SIGNAL(timeout()),chnlw,SLOT(channelWindowsUpdate()));
 }

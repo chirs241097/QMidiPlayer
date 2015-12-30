@@ -230,13 +230,13 @@ void CMidiPlayer::setChannelPreset(int ch,int b,int p)
 void CMidiPlayer::setBit(uint16_t &n, uint16_t bn, uint16_t b)
 {n^=(-b^n)&(1<<bn);}
 void CMidiPlayer::setMute(int ch,bool m)
-{
-	setBit(mute,ch,m?1:0);
-}
+{setBit(mute,ch,m?1:0);}
 void CMidiPlayer::setSolo(int ch,bool s)
-{
-	setBit(solo,ch,s?1:0);
-}
+{setBit(solo,ch,s?1:0);}
+int CMidiPlayer::getCC(int ch, int id)
+{int ret=0;synth?fluid_synth_get_cc(synth,ch,id,&ret):0;return ret;}
+void CMidiPlayer::setCC(int ch, int id, int val)
+{synth?fluid_synth_cc(synth,ch,id,val):0;}
 int CMidiPlayer::getSFCount()
 {return synth?fluid_synth_sfcount(synth):0;}
 fluid_sfont_t* CMidiPlayer::getSFPtr(int sfid)

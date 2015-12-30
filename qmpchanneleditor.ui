@@ -85,22 +85,6 @@
     <string>Yamaha Grand Piano</string>
    </property>
   </widget>
-  <widget class="QDial" name="dVol">
-   <property name="geometry">
-    <rect>
-     <x>290</x>
-     <y>80</y>
-     <width>50</width>
-     <height>51</height>
-    </rect>
-   </property>
-   <property name="maximum">
-    <number>127</number>
-   </property>
-   <property name="value">
-    <number>127</number>
-   </property>
-  </widget>
   <widget class="QLabel" name="lbBank">
    <property name="geometry">
     <rect>
@@ -111,7 +95,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Bank: 0</string>
+    <string>BK: 0</string>
    </property>
   </widget>
   <widget class="QLabel" name="lbPreset">
@@ -125,54 +109,6 @@
    </property>
    <property name="text">
     <string>PC: 0</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="lbVol">
-   <property name="geometry">
-    <rect>
-     <x>280</x>
-     <y>130</y>
-     <width>66</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Vol.  127</string>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignCenter</set>
-   </property>
-  </widget>
-  <widget class="QDial" name="dPan">
-   <property name="geometry">
-    <rect>
-     <x>360</x>
-     <y>80</y>
-     <width>50</width>
-     <height>51</height>
-    </rect>
-   </property>
-   <property name="maximum">
-    <number>127</number>
-   </property>
-   <property name="value">
-    <number>64</number>
-   </property>
-  </widget>
-  <widget class="QLabel" name="lbPan">
-   <property name="geometry">
-    <rect>
-     <x>350</x>
-     <y>130</y>
-     <width>66</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Pan.  C</string>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignCenter</set>
    </property>
   </widget>
   <widget class="QGroupBox" name="gFilters">
@@ -547,31 +483,82 @@
     </property>
    </widget>
   </widget>
-  <widget class="QPushButton" name="pushButton">
+  <widget class="QGroupBox" name="gMixer">
    <property name="geometry">
     <rect>
-     <x>350</x>
-     <y>0</y>
-     <width>71</width>
-     <height>31</height>
+     <x>280</x>
+     <y>70</y>
+     <width>141</width>
+     <height>101</height>
     </rect>
    </property>
-   <property name="text">
-    <string>OK</string>
+   <property name="title">
+    <string>Mixer</string>
    </property>
-  </widget>
-  <widget class="QPushButton" name="pushButton_2">
-   <property name="geometry">
-    <rect>
-     <x>350</x>
-     <y>40</y>
-     <width>71</width>
-     <height>31</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Cancel</string>
-   </property>
+   <widget class="QLabel" name="lbPan">
+    <property name="geometry">
+     <rect>
+      <x>70</x>
+      <y>80</y>
+      <width>66</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Pan.  C</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QDial" name="dPan">
+    <property name="geometry">
+     <rect>
+      <x>80</x>
+      <y>30</y>
+      <width>50</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="maximum">
+     <number>127</number>
+    </property>
+    <property name="value">
+     <number>64</number>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lbVol">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>80</y>
+      <width>66</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Vol.  127</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QDial" name="dVol">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>30</y>
+      <width>50</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="maximum">
+     <number>127</number>
+    </property>
+    <property name="value">
+     <number>127</number>
+    </property>
+   </widget>
   </widget>
  </widget>
  <resources/>

@@ -18,7 +18,7 @@ qmppresetselect::~qmppresetselect()
 void qmppresetselect::showEvent(QShowEvent *e)
 {
 	e->accept();memset(presets,0,sizeof(presets));
-	CMidiPlayer *plyr=((qmpMainWindow*)(this->parent()->parent()))->getPlayer();
+	CMidiPlayer *plyr=qmpMainWindow::getInstance()->getPlayer();
 	int sfc=plyr->getSFCount();
 	for(int i=0;i<sfc;++i)
 	{
@@ -39,8 +39,10 @@ void qmppresetselect::showEvent(QShowEvent *e)
 }
 void qmppresetselect::setupWindow(int chid)
 {
-	CMidiPlayer *plyr=((qmpMainWindow*)(this->parent()->parent()))->getPlayer();
+	CMidiPlayer *plyr=qmpMainWindow::getInstance()->getPlayer();
 	ch=chid;int b,p,r;char name[30];
+	sprintf(name,"Preset Selection - Channel #%d",ch);
+	setWindowTitle(name);
 	plyr->getChannelPreset(chid,&b,&p,name);
 	for(int i=0;i<ui->lwBankSelect->count();++i)
 	{
@@ -66,7 +68,7 @@ void qmppresetselect::on_pbCancel_clicked()
 
 void qmppresetselect::on_pbOk_clicked()
 {
-	CMidiPlayer *plyr=((qmpMainWindow*)(this->parent()->parent()))->getPlayer();
+	CMidiPlayer *plyr=qmpMainWindow::getInstance()->getPlayer();
 	int b,p;sscanf(ui->lwBankSelect->currentItem()->text().toStdString().c_str(),"%d",&b);
 	sscanf(ui->lwPresetSelect->currentItem()->text().toStdString().c_str(),"%d",&p);
 	plyr->setChannelPreset(ch,b,p);

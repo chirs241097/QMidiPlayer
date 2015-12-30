@@ -14,7 +14,7 @@ namespace Ui {
 	class qmpMainWindow;
 }
 
-class qmpMainWindow : public QMainWindow
+class qmpMainWindow:public QMainWindow
 {
 	Q_OBJECT
 
@@ -23,24 +23,18 @@ class qmpMainWindow : public QMainWindow
 		void closeEvent(QCloseEvent *event);
 		~qmpMainWindow();
 		CMidiPlayer* getPlayer(){return player;}
+		QTimer* getTimer(){return timer;}
 
 	private slots:
 		void on_pbPlayPause_clicked();
 		void updateWidgets();
-
 		void on_hsTimer_sliderPressed();
-
 		void on_hsTimer_sliderReleased();
-
 		void on_vsMasterVol_valueChanged();
-
 		void on_pbStop_clicked();
-
 		void on_pbPList_clicked();
 		void on_pbPrev_clicked();
-
 		void on_pbNext_clicked();
-
 		void on_pbChannels_clicked();
 
 	public slots:
@@ -58,6 +52,8 @@ class qmpMainWindow : public QMainWindow
 		qmpplistwindow *plistw;
 		qmpchannelswindow *chnlw;
 
+		static qmpMainWindow* ref;
+	public: static qmpMainWindow* getInstance(){return ref;}
 };
 
-#endif // QMPMAINWINDOW_HPP
+#endif // QMPMAINWINDOW_H

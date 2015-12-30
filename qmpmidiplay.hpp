@@ -94,6 +94,8 @@ class CMidiPlayer
 		void getChannelPreset(int ch,int *b,int *p,char *name);
 		void setMute(int ch,bool m);
 		void setSolo(int ch,bool s);
+		int getCC(int ch,int id);
+		void setCC(int ch,int id,int val);
 
 		//void pushSoundFont(const char* url);
 		int getSFCount();
