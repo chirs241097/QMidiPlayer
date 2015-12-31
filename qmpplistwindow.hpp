@@ -6,16 +6,16 @@
 #include <QListWidgetItem>
 
 namespace Ui {
-	class qmpplistwindow;
+	class qmpPlistWindow;
 }
 
-class qmpplistwindow : public QDialog
+class qmpPlistWindow : public QDialog
 {
 	Q_OBJECT
 
 	public:
-		explicit qmpplistwindow(QWidget *parent=0);
-		~qmpplistwindow();
+		explicit qmpPlistWindow(QWidget *parent=0);
+		~qmpPlistWindow();
 		void closeEvent(QCloseEvent *event);
 		int getRepeat();
 		QString getFirstItem();
@@ -44,7 +44,7 @@ class qmpplistwindow : public QDialog
 		void on_lwFiles_itemDoubleClicked();
 
 		private:
-		Ui::qmpplistwindow *ui;
+		Ui::qmpPlistWindow *ui;
 		int shuffle,repeat;//rep 0=off 1=one 2=all
 };
 

@@ -3,19 +3,19 @@
 #include "ui_qmppresetselect.h"
 #include "qmpmainwindow.hpp"
 
-qmppresetselect::qmppresetselect(QWidget *parent) :
+qmpPresetSelector::qmpPresetSelector(QWidget *parent) :
 	QDialog(parent),
-	ui(new Ui::qmppresetselect)
+	ui(new Ui::qmpPresetSelector)
 {
 	ui->setupUi(this);
 }
 
-qmppresetselect::~qmppresetselect()
+qmpPresetSelector::~qmpPresetSelector()
 {
 	delete ui;
 }
 
-void qmppresetselect::showEvent(QShowEvent *e)
+void qmpPresetSelector::showEvent(QShowEvent *e)
 {
 	e->accept();memset(presets,0,sizeof(presets));
 	CMidiPlayer *plyr=qmpMainWindow::getInstance()->getPlayer();
@@ -37,7 +37,7 @@ void qmppresetselect::showEvent(QShowEvent *e)
 		if(b)ui->lwBankSelect->addItem(QString::number(i));
 	}
 }
-void qmppresetselect::setupWindow(int chid)
+void qmpPresetSelector::setupWindow(int chid)
 {
 	CMidiPlayer *plyr=qmpMainWindow::getInstance()->getPlayer();
 	ch=chid;int b,p,r;char name[30];
@@ -50,6 +50,7 @@ void qmppresetselect::setupWindow(int chid)
 		if(r==b){ui->lwBankSelect->setCurrentRow(i);break;}
 	}
 	r=0;
+	ui->lwPresetSelect->clear();
 	for(int i=0,cr=0;i<128;++i)
 	if(strlen(presets[b][i]))
 	{
@@ -61,12 +62,12 @@ void qmppresetselect::setupWindow(int chid)
 	ui->lwPresetSelect->setCurrentRow(r);
 }
 
-void qmppresetselect::on_pbCancel_clicked()
+void qmpPresetSelector::on_pbCancel_clicked()
 {
 	close();
 }
 
-void qmppresetselect::on_pbOk_clicked()
+void qmpPresetSelector::on_pbOk_clicked()
 {
 	CMidiPlayer *plyr=qmpMainWindow::getInstance()->getPlayer();
 	int b,p;sscanf(ui->lwBankSelect->currentItem()->text().toStdString().c_str(),"%d",&b);
@@ -75,12 +76,12 @@ void qmppresetselect::on_pbOk_clicked()
 	close();
 }
 
-void qmppresetselect::on_lwPresetSelect_itemDoubleClicked()
+void qmpPresetSelector::on_lwPresetSelect_itemDoubleClicked()
 {
 	on_pbOk_clicked();
 }
 
-void qmppresetselect::on_lwBankSelect_currentRowChanged()
+void qmpPresetSelector::on_lwBankSelect_currentRowChanged()
 {
 	ui->lwPresetSelect->clear();
 	if(!ui->lwBankSelect->currentItem())return;

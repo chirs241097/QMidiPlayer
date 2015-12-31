@@ -9,7 +9,7 @@ void CMidiPlayer::fluidInitialize(const char* sf)
 	fluid_settings_setstr(settings,"audio.driver","pulseaudio");
 	fluid_settings_setint(settings,"synth.cpu-cores",4);
 	fluid_settings_setint(settings,"synth.min-note-length",0);
-	fluid_settings_setint(settings,"synth.polyphony",256);
+	fluid_settings_setint(settings,"synth.polyphony",2048);
 	synth=new_fluid_synth(settings);
 	adriver=new_fluid_audio_driver(settings,synth);
 	fluid_synth_sfload(synth,sf,1);
@@ -52,8 +52,11 @@ void CMidiPlayer::processEvent(const SEvent *e)
 						ctempo=e->p2;dpt=ctempo*1000/divs;
 					break;
 					case 0x58:
+						ctsn=e->p2>>24;
+						ctsd=1<<((e->p2>>16)&0xFF);
 					break;
 					case 0x59:
+						cks=e->p2;
 					break;
 					case 0x01:case 0x02:case 0x03:
 					case 0x04:case 0x05:case 0x06:
@@ -176,9 +179,12 @@ void CMidiPlayer::playerLoadFile(const char* fn)
 }
 void CMidiPlayer::playerInit()
 {
-	ctempo=0x7A120;ctsn=4;ctsd=2;dpt=ctempo*1000/divs;
+	ctempo=0x7A120;ctsn=4;ctsd=4;cks=0;dpt=ctempo*1000/divs;
 	tceptr=0;tcstop=0;tcpaused=0;finished=0;mute=solo=0;
 	fluidInitialize("/media/Files/FluidR3_Ext.sf2");
+	fluid_synth_set_chorus(synth,FLUID_CHORUS_DEFAULT_N,FLUID_CHORUS_DEFAULT_LEVEL,
+						   FLUID_CHORUS_DEFAULT_SPEED,FLUID_CHORUS_DEFAULT_DEPTH,
+						   FLUID_CHORUS_DEFAULT_TYPE);
 }
 void CMidiPlayer::playerDeinit()
 {
@@ -199,10 +205,15 @@ void CMidiPlayer::setTCeptr(uint32_t ep,uint32_t st)
 		for(int j=0;j<120;++j)fluid_synth_cc(synth,i,j,ccstamps[st][i][j]);
 		fluid_synth_program_change(synth,i,ccstamps[st][i][128]);
 		//fluid_synth_pitch_bend(synth,i,ccstamps[st][i][130]);
-		dpt=ccstamps[st][0][131];
+		dpt=ccstamps[st][0][131];ctempo=dpt*divs/1000;
 	}
 }
 double CMidiPlayer::getFtime(){return ftime;}
+void CMidiPlayer::getCurrentTimeSignature(int *n,int *d){*n=ctsn;*d=ctsd;}
+void CMidiPlayer::getCurrentKeySignature(int *ks){*ks=cks;}
+const char* CMidiPlayer::getTitle(){return midiFile->getTitle();}
+const char* CMidiPlayer::getCopyright(){return midiFile->getCopyright();}
+double CMidiPlayer::getTempo(){return 60./(ctempo/1e6)*ctsd/4.;}
 uint32_t CMidiPlayer::getTCpaused(){return tcpaused;}
 void CMidiPlayer::setTCpaused(uint32_t ps){tcpaused=ps;}
 uint32_t CMidiPlayer::isFinished(){return finished;}
@@ -237,6 +248,35 @@ int CMidiPlayer::getCC(int ch, int id)
 {int ret=0;synth?fluid_synth_get_cc(synth,ch,id,&ret):0;return ret;}
 void CMidiPlayer::setCC(int ch, int id, int val)
 {synth?fluid_synth_cc(synth,ch,id,val):0;}
+void CMidiPlayer::getReverbPara(double *r,double *d,double *w,double *l)
+{
+	if(!synth)return;
+	*r=fluid_synth_get_reverb_roomsize(synth);
+	*d=fluid_synth_get_reverb_damp(synth);
+	*w=fluid_synth_get_reverb_width(synth);
+	*l=fluid_synth_get_reverb_level(synth);
+}
+void CMidiPlayer::setReverbPara(int e,double r,double d,double w,double l)
+{
+	if(!synth)return;
+	fluid_synth_set_reverb_on(synth,e);
+	fluid_synth_set_reverb(synth,r,d,w,l);
+}
+void CMidiPlayer::getChorusPara(int *fb,double *l,double *r,double *d,int *type)
+{
+	if(!synth)return;
+	*fb=fluid_synth_get_chorus_nr(synth);
+	*l=fluid_synth_get_chorus_level(synth);
+	*r=fluid_synth_get_chorus_speed_Hz(synth);
+	*d=fluid_synth_get_chorus_depth_ms(synth);
+	*type=fluid_synth_get_chorus_type(synth);
+}
+void CMidiPlayer::setChorusPara(int e,int fb,double l,double r,double d,int type)
+{
+	if(!synth)return;
+	fluid_synth_set_chorus_on(synth,e);
+	fluid_synth_set_chorus(synth,fb,l,r,d,type);
+}
 int CMidiPlayer::getSFCount()
 {return synth?fluid_synth_sfcount(synth):0;}
 fluid_sfont_t* CMidiPlayer::getSFPtr(int sfid)

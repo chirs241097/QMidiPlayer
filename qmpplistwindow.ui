@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>qmpplistwindow</class>
- <widget class="QDialog" name="qmpplistwindow">
+ <class>qmpPlistWindow</class>
+ <widget class="QDialog" name="qmpPlistWindow">
   <property name="geometry">
    <rect>
     <x>0</x>

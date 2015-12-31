@@ -6,16 +6,16 @@
 #include <QCloseEvent>
 
 namespace Ui {
-	class qmpchanneleditor;
+	class qmpChannelEditor;
 }
 
-class qmpchanneleditor:public QDialog
+class qmpChannelEditor:public QDialog
 {
 	Q_OBJECT
 
 	public:
-		explicit qmpchanneleditor(QWidget *parent=0);
-		~qmpchanneleditor();
+		explicit qmpChannelEditor(QWidget *parent=0);
+		~qmpChannelEditor();
 	protected:
 		void showEvent(QShowEvent *e);
 		void closeEvent(QCloseEvent *e);
@@ -63,7 +63,7 @@ class qmpchanneleditor:public QDialog
 		void on_dDelay_valueChanged();
 
 	private:
-		Ui::qmpchanneleditor *ui;
+		Ui::qmpChannelEditor *ui;
 		int ch;
 		void sendCC();
 };

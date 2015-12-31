@@ -22,6 +22,7 @@ class CMidiFile
 {
 	private:
 		SEvent *eventList[10000000];
+		char *title,*copyright;
 		uint32_t eventc;
 		uint32_t fmt,trk,divs;
 		FILE *f;
@@ -42,6 +43,8 @@ class CMidiFile
 		const SEvent* getEvent(uint32_t id);
 		uint32_t getEventCount();
 		uint32_t getDivision();
+		const char* getTitle();
+		const char* getCopyright();
 };
 class CMidiPlayer
 {
@@ -54,7 +57,8 @@ class CMidiPlayer
 		fluid_settings_t* settings;
 		fluid_synth_t* synth;
 		fluid_audio_driver_t* adriver;
-		uint32_t ctempo,ctsn,ctsd,dpt,divs;//delay_per_tick
+		uint32_t ctempo,ctsn,ctsd,dpt,divs,cks;
+		//raw tempo, timesig num., timesig den., delay per tick, division, keysig
 		//thread control
 		uint32_t tceptr,tcpaused,tcstop;
 		uint32_t finished,resumed;
@@ -81,9 +85,15 @@ class CMidiPlayer
 		void setTCeptr(uint32_t ep,uint32_t st);
 		uint32_t getTCpaused();
 		void setTCpaused(uint32_t ps);
-		double getFtime();
 		uint32_t isFinished();
 		void setResumed();
+
+		double getFtime();
+		void getCurrentTimeSignature(int *n,int *d);
+		void getCurrentKeySignature(int *ks);
+		double getTempo();
+		const char* getTitle();
+		const char* getCopyright();
 
 		void setGain(double gain);
 		int getPolyphone();
@@ -96,6 +106,10 @@ class CMidiPlayer
 		void setSolo(int ch,bool s);
 		int getCC(int ch,int id);
 		void setCC(int ch,int id,int val);
+		void getReverbPara(double *r,double *d,double *w,double *l);
+		void setReverbPara(int e,double r,double d,double w,double l);
+		void getChorusPara(int *fb,double *l,double *r,double *d,int *type);
+		void setChorusPara(int e,int fb,double l,double r,double d,int type);
 
 		//void pushSoundFont(const char* url);
 		int getSFCount();

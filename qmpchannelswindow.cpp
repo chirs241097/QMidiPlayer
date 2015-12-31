@@ -5,13 +5,13 @@
 #include "ui_qmpchannelswindow.h"
 #include "qmpmainwindow.hpp"
 
-qmpchannelswindow::qmpchannelswindow(QWidget *parent) :
+qmpChannelsWindow::qmpChannelsWindow(QWidget *parent) :
 	QDialog(parent),
-	ui(new Ui::qmpchannelswindow)
+	ui(new Ui::qmpChannelsWindow)
 {
 	ui->setupUi(this);
-	pselectw=new qmppresetselect(this);
-	ceditw=new qmpchanneleditor(this);
+	pselectw=new qmpPresetSelector(this);
+	ceditw=new qmpChannelEditor(this);
 	connect(this,SIGNAL(dialogClosing()),parent,SLOT(dialogClosed()));
 	for(int i=0;i<16;++i)
 	{
@@ -37,14 +37,14 @@ qmpchannelswindow::qmpchannelswindow(QWidget *parent) :
 	ui->twChannels->setColumnWidth(4,32);
 }
 
-void qmpchannelswindow::closeEvent(QCloseEvent *event)
+void qmpChannelsWindow::closeEvent(QCloseEvent *event)
 {
 	setVisible(false);
 	emit dialogClosing();
 	event->accept();
 }
 
-void qmpchannelswindow::channelWindowsUpdate()
+void qmpChannelsWindow::channelWindowsUpdate()
 {
 	for(int i=0;i<16;++i)
 	{
@@ -56,7 +56,7 @@ void qmpchannelswindow::channelWindowsUpdate()
 	}
 }
 
-void qmpchannelswindow::channelMSChanged()
+void qmpChannelsWindow::channelMSChanged()
 {
 	for(int i=0;i<16;++i)
 	{
@@ -69,12 +69,12 @@ void qmpchannelswindow::channelMSChanged()
 	}
 }
 
-qmpchannelswindow::~qmpchannelswindow()
+qmpChannelsWindow::~qmpChannelsWindow()
 {
 	delete ui;
 }
 
-void qmpchannelswindow::on_pbUnmute_clicked()
+void qmpChannelsWindow::on_pbUnmute_clicked()
 {
 	for(int i=0;i<16;++i)
 	{
@@ -83,7 +83,7 @@ void qmpchannelswindow::on_pbUnmute_clicked()
 	}
 }
 
-void qmpchannelswindow::on_pbUnsolo_clicked()
+void qmpChannelsWindow::on_pbUnsolo_clicked()
 {
 	for(int i=0;i<16;++i)
 	{
@@ -92,13 +92,13 @@ void qmpchannelswindow::on_pbUnsolo_clicked()
 	}
 }
 
-void qmpchannelswindow::showPresetWindow(int chid)
+void qmpChannelsWindow::showPresetWindow(int chid)
 {
 	pselectw->show();
 	pselectw->setupWindow(chid);
 }
 
-void qmpchannelswindow::showChannelEditorWindow(int chid)
+void qmpChannelsWindow::showChannelEditorWindow(int chid)
 {
 	ceditw->show();
 	ceditw->setupWindow(chid);

@@ -44,6 +44,9 @@
       <pointsize>18</pointsize>
      </font>
     </property>
+    <property name="contextMenuPolicy">
+     <enum>Qt::CustomContextMenu</enum>
+    </property>
     <property name="text">
      <string>somefile.mid</string>
     </property>
@@ -162,7 +165,7 @@
      </size>
     </property>
    </widget>
-   <widget class="QPushButton" name="pbNext_2">
+   <widget class="QPushButton" name="pbSettings">
     <property name="geometry">
      <rect>
       <x>280</x>
@@ -275,7 +278,7 @@
      </size>
     </property>
    </widget>
-   <widget class="QPushButton" name="pbEfx_2">
+   <widget class="QPushButton" name="pbVisualization">
     <property name="geometry">
      <rect>
       <x>190</x>

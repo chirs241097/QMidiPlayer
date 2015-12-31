@@ -11,13 +11,19 @@ qmpMainWindow::qmpMainWindow(QWidget *parent) :
 	ui(new Ui::qmpMainWindow)
 {
 	ui->setupUi(this);player=new CMidiPlayer();
-	playing=false;stopped=true;dragging=false;
-	plistw=new qmpplistwindow(this);
-	chnlw=new qmpchannelswindow(this);
 	ui->lbFileName->setText("");
+	playing=false;stopped=true;dragging=false;
+	plistw=new qmpPlistWindow(this);
+	chnlw=new qmpChannelsWindow(this);
+	efxw=new qmpEfxWindow(this);
+	infow=new qmpInfoWindow(this);
 	timer=new QTimer(this);ref=this;
+	fnA1=new QAction("File Information",ui->lbFileName);
+	ui->lbFileName->addAction(fnA1);
+	connect(fnA1,SIGNAL(triggered()),this,SLOT(onfnA1()));
 	connect(timer,SIGNAL(timeout()),this,SLOT(updateWidgets()));
 	connect(timer,SIGNAL(timeout()),chnlw,SLOT(channelWindowsUpdate()));
+	connect(timer,SIGNAL(timeout()),infow,SLOT(updateInfo()));
 }
 
 qmpMainWindow::~qmpMainWindow()
@@ -29,6 +35,11 @@ qmpMainWindow::~qmpMainWindow()
 void qmpMainWindow::closeEvent(QCloseEvent *event)
 {
 	on_pbStop_clicked();
+	efxw->close();chnlw->close();plistw->close();infow->close();
+	delete efxw;efxw=NULL;
+	delete chnlw;chnlw=NULL;
+	delete plistw;plistw=NULL;
+	delete infow;infow=NULL;
 	event->accept();
 }
 
@@ -77,6 +88,8 @@ void qmpMainWindow::updateWidgets()
 		ui->lbPolyphone->setText(ts);
 	}
 }
+
+QString qmpMainWindow::getFileName(){return ui->lbFileName->text();}
 
 void qmpMainWindow::on_pbPlayPause_clicked()
 {
@@ -162,6 +175,7 @@ void qmpMainWindow::dialogClosed()
 {
 	if(!plistw->isVisible())ui->pbPList->setChecked(false);
 	if(!chnlw->isVisible())ui->pbChannels->setChecked(false);
+	if(!efxw->isVisible())ui->pbEfx->setChecked(false);
 }
 
 void qmpMainWindow::on_pbPList_clicked()
@@ -225,4 +239,21 @@ void qmpMainWindow::selectionChanged()
 	playerTh=new std::thread(&CMidiPlayer::playerThread,player);
 	st=std::chrono::steady_clock::now();offset=0;
 	timer->start(100);
+}
+
+void qmpMainWindow::on_pbEfx_clicked()
+{
+	efxw->show();
+}
+
+void qmpMainWindow::on_lbFileName_customContextMenuRequested(const QPoint &pos)
+{
+	QMenu menu(ui->lbFileName);
+	menu.addActions(ui->lbFileName->actions());
+	menu.exec(this->pos()+ui->lbFileName->pos()+pos);
+}
+
+void qmpMainWindow::onfnA1()
+{
+	infow->show();
 }

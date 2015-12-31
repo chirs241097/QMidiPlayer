@@ -130,7 +130,17 @@ retry:
 						{
 							++byteread;if(str)str[c]=fgetc(f);else fgetc(f);
 						}
-						eventList[eventc++]=new SEvent(curid,curt,type,metatype,0,str);
+						if(str)str[c]='\0';eventList[eventc++]=new SEvent(curid,curt,type,metatype,0,str);
+						if(str&&metatype==0x03&&!title)
+						{
+							title=new char[len+8];
+							strcpy(title,str);
+						}
+						if(str&&metatype==0x02&&!copyright)
+						{
+							copyright=new char[len+8];
+							strcpy(copyright,str);
+						}
 						if(len<=1024&&len>0)delete[] str;
 					}
 				}
@@ -188,6 +198,7 @@ void CMidiFile::chunkReader(int hdrXp)
 }
 CMidiFile::CMidiFile(const char* fn)
 {
+	title=copyright=NULL;
 	if(!(f=fopen(fn,"rb")))exit((printf("E: file %s doesn't exist!\n",fn),2));
 	chunkReader(1);
 	for(uint32_t i=0;i<trk;++i)chunkReader(0);
@@ -198,7 +209,10 @@ CMidiFile::CMidiFile(const char* fn)
 CMidiFile::~CMidiFile()
 {
 	for(uint32_t i=0;i<eventc;++i)delete eventList[i];
+	if(title)delete[] title;if(copyright)delete[] copyright;
 }
 const SEvent* CMidiFile::getEvent(uint32_t id){return id<eventc?eventList[id]:NULL;}
 uint32_t CMidiFile::getEventCount(){return eventc;}
 uint32_t CMidiFile::getDivision(){return divs;}
+const char* CMidiFile::getTitle(){return title;}
+const char* CMidiFile::getCopyright(){return copyright;}

@@ -1,3 +1,7 @@
+2015-12-31 0.5.0
+Implemented effect parameter editor and file information window.
+Bump version.
+
 2015-12-30 primitive version
 Implemented the channel parameter editor.
 

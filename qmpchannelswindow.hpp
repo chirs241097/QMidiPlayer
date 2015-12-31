@@ -9,7 +9,7 @@
 #include "qmpchanneleditor.hpp"
 
 namespace Ui {
-	class qmpchannelswindow;
+	class qmpChannelsWindow;
 }
 
 class QDCLabel:public QLabel
@@ -40,13 +40,13 @@ class QDCPushButton:public QPushButton
 		void onClick(int id);
 };
 
-class qmpchannelswindow:public QDialog
+class qmpChannelsWindow:public QDialog
 {
 	Q_OBJECT
 
 	public:
-		explicit qmpchannelswindow(QWidget *parent = 0);
-		~qmpchannelswindow();
+		explicit qmpChannelsWindow(QWidget *parent = 0);
+		~qmpChannelsWindow();
 		void closeEvent(QCloseEvent *event);
 	signals:
 		void dialogClosing();
@@ -61,9 +61,9 @@ class qmpchannelswindow:public QDialog
 		void on_pbUnsolo_clicked();
 
 	private:
-		Ui::qmpchannelswindow *ui;
-		qmppresetselect *pselectw;
-		qmpchanneleditor *ceditw;
+		Ui::qmpChannelsWindow *ui;
+		qmpPresetSelector *pselectw;
+		qmpChannelEditor *ceditw;
 };
 
 #endif // QMPCHANNELSWINDOW_H

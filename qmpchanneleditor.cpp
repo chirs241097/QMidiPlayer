@@ -3,19 +3,19 @@
 #include "ui_qmpchanneleditor.h"
 #include "qmpmainwindow.hpp"
 
-qmpchanneleditor::qmpchanneleditor(QWidget *parent) :
+qmpChannelEditor::qmpChannelEditor(QWidget *parent) :
 	QDialog(parent),
-	ui(new Ui::qmpchanneleditor)
+	ui(new Ui::qmpChannelEditor)
 {
 	ui->setupUi(this);
 }
 
-qmpchanneleditor::~qmpchanneleditor()
+qmpChannelEditor::~qmpChannelEditor()
 {
 	delete ui;
 }
 
-void qmpchanneleditor::setupWindow(int chid)
+void qmpChannelEditor::setupWindow(int chid)
 {
 	char str[30];if(~chid)ch=chid;
 	sprintf(str,"Channel Parameter Editor - Channel #%d",ch+1);
@@ -50,7 +50,7 @@ void qmpchanneleditor::setupWindow(int chid)
 	ui->dPan->setValue(b);
 }
 
-void qmpchanneleditor::sendCC()
+void qmpChannelEditor::sendCC()
 {
 	CMidiPlayer* player=qmpMainWindow::getInstance()->getPlayer();
 	player->setCC(ch,7,ui->dVol->value());
@@ -67,23 +67,23 @@ void qmpchanneleditor::sendCC()
 	player->setCC(ch,78,ui->dDelay->value());
 }
 
-void qmpchanneleditor::showEvent(QShowEvent *e)
+void qmpChannelEditor::showEvent(QShowEvent *e)
 {
 	e->accept();
 	connect(qmpMainWindow::getInstance()->getTimer(),SIGNAL(timeout()),this,SLOT(setupWindow()));
 }
-void qmpchanneleditor::closeEvent(QCloseEvent *e)
+void qmpChannelEditor::closeEvent(QCloseEvent *e)
 {
 	e->accept();
 	disconnect(qmpMainWindow::getInstance()->getTimer(),SIGNAL(timeout()),this,SLOT(setupWindow()));
 }
 
-void qmpchanneleditor::on_pbChLeft_clicked()
+void qmpChannelEditor::on_pbChLeft_clicked()
 {
 	if(ch>0)--ch;else ch=15;setupWindow();
 }
 
-void qmpchanneleditor::on_pbChRight_clicked()
+void qmpChannelEditor::on_pbChRight_clicked()
 {
 	if(ch<15)++ch;else ch=0;setupWindow();
 }
@@ -91,110 +91,110 @@ void qmpchanneleditor::on_pbChRight_clicked()
 #define dc disconnect(qmpMainWindow::getInstance()->getTimer(),SIGNAL(timeout()),this,SLOT(setupWindow()))
 #define rc connect(qmpMainWindow::getInstance()->getTimer(),SIGNAL(timeout()),this,SLOT(setupWindow()));sendCC()
 
-void qmpchanneleditor::on_dCut_sliderPressed()
+void qmpChannelEditor::on_dCut_sliderPressed()
 {dc;}
 
-void qmpchanneleditor::on_dReso_sliderPressed()
+void qmpChannelEditor::on_dReso_sliderPressed()
 {dc;}
 
-void qmpchanneleditor::on_dReverb_sliderPressed()
+void qmpChannelEditor::on_dReverb_sliderPressed()
 {dc;}
 
-void qmpchanneleditor::on_dChorus_sliderPressed()
+void qmpChannelEditor::on_dChorus_sliderPressed()
 {dc;}
 
-void qmpchanneleditor::on_dVol_sliderPressed()
+void qmpChannelEditor::on_dVol_sliderPressed()
 {dc;}
 
-void qmpchanneleditor::on_dPan_sliderPressed()
+void qmpChannelEditor::on_dPan_sliderPressed()
 {dc;}
 
-void qmpchanneleditor::on_dAttack_sliderPressed()
+void qmpChannelEditor::on_dAttack_sliderPressed()
 {dc;}
 
-void qmpchanneleditor::on_dDecay_sliderPressed()
+void qmpChannelEditor::on_dDecay_sliderPressed()
 {dc;}
 
-void qmpchanneleditor::on_dRelease_sliderPressed()
+void qmpChannelEditor::on_dRelease_sliderPressed()
 {dc;}
 
-void qmpchanneleditor::on_dRate_sliderPressed()
+void qmpChannelEditor::on_dRate_sliderPressed()
 {dc;}
 
-void qmpchanneleditor::on_dDepth_sliderPressed()
+void qmpChannelEditor::on_dDepth_sliderPressed()
 {dc;}
 
-void qmpchanneleditor::on_dDelay_sliderPressed()
+void qmpChannelEditor::on_dDelay_sliderPressed()
 {dc;}
 
-void qmpchanneleditor::on_dAttack_sliderReleased()
+void qmpChannelEditor::on_dAttack_sliderReleased()
 {rc;}
 
-void qmpchanneleditor::on_dDecay_sliderReleased()
+void qmpChannelEditor::on_dDecay_sliderReleased()
 {rc;}
 
-void qmpchanneleditor::on_dRelease_sliderReleased()
+void qmpChannelEditor::on_dRelease_sliderReleased()
 {rc;}
 
-void qmpchanneleditor::on_dRate_sliderReleased()
+void qmpChannelEditor::on_dRate_sliderReleased()
 {rc;}
 
-void qmpchanneleditor::on_dDepth_sliderReleased()
+void qmpChannelEditor::on_dDepth_sliderReleased()
 {rc;}
 
-void qmpchanneleditor::on_dDelay_sliderReleased()
+void qmpChannelEditor::on_dDelay_sliderReleased()
 {rc;}
 
-void qmpchanneleditor::on_dCut_sliderReleased()
+void qmpChannelEditor::on_dCut_sliderReleased()
 {rc;}
 
-void qmpchanneleditor::on_dReso_sliderReleased()
+void qmpChannelEditor::on_dReso_sliderReleased()
 {rc;}
 
-void qmpchanneleditor::on_dReverb_sliderReleased()
+void qmpChannelEditor::on_dReverb_sliderReleased()
 {rc;}
 
-void qmpchanneleditor::on_dChorus_sliderReleased()
+void qmpChannelEditor::on_dChorus_sliderReleased()
 {rc;}
 
-void qmpchanneleditor::on_dVol_sliderReleased()
+void qmpChannelEditor::on_dVol_sliderReleased()
 {rc;}
 
-void qmpchanneleditor::on_dPan_sliderReleased()
+void qmpChannelEditor::on_dPan_sliderReleased()
 {rc;}
 
-void qmpchanneleditor::on_dCut_valueChanged()
+void qmpChannelEditor::on_dCut_valueChanged()
 {rc;}
 
-void qmpchanneleditor::on_dReso_valueChanged()
+void qmpChannelEditor::on_dReso_valueChanged()
 {rc;}
 
-void qmpchanneleditor::on_dReverb_valueChanged()
+void qmpChannelEditor::on_dReverb_valueChanged()
 {rc;}
 
-void qmpchanneleditor::on_dChorus_valueChanged()
+void qmpChannelEditor::on_dChorus_valueChanged()
 {rc;}
 
-void qmpchanneleditor::on_dVol_valueChanged()
+void qmpChannelEditor::on_dVol_valueChanged()
 {rc;}
 
-void qmpchanneleditor::on_dPan_valueChanged()
+void qmpChannelEditor::on_dPan_valueChanged()
 {rc;}
 
-void qmpchanneleditor::on_dAttack_valueChanged()
+void qmpChannelEditor::on_dAttack_valueChanged()
 {rc;}
 
-void qmpchanneleditor::on_dDecay_valueChanged()
+void qmpChannelEditor::on_dDecay_valueChanged()
 {rc;}
 
-void qmpchanneleditor::on_dRelease_valueChanged()
+void qmpChannelEditor::on_dRelease_valueChanged()
 {rc;}
 
-void qmpchanneleditor::on_dRate_valueChanged()
+void qmpChannelEditor::on_dRate_valueChanged()
 {rc;}
 
-void qmpchanneleditor::on_dDepth_valueChanged()
+void qmpChannelEditor::on_dDepth_valueChanged()
 {rc;}
 
-void qmpchanneleditor::on_dDelay_valueChanged()
+void qmpChannelEditor::on_dDelay_valueChanged()
 {rc;}

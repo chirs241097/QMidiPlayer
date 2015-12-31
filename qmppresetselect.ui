@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>qmppresetselect</class>
- <widget class="QDialog" name="qmppresetselect">
+ <class>qmpPresetSelector</class>
+ <widget class="QDialog" name="qmpPresetSelector">
   <property name="geometry">
    <rect>
     <x>0</x>

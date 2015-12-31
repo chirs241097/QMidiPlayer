@@ -5,16 +5,16 @@
 #include <QShowEvent>
 
 namespace Ui {
-	class qmppresetselect;
+	class qmpPresetSelector;
 }
 
-class qmppresetselect:public QDialog
+class qmpPresetSelector:public QDialog
 {
 	Q_OBJECT
 
 	public:
-		explicit qmppresetselect(QWidget *parent = 0);
-		~qmppresetselect();
+		explicit qmpPresetSelector(QWidget *parent = 0);
+		~qmpPresetSelector();
 		void showEvent(QShowEvent* e);
 		void setupWindow(int chid);
 
@@ -28,7 +28,7 @@ class qmppresetselect:public QDialog
 		void on_lwPresetSelect_itemDoubleClicked();
 
 		private:
-		Ui::qmppresetselect *ui;
+		Ui::qmpPresetSelector *ui;
 		char presets[129][128][24];
 		int ch;
 };

@@ -1,0 +1,452 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>qmpEfxWindow</class>
+ <widget class="QDialog" name="qmpEfxWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>546</width>
+    <height>177</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Effects</string>
+  </property>
+  <widget class="QGroupBox" name="gReverb">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>261</width>
+     <height>161</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Reverb</string>
+   </property>
+   <widget class="QCheckBox" name="cbEnabledR">
+    <property name="geometry">
+     <rect>
+      <x>80</x>
+      <y>4</y>
+      <width>21</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QDial" name="dRoom">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>30</y>
+      <width>50</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="maximum">
+     <number>120</number>
+    </property>
+   </widget>
+   <widget class="QDial" name="dDamp">
+    <property name="geometry">
+     <rect>
+      <x>200</x>
+      <y>30</y>
+      <width>50</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="maximum">
+     <number>100</number>
+    </property>
+   </widget>
+   <widget class="QDial" name="dWidth">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>103</y>
+      <width>50</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="maximum">
+     <number>100</number>
+    </property>
+   </widget>
+   <widget class="QDial" name="dLevelR">
+    <property name="geometry">
+     <rect>
+      <x>200</x>
+      <y>103</y>
+      <width>50</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="maximum">
+     <number>100</number>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lbRoom">
+    <property name="geometry">
+     <rect>
+      <x>60</x>
+      <y>30</y>
+      <width>41</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Room</string>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="sbRoom">
+    <property name="geometry">
+     <rect>
+      <x>60</x>
+      <y>50</y>
+      <width>51</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="maximum">
+     <number>120</number>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lbDamp">
+    <property name="geometry">
+     <rect>
+      <x>140</x>
+      <y>30</y>
+      <width>51</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Damp</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="sbDamp">
+    <property name="geometry">
+     <rect>
+      <x>140</x>
+      <y>50</y>
+      <width>56</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="maximum">
+     <number>100</number>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lbWidth">
+    <property name="geometry">
+     <rect>
+      <x>60</x>
+      <y>100</y>
+      <width>51</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Width</string>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="sbWidth">
+    <property name="geometry">
+     <rect>
+      <x>60</x>
+      <y>120</y>
+      <width>56</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="maximum">
+     <number>100</number>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lbLevelR">
+    <property name="geometry">
+     <rect>
+      <x>145</x>
+      <y>100</y>
+      <width>51</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Level</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="sbLevelR">
+    <property name="geometry">
+     <rect>
+      <x>140</x>
+      <y>120</y>
+      <width>56</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="maximum">
+     <number>100</number>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QGroupBox" name="gChorus">
+   <property name="geometry">
+    <rect>
+     <x>270</x>
+     <y>10</y>
+     <width>261</width>
+     <height>161</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Chorus</string>
+   </property>
+   <widget class="QCheckBox" name="cbEnabledC">
+    <property name="geometry">
+     <rect>
+      <x>80</x>
+      <y>4</y>
+      <width>21</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QDial" name="dFeedBack">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>30</y>
+      <width>50</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="maximum">
+     <number>99</number>
+    </property>
+   </widget>
+   <widget class="QDial" name="dRate">
+    <property name="geometry">
+     <rect>
+      <x>200</x>
+      <y>30</y>
+      <width>50</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="minimum">
+     <number>29</number>
+    </property>
+    <property name="maximum">
+     <number>500</number>
+    </property>
+    <property name="value">
+     <number>29</number>
+    </property>
+   </widget>
+   <widget class="QDial" name="dDepth">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>103</y>
+      <width>50</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="maximum">
+     <number>210</number>
+    </property>
+   </widget>
+   <widget class="QDial" name="dLevelC">
+    <property name="geometry">
+     <rect>
+      <x>200</x>
+      <y>103</y>
+      <width>50</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="maximum">
+     <number>100</number>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lbFeedBack">
+    <property name="geometry">
+     <rect>
+      <x>60</x>
+      <y>30</y>
+      <width>71</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Feedback</string>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="sbFeedBack">
+    <property name="geometry">
+     <rect>
+      <x>60</x>
+      <y>50</y>
+      <width>51</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="maximum">
+     <number>99</number>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lbRate">
+    <property name="geometry">
+     <rect>
+      <x>140</x>
+      <y>30</y>
+      <width>51</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Rate</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lbDepth">
+    <property name="geometry">
+     <rect>
+      <x>60</x>
+      <y>100</y>
+      <width>51</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Depth</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lbLevelC">
+    <property name="geometry">
+     <rect>
+      <x>145</x>
+      <y>100</y>
+      <width>51</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Level</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="sbLevelC">
+    <property name="geometry">
+     <rect>
+      <x>140</x>
+      <y>120</y>
+      <width>56</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="maximum">
+     <number>100</number>
+    </property>
+   </widget>
+   <widget class="QDoubleSpinBox" name="sbRate">
+    <property name="geometry">
+     <rect>
+      <x>137</x>
+      <y>50</y>
+      <width>61</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="minimum">
+     <double>0.290000000000000</double>
+    </property>
+    <property name="maximum">
+     <double>5.000000000000000</double>
+    </property>
+    <property name="singleStep">
+     <double>0.100000000000000</double>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lbLFO">
+    <property name="geometry">
+     <rect>
+      <x>35</x>
+      <y>77</y>
+      <width>41</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>LFO</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="rbSine">
+    <property name="geometry">
+     <rect>
+      <x>70</x>
+      <y>77</y>
+      <width>61</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Sine</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="rbTriangle">
+    <property name="geometry">
+     <rect>
+      <x>145</x>
+      <y>77</y>
+      <width>91</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Trian&amp;gle</string>
+    </property>
+   </widget>
+   <widget class="QDoubleSpinBox" name="sbDepth">
+    <property name="geometry">
+     <rect>
+      <x>60</x>
+      <y>120</y>
+      <width>51</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="decimals">
+     <number>1</number>
+    </property>
+    <property name="maximum">
+     <double>21.000000000000000</double>
+    </property>
+    <property name="singleStep">
+     <double>0.100000000000000</double>
+    </property>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -4,11 +4,15 @@
 #include <QMainWindow>
 #include <QTimer>
 #include <QCloseEvent>
+#include <QAction>
+#include <QMenu>
 #include <thread>
 #include <chrono>
 #include "qmpmidiplay.hpp"
 #include "qmpplistwindow.hpp"
 #include "qmpchannelswindow.hpp"
+#include "qmpefxwindow.hpp"
+#include "qmpinfowindow.hpp"
 
 namespace Ui {
 	class qmpMainWindow;
@@ -36,6 +40,9 @@ class qmpMainWindow:public QMainWindow
 		void on_pbPrev_clicked();
 		void on_pbNext_clicked();
 		void on_pbChannels_clicked();
+		void on_pbEfx_clicked();
+		void on_lbFileName_customContextMenuRequested(const QPoint &pos);
+		void onfnA1();
 
 	public slots:
 		void dialogClosed();
@@ -49,8 +56,13 @@ class qmpMainWindow:public QMainWindow
 		std::chrono::steady_clock::time_point st;
 		double offset;
 		CMidiPlayer *player;
-		qmpplistwindow *plistw;
-		qmpchannelswindow *chnlw;
+		qmpPlistWindow *plistw;
+		qmpChannelsWindow *chnlw;
+		qmpEfxWindow *efxw;
+		qmpInfoWindow *infow;
+		QAction *fnA1,*fnA2;
+	public:
+		QString getFileName();
 
 		static qmpMainWindow* ref;
 	public: static qmpMainWindow* getInstance(){return ref;}

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>qmpInfoWindow</class>
+ <widget class="QDialog" name="qmpInfoWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>111</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>File Information</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QLabel" name="lbFileName">
+     <property name="text">
+      <string>File name: </string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="lbTempo">
+       <property name="text">
+        <string>Tempo: </string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="lbKeySig">
+       <property name="text">
+        <string>Key Sig.: </string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="lbTimeSig">
+       <property name="text">
+        <string>Time Sig.:</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QLabel" name="lbTitle">
+     <property name="text">
+      <string>Title: </string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="lbCopyright">
+     <property name="text">
+      <string>Copyright: </string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

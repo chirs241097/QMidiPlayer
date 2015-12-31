@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>qmpchanneleditor</class>
- <widget class="QDialog" name="qmpchanneleditor">
+ <class>qmpChannelEditor</class>
+ <widget class="QDialog" name="qmpChannelEditor">
   <property name="geometry">
    <rect>
     <x>0</x>
