@@ -181,27 +181,29 @@ void CMidiFile::headerChunkReader()
 	if(divs&0x8000)error(1,"E: SMTPE format is not supported.");
 	for(;byteread<chnklen;++byteread){fgetc(f);}
 }
-void CMidiFile::chunkReader(int hdrXp)
+int CMidiFile::chunkReader(int hdrXp)
 {
 	char hdr[6];
 	if(!fgets(hdr,5,f))error(1,"E: Unexpected EOF.");
 	if(hdrXp)
-		if(strncmp(hdr,"MThd",4))error(1,"E: Wrong MIDI header.");
-		else headerChunkReader();
+		if(strncmp(hdr,"MThd",4)){error(1,"E: Wrong MIDI header.");throw;}
+		else return headerChunkReader(),0;
 	else
 		if(strncmp(hdr,"MTrk",4))
 		{
 			error(0,"W: Wrong track chunk header. Ignoring the whole chunk.");
-			for(int chnklen=readDW();chnklen>0;--chnklen)fgetc(f);
+			for(int chnklen=readDW();chnklen>0;--chnklen)fgetc(f);return 0;
 		}
-		else trackChunkReader();
+		else return trackChunkReader(),1;
 }
 CMidiFile::CMidiFile(const char* fn)
 {
-	title=copyright=NULL;
+	if(title)delete[] title;
+	if(copyright)delete[] copyright;
+	title=copyright=NULL;notes=0;
 	if(!(f=fopen(fn,"rb")))exit((printf("E: file %s doesn't exist!\n",fn),2));
 	chunkReader(1);
-	for(uint32_t i=0;i<trk;++i)chunkReader(0);
+	for(uint32_t i=0;i<trk;i+=chunkReader(0));
 	printf("%d note(s)\n",notes);
 	fclose(f);
 	std::sort(eventList,eventList+eventc,cmp);
@@ -214,5 +216,6 @@ CMidiFile::~CMidiFile()
 const SEvent* CMidiFile::getEvent(uint32_t id){return id<eventc?eventList[id]:NULL;}
 uint32_t CMidiFile::getEventCount(){return eventc;}
 uint32_t CMidiFile::getDivision(){return divs;}
+uint32_t CMidiFile::getNoteCount(){return notes;}
 const char* CMidiFile::getTitle(){return title;}
 const char* CMidiFile::getCopyright(){return copyright;}

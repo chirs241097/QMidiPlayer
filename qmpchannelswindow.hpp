@@ -55,9 +55,7 @@ class qmpChannelsWindow:public QDialog
 		void channelMSChanged();
 		void showPresetWindow(int chid);
 		void showChannelEditorWindow(int chid);
-	private slots:
 		void on_pbUnmute_clicked();
-
 		void on_pbUnsolo_clicked();
 
 	private:

@@ -36,13 +36,14 @@ class CMidiFile
 		int eventReader();
 		void trackChunkReader();
 		void headerChunkReader();
-		void chunkReader(int hdrXp);
+		int chunkReader(int hdrXp);
 	public:
 		CMidiFile(const char* fn);
 		~CMidiFile();
 		const SEvent* getEvent(uint32_t id);
 		uint32_t getEventCount();
 		uint32_t getDivision();
+		uint32_t getNoteCount();
 		const char* getTitle();
 		const char* getCopyright();
 };
@@ -91,6 +92,7 @@ class CMidiPlayer
 		double getFtime();
 		void getCurrentTimeSignature(int *n,int *d);
 		void getCurrentKeySignature(int *ks);
+		uint32_t getFileNoteCount();
 		double getTempo();
 		const char* getTitle();
 		const char* getCopyright();

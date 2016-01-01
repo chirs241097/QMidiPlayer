@@ -8,7 +8,6 @@ void CMidiPlayer::fluidInitialize(const char* sf)
 	settings=new_fluid_settings();
 	fluid_settings_setstr(settings,"audio.driver","pulseaudio");
 	fluid_settings_setint(settings,"synth.cpu-cores",4);
-	fluid_settings_setint(settings,"synth.min-note-length",0);
 	fluid_settings_setint(settings,"synth.polyphony",2048);
 	synth=new_fluid_synth(settings);
 	adriver=new_fluid_audio_driver(settings,synth);
@@ -149,7 +148,7 @@ void CMidiPlayer::fileTimer2Pass()
 			for(int i=0;i<16;++i)for(int j=0;j<132;++j)
 				ccstamps[c][i][j]=ccc[i][j];
 			stamps[c++]=eptr;
-			if(c>100)throw;
+			if(c>100)break;
 		}
 		ct=midiFile->getEvent(eptr)->time;
 	}
@@ -211,6 +210,7 @@ void CMidiPlayer::setTCeptr(uint32_t ep,uint32_t st)
 double CMidiPlayer::getFtime(){return ftime;}
 void CMidiPlayer::getCurrentTimeSignature(int *n,int *d){*n=ctsn;*d=ctsd;}
 void CMidiPlayer::getCurrentKeySignature(int *ks){*ks=cks;}
+uint32_t CMidiPlayer::getFileNoteCount(){return midiFile->getNoteCount();}
 const char* CMidiPlayer::getTitle(){return midiFile->getTitle();}
 const char* CMidiPlayer::getCopyright(){return midiFile->getCopyright();}
 double CMidiPlayer::getTempo(){return 60./(ctempo/1e6)*ctsd/4.;}

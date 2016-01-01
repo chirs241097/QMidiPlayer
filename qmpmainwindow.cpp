@@ -17,6 +17,7 @@ qmpMainWindow::qmpMainWindow(QWidget *parent) :
 	chnlw=new qmpChannelsWindow(this);
 	efxw=new qmpEfxWindow(this);
 	infow=new qmpInfoWindow(this);
+	settingsw=new qmpSettingsWindow(this);
 	timer=new QTimer(this);ref=this;
 	fnA1=new QAction("File Information",ui->lbFileName);
 	ui->lbFileName->addAction(fnA1);
@@ -35,11 +36,14 @@ qmpMainWindow::~qmpMainWindow()
 void qmpMainWindow::closeEvent(QCloseEvent *event)
 {
 	on_pbStop_clicked();
-	efxw->close();chnlw->close();plistw->close();infow->close();
+	efxw->close();chnlw->close();
+	plistw->close();infow->close();
+	settingsw->close();
 	delete efxw;efxw=NULL;
 	delete chnlw;chnlw=NULL;
 	delete plistw;plistw=NULL;
 	delete infow;infow=NULL;
+	delete settingsw;settingsw=NULL;
 	event->accept();
 }
 
@@ -52,6 +56,7 @@ void qmpMainWindow::updateWidgets()
 			timer->stop();stopped=true;playing=false;
 			player->playerDeinit();playerTh->join();
 			delete playerTh;playerTh=NULL;
+			chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 			ui->pbPlayPause->setIcon(QIcon(":/img/play.png"));
 			ui->hsTimer->setValue(0);
 			ui->lbPolyphone->setText("Poly: 0/0");
@@ -62,6 +67,7 @@ void qmpMainWindow::updateWidgets()
 			timer->stop();player->playerDeinit();playerTh->join();
 			delete playerTh;playerTh=NULL;
 			ui->hsTimer->setValue(0);
+			chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 			QString fns=plistw->getNextItem();
 			ui->lbFileName->setText(QUrl(fns).fileName());
 			player->playerLoadFile(fns.toStdString().c_str());
@@ -164,6 +170,7 @@ void qmpMainWindow::on_pbStop_clicked()
 		timer->stop();stopped=true;playing=false;
 		player->playerDeinit();
 		if(playerTh){playerTh->join();delete playerTh;playerTh=NULL;}
+		chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 		ui->pbPlayPause->setIcon(QIcon(":/img/play.png"));
 		ui->hsTimer->setValue(0);
 		ui->lbPolyphone->setText("Poly: 0/0");
@@ -176,6 +183,7 @@ void qmpMainWindow::dialogClosed()
 	if(!plistw->isVisible())ui->pbPList->setChecked(false);
 	if(!chnlw->isVisible())ui->pbChannels->setChecked(false);
 	if(!efxw->isVisible())ui->pbEfx->setChecked(false);
+	if(!settingsw->isVisible())ui->pbSettings->setChecked(false);
 }
 
 void qmpMainWindow::on_pbPList_clicked()
@@ -192,7 +200,7 @@ void qmpMainWindow::on_pbPrev_clicked()
 {
 	timer->stop();player->playerDeinit();
 	if(playerTh){playerTh->join();delete playerTh;playerTh=NULL;}
-	ui->hsTimer->setValue(0);
+	ui->hsTimer->setValue(0);chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 	QString fns=plistw->getPrevItem();if(fns.length()==0)return on_pbStop_clicked();
 	ui->lbFileName->setText(QUrl(fns).fileName());
 	player->playerLoadFile(fns.toStdString().c_str());
@@ -209,7 +217,7 @@ void qmpMainWindow::on_pbNext_clicked()
 {
 	timer->stop();player->playerDeinit();
 	if(playerTh){playerTh->join();delete playerTh;playerTh=NULL;}
-	ui->hsTimer->setValue(0);
+	ui->hsTimer->setValue(0);chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 	QString fns=plistw->getNextItem();if(fns.length()==0)return on_pbStop_clicked();
 	ui->lbFileName->setText(QUrl(fns).fileName());
 	player->playerLoadFile(fns.toStdString().c_str());
@@ -229,6 +237,7 @@ void qmpMainWindow::selectionChanged()
 	timer->stop();player->playerDeinit();
 	if(playerTh){playerTh->join();delete playerTh;playerTh=NULL;}
 	ui->hsTimer->setValue(0);
+	chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 	QString fns=plistw->getSelectedItem();
 	ui->lbFileName->setText(QUrl(fns).fileName());
 	player->playerLoadFile(fns.toStdString().c_str());
@@ -243,7 +252,7 @@ void qmpMainWindow::selectionChanged()
 
 void qmpMainWindow::on_pbEfx_clicked()
 {
-	efxw->show();
+	if(ui->pbEfx->isChecked())efxw->show();else efxw->close();
 }
 
 void qmpMainWindow::on_lbFileName_customContextMenuRequested(const QPoint &pos)
@@ -256,4 +265,9 @@ void qmpMainWindow::on_lbFileName_customContextMenuRequested(const QPoint &pos)
 void qmpMainWindow::onfnA1()
 {
 	infow->show();
+}
+
+void qmpMainWindow::on_pbSettings_clicked()
+{
+	if(ui->pbSettings->isChecked())settingsw->show();else settingsw->close();
 }

@@ -13,6 +13,7 @@
 #include "qmpchannelswindow.hpp"
 #include "qmpefxwindow.hpp"
 #include "qmpinfowindow.hpp"
+#include "qmpsettingswindow.hpp"
 
 namespace Ui {
 	class qmpMainWindow;
@@ -44,7 +45,9 @@ class qmpMainWindow:public QMainWindow
 		void on_lbFileName_customContextMenuRequested(const QPoint &pos);
 		void onfnA1();
 
-	public slots:
+		void on_pbSettings_clicked();
+
+		public slots:
 		void dialogClosed();
 		void selectionChanged();
 
@@ -60,6 +63,7 @@ class qmpMainWindow:public QMainWindow
 		qmpChannelsWindow *chnlw;
 		qmpEfxWindow *efxw;
 		qmpInfoWindow *infow;
+		qmpSettingsWindow *settingsw;
 		QAction *fnA1,*fnA2;
 	public:
 		QString getFileName();
