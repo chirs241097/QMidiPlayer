@@ -11,14 +11,14 @@ qmpMainWindow::qmpMainWindow(QWidget *parent) :
 	ui(new Ui::qmpMainWindow)
 {
 	ui->setupUi(this);player=new CMidiPlayer();
-	ui->lbFileName->setText("");
+	ui->lbFileName->setText("");ref=this;
 	playing=false;stopped=true;dragging=false;
+	settingsw=new qmpSettingsWindow(this);
 	plistw=new qmpPlistWindow(this);
 	chnlw=new qmpChannelsWindow(this);
 	efxw=new qmpEfxWindow(this);
 	infow=new qmpInfoWindow(this);
-	settingsw=new qmpSettingsWindow(this);
-	timer=new QTimer(this);ref=this;
+	timer=new QTimer(this);
 	fnA1=new QAction("File Information",ui->lbFileName);
 	ui->lbFileName->addAction(fnA1);
 	connect(fnA1,SIGNAL(triggered()),this,SLOT(onfnA1()));
@@ -74,7 +74,10 @@ void qmpMainWindow::updateWidgets()
 			char ts[100];
 			sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
 			ui->lbFinTime->setText(ts);
-			player->playerInit();player->setGain(ui->vsMasterVol->value()/250.);
+			player->playerInit();playerSetup();player->fluidInitialize();
+			for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
+				player->pushSoundFont(settingsw->getSFWidget()->item(i)->text().toStdString().c_str());
+			player->setGain(ui->vsMasterVol->value()/250.);
 			playerTh=new std::thread(&CMidiPlayer::playerThread,player);
 			st=std::chrono::steady_clock::now();offset=0;
 			timer->start(100);
@@ -97,6 +100,19 @@ void qmpMainWindow::updateWidgets()
 
 QString qmpMainWindow::getFileName(){return ui->lbFileName->text();}
 
+void qmpMainWindow::playerSetup()
+{
+	fluid_settings_t* fsettings=player->getFluidSettings();
+	const QSettings* settings=qmpSettingsWindow::getSettingsIntf();
+	fluid_settings_setstr(fsettings,"audio.driver",settings->value("Audio/Driver","").toString().toStdString().c_str());
+	fluid_settings_setint(fsettings,"audio.period-size",settings->value("Audio/BufSize","").toInt());
+	fluid_settings_setint(fsettings,"audio.periods",settings->value("Audio/BufCnt","").toInt());
+	fluid_settings_setstr(fsettings,"audio.sample-format",settings->value("Audio/Format","").toString().toStdString().c_str());
+	fluid_settings_setint(fsettings,"synth.sample-rate",settings->value("Audio/Frequency","").toInt());
+	fluid_settings_setint(fsettings,"synth.polyphony",settings->value("Audio/Polyphony","").toInt());
+	fluid_settings_setint(fsettings,"synth.cpu-cores",settings->value("Audio/Threads","").toInt());
+}
+
 void qmpMainWindow::on_pbPlayPause_clicked()
 {
 	playing=!playing;
@@ -109,7 +125,10 @@ void qmpMainWindow::on_pbPlayPause_clicked()
 		char ts[100];
 		sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
 		ui->lbFinTime->setText(ts);
-		player->playerInit();player->setGain(ui->vsMasterVol->value()/250.);
+		player->playerInit();playerSetup();player->fluidInitialize();
+		for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
+			player->pushSoundFont(settingsw->getSFWidget()->item(i)->text().toStdString().c_str());
+		player->setGain(ui->vsMasterVol->value()/250.);
 		playerTh=new std::thread(&CMidiPlayer::playerThread,player);
 		st=std::chrono::steady_clock::now();offset=0;
 		timer->start(100);
@@ -207,7 +226,10 @@ void qmpMainWindow::on_pbPrev_clicked()
 	char ts[100];
 	sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
 	ui->lbFinTime->setText(ts);
-	player->playerInit();player->setGain(ui->vsMasterVol->value()/250.);
+	player->playerInit();playerSetup();player->fluidInitialize();
+	for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
+		player->pushSoundFont(settingsw->getSFWidget()->item(i)->text().toStdString().c_str());
+	player->setGain(ui->vsMasterVol->value()/250.);
 	playerTh=new std::thread(&CMidiPlayer::playerThread,player);
 	st=std::chrono::steady_clock::now();offset=0;
 	timer->start(100);
@@ -224,7 +246,10 @@ void qmpMainWindow::on_pbNext_clicked()
 	char ts[100];
 	sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
 	ui->lbFinTime->setText(ts);
-	player->playerInit();player->setGain(ui->vsMasterVol->value()/250.);
+	player->playerInit();playerSetup();player->fluidInitialize();
+	for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
+		player->pushSoundFont(settingsw->getSFWidget()->item(i)->text().toStdString().c_str());
+	player->setGain(ui->vsMasterVol->value()/250.);
 	playerTh=new std::thread(&CMidiPlayer::playerThread,player);
 	st=std::chrono::steady_clock::now();offset=0;
 	timer->start(100);
@@ -244,7 +269,10 @@ void qmpMainWindow::selectionChanged()
 	char ts[100];
 	sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
 	ui->lbFinTime->setText(ts);
-	player->playerInit();player->setGain(ui->vsMasterVol->value()/250.);
+	player->playerInit();playerSetup();player->fluidInitialize();
+	for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
+		player->pushSoundFont(settingsw->getSFWidget()->item(i)->text().toStdString().c_str());
+	player->setGain(ui->vsMasterVol->value()/250.);
 	playerTh=new std::thread(&CMidiPlayer::playerThread,player);
 	st=std::chrono::steady_clock::now();offset=0;
 	timer->start(100);

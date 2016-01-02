@@ -1,9 +1,12 @@
+#include <QTextCodec>
 #include "qmpinfowindow.hpp"
 #include "ui_qmpinfowindow.h"
 #include "qmpmainwindow.hpp"
+#include "qmpsettingswindow.hpp"
 
 const char* minors="abebbbf c g d a e b f#c#g#d#a#";
 const char* majors="CbGbDbAbEbBbF C G D A E B F#C#";
+const char* standards="?  GM GM2GS XG ";
 
 qmpInfoWindow::qmpInfoWindow(QWidget *parent) :
 	QDialog(parent),
@@ -21,10 +24,25 @@ void qmpInfoWindow::updateInfo()
 {
 	char str[256];
 	CMidiPlayer* player=qmpMainWindow::getInstance()->getPlayer();
+	const QSettings* settings=qmpSettingsWindow::getSettingsIntf();
 	ui->lbFileName->setText(QString("File name: ")+qmpMainWindow::getInstance()->getFileName());
-	if(player->getTitle())ui->lbTitle->setText(QString("Title: ")+player->getTitle());
+	if(player->getTitle())
+	{
+		if(settings->value("Midi/TextEncoding","").toString()!="Unicode")
+		ui->lbTitle->setText(QString("Title: ")+
+		QTextCodec::codecForName(settings->value("Midi/TextEncoding","").toString().toStdString().c_str())->toUnicode(player->getTitle()));
+		else
+		ui->lbTitle->setText(QString("Title: ")+player->getTitle());
+	}
 	else ui->lbTitle->setText(QString("Title: "));
-	if(player->getCopyright())ui->lbCopyright->setText(QString("Copyright: ")+player->getCopyright());
+	if(player->getCopyright())
+	{
+		if(settings->value("Midi/TextEncoding","").toString()!="Unicode")
+		ui->lbCopyright->setText(QString("Copyright: ")+
+		QTextCodec::codecForName(settings->value("Midi/TextEncoding","").toString().toStdString().c_str())->toUnicode(player->getCopyright()));
+		else
+		ui->lbCopyright->setText(QString("Copyright: ")+player->getCopyright());
+	}
 	else ui->lbCopyright->setText(QString("Copyright: "));
 	ui->lbTempo->setText(QString("Tempo: ")+QString::number(player->getTempo(),'g',5));
 	int t,r;player->getCurrentKeySignature(&t);r=(int8_t)((t>>8)&0xFF)+7;
@@ -34,4 +52,6 @@ void qmpInfoWindow::updateInfo()
 	ui->lbTimeSig->setText(str);
 	sprintf(str,"Note count: %u",player->getFileNoteCount());
 	ui->lbNoteCount->setText(str);
+	strncpy(str,standards+player->getFileStandard()*3,3);str[3]='\0';
+	ui->lbFileStandard->setText(QString("File standard: ")+str);
 }

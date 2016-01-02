@@ -44,10 +44,9 @@ class qmpMainWindow:public QMainWindow
 		void on_pbEfx_clicked();
 		void on_lbFileName_customContextMenuRequested(const QPoint &pos);
 		void onfnA1();
-
 		void on_pbSettings_clicked();
 
-		public slots:
+	public slots:
 		void dialogClosed();
 		void selectionChanged();
 
@@ -65,6 +64,7 @@ class qmpMainWindow:public QMainWindow
 		qmpInfoWindow *infow;
 		qmpSettingsWindow *settingsw;
 		QAction *fnA1,*fnA2;
+		void playerSetup();
 	public:
 		QString getFileName();
 

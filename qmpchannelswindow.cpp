@@ -22,7 +22,7 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent) :
 		ui->twChannels->setCellWidget(i,2,new QComboBox());
 		QComboBox *cb=(QComboBox*)ui->twChannels->cellWidget(i,2);
 		//stub
-		cb->addItem("Internal fluidsynth");
+		cb->addItem("Internal FluidSynth");
 		ui->twChannels->setCellWidget(i,3,new QDCLabel(""));
 		((QDCLabel*)ui->twChannels->cellWidget(i,3))->setID(i);
 		connect(ui->twChannels->cellWidget(i,3),SIGNAL(onDoubleClick(int)),this,SLOT(showPresetWindow(int)));

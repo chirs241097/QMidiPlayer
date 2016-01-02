@@ -3,23 +3,21 @@
 #include <thread>
 #include <fluidsynth.h>
 #include "qmpmidiplay.hpp"
-void CMidiPlayer::fluidInitialize(const char* sf)
+void CMidiPlayer::fluidInitialize()
 {
-	settings=new_fluid_settings();
-	fluid_settings_setstr(settings,"audio.driver","pulseaudio");
-	fluid_settings_setint(settings,"synth.cpu-cores",4);
-	fluid_settings_setint(settings,"synth.polyphony",2048);
 	synth=new_fluid_synth(settings);
 	adriver=new_fluid_audio_driver(settings,synth);
-	fluid_synth_sfload(synth,sf,1);
+	fluid_synth_set_chorus(synth,FLUID_CHORUS_DEFAULT_N,FLUID_CHORUS_DEFAULT_LEVEL,
+						   FLUID_CHORUS_DEFAULT_SPEED,FLUID_CHORUS_DEFAULT_DEPTH,
+						   FLUID_CHORUS_DEFAULT_TYPE);
 }
 void CMidiPlayer::fluidDeinitialize()
 {
 	if(!synth||!adriver||!settings)return;
+	delete_fluid_settings(settings);
 	delete_fluid_audio_driver(adriver);
 	delete_fluid_synth(synth);
-	delete_fluid_settings(settings);
-	synth=NULL;settings=NULL;adriver=NULL;
+	settings=NULL;synth=NULL;adriver=NULL;
 }
 void CMidiPlayer::processEvent(const SEvent *e)
 {
@@ -63,6 +61,11 @@ void CMidiPlayer::processEvent(const SEvent *e)
 						if(e->str)puts(e->str);
 					break;
 				}
+			}
+			if((e->type&0x0F)==0x00||(e->type&0x0F)==07)
+			{
+				int io=0;
+				fluid_synth_sysex(synth,e->str,e->p1,NULL,&io,NULL,0);
 			}
 		break;
 	}
@@ -164,6 +167,10 @@ CMidiPlayer::CMidiPlayer()
 	midiFile=NULL;resumed=false;
 	settings=NULL;synth=NULL;adriver=NULL;
 }
+CMidiPlayer::~CMidiPlayer()
+{
+
+}
 void CMidiPlayer::playerPanic()
 {
 	for(int i=0;i<16;++i)fluid_synth_all_notes_off(synth,i);
@@ -180,10 +187,7 @@ void CMidiPlayer::playerInit()
 {
 	ctempo=0x7A120;ctsn=4;ctsd=4;cks=0;dpt=ctempo*1000/divs;
 	tceptr=0;tcstop=0;tcpaused=0;finished=0;mute=solo=0;
-	fluidInitialize("/media/Files/FluidR3_Ext.sf2");
-	fluid_synth_set_chorus(synth,FLUID_CHORUS_DEFAULT_N,FLUID_CHORUS_DEFAULT_LEVEL,
-						   FLUID_CHORUS_DEFAULT_SPEED,FLUID_CHORUS_DEFAULT_DEPTH,
-						   FLUID_CHORUS_DEFAULT_TYPE);
+	settings=new_fluid_settings();
 }
 void CMidiPlayer::playerDeinit()
 {
@@ -211,6 +215,7 @@ double CMidiPlayer::getFtime(){return ftime;}
 void CMidiPlayer::getCurrentTimeSignature(int *n,int *d){*n=ctsn;*d=ctsd;}
 void CMidiPlayer::getCurrentKeySignature(int *ks){*ks=cks;}
 uint32_t CMidiPlayer::getFileNoteCount(){return midiFile->getNoteCount();}
+uint32_t CMidiPlayer::getFileStandard(){return midiFile->getStandard();}
 const char* CMidiPlayer::getTitle(){return midiFile->getTitle();}
 const char* CMidiPlayer::getCopyright(){return midiFile->getCopyright();}
 double CMidiPlayer::getTempo(){return 60./(ctempo/1e6)*ctsd/4.;}
@@ -277,6 +282,9 @@ void CMidiPlayer::setChorusPara(int e,int fb,double l,double r,double d,int type
 	fluid_synth_set_chorus_on(synth,e);
 	fluid_synth_set_chorus(synth,fb,l,r,d,type);
 }
+fluid_settings_t* CMidiPlayer::getFluidSettings(){return settings;}
+void CMidiPlayer::pushSoundFont(const char *sf)
+{fluid_synth_sfload(synth,sf,1);}
 int CMidiPlayer::getSFCount()
 {return synth?fluid_synth_sfcount(synth):0;}
 fluid_sfont_t* CMidiPlayer::getSFPtr(int sfid)

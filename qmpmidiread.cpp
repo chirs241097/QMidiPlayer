@@ -8,6 +8,10 @@
 #include <cstdarg>
 #include <algorithm>
 #include "qmpmidiplay.hpp"
+const char* GM1SysX={"\xF0\x7E\x7F\x09\x01\xF7"};
+const char* GM2SysX={"\xF0\x7E\x7F\x09\x03\xF7"};
+const char* GSSysEx={"\xF0\x41\x10\x42\x12\x40\x00\x7F\x00\x41\xF7"};
+const char* XGSysEx={"\xF0\x43\x10\x4C\x00\x00\x7E\x00\xF7"};
 bool cmp(SEvent *a,SEvent *b){return a->time-b->time?a->time<b->time:a->iid<b->iid;}
 void CMidiFile::error(int fatal,const char* format,...)
 {
@@ -147,8 +151,19 @@ retry:
 			}
 			else if((type&0x0F)==0x00||(type&0x0F)==0x07)//SysEx
 			{
-				uint32_t len=readVL();
-				while(len--){++byteread;fgetc(f);}
+				uint32_t len=readVL(),c;char* str=NULL;
+				str=new char[len+8];
+				if((type&0x0F)==0x00)
+				{
+					str[0]=0xF0;++len;
+					for(c=1;c<len;++c){++byteread;str[c]=fgetc(f);}
+				}
+				else for(c=0;c<len;++c){++byteread;str[c]=fgetc(f);}
+				eventList[eventc++]=new SEvent(curid,curt,type,len,0,str);
+				if(!strcmp(str,GM1SysX))std=1;
+				if(!strcmp(str,GM2SysX))std=2;
+				if(!strcmp(str,GSSysEx))std=3;
+				if(!strcmp(str,XGSysEx))std=4;
 			}
 			else error(0,"W: Unknown event type %#x",type);
 		break;
@@ -200,7 +215,7 @@ CMidiFile::CMidiFile(const char* fn)
 {
 	if(title)delete[] title;
 	if(copyright)delete[] copyright;
-	title=copyright=NULL;notes=0;
+	title=copyright=NULL;notes=0;std=0;
 	if(!(f=fopen(fn,"rb")))exit((printf("E: file %s doesn't exist!\n",fn),2));
 	chunkReader(1);
 	for(uint32_t i=0;i<trk;i+=chunkReader(0));
@@ -217,5 +232,6 @@ const SEvent* CMidiFile::getEvent(uint32_t id){return id<eventc?eventList[id]:NU
 uint32_t CMidiFile::getEventCount(){return eventc;}
 uint32_t CMidiFile::getDivision(){return divs;}
 uint32_t CMidiFile::getNoteCount(){return notes;}
+uint32_t CMidiFile::getStandard(){return std;}
 const char* CMidiFile::getTitle(){return title;}
 const char* CMidiFile::getCopyright(){return copyright;}

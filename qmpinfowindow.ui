@@ -7,13 +7,13 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>135</height>
+    <height>142</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
     <width>400</width>
-    <height>135</height>
+    <height>142</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -67,11 +67,22 @@
     </widget>
    </item>
    <item>
-    <widget class="QLabel" name="lbNoteCount">
-     <property name="text">
-      <string>Note count: </string>
-     </property>
-    </widget>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QLabel" name="lbNoteCount">
+       <property name="text">
+        <string>Note count: </string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="lbFileStandard">
+       <property name="text">
+        <string>File standard: </string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>

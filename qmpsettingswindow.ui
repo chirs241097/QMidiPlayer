@@ -6,14 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>439</width>
-    <height>407</height>
+    <width>494</width>
+    <height>445</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>439</width>
-    <height>407</height>
+    <width>494</width>
+    <height>445</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -45,7 +45,13 @@
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QComboBox" name="cbOutputDevice"/>
+        <widget class="QComboBox" name="cbOutputDevice">
+         <item>
+          <property name="text">
+           <string>Internal FluidSynth</string>
+          </property>
+         </item>
+        </widget>
        </item>
        <item row="2" column="0">
         <widget class="QCheckBox" name="cbSendSysx">
@@ -146,6 +152,49 @@
          <property name="editable">
           <bool>true</bool>
          </property>
+         <property name="currentIndex">
+          <number>1</number>
+         </property>
+         <item>
+          <property name="text">
+           <string>64</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>128</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>256</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>512</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>1024</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>2048</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>4096</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>8192</string>
+          </property>
+         </item>
         </widget>
        </item>
        <item row="4" column="0">
@@ -160,6 +209,36 @@
          <property name="editable">
           <bool>true</bool>
          </property>
+         <item>
+          <property name="text">
+           <string>2</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>4</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>8</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>16</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>32</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>64</string>
+          </property>
+         </item>
         </widget>
        </item>
        <item row="0" column="0">
@@ -170,7 +249,48 @@
         </widget>
        </item>
        <item row="3" column="1">
-        <widget class="QComboBox" name="cbFormat"/>
+        <widget class="QComboBox" name="cbFormat">
+         <item>
+          <property name="text">
+           <string>16bits</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>float</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QComboBox" name="cbAudioDrv"/>
+       </item>
+       <item row="4" column="1">
+        <widget class="QComboBox" name="cbFrequency">
+         <property name="currentIndex">
+          <number>2</number>
+         </property>
+         <item>
+          <property name="text">
+           <string>22050</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>44100</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>48000</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>96000</string>
+          </property>
+         </item>
+        </widget>
        </item>
        <item row="3" column="0">
         <widget class="QLabel" name="lbFormat">
@@ -178,12 +298,6 @@
           <string>Audio Format</string>
          </property>
         </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QComboBox" name="cbAudioDrv"/>
-       </item>
-       <item row="4" column="1">
-        <widget class="QComboBox" name="cbFrequency"/>
        </item>
        <item row="5" column="1">
         <widget class="QSpinBox" name="sbPolyphony">
@@ -205,22 +319,63 @@
          </property>
         </widget>
        </item>
-       <item row="6" column="0">
+       <item row="7" column="0">
         <widget class="QCheckBox" name="cbAutoBS">
          <property name="text">
           <string>Auto bank select mode</string>
          </property>
         </widget>
        </item>
-       <item row="7" column="0">
+       <item row="8" column="0">
         <widget class="QLabel" name="lbBSMode">
          <property name="text">
           <string>Bank select mode</string>
          </property>
         </widget>
        </item>
-       <item row="7" column="1">
-        <widget class="QComboBox" name="cbBSMode"/>
+       <item row="8" column="1">
+        <widget class="QComboBox" name="cbBSMode">
+         <property name="currentIndex">
+          <number>1</number>
+         </property>
+         <item>
+          <property name="text">
+           <string>Ignored</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>CC#0</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>CC#32</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>CC#0*128+CC#32</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="6" column="0">
+        <widget class="QLabel" name="lbCPUCores">
+         <property name="text">
+          <string>CPU Cores</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="1">
+        <widget class="QSpinBox" name="sbCPUCores">
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>256</number>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
@@ -230,7 +385,11 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <widget class="QListWidget" name="lwSoundfont"/>
+        <widget class="QListWidget" name="lwSoundfont">
+         <property name="dragDropMode">
+          <enum>QAbstractItemView::DragDrop</enum>
+         </property>
+        </widget>
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout">
@@ -312,28 +471,28 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
-        <widget class="QCheckBox" name="checkBox">
+        <widget class="QCheckBox" name="cbRestorePlaylist">
          <property name="text">
           <string>Restore last playlist on startup</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="checkBox_2">
+        <widget class="QCheckBox" name="cbLoadFolder">
          <property name="text">
           <string>Load files in the same folder</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="checkBox_3">
+        <widget class="QCheckBox" name="cbDialogStatus">
          <property name="text">
           <string>Save dialog status</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="checkBox_4">
+        <widget class="QCheckBox" name="cbSaveEfxParam">
          <property name="text">
           <string>Save parameters in effects window</string>
          </property>
@@ -342,21 +501,21 @@
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_2">
          <item>
-          <widget class="QLabel" name="label">
+          <widget class="QLabel" name="lbVisualMode">
            <property name="text">
             <string>Visualization Mode</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QComboBox" name="comboBox"/>
+          <widget class="QComboBox" name="cbVisualMode"/>
          </item>
         </layout>
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <item>
-          <widget class="QLabel" name="label_2">
+          <widget class="QLabel" name="lbViewDist">
            <property name="text">
             <string>View distance</string>
            </property>
@@ -379,7 +538,7 @@
           </spacer>
          </item>
          <item>
-          <widget class="QSlider" name="horizontalSlider">
+          <widget class="QSlider" name="hsViewDist">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
              <horstretch>60</horstretch>
@@ -392,14 +551,14 @@
           </widget>
          </item>
          <item>
-          <widget class="QSpinBox" name="spinBox"/>
+          <widget class="QSpinBox" name="sbViewDist"/>
          </item>
         </layout>
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_4">
          <item>
-          <widget class="QLabel" name="label_3">
+          <widget class="QLabel" name="lbNoteStretch">
            <property name="text">
             <string>Note stretch</string>
            </property>
@@ -422,7 +581,7 @@
           </spacer>
          </item>
          <item>
-          <widget class="QSlider" name="horizontalSlider_2">
+          <widget class="QSlider" name="hsNoteStretch">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
              <horstretch>60</horstretch>
@@ -435,14 +594,14 @@
           </widget>
          </item>
          <item>
-          <widget class="QSpinBox" name="spinBox_2"/>
+          <widget class="QSpinBox" name="sbNoteStretch"/>
          </item>
         </layout>
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_5">
          <item>
-          <widget class="QLabel" name="label_4">
+          <widget class="QLabel" name="lbFog">
            <property name="text">
             <string>Fog Start</string>
            </property>
@@ -465,7 +624,7 @@
           </spacer>
          </item>
          <item>
-          <widget class="QSlider" name="horizontalSlider_3">
+          <widget class="QSlider" name="hsFog">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
              <horstretch>60</horstretch>
@@ -478,7 +637,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QSpinBox" name="spinBox_3"/>
+          <widget class="QSpinBox" name="sbFog"/>
          </item>
         </layout>
        </item>

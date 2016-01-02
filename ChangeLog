@@ -1,3 +1,8 @@
+2016-01-02 0.5.1
+Now sends SysEx(optional).
+Primitive settings implementation(some of the audio tab and the
+soundfont tab).
+
 2016-01-01 0.5.0
 Bug fixes. Minor code refactoring.
 Initial stubs for the settings window.

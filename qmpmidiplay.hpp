@@ -23,7 +23,7 @@ class CMidiFile
 	private:
 		SEvent *eventList[10000000];
 		char *title,*copyright;
-		uint32_t eventc;
+		uint32_t eventc,std;//standard 0=? 1=GM 2=GM2 3=GS 4=XG
 		uint32_t fmt,trk,divs;
 		FILE *f;
 		int byteread;
@@ -44,6 +44,7 @@ class CMidiFile
 		uint32_t getEventCount();
 		uint32_t getDivision();
 		uint32_t getNoteCount();
+		uint32_t getStandard();
 		const char* getTitle();
 		const char* getCopyright();
 };
@@ -65,7 +66,6 @@ class CMidiPlayer
 		uint32_t finished,resumed;
 
 		void setBit(uint16_t &n,uint16_t bn,uint16_t b);
-		void fluidInitialize(const char* sf);
 		void fluidDeinitialize();
 		void processEvent(const SEvent *e);
 		void processEventStub(const SEvent *e);
@@ -74,8 +74,10 @@ class CMidiPlayer
 		void fileTimer2Pass();
 	public:
 		CMidiPlayer();
+		~CMidiPlayer();
 		void playerLoadFile(const char* fn);
 		void playerInit();
+		void fluidInitialize();
 		void playerDeinit();
 		void playerThread();
 		void playerPanic();
@@ -93,6 +95,7 @@ class CMidiPlayer
 		void getCurrentTimeSignature(int *n,int *d);
 		void getCurrentKeySignature(int *ks);
 		uint32_t getFileNoteCount();
+		uint32_t getFileStandard();
 		double getTempo();
 		const char* getTitle();
 		const char* getCopyright();
@@ -113,7 +116,8 @@ class CMidiPlayer
 		void getChorusPara(int *fb,double *l,double *r,double *d,int *type);
 		void setChorusPara(int e,int fb,double l,double r,double d,int type);
 
-		//void pushSoundFont(const char* url);
+		fluid_settings_t* getFluidSettings();
+		void pushSoundFont(const char* sf);
 		int getSFCount();
 		fluid_sfont_t* getSFPtr(int sfid);
 };
