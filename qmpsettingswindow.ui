@@ -387,7 +387,7 @@
        <item>
         <widget class="QListWidget" name="lwSoundfont">
          <property name="dragDropMode">
-          <enum>QAbstractItemView::DragDrop</enum>
+          <enum>QAbstractItemView::InternalMove</enum>
          </property>
         </widget>
        </item>

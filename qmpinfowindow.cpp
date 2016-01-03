@@ -24,7 +24,7 @@ void qmpInfoWindow::updateInfo()
 {
 	char str[256];
 	CMidiPlayer* player=qmpMainWindow::getInstance()->getPlayer();
-	const QSettings* settings=qmpSettingsWindow::getSettingsIntf();
+	QSettings* settings=qmpSettingsWindow::getSettingsIntf();
 	ui->lbFileName->setText(QString("File name: ")+qmpMainWindow::getInstance()->getFileName());
 	if(player->getTitle())
 	{

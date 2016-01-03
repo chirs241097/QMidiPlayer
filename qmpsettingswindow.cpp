@@ -23,7 +23,6 @@ qmpSettingsWindow::qmpSettingsWindow(QWidget *parent) :
 
 qmpSettingsWindow::~qmpSettingsWindow()
 {
-	settings->sync();
 	delete settings;
 	delete ui;
 }
@@ -31,6 +30,7 @@ qmpSettingsWindow::~qmpSettingsWindow()
 void qmpSettingsWindow::closeEvent(QCloseEvent *event)
 {
 	setVisible(false);
+	settings->sync();
 	emit dialogClosing();
 	event->accept();
 }
@@ -189,8 +189,33 @@ void qmpSettingsWindow::settingsUpdate()
 	settings->setValue("Behavior/LoadFolder",ui->cbLoadFolder->isChecked()?1:0);
 
 	settings->setValue("Behavior/DialogStatus",ui->cbDialogStatus->isChecked()?1:0);
+	if(!ui->cbDialogStatus->isChecked())
+	{
+		settings->remove("DialogStatus/MainW");
+		settings->remove("DialogStatus/PListW");
+		settings->remove("DialogStatus/PListWShown");
+		settings->remove("DialogStatus/ChnlW");
+		settings->remove("DialogStatus/ChnlWShown");
+		settings->remove("DialogStatus/EfxW");
+		settings->remove("DialogStatus/EfxWShown");
+	}
 
 	settings->setValue("Behavior/SaveEfxParam",ui->cbSaveEfxParam->isChecked()?1:0);
+	if(!ui->cbSaveEfxParam->isChecked())
+	{
+		settings->remove("Effects/ChorusEnabled");
+		settings->remove("Effects/ReverbEnabled");
+		settings->remove("Effects/ReverbRoom");
+		settings->remove("Effects/ReverbDamp");
+		settings->remove("Effects/ReverbWidth");
+		settings->remove("Effects/ReverbLevel");
+
+		settings->remove("Effects/ChorusFeedbk");
+		settings->remove("Effects/ChorusLevel");
+		settings->remove("Effects/ChorusRate");
+		settings->remove("Effects/ChorusDepth");
+		settings->remove("Effects/ChorusType");
+	}
 
 	settings->sync();
 }

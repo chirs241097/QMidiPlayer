@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QTimer>
 #include <QCloseEvent>
+#include <QMoveEvent>
 #include <QAction>
 #include <QMenu>
 #include <thread>
@@ -26,9 +27,11 @@ class qmpMainWindow:public QMainWindow
 	public:
 		explicit qmpMainWindow(QWidget *parent = 0);
 		void closeEvent(QCloseEvent *event);
+		void moveEvent(QMoveEvent *event);
 		~qmpMainWindow();
 		CMidiPlayer* getPlayer(){return player;}
 		QTimer* getTimer(){return timer;}
+		bool isFinalizing(){return fin;}
 
 	private slots:
 		void on_pbPlayPause_clicked();
@@ -43,8 +46,9 @@ class qmpMainWindow:public QMainWindow
 		void on_pbChannels_clicked();
 		void on_pbEfx_clicked();
 		void on_lbFileName_customContextMenuRequested(const QPoint &pos);
-		void onfnA1();
 		void on_pbSettings_clicked();
+		void onfnA1();
+		void onfnA2();
 
 	public slots:
 		void dialogClosed();
@@ -53,8 +57,9 @@ class qmpMainWindow:public QMainWindow
 	private:
 		Ui::qmpMainWindow *ui;
 		QTimer *timer;
-		bool playing,stopped,dragging;
+		bool playing,stopped,dragging,fin;
 		std::thread *playerTh=NULL;
+		std::thread *renderTh=NULL;
 		std::chrono::steady_clock::time_point st;
 		double offset;
 		CMidiPlayer *player;

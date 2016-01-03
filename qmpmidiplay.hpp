@@ -56,9 +56,11 @@ class CMidiPlayer
 		uint32_t ccstamps[101][16][132],ccc[16][132];//0..127:cc 128:pc 129:cp 130:pb 131:tempo
 		uint16_t mute,solo;
 		double ftime;
+		bool sendSysEx;
 		fluid_settings_t* settings;
 		fluid_synth_t* synth;
 		fluid_audio_driver_t* adriver;
+		fluid_player_t* player;
 		uint32_t ctempo,ctsn,ctsd,dpt,divs,cks;
 		//raw tempo, timesig num., timesig den., delay per tick, division, keysig
 		//thread control
@@ -82,6 +84,11 @@ class CMidiPlayer
 		void playerThread();
 		void playerPanic();
 
+		void rendererLoadFile(const char* ofn);
+		void rendererInit(const char *fn);
+		void rendererThread();
+		void rendererDeinit();
+
 		//playing control methods
 		uint32_t getStamp(int id);
 		uint32_t getTCeptr();
@@ -101,6 +108,7 @@ class CMidiPlayer
 		const char* getCopyright();
 
 		void setGain(double gain);
+		void sendSysX(bool send);
 		int getPolyphone();
 		int getMaxPolyphone();
 		void setMaxPolyphone(int p);

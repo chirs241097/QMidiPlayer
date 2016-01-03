@@ -65,7 +65,7 @@ void CMidiPlayer::processEvent(const SEvent *e)
 			if((e->type&0x0F)==0x00||(e->type&0x0F)==07)
 			{
 				int io=0;
-				fluid_synth_sysex(synth,e->str,e->p1,NULL,&io,NULL,0);
+				if(sendSysEx)fluid_synth_sysex(synth,e->str,e->p1,NULL,&io,NULL,0);
 			}
 		break;
 	}
@@ -105,12 +105,13 @@ void CMidiPlayer::playEvents()
 	for(uint32_t ct=midiFile->getEvent(0)->time;tceptr<midiFile->getEventCount();)
 	{
 		while(tcpaused)std::this_thread::sleep_for(std::chrono::milliseconds(100));
-		while(!tcstop&&tceptr<midiFile->getEventCount()&&ct==midiFile->getEvent(tceptr)->time)
+		while(!tcstop&&midiFile&&tceptr<midiFile->getEventCount()&&ct==midiFile->getEvent(tceptr)->time)
 			processEvent(midiFile->getEvent(tceptr++));
-		if(tcstop||tceptr>=midiFile->getEventCount())break;
+		if(tcstop||!midiFile||tceptr>=midiFile->getEventCount())break;
 		if(resumed)resumed=false;
 		else
 		std::this_thread::sleep_for(std::chrono::nanoseconds(midiFile->getEvent(tceptr)->time-ct)*dpt);
+		if(tcstop||!midiFile)break;
 		ct=midiFile->getEvent(tceptr)->time;
 	}
 	while(!tcstop&&synth&&fluid_synth_get_active_voice_count(synth)>0)std::this_thread::sleep_for(std::chrono::microseconds(100));
@@ -167,10 +168,7 @@ CMidiPlayer::CMidiPlayer()
 	midiFile=NULL;resumed=false;
 	settings=NULL;synth=NULL;adriver=NULL;
 }
-CMidiPlayer::~CMidiPlayer()
-{
-
-}
+CMidiPlayer::~CMidiPlayer(){}
 void CMidiPlayer::playerPanic()
 {
 	for(int i=0;i<16;++i)fluid_synth_all_notes_off(synth,i);
@@ -187,17 +185,50 @@ void CMidiPlayer::playerInit()
 {
 	ctempo=0x7A120;ctsn=4;ctsd=4;cks=0;dpt=ctempo*1000/divs;
 	tceptr=0;tcstop=0;tcpaused=0;finished=0;mute=solo=0;
-	settings=new_fluid_settings();
+	sendSysEx=true;settings=new_fluid_settings();
 }
 void CMidiPlayer::playerDeinit()
 {
 	tceptr=0;tcstop=1;tcpaused=0;
+	//std::this_thread::sleep_for(std::chrono::milliseconds(100));
+	delete midiFile;midiFile=NULL;
 	fluidDeinitialize();
 }
 void CMidiPlayer::playerThread()
 {
 	playEvents();
 }
+
+void CMidiPlayer::rendererLoadFile(const char* ofn)
+{
+	settings=new_fluid_settings();
+	fluid_settings_setstr(settings,"audio.file.name",ofn);
+}
+void CMidiPlayer::rendererInit(const char* fn)
+{
+	finished=0;
+	synth=new_fluid_synth(settings);
+	player=new_fluid_player(synth);
+	fluid_player_add(player,fn);
+}
+void CMidiPlayer::rendererThread()
+{
+	fluid_file_renderer_t* renderer=new_fluid_file_renderer(synth);
+	fluid_player_play(player);
+	while(fluid_player_get_status(player)==FLUID_PLAYER_PLAYING)
+		if(fluid_file_renderer_process_block(renderer)!=FLUID_OK)break;
+	delete_fluid_file_renderer(renderer);
+	finished=1;
+}
+void CMidiPlayer::rendererDeinit()
+{
+	delete_fluid_player(player);
+	delete_fluid_synth(synth);
+	delete_fluid_settings(settings);
+	player=NULL;synth=NULL;settings=NULL;
+}
+
+void CMidiPlayer::sendSysX(bool send){sendSysEx=send;}
 uint32_t CMidiPlayer::getStamp(int id){return stamps[id];}
 uint32_t CMidiPlayer::getTCeptr(){return tceptr;}
 void CMidiPlayer::setTCeptr(uint32_t ep,uint32_t st)
@@ -230,7 +261,7 @@ void CMidiPlayer::setMaxPolyphone(int p){if(synth)fluid_synth_set_polyphony(synt
 
 void CMidiPlayer::getChannelPreset(int ch,int *b,int *p,char *name)
 {
-	if(!synth)return;
+	if(!synth)return(void)(b=0,p=0,strcpy(name,""));
 	fluid_synth_channel_info_t info;
 	fluid_synth_get_channel_info(synth,ch,&info);
 	*b=info.bank;*p=info.program;

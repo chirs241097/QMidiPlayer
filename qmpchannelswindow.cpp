@@ -37,11 +37,32 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent) :
 	ui->twChannels->setColumnWidth(4,32);
 }
 
+void qmpChannelsWindow::showEvent(QShowEvent *event)
+{
+	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
+	{
+		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/ChnlWShown",1);
+	}
+	event->accept();
+}
+
 void qmpChannelsWindow::closeEvent(QCloseEvent *event)
 {
 	setVisible(false);
+	if(!qmpMainWindow::getInstance()->isFinalizing()&&qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
+	{
+		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/ChnlWShown",0);
+	}
 	emit dialogClosing();
 	event->accept();
+}
+
+void qmpChannelsWindow::moveEvent(QMoveEvent *event)
+{
+	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
+	{
+		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/ChnlW",event->pos());
+	}
 }
 
 void qmpChannelsWindow::channelWindowsUpdate()

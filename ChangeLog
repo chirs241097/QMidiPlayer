@@ -1,3 +1,9 @@
+2016-01-03 0.6.0 alpha
+Implemented most of the options.
+"Render to Wave" is now implemented.
+Finished saving & loading playlists.
+Fixed several leakage and bugs.
+
 2016-01-02 0.5.1
 Now sends SysEx(optional).
 Primitive settings implementation(some of the audio tab and the

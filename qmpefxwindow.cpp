@@ -10,8 +10,19 @@ qmpEfxWindow::qmpEfxWindow(QWidget *parent) :
 	ui->setupUi(this);initialized=false;
 	connect(this,SIGNAL(dialogClosing()),parent,SLOT(dialogClosed()));
 	//stub. read these from settings after the setting module is implemented
-	ui->cbEnabledC->setChecked(true);
-	ui->cbEnabledR->setChecked(true);
+	QSettings *settings=qmpSettingsWindow::getSettingsIntf();
+	ui->cbEnabledC->setChecked(settings->value("Effects/ChorusEnabled",1).toInt());
+	ui->cbEnabledR->setChecked(settings->value("Effects/ReverbEnabled",1).toInt());
+	rr=settings->value("Effects/ReverbRoom",FLUID_REVERB_DEFAULT_ROOMSIZE).toDouble();
+	rd=settings->value("Effects/ReverbDamp",FLUID_REVERB_DEFAULT_DAMP).toDouble();
+	rw=settings->value("Effects/ReverbWidth",FLUID_REVERB_DEFAULT_WIDTH).toDouble();
+	rl=settings->value("Effects/ReverbLevel",FLUID_REVERB_DEFAULT_LEVEL).toDouble();
+
+	cfb=settings->value("Effects/ChorusFeedbk",FLUID_CHORUS_DEFAULT_N).toInt();
+	cl=settings->value("Effects/ChorusLevel",FLUID_CHORUS_DEFAULT_LEVEL).toDouble();
+	cr=settings->value("Effects/ChorusRate",FLUID_CHORUS_DEFAULT_SPEED).toDouble();
+	cd=settings->value("Effects/ChorusDepth",FLUID_CHORUS_DEFAULT_DEPTH).toDouble();
+	ct=settings->value("Effects/ChorusType",FLUID_CHORUS_DEFAULT_TYPE).toInt();
 }
 
 qmpEfxWindow::~qmpEfxWindow()
@@ -22,17 +33,25 @@ qmpEfxWindow::~qmpEfxWindow()
 void qmpEfxWindow::closeEvent(QCloseEvent *event)
 {
 	setVisible(false);
+	if(!qmpMainWindow::getInstance()->isFinalizing()&&qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
+	{
+		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/EfxWShown",0);
+	}
 	emit dialogClosing();
 	event->accept();
 }
 
 void qmpEfxWindow::showEvent(QShowEvent *event)
 {
-	CMidiPlayer* player=qmpMainWindow::getInstance()->getPlayer();
-	player->getReverbPara(&rr,&rd,&rw,&rl);
-	player->getChorusPara(&cfb,&cl,&cr,&cd,&ct);
+	//CMidiPlayer* player=qmpMainWindow::getInstance()->getPlayer();
+	//These parameters will never be modified outside this window...
+	/*if(initialized)
+	{
+		player->getReverbPara(&rr,&rd,&rw,&rl);
+		player->getChorusPara(&cfb,&cl,&cr,&cd,&ct);
+	}*/
 	ui->sbRoom->setValue((int)round(rr*100));ui->dRoom->setValue((int)round(rr*100));
-	ui->sbDamp->setValue((int)round(rd*100));ui->dRoom->setValue((int)round(rd*100));
+	ui->sbDamp->setValue((int)round(rd*100));ui->dDamp->setValue((int)round(rd*100));
 	ui->sbWidth->setValue((int)round(rw*100));ui->dWidth->setValue((int)round(rw*100));
 	ui->sbLevelR->setValue((int)round(rl*100));ui->dLevelR->setValue((int)round(rl*100));
 
@@ -42,7 +61,20 @@ void qmpEfxWindow::showEvent(QShowEvent *event)
 	ui->sbLevelC->setValue((int)round(cl*100));ui->dLevelC->setValue((int)round(cl*100));
 	if(ct==FLUID_CHORUS_MOD_SINE)ui->rbSine->setChecked(true),ui->rbTriangle->setChecked(false);
 	if(ct==FLUID_CHORUS_MOD_TRIANGLE)ui->rbSine->setChecked(false),ui->rbTriangle->setChecked(true);
-	initialized=true;event->accept();
+	initialized=true;
+	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
+	{
+		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/EfxWShown",1);
+	}
+	event->accept();
+}
+
+void qmpEfxWindow::moveEvent(QMoveEvent *event)
+{
+	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
+	{
+		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/EfxW",event->pos());
+	}
 }
 
 void qmpEfxWindow::sendEfxChange()
@@ -56,10 +88,25 @@ void qmpEfxWindow::sendEfxChange()
 	CMidiPlayer* player=qmpMainWindow::getInstance()->getPlayer();
 	player->setReverbPara(ui->cbEnabledR->isChecked()?1:0,rr,rd,rw,rl);
 	player->setChorusPara(ui->cbEnabledC->isChecked()?1:0,cfb,cl,cr,cd,ct);
+
+	QSettings *settings=qmpSettingsWindow::getSettingsIntf();
+	settings->setValue("Effects/ChorusEnabled",ui->cbEnabledC->isChecked()?1:0);
+	settings->setValue("Effects/ReverbEnabled",ui->cbEnabledR->isChecked()?1:0);
+	settings->setValue("Effects/ReverbRoom",rr);
+	settings->setValue("Effects/ReverbDamp",rd);
+	settings->setValue("Effects/ReverbWidth",rw);
+	settings->setValue("Effects/ReverbLevel",rl);
+
+	settings->setValue("Effects/ChorusFeedbk",cfb);
+	settings->setValue("Effects/ChorusLevel",cl);
+	settings->setValue("Effects/ChorusRate",cr);
+	settings->setValue("Effects/ChorusDepth",cd);
+	settings->setValue("Effects/ChorusType",ct);
 }
 
 void qmpEfxWindow::dailValueChange()
 {
+	if(!initialized)return;
 	ui->sbRoom->setValue(ui->dRoom->value());
 	ui->sbDamp->setValue(ui->dDamp->value());
 	ui->sbWidth->setValue(ui->dWidth->value());
@@ -73,6 +120,7 @@ void qmpEfxWindow::dailValueChange()
 
 void qmpEfxWindow::spinValueChange()
 {
+	if(!initialized)return;
 	ui->dRoom->setValue(ui->sbRoom->value());
 	ui->dDamp->setValue(ui->sbDamp->value());
 	ui->dWidth->setValue(ui->sbWidth->value());

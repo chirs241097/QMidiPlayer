@@ -4,6 +4,7 @@
 #include <QDialog>
 #include <QCloseEvent>
 #include <QShowEvent>
+#include <QMoveEvent>
 
 namespace Ui {
 	class qmpEfxWindow;
@@ -18,6 +19,8 @@ class qmpEfxWindow : public QDialog
 		~qmpEfxWindow();
 		void closeEvent(QCloseEvent *event);
 		void showEvent(QShowEvent *event);
+		void moveEvent(QMoveEvent *event);
+		void sendEfxChange();
 
 	signals:
 		void dialogClosing();
@@ -47,7 +50,6 @@ class qmpEfxWindow : public QDialog
 	private:
 		void dailValueChange();
 		void spinValueChange();
-		void sendEfxChange();
 		Ui::qmpEfxWindow *ui;
 		double rr,rd,rw,rl;
 		int cfb,ct,initialized;

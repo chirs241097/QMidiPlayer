@@ -4,7 +4,9 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QDialog>
+#include <QShowEvent>
 #include <QCloseEvent>
+#include <QMoveEvent>
 #include "qmppresetselect.hpp"
 #include "qmpchanneleditor.hpp"
 
@@ -47,7 +49,9 @@ class qmpChannelsWindow:public QDialog
 	public:
 		explicit qmpChannelsWindow(QWidget *parent = 0);
 		~qmpChannelsWindow();
+		void showEvent(QShowEvent *event);
 		void closeEvent(QCloseEvent *event);
+		void moveEvent(QMoveEvent *event);
 	signals:
 		void dialogClosing();
 	public slots:

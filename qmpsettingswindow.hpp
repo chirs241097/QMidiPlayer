@@ -41,7 +41,7 @@ class qmpSettingsWindow:public QDialog
 		Ui::qmpSettingsWindow *ui;
 		void settingsUpdate();
 		static QSettings *settings;
-	public: static const QSettings* getSettingsIntf(){return settings;}
+	public: static QSettings* getSettingsIntf(){return settings;}
 };
 
 #endif // QMPSETTINGSWINDOW_H

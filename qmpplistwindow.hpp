@@ -2,7 +2,9 @@
 #define QMPPLISTWINDOW_H
 
 #include <QDialog>
+#include <QShowEvent>
 #include <QCloseEvent>
+#include <QMoveEvent>
 #include <QListWidgetItem>
 
 namespace Ui {
@@ -16,7 +18,9 @@ class qmpPlistWindow : public QDialog
 	public:
 		explicit qmpPlistWindow(QWidget *parent=0);
 		~qmpPlistWindow();
+		void showEvent(QShowEvent *event);
 		void closeEvent(QCloseEvent *event);
+		void moveEvent(QMoveEvent *event);
 		int getRepeat();
 		QString getFirstItem();
 		QString getNextItem();
@@ -42,6 +46,10 @@ class qmpPlistWindow : public QDialog
 		void on_pbShuffle_clicked();
 
 		void on_lwFiles_itemDoubleClicked();
+
+		void on_pbSave_clicked();
+
+		void on_pbLoad_clicked();
 
 		private:
 		Ui::qmpPlistWindow *ui;

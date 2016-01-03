@@ -20,7 +20,7 @@ void qmpPresetSelector::showEvent(QShowEvent *e)
 	e->accept();memset(presets,0,sizeof(presets));
 	CMidiPlayer *plyr=qmpMainWindow::getInstance()->getPlayer();
 	int sfc=plyr->getSFCount();
-	for(int i=0;i<sfc;++i)
+	for(int i=sfc-1;i>=0;--i)
 	{
 		fluid_sfont_t* psf=plyr->getSFPtr(i);
 		fluid_preset_t preset;
