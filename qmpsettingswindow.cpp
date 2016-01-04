@@ -198,6 +198,7 @@ void qmpSettingsWindow::settingsUpdate()
 		settings->remove("DialogStatus/ChnlWShown");
 		settings->remove("DialogStatus/EfxW");
 		settings->remove("DialogStatus/EfxWShown");
+		settings->remove("DialogStatus/FileDialogPath");
 	}
 
 	settings->setValue("Behavior/SaveEfxParam",ui->cbSaveEfxParam->isChecked()?1:0);

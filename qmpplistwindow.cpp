@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <QFileDialog>
+#include <QDirIterator>
 #include <QSettings>
 #include "qmpplistwindow.hpp"
 #include "ui_qmpplistwindow.h"
@@ -101,17 +102,30 @@ void qmpPlistWindow::moveEvent(QMoveEvent *event)
 
 void qmpPlistWindow::on_pbAdd_clicked()
 {
-	QStringList sl=QFileDialog::getOpenFileNames(this,"Add File","","Midi files (*.mid *.midi)");
+	QStringList sl;
+	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
+		sl=QFileDialog::getOpenFileNames(this,"Add File",qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/FileDialogPath","").toString(),"Midi files (*.mid *.midi)");
+	else
+		sl=QFileDialog::getOpenFileNames(this,"Add File","","Midi files (*.mid *.midi)");
+	if(sl.empty())return;
 	for(int i=0;i<sl.size();++i)
 	{
 		ui->lwFiles->addItem(new QListWidgetItem(sl.at(i)));
 	}
+	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
+		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/FileDialogPath",
+		QUrl(sl.at(0)).toString(QUrl::RemoveFilename));
 }
 
 void qmpPlistWindow::on_pbAddFolder_clicked()
 {
-	QFileDialog::getExistingDirectory(this,"Add Folder");
-	//...
+	QDirIterator di(QFileDialog::getExistingDirectory(this,"Add Folder"));
+	while(di.hasNext())
+	{
+		QString c=di.next();
+		if(c.endsWith(".mid")||c.endsWith(".midi"))
+		ui->lwFiles->addItem(new QListWidgetItem(c));
+	}
 }
 
 void qmpPlistWindow::on_pbRemove_clicked()

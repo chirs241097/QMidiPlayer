@@ -25,5 +25,8 @@
         <file>img/stop.png</file>
         <file>img/up.png</file>
         <file>img/visualization.png</file>
+        <file>doc/index.html</file>
+        <file>doc/version.html</file>
+        <file>doc/license.html</file>
     </qresource>
 </RCC>

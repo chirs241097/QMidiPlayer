@@ -19,6 +19,7 @@ qmpMainWindow::qmpMainWindow(QWidget *parent) :
 	chnlw=new qmpChannelsWindow(this);
 	efxw=new qmpEfxWindow(this);
 	infow=new qmpInfoWindow(this);
+	helpw=new qmpHelpWindow(this);
 	timer=new QTimer(this);
 	fnA1=new QAction("File Information",ui->lbFileName);
 	fnA2=new QAction("Render to Wave",ui->lbFileName);
@@ -58,6 +59,7 @@ void qmpMainWindow::closeEvent(QCloseEvent *event)
 	efxw->close();chnlw->close();
 	plistw->close();infow->close();
 	settingsw->close();
+	delete helpw;helpw=NULL;
 	delete efxw;efxw=NULL;
 	delete chnlw;chnlw=NULL;
 	delete plistw;plistw=NULL;
@@ -82,6 +84,7 @@ void qmpMainWindow::updateWidgets()
 		if(!plistw->getRepeat())
 		{
 			timer->stop();stopped=true;playing=false;
+			fnA2->setEnabled(stopped);
 			player->playerDeinit();playerTh->join();
 			delete playerTh;playerTh=NULL;
 			chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
@@ -394,4 +397,9 @@ void qmpMainWindow::onfnA2()
 void qmpMainWindow::on_pbSettings_clicked()
 {
 	if(ui->pbSettings->isChecked())settingsw->show();else settingsw->close();
+}
+
+void qmpMainWindow::on_pushButton_clicked()
+{
+	helpw->show();
 }

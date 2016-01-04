@@ -15,6 +15,7 @@
 #include "qmpefxwindow.hpp"
 #include "qmpinfowindow.hpp"
 #include "qmpsettingswindow.hpp"
+#include "qmphelpwindow.hpp"
 
 namespace Ui {
 	class qmpMainWindow;
@@ -50,7 +51,9 @@ class qmpMainWindow:public QMainWindow
 		void onfnA1();
 		void onfnA2();
 
-	public slots:
+		void on_pushButton_clicked();
+
+		public slots:
 		void dialogClosed();
 		void selectionChanged();
 
@@ -68,6 +71,8 @@ class qmpMainWindow:public QMainWindow
 		qmpEfxWindow *efxw;
 		qmpInfoWindow *infow;
 		qmpSettingsWindow *settingsw;
+		qmpHelpWindow *helpw;
+
 		QAction *fnA1,*fnA2;
 		void playerSetup();
 	public:
