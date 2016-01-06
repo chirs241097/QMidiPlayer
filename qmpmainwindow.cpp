@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <QUrl>
+#include <QDirIterator>
 #include <QDesktopWidget>
 #include "qmpmainwindow.hpp"
 #include "ui_qmpmainwindow.h"
@@ -33,7 +34,7 @@ qmpMainWindow::qmpMainWindow(QWidget *parent) :
 		else setGeometry(QStyle::alignedRect(
 							 Qt::LeftToRight,Qt::AlignCenter,size(),
 							 qApp->desktop()->availableGeometry()));
-	}
+	}show();
 	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/PListWShown",0).toInt())
 	{ui->pbPList->setChecked(true);on_pbPList_clicked();}
 	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/ChnlWShown",0).toInt())
@@ -51,6 +52,52 @@ qmpMainWindow::~qmpMainWindow()
 {
 	delete timer;
 	delete ui;
+}
+
+int qmpMainWindow::pharseArgs(int argc,char** argv)
+{
+	bool havemidi=false,loadfolder=false;
+	for(int i=1;i<argc;++i)
+	{
+		if(argv[i][0]=='-')
+		{
+			if(!strcmp(argv[i],"--help"))
+			{
+				printf("Usage: %s [Options] [Midi Files]\n",argv[0]);
+				printf("Possible options are: \n");
+				printf("-l, --load-all-files  Load all files from the same folder.\n");
+				printf("--help                Show this help and exit.\n");
+				printf("--version             Show this version information and exit.\n");
+				return 1;
+			}
+			if(!strcmp(argv[i],"--version"))
+			{
+				printf("QMidiPlayer %s\n",APP_VERSION);
+				return 1;
+			}
+			if(!strcmp(argv[i],"-l")||!strcmp(argv[i],"--load-all-files"))
+				loadfolder=true;
+		}
+		else
+		if(fluid_is_midifile(argv[i]))
+		{
+			if(!havemidi){havemidi=true;plistw->emptyList();}
+			if(loadfolder||qmpSettingsWindow::getSettingsIntf()->value("Behavior/LoadFolder",0).toInt())
+			{
+				QDirIterator di(QUrl(argv[i]).adjusted(QUrl::RemoveFilename).toString());
+				while(di.hasNext())
+				{
+					QString c=di.next();
+					if((c.endsWith(".mid")||c.endsWith(".midi"))&&fluid_is_midifile(c.toStdString().c_str()))
+					plistw->insertItem(c.toStdString().c_str());
+				}
+			}
+			else
+			plistw->insertItem(argv[i]);
+		}
+	}
+	if(havemidi)on_pbPlayPause_clicked();
+	return 0;
 }
 
 void qmpMainWindow::closeEvent(QCloseEvent *event)

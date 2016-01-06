@@ -67,6 +67,12 @@ void qmpChannelsWindow::moveEvent(QMoveEvent *event)
 
 void qmpChannelsWindow::channelWindowsUpdate()
 {
+	if(qmpMainWindow::getInstance()->getPlayer()->isFinished())
+	{
+		for(int i=0;i<16;++i)
+			((QLabel*)ui->twChannels->cellWidget(i,3))->setText("");
+		return;
+	}
 	for(int i=0;i<16;++i)
 	{
 		char data[128],nm[24];

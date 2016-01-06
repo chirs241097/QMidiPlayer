@@ -33,6 +33,8 @@ class qmpMainWindow:public QMainWindow
 		CMidiPlayer* getPlayer(){return player;}
 		QTimer* getTimer(){return timer;}
 		bool isFinalizing(){return fin;}
+		QString getFileName();
+		int pharseArgs(int argc,char** argv);
 
 	private slots:
 		void on_pbPlayPause_clicked();
@@ -53,7 +55,7 @@ class qmpMainWindow:public QMainWindow
 
 		void on_pushButton_clicked();
 
-		public slots:
+	public slots:
 		void dialogClosed();
 		void selectionChanged();
 
@@ -75,9 +77,8 @@ class qmpMainWindow:public QMainWindow
 
 		QAction *fnA1,*fnA2;
 		void playerSetup();
-	public:
-		QString getFileName();
 
+	private:
 		static qmpMainWindow* ref;
 	public: static qmpMainWindow* getInstance(){return ref;}
 };

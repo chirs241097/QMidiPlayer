@@ -100,6 +100,15 @@ void qmpPlistWindow::moveEvent(QMoveEvent *event)
 	}
 }
 
+void qmpPlistWindow::emptyList()
+{
+	ui->lwFiles->clear();
+}
+void qmpPlistWindow::insertItem(QString i)
+{
+	ui->lwFiles->addItem(new QListWidgetItem(i));
+}
+
 void qmpPlistWindow::on_pbAdd_clicked()
 {
 	QStringList sl;
@@ -123,7 +132,7 @@ void qmpPlistWindow::on_pbAddFolder_clicked()
 	while(di.hasNext())
 	{
 		QString c=di.next();
-		if(c.endsWith(".mid")||c.endsWith(".midi"))
+		if((c.endsWith(".mid")||c.endsWith(".midi"))&&fluid_is_midifile(c.toStdString().c_str()))
 		ui->lwFiles->addItem(new QListWidgetItem(c));
 	}
 }

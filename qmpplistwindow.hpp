@@ -26,32 +26,24 @@ class qmpPlistWindow : public QDialog
 		QString getNextItem();
 		QString getPrevItem();
 		QString getSelectedItem();
-		//void loadPList(const char*);
-		//void savePList(const char*);
+		void emptyList();
+		void insertItem(QString i);
 	signals:
 		void dialogClosing();
 		void selectionChanging();
 
 	private slots:
 		void on_pbAdd_clicked();
-
 		void on_pbAddFolder_clicked();
-
 		void on_pbRemove_clicked();
-
 		void on_pbClear_clicked();
-
 		void on_pbRepeat_clicked();
-
 		void on_pbShuffle_clicked();
-
 		void on_lwFiles_itemDoubleClicked();
-
 		void on_pbSave_clicked();
-
 		void on_pbLoad_clicked();
 
-		private:
+	private:
 		Ui::qmpPlistWindow *ui;
 		int shuffle,repeat;//rep 0=off 1=one 2=all
 };

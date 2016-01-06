@@ -245,11 +245,11 @@ void CMidiPlayer::setTCeptr(uint32_t ep,uint32_t st)
 double CMidiPlayer::getFtime(){return ftime;}
 void CMidiPlayer::getCurrentTimeSignature(int *n,int *d){*n=ctsn;*d=ctsd;}
 void CMidiPlayer::getCurrentKeySignature(int *ks){*ks=cks;}
-uint32_t CMidiPlayer::getFileNoteCount(){return midiFile->getNoteCount();}
-uint32_t CMidiPlayer::getFileStandard(){return midiFile->getStandard();}
-const char* CMidiPlayer::getTitle(){return midiFile->getTitle();}
-const char* CMidiPlayer::getCopyright(){return midiFile->getCopyright();}
-double CMidiPlayer::getTempo(){return 60./(ctempo/1e6)*ctsd/4.;}
+uint32_t CMidiPlayer::getFileNoteCount(){return midiFile?midiFile->getNoteCount():0;}
+uint32_t CMidiPlayer::getFileStandard(){return midiFile?midiFile->getStandard():0;}
+const char* CMidiPlayer::getTitle(){return midiFile?midiFile->getTitle():"";}
+const char* CMidiPlayer::getCopyright(){return midiFile?midiFile->getCopyright():"";}
+double CMidiPlayer::getTempo(){return 60./(ctempo/1e6)/**ctsd/4.*/;}
 uint32_t CMidiPlayer::getTCpaused(){return tcpaused;}
 void CMidiPlayer::setTCpaused(uint32_t ps){tcpaused=ps;}
 uint32_t CMidiPlayer::isFinished(){return finished;}

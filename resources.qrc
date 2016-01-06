@@ -28,5 +28,7 @@
         <file>doc/index.html</file>
         <file>doc/version.html</file>
         <file>doc/license.html</file>
+        <file>doc/mainwindow.html</file>
+        <file>img/mainw.png</file>
     </qresource>
 </RCC>
