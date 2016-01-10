@@ -229,7 +229,12 @@ void qmpMainWindow::on_pbPlayPause_clicked()
 	if(stopped)
 	{
 		QString fns=plistw->getFirstItem();
-		if(!fns.length())return(void)(playing=false);
+		if(!fns.length())
+		{
+			plistw->on_pbAdd_clicked();
+			fns=plistw->getFirstItem();
+			if(!fns.length())return(void)(playing=false);
+		}
 		ui->lbFileName->setText(QUrl(fns).fileName());
 		player->playerLoadFile(fns.toStdString().c_str());
 		char ts[100];

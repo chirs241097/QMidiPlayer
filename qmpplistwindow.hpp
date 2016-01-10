@@ -32,8 +32,9 @@ class qmpPlistWindow : public QDialog
 		void dialogClosing();
 		void selectionChanging();
 
-	private slots:
+	public slots:
 		void on_pbAdd_clicked();
+	private slots:
 		void on_pbAddFolder_clicked();
 		void on_pbRemove_clicked();
 		void on_pbClear_clicked();

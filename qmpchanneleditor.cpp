@@ -17,7 +17,7 @@ qmpChannelEditor::~qmpChannelEditor()
 
 void qmpChannelEditor::setupWindow(int chid)
 {
-	char str[30];if(~chid)ch=chid;
+	char str[256];if(~chid)ch=chid;
 	sprintf(str,"Channel Parameter Editor - Channel #%d",ch+1);
 	setWindowTitle(str);
 	CMidiPlayer* player=qmpMainWindow::getInstance()->getPlayer();
