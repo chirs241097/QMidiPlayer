@@ -95,6 +95,12 @@ void CMidiPlayer::processEventStub(const SEvent *e)
 						ctempo=e->p2;dpt=ctempo*1000/divs;
 						ccc[0][131]=dpt;
 					break;
+					case 0x58:
+						ccc[0][132]=e->p2;
+					break;
+					case 0x59:
+						ccc[0][133]=e->p2;
+					break;
 				}
 			}
 		break;
@@ -139,8 +145,11 @@ void CMidiPlayer::fileTimer2Pass()
 		ccc[i][11]=127;ccc[i][71]=64;ccc[i][72]=64;
 		ccc[i][73]=64;ccc[i][74]=64;ccc[i][75]=64;
 		ccc[i][76]=64;ccc[i][77]=64;ccc[i][78]=64;
-		ccc[0][131]=dpt;
+		ccc[0][131]=dpt;ccc[0][132]=0x04021808;
+		ccc[0][133]=0;
 	}
+	for(int i=0;i<16;++i)for(int j=0;j<134;++j)
+		ccstamps[0][i][j]=ccc[i][j];
 	for(uint32_t eptr=0,ct=midiFile->getEvent(0)->time;eptr<midiFile->getEventCount();)
 	{
 		while(eptr<midiFile->getEventCount()&&ct==midiFile->getEvent(eptr)->time)
@@ -149,7 +158,7 @@ void CMidiPlayer::fileTimer2Pass()
 		ctime+=(midiFile->getEvent(eptr)->time-ct)*dpt/1e9;
 		while(ctime>ftime*c/100.)
 		{
-			for(int i=0;i<16;++i)for(int j=0;j<132;++j)
+			for(int i=0;i<16;++i)for(int j=0;j<134;++j)
 				ccstamps[c][i][j]=ccc[i][j];
 			stamps[c++]=eptr;
 			if(c>100)break;
@@ -233,6 +242,7 @@ uint32_t CMidiPlayer::getStamp(int id){return stamps[id];}
 uint32_t CMidiPlayer::getTCeptr(){return tceptr;}
 void CMidiPlayer::setTCeptr(uint32_t ep,uint32_t st)
 {
+	resumed=true;
 	if(ep==midiFile->getEventCount())tcstop=1;else tceptr=ep;
 	for(int i=0;i<16;++i)
 	{
@@ -240,6 +250,8 @@ void CMidiPlayer::setTCeptr(uint32_t ep,uint32_t st)
 		fluid_synth_program_change(synth,i,ccstamps[st][i][128]);
 		//fluid_synth_pitch_bend(synth,i,ccstamps[st][i][130]);
 		dpt=ccstamps[st][0][131];ctempo=dpt*divs/1000;
+		ctsn=ccstamps[st][0][132]>>24;ctsd=1<<((ccstamps[st][0][132]>>16)&0xFF);
+		cks=ccstamps[st][0][133];
 	}
 }
 double CMidiPlayer::getFtime(){return ftime;}

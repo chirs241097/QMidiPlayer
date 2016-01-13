@@ -53,7 +53,8 @@ class CMidiPlayer
 	private:
 		CMidiFile *midiFile;
 		uint32_t stamps[101];
-		uint32_t ccstamps[101][16][132],ccc[16][132];//0..127:cc 128:pc 129:cp 130:pb 131:tempo
+		uint32_t ccstamps[101][16][134],ccc[16][134];
+		//0..127:cc 128:pc 129:cp 130:pb 131:tempo 132:ts 133:ks
 		uint16_t mute,solo;
 		double ftime;
 		bool sendSysEx;
