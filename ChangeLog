@@ -1,3 +1,7 @@
+2016-01-14 0.6.2 beta
+Drag 'n' drop.
+Do not quit the program when trying to load a unsupported file.
+
 2016-01-13 0.6.2 beta
 Hopefully this fixed several critical bugs...
 

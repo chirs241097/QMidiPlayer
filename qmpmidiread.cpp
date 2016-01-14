@@ -18,7 +18,7 @@ void CMidiFile::error(int fatal,const char* format,...)
 	va_list ap;
 	va_start(ap,format);vfprintf(stderr,format,ap);va_end(ap);
 	fprintf(stderr," at %#lx\n",ftell(f));
-	if(fatal)exit(2);
+	if(fatal)throw 2;
 }
 uint32_t CMidiFile::readSW()
 {
@@ -215,13 +215,17 @@ CMidiFile::CMidiFile(const char* fn)
 {
 	if(title)delete[] title;
 	if(copyright)delete[] copyright;
-	title=copyright=NULL;notes=0;std=0;
-	if(!(f=fopen(fn,"rb")))exit((printf("E: file %s doesn't exist!\n",fn),2));
-	chunkReader(1);
-	for(uint32_t i=0;i<trk;i+=chunkReader(0));
-	printf("%d note(s)\n",notes);
-	fclose(f);
-	std::sort(eventList,eventList+eventc,cmp);
+	title=copyright=NULL;notes=0;std=0;valid=1;
+	try
+	{
+		if(!(f=fopen(fn,"rb")))throw (fprintf(stderr,"E: file %s doesn't exist!\n",fn),2);
+		chunkReader(1);
+		for(uint32_t i=0;i<trk;i+=chunkReader(0));
+		printf("%d note(s)\n",notes);
+		fclose(f);
+		std::sort(eventList,eventList+eventc,cmp);
+	}
+	catch(int){fprintf(stderr,"E: %s is not a supported file.\n",fn);valid=0;}
 }
 CMidiFile::~CMidiFile()
 {
@@ -233,5 +237,6 @@ uint32_t CMidiFile::getEventCount(){return eventc;}
 uint32_t CMidiFile::getDivision(){return divs;}
 uint32_t CMidiFile::getNoteCount(){return notes;}
 uint32_t CMidiFile::getStandard(){return std;}
+bool CMidiFile::isValid(){return valid;}
 const char* CMidiFile::getTitle(){return title;}
 const char* CMidiFile::getCopyright(){return copyright;}

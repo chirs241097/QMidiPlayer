@@ -183,12 +183,14 @@ void CMidiPlayer::playerPanic()
 	for(int i=0;i<16;++i)fluid_synth_all_notes_off(synth,i);
 	//for(int i=0;i<16;++i)for(int j=0;j<128;++j)fluid_synth_noteoff(synth,i,j);
 }
-void CMidiPlayer::playerLoadFile(const char* fn)
+bool CMidiPlayer::playerLoadFile(const char* fn)
 {
 	midiFile=new CMidiFile(fn);
+	if(!midiFile->isValid())return false;
 	divs=midiFile->getDivision();
 	fileTimer1Pass();
 	fileTimer2Pass();
+	return true;
 }
 void CMidiPlayer::playerInit()
 {

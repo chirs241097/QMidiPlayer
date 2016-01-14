@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <QUrl>
+#include <QMimeData>
 #include <QDirIterator>
 #include <QDesktopWidget>
 #include "qmpmainwindow.hpp"
@@ -122,6 +123,19 @@ void qmpMainWindow::moveEvent(QMoveEvent *event)
 		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/MainW",event->pos());
 	}
 }
+void qmpMainWindow::dropEvent(QDropEvent *event)
+{
+	QList<QUrl> l=event->mimeData()->urls();
+	QStringList sl;
+	for(int i=0;i<l.size();++i)
+		sl.push_back(l.at(i).path());
+	plistw->insertItems(sl);
+}
+void qmpMainWindow::dragEnterEvent(QDragEnterEvent *event)
+{
+	//if(event->mimeData()->hasFormat("application/x-midi"))
+	event->acceptProposedAction();
+}
 
 void qmpMainWindow::updateWidgets()
 {
@@ -148,7 +162,7 @@ void qmpMainWindow::updateWidgets()
 			chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 			QString fns=plistw->getNextItem();
 			ui->lbFileName->setText(QUrl(fns).fileName());
-			player->playerLoadFile(fns.toStdString().c_str());
+			if(!player->playerLoadFile(fns.toStdString().c_str()))return;
 			char ts[100];
 			sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
 			ui->lbFinTime->setText(ts);
@@ -236,7 +250,7 @@ void qmpMainWindow::on_pbPlayPause_clicked()
 			if(!fns.length())return(void)(playing=false);
 		}
 		ui->lbFileName->setText(QUrl(fns).fileName());
-		player->playerLoadFile(fns.toStdString().c_str());
+		if(!player->playerLoadFile(fns.toStdString().c_str()))return;
 		char ts[100];
 		sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
 		ui->lbFinTime->setText(ts);
@@ -353,7 +367,7 @@ void qmpMainWindow::on_pbPrev_clicked()
 	ui->hsTimer->setValue(0);chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 	QString fns=plistw->getPrevItem();if(fns.length()==0)return on_pbStop_clicked();
 	ui->lbFileName->setText(QUrl(fns).fileName());
-	player->playerLoadFile(fns.toStdString().c_str());
+	if(!player->playerLoadFile(fns.toStdString().c_str()))return;
 	char ts[100];
 	sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
 	ui->lbFinTime->setText(ts);
@@ -373,7 +387,7 @@ void qmpMainWindow::on_pbNext_clicked()
 	ui->hsTimer->setValue(0);chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 	QString fns=plistw->getNextItem();if(fns.length()==0)return on_pbStop_clicked();
 	ui->lbFileName->setText(QUrl(fns).fileName());
-	player->playerLoadFile(fns.toStdString().c_str());
+	if(!player->playerLoadFile(fns.toStdString().c_str()))return;
 	char ts[100];
 	sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
 	ui->lbFinTime->setText(ts);
@@ -396,7 +410,7 @@ void qmpMainWindow::selectionChanged()
 	chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 	QString fns=plistw->getSelectedItem();
 	ui->lbFileName->setText(QUrl(fns).fileName());
-	player->playerLoadFile(fns.toStdString().c_str());
+	if(!player->playerLoadFile(fns.toStdString().c_str()))return;
 	char ts[100];
 	sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
 	ui->lbFinTime->setText(ts);

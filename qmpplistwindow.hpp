@@ -5,6 +5,8 @@
 #include <QShowEvent>
 #include <QCloseEvent>
 #include <QMoveEvent>
+#include <QDropEvent>
+#include <QDragEnterEvent>
 #include <QListWidgetItem>
 
 namespace Ui {
@@ -21,6 +23,8 @@ class qmpPlistWindow : public QDialog
 		void showEvent(QShowEvent *event);
 		void closeEvent(QCloseEvent *event);
 		void moveEvent(QMoveEvent *event);
+		void dropEvent(QDropEvent *event);
+		void dragEnterEvent(QDragEnterEvent *event);
 		int getRepeat();
 		QString getFirstItem();
 		QString getNextItem();
@@ -28,6 +32,7 @@ class qmpPlistWindow : public QDialog
 		QString getSelectedItem();
 		void emptyList();
 		void insertItem(QString i);
+		void insertItems(QStringList il);
 	signals:
 		void dialogClosing();
 		void selectionChanging();

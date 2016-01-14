@@ -3,6 +3,8 @@
 #include <QFileDialog>
 #include <QDirIterator>
 #include <QSettings>
+#include <QUrl>
+#include <QMimeData>
 #include "qmpplistwindow.hpp"
 #include "ui_qmpplistwindow.h"
 #include "qmpmainwindow.hpp"
@@ -100,6 +102,20 @@ void qmpPlistWindow::moveEvent(QMoveEvent *event)
 	}
 }
 
+void qmpPlistWindow::dropEvent(QDropEvent *event)
+{
+	QList<QUrl> l=event->mimeData()->urls();
+	QStringList sl;
+	for(int i=0;i<l.size();++i)
+		sl.push_back(l.at(i).path());
+	insertItems(sl);
+}
+void qmpPlistWindow::dragEnterEvent(QDragEnterEvent *event)
+{
+	//if(event->mimeData()->hasFormat("application/x-midi"))
+	event->acceptProposedAction();
+}
+
 void qmpPlistWindow::emptyList()
 {
 	ui->lwFiles->clear();
@@ -107,6 +123,10 @@ void qmpPlistWindow::emptyList()
 void qmpPlistWindow::insertItem(QString i)
 {
 	ui->lwFiles->addItem(new QListWidgetItem(i));
+}
+void qmpPlistWindow::insertItems(QStringList il)
+{
+	ui->lwFiles->addItems(il);
 }
 
 void qmpPlistWindow::on_pbAdd_clicked()

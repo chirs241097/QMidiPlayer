@@ -5,6 +5,8 @@
 #include <QTimer>
 #include <QCloseEvent>
 #include <QMoveEvent>
+#include <QDropEvent>
+#include <QDragEnterEvent>
 #include <QAction>
 #include <QMenu>
 #include <thread>
@@ -29,6 +31,8 @@ class qmpMainWindow:public QMainWindow
 		explicit qmpMainWindow(QWidget *parent = 0);
 		void closeEvent(QCloseEvent *event);
 		void moveEvent(QMoveEvent *event);
+		void dropEvent(QDropEvent *event);
+		void dragEnterEvent(QDragEnterEvent *event);
 		~qmpMainWindow();
 		CMidiPlayer* getPlayer(){return player;}
 		QTimer* getTimer(){return timer;}

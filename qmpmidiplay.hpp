@@ -26,7 +26,7 @@ class CMidiFile
 		uint32_t eventc,std;//standard 0=? 1=GM 2=GM2 3=GS 4=XG
 		uint32_t fmt,trk,divs;
 		FILE *f;
-		int byteread;
+		int byteread,valid;
 		uint32_t notes,curt,curid;
 
 		void error(int fatal,const char* format,...);
@@ -47,6 +47,7 @@ class CMidiFile
 		uint32_t getStandard();
 		const char* getTitle();
 		const char* getCopyright();
+		bool isValid();
 };
 class CMidiPlayer
 {
@@ -78,7 +79,7 @@ class CMidiPlayer
 	public:
 		CMidiPlayer();
 		~CMidiPlayer();
-		void playerLoadFile(const char* fn);
+		bool playerLoadFile(const char* fn);
 		void playerInit();
 		void fluidInitialize();
 		void playerDeinit();
