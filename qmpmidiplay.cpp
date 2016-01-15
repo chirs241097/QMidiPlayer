@@ -201,7 +201,6 @@ void CMidiPlayer::playerInit()
 void CMidiPlayer::playerDeinit()
 {
 	tceptr=0;tcstop=1;tcpaused=0;
-	//std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	delete midiFile;midiFile=NULL;
 	fluidDeinitialize();
 }

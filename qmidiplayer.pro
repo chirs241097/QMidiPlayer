@@ -22,8 +22,8 @@ SOURCES += main.cpp\
 	qmpchanneleditor.cpp \
 	qmpefxwindow.cpp \
 	qmpinfowindow.cpp \
-    qmpsettingswindow.cpp \
-    qmphelpwindow.cpp
+	qmpsettingswindow.cpp \
+	qmphelpwindow.cpp
 
 HEADERS  += qmpmainwindow.hpp \
 	qmpmidiplay.hpp \
@@ -33,8 +33,8 @@ HEADERS  += qmpmainwindow.hpp \
 	qmpchanneleditor.hpp \
 	qmpefxwindow.hpp \
 	qmpinfowindow.hpp \
-    qmpsettingswindow.hpp \
-    qmphelpwindow.hpp
+	qmpsettingswindow.hpp \
+	qmphelpwindow.hpp
 
 FORMS    += qmpmainwindow.ui \
 	qmpplistwindow.ui \
@@ -43,9 +43,19 @@ FORMS    += qmpmainwindow.ui \
 	qmpchanneleditor.ui \
 	qmpefxwindow.ui \
 	qmpinfowindow.ui \
-    qmpsettingswindow.ui \
-    qmphelpwindow.ui
+	qmpsettingswindow.ui \
+	qmphelpwindow.ui
 
-QMAKE_CXXFLAGS += -std=c++11 -Wall
-LIBS += -lfluidsynth
+unix{
+	isEmpty(PREFIX) {
+		PREFIX = /usr/local
+	}
+	BINDIR = $$PREFIX/bin
+	target.path = $$BINDIR
+	INSTALLS += target
+	QMAKE_CXXFLAGS += -std=c++11 -Wall
+	LIBS += -lfluidsynth
+}
+win32:LIBS += e:/libs/fluidsynth/fluidsynth.lib  #You have to change these
+win32:INCLUDEPATH += e:/libs/fluidsynth/include  #before building...
 RESOURCES     = resources.qrc

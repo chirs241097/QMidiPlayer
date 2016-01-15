@@ -1,3 +1,8 @@
+2016-01-15 0.6.2 beta
+Fix compatibility with MSVC.
+Support for MSVC is still experimental.
+Add files for building a debian package (highly experimental).
+
 2016-01-14 0.6.2 beta
 Drag 'n' drop.
 Do not quit the program when trying to load a unsupported file.

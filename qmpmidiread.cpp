@@ -213,9 +213,7 @@ int CMidiFile::chunkReader(int hdrXp)
 }
 CMidiFile::CMidiFile(const char* fn)
 {
-	if(title)delete[] title;
-	if(copyright)delete[] copyright;
-	title=copyright=NULL;notes=0;std=0;valid=1;
+	title=copyright=NULL;notes=eventc=0;std=0;valid=1;
 	try
 	{
 		if(!(f=fopen(fn,"rb")))throw (fprintf(stderr,"E: file %s doesn't exist!\n",fn),2);

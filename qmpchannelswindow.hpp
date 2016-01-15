@@ -17,12 +17,12 @@ namespace Ui {
 class QDCLabel:public QLabel
 {
 	Q_OBJECT
-	using QLabel::QLabel;
 	private:
 		int id;
 	protected:
 		void mouseDoubleClickEvent(QMouseEvent *event){event->accept();emit onDoubleClick(id);}
 	public:
+		QDCLabel(QString s):QLabel(s){id=-1;}
 		void setID(int _id){id=_id;}
 	signals:
 		void onDoubleClick(int id);
@@ -31,12 +31,12 @@ class QDCLabel:public QLabel
 class QDCPushButton:public QPushButton
 {
 	Q_OBJECT
-	using QPushButton::QPushButton;
 	private:
 		int id;
 	protected:
 		void mousePressEvent(QMouseEvent *event){QPushButton::mousePressEvent(event);emit onClick(id);}
 	public:
+		QDCPushButton(QString s):QPushButton(s){id=-1;}
 		void setID(int _id){id=_id;}
 	signals:
 		void onClick(int id);
