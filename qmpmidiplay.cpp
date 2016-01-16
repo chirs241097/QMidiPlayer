@@ -10,6 +10,15 @@ void CMidiPlayer::fluidInitialize()
 	fluid_synth_set_chorus(synth,FLUID_CHORUS_DEFAULT_N,FLUID_CHORUS_DEFAULT_LEVEL,
 						   FLUID_CHORUS_DEFAULT_SPEED,FLUID_CHORUS_DEFAULT_DEPTH,
 						   FLUID_CHORUS_DEFAULT_TYPE);
+	if(midiFile->getStandard()==4)
+	fluid_synth_set_channel_type(synth,9,CHANNEL_TYPE_MELODIC);
+	else if(midiFile->getStandard()==1)
+		fluid_synth_set_channel_type(synth,9,CHANNEL_TYPE_DRUM);
+	else
+	{
+		fluid_synth_set_channel_type(synth,9,CHANNEL_TYPE_DRUM);
+		fluid_synth_bank_select(synth,9,128);
+	}
 }
 void CMidiPlayer::fluidDeinitialize()
 {
@@ -147,7 +156,7 @@ void CMidiPlayer::fileTimer2Pass()
 		ccc[i][76]=64;ccc[i][77]=64;ccc[i][78]=64;
 		ccc[0][131]=dpt;ccc[0][132]=0x04021808;
 		ccc[0][133]=0;
-	}
+	}if(midiFile->getStandard()!=4)ccc[9][0]=128;
 	for(int i=0;i<16;++i)for(int j=0;j<134;++j)
 		ccstamps[0][i][j]=ccc[i][j];
 	for(uint32_t eptr=0,ct=midiFile->getEvent(0)->time;eptr<midiFile->getEventCount();)

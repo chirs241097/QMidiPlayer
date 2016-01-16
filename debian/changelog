@@ -1,3 +1,10 @@
+qmidiplayer (0.6.2-2) UNRELEASED; urgency=low
+
+  * Minor crash fixes.
+  * Also report fluidsynth version in version info.
+
+ -- chrisoft <chirs241097@gmail.com>  Sat, 16 Jan 2016 10:59:24 +0800
+
 qmidiplayer (0.6.2-1) UNRELEASED; urgency=low
 
   * Initial release. (Closes: #XXXXXX)

@@ -1,4 +1,5 @@
 #include <QFileDialog>
+#include <QDir>
 #include "qmpsettingswindow.hpp"
 #include "ui_qmpsettingswindow.h"
 #include "qmpmainwindow.hpp"
@@ -17,7 +18,7 @@ qmpSettingsWindow::qmpSettingsWindow(QWidget *parent) :
 {
 	ui->setupUi(this);
 	connect(this,SIGNAL(dialogClosing()),parent,SLOT(dialogClosed()));
-	settings=new QSettings(QString(getenv("HOME"))+QString("/.config/qmprc"),QSettings::IniFormat);
+	settings=new QSettings(QDir::homePath()+QString("/.config/qmprc"),QSettings::IniFormat);
 	settingsInit();
 }
 

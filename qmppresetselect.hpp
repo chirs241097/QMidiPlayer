@@ -18,7 +18,7 @@ class qmpPresetSelector:public QDialog
 		void showEvent(QShowEvent* e);
 		void setupWindow(int chid);
 
-		private slots:
+	private slots:
 		void on_pbCancel_clicked();
 
 		void on_pbOk_clicked();
@@ -27,7 +27,7 @@ class qmpPresetSelector:public QDialog
 
 		void on_lwPresetSelect_itemDoubleClicked();
 
-		private:
+	private:
 		Ui::qmpPresetSelector *ui;
 		char presets[129][128][24];
 		int ch;

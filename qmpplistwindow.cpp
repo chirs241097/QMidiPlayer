@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <QFileDialog>
+#include <QDir>
 #include <QDirIterator>
 #include <QSettings>
 #include <QUrl>
@@ -19,7 +20,7 @@ qmpPlistWindow::qmpPlistWindow(QWidget *parent) :
 	repeat=0;shuffle=0;
 	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/RestorePlaylist","").toInt())
 	{
-		QSettings* plist=new QSettings(QString(getenv("HOME"))+QString("/.config/qmpplist"),
+		QSettings* plist=new QSettings(QDir::homePath()+QString("/.config/qmpplist"),
 									   QSettings::IniFormat);
 		int fc=plist->value("Playlist/FileCount",0).toInt();
 		ui->lwFiles->clear();for(int i=1;i<=fc;++i)
@@ -80,7 +81,7 @@ void qmpPlistWindow::closeEvent(QCloseEvent *event)
 	}
 	if(qmpMainWindow::getInstance()->isFinalizing()&&qmpSettingsWindow::getSettingsIntf()->value("Behavior/RestorePlaylist","").toInt())
 	{
-		QSettings* plist=new QSettings(QString(getenv("HOME"))+QString("/.config/qmpplist"),
+		QSettings* plist=new QSettings(QDir::homePath()+QString("/.config/qmpplist"),
 									   QSettings::IniFormat);
 		plist->setValue("Playlist/FileCount",ui->lwFiles->count());
 		for(int i=0;i<ui->lwFiles->count();++i)

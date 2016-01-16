@@ -1,3 +1,4 @@
+#include <fluidsynth.h>
 #include "qmphelpwindow.hpp"
 #include "ui_qmphelpwindow.h"
 
@@ -20,7 +21,10 @@ void qmpHelpWindow::on_textBrowser_sourceChanged(const QUrl &src)
 	if(src.fileName()==QString("version.html"))
 	{
 		QString s=ui->textBrowser->toHtml();
-		s.replace("QT_VERSION_STR",QT_VERSION_STR);
+		s.replace("CT_QT_VERSION_STR",QT_VERSION_STR);
+		s.replace("RT_QT_VERSION_STR",qVersion());
+		s.replace("CT_FLUIDSYNTH_VERSION",FLUIDSYNTH_VERSION);
+		s.replace("RT_FLUIDSYNTH_VERSION",fluid_version_str());
 		s.replace("APP_VERSION",APP_VERSION);
 		ui->textBrowser->setHtml(s);
 	}

@@ -17,8 +17,9 @@ qmpPresetSelector::~qmpPresetSelector()
 
 void qmpPresetSelector::showEvent(QShowEvent *e)
 {
-	e->accept();memset(presets,0,sizeof(presets));
+	memset(presets,0,sizeof(presets));
 	CMidiPlayer *plyr=qmpMainWindow::getInstance()->getPlayer();
+	if(!plyr->getSFCount())return e->ignore();
 	int sfc=plyr->getSFCount();
 	for(int i=sfc-1;i>=0;--i)
 	{
@@ -36,11 +37,13 @@ void qmpPresetSelector::showEvent(QShowEvent *e)
 		for(int j=0;j<128;++j)if(strlen(presets[i][j])){b=1;break;}
 		if(b)ui->lwBankSelect->addItem(QString::number(i));
 	}
+	e->accept();
 }
 void qmpPresetSelector::setupWindow(int chid)
 {
 	CMidiPlayer *plyr=qmpMainWindow::getInstance()->getPlayer();
-	ch=chid;int b,p,r;char name[30];
+	if(!plyr->getSFCount())return;
+	ch=chid;int b=0,p=0,r;char name[64];
 	sprintf(name,"Preset Selection - Channel #%d",ch);
 	setWindowTitle(name);
 	plyr->getChannelPreset(chid,&b,&p,name);

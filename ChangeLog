@@ -1,3 +1,7 @@
+2016-01-16 0.6.2 beta
+Stupid RC bug fixes...
+Use correct home directory in Windows.
+
 2016-01-15 0.6.2 beta
 Fix compatibility with MSVC.
 Support for MSVC is still experimental.
