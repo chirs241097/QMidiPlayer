@@ -6,6 +6,8 @@
 #include <QShowEvent>
 #include <QMoveEvent>
 
+#include "qdialskulpturestyle.hpp"
+
 namespace Ui {
 	class qmpEfxWindow;
 }
@@ -54,6 +56,7 @@ class qmpEfxWindow : public QDialog
 		double rr,rd,rw,rl;
 		int cfb,ct,initialized;
 		double cl,cr,cd;
+		QCommonStyle* styl;
 };
 
 #endif // QMPEFXWINDOW_HPP

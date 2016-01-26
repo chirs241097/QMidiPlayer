@@ -8,10 +8,15 @@ qmpChannelEditor::qmpChannelEditor(QWidget *parent) :
 	ui(new Ui::qmpChannelEditor)
 {
 	ui->setupUi(this);
+	styl=new QDialSkulptureStyle();
+	QList<QDial*> dials=findChildren<QDial*>();
+	for(int i=0;i<dials.count();++i)
+		dials.at(i)->setStyle(styl);
 }
 
 qmpChannelEditor::~qmpChannelEditor()
 {
+	delete styl;
 	delete ui;
 }
 

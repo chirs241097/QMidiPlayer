@@ -8,6 +8,10 @@ qmpEfxWindow::qmpEfxWindow(QWidget *parent) :
 	ui(new Ui::qmpEfxWindow)
 {
 	ui->setupUi(this);initialized=false;
+	styl=new QDialSkulptureStyle();
+	QList<QDial*> dials=findChildren<QDial*>();
+	for(int i=0;i<dials.count();++i)
+		dials.at(i)->setStyle(styl);
 	connect(this,SIGNAL(dialogClosing()),parent,SLOT(dialogClosed()));
 	//stub. read these from settings after the setting module is implemented
 	QSettings *settings=qmpSettingsWindow::getSettingsIntf();
@@ -27,6 +31,7 @@ qmpEfxWindow::qmpEfxWindow(QWidget *parent) :
 
 qmpEfxWindow::~qmpEfxWindow()
 {
+	delete styl;
 	delete ui;
 }
 

@@ -2,6 +2,9 @@
 #include <chrono>
 #include <thread>
 #include <fluidsynth.h>
+#ifdef _WIN32
+#include <QThread>
+#endif
 #include "qmpmidiplay.hpp"
 void CMidiPlayer::fluidInitialize()
 {
@@ -125,7 +128,11 @@ void CMidiPlayer::playEvents()
 		if(tcstop||!midiFile||tceptr>=midiFile->getEventCount())break;
 		if(resumed)resumed=false;
 		else
+#ifdef _WIN32
+		QThread::usleep((midiFile->getEvent(tceptr)->time-ct)*(dpt/1000));
+#else
 		std::this_thread::sleep_for(std::chrono::nanoseconds(midiFile->getEvent(tceptr)->time-ct)*dpt);
+#endif
 		if(tcstop||!midiFile)break;
 		ct=midiFile->getEvent(tceptr)->time;
 	}

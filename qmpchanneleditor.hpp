@@ -4,6 +4,7 @@
 #include <QDialog>
 #include <QShowEvent>
 #include <QCloseEvent>
+#include "qdialskulpturestyle.hpp"
 
 namespace Ui {
 	class qmpChannelEditor;
@@ -35,6 +36,7 @@ class qmpChannelEditor:public QDialog
 		void sendCC();
 		void connectSlots();
 		void disconnectSlots();
+		QCommonStyle* styl;
 };
 
 #endif // QMPCHANNELEDITOR_H

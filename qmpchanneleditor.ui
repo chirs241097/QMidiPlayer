@@ -154,6 +154,9 @@
     <property name="value">
      <number>64</number>
     </property>
+    <property name="notchesVisible">
+     <bool>true</bool>
+    </property>
    </widget>
    <widget class="QDial" name="dCut">
     <property name="geometry">
@@ -169,6 +172,9 @@
     </property>
     <property name="value">
      <number>64</number>
+    </property>
+    <property name="notchesVisible">
+     <bool>true</bool>
     </property>
    </widget>
    <widget class="QLabel" name="lbCut">
@@ -231,6 +237,9 @@
     <property name="value">
      <number>64</number>
     </property>
+    <property name="notchesVisible">
+     <bool>true</bool>
+    </property>
    </widget>
    <widget class="QDial" name="dReverb">
     <property name="geometry">
@@ -246,6 +255,9 @@
     </property>
     <property name="value">
      <number>64</number>
+    </property>
+    <property name="notchesVisible">
+     <bool>true</bool>
     </property>
    </widget>
    <widget class="QLabel" name="lbReverb">
@@ -308,6 +320,9 @@
     <property name="value">
      <number>64</number>
     </property>
+    <property name="notchesVisible">
+     <bool>true</bool>
+    </property>
    </widget>
    <widget class="QDial" name="dAttack">
     <property name="geometry">
@@ -323,6 +338,9 @@
     </property>
     <property name="value">
      <number>64</number>
+    </property>
+    <property name="notchesVisible">
+     <bool>true</bool>
     </property>
    </widget>
    <widget class="QLabel" name="lbAttack">
@@ -355,6 +373,9 @@
     </property>
     <property name="value">
      <number>64</number>
+    </property>
+    <property name="notchesVisible">
+     <bool>true</bool>
     </property>
    </widget>
    <widget class="QLabel" name="lbRelease">
@@ -417,6 +438,9 @@
     <property name="value">
      <number>64</number>
     </property>
+    <property name="notchesVisible">
+     <bool>true</bool>
+    </property>
    </widget>
    <widget class="QDial" name="dRate">
     <property name="geometry">
@@ -432,6 +456,9 @@
     </property>
     <property name="value">
      <number>64</number>
+    </property>
+    <property name="notchesVisible">
+     <bool>true</bool>
     </property>
    </widget>
    <widget class="QLabel" name="lbRate">
@@ -464,6 +491,9 @@
     </property>
     <property name="value">
      <number>64</number>
+    </property>
+    <property name="notchesVisible">
+     <bool>true</bool>
     </property>
    </widget>
    <widget class="QLabel" name="lbDelay">
@@ -526,6 +556,9 @@
     <property name="value">
      <number>64</number>
     </property>
+    <property name="notchesVisible">
+     <bool>true</bool>
+    </property>
    </widget>
    <widget class="QLabel" name="lbVol">
     <property name="geometry">
@@ -557,6 +590,9 @@
     </property>
     <property name="value">
      <number>127</number>
+    </property>
+    <property name="notchesVisible">
+     <bool>true</bool>
     </property>
    </widget>
   </widget>

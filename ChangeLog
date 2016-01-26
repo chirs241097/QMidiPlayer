@@ -1,4 +1,9 @@
 2016-01-16 0.6.2 beta
+Maintaince release.
+Use skulpture style dials.
+Use QThread::usleep() in Windows to improve sleep precision.
+
+2016-01-16 0.6.2 beta
 Stupid RC bug fixes...
 Use correct home directory in Windows.
 

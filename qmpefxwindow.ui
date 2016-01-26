@@ -56,6 +56,9 @@
       <property name="maximum">
        <number>120</number>
       </property>
+      <property name="notchesVisible">
+       <bool>true</bool>
+      </property>
      </widget>
      <widget class="QDial" name="dDamp">
       <property name="geometry">
@@ -68,6 +71,9 @@
       </property>
       <property name="maximum">
        <number>100</number>
+      </property>
+      <property name="notchesVisible">
+       <bool>true</bool>
       </property>
      </widget>
      <widget class="QDial" name="dWidth">
@@ -82,6 +88,9 @@
       <property name="maximum">
        <number>100</number>
       </property>
+      <property name="notchesVisible">
+       <bool>true</bool>
+      </property>
      </widget>
      <widget class="QDial" name="dLevelR">
       <property name="geometry">
@@ -94,6 +103,9 @@
       </property>
       <property name="maximum">
        <number>100</number>
+      </property>
+      <property name="notchesVisible">
+       <bool>true</bool>
       </property>
      </widget>
      <widget class="QLabel" name="lbRoom">
@@ -238,6 +250,9 @@
       <property name="maximum">
        <number>99</number>
       </property>
+      <property name="notchesVisible">
+       <bool>true</bool>
+      </property>
      </widget>
      <widget class="QDial" name="dRate">
       <property name="geometry">
@@ -257,6 +272,9 @@
       <property name="value">
        <number>29</number>
       </property>
+      <property name="notchesVisible">
+       <bool>true</bool>
+      </property>
      </widget>
      <widget class="QDial" name="dDepth">
       <property name="geometry">
@@ -270,6 +288,9 @@
       <property name="maximum">
        <number>210</number>
       </property>
+      <property name="notchesVisible">
+       <bool>true</bool>
+      </property>
      </widget>
      <widget class="QDial" name="dLevelC">
       <property name="geometry">
@@ -282,6 +303,9 @@
       </property>
       <property name="maximum">
        <number>100</number>
+      </property>
+      <property name="notchesVisible">
+       <bool>true</bool>
       </property>
      </widget>
      <widget class="QLabel" name="lbFeedBack">

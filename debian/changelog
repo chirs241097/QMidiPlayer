@@ -1,3 +1,10 @@
+qmidiplayer (0.6.2-3) UNRELEASED; urgency=low
+
+  * Maintaince release.
+
+ -- chrisoft <chirs241097@gmail.com>  Tue, 26 Jan 2016 11:48:31 +0800
+
+
 qmidiplayer (0.6.2-2) UNRELEASED; urgency=low
 
   * Minor crash fixes.

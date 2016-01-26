@@ -23,7 +23,8 @@ SOURCES += main.cpp\
 	qmpefxwindow.cpp \
 	qmpinfowindow.cpp \
 	qmpsettingswindow.cpp \
-	qmphelpwindow.cpp
+	qmphelpwindow.cpp \
+    qdialskulpturestyle.cpp
 
 HEADERS  += qmpmainwindow.hpp \
 	qmpmidiplay.hpp \
@@ -34,7 +35,8 @@ HEADERS  += qmpmainwindow.hpp \
 	qmpefxwindow.hpp \
 	qmpinfowindow.hpp \
 	qmpsettingswindow.hpp \
-	qmphelpwindow.hpp
+	qmphelpwindow.hpp \
+    qdialskulpturestyle.hpp
 
 FORMS    += qmpmainwindow.ui \
 	qmpplistwindow.ui \
