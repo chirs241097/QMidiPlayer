@@ -13,7 +13,7 @@ qmpMainWindow::qmpMainWindow(QWidget *parent) :
 	QMainWindow(parent),
 	ui(new Ui::qmpMainWindow)
 {
-	ui->setupUi(this);player=new CMidiPlayer();
+	ui->setupUi(this);
 	ui->lbFileName->setText("");ref=this;
 	playing=false;stopped=true;dragging=false;
 	settingsw=new qmpSettingsWindow(this);
@@ -27,7 +27,12 @@ qmpMainWindow::qmpMainWindow(QWidget *parent) :
 	fnA2=new QAction("Render to Wave",ui->lbFileName);
 	ui->lbFileName->addAction(fnA1);
 	ui->lbFileName->addAction(fnA2);
-	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
+	singleFS=qmpSettingsWindow::getSettingsIntf()->value("Behavior/SingleInstance",0).toInt();
+	player=new CMidiPlayer(singleFS);
+	if(singleFS){player->fluidPreInitialize();playerSetup();player->fluidInitialize();
+		for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
+			player->pushSoundFont(settingsw->getSFWidget()->item(i)->text().toStdString().c_str());}
+	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus",0).toInt())
 	{
 		QRect g=geometry();
 		g.setTopLeft(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/MainW",QPoint(-999,-999)).toPoint());
@@ -51,6 +56,7 @@ qmpMainWindow::qmpMainWindow(QWidget *parent) :
 
 qmpMainWindow::~qmpMainWindow()
 {
+	delete player;
 	delete timer;
 	delete ui;
 }
@@ -148,6 +154,7 @@ void qmpMainWindow::updateWidgets()
 			fnA2->setEnabled(stopped);
 			player->playerDeinit();playerTh->join();
 			delete playerTh;playerTh=NULL;
+			if(singleFS)player->playerPanic();
 			chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 			ui->pbPlayPause->setIcon(QIcon(":/img/play.png"));
 			ui->hsTimer->setValue(0);
@@ -159,6 +166,7 @@ void qmpMainWindow::updateWidgets()
 			timer->stop();player->playerDeinit();playerTh->join();
 			delete playerTh;playerTh=NULL;
 			ui->hsTimer->setValue(0);
+			if(singleFS)player->playerPanic();
 			chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 			QString fns=plistw->getNextItem();
 			ui->lbFileName->setText(QUrl(fns).fileName());
@@ -166,9 +174,9 @@ void qmpMainWindow::updateWidgets()
 			char ts[100];
 			sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
 			ui->lbFinTime->setText(ts);
-			player->playerInit();playerSetup();player->fluidInitialize();
+			player->playerInit();if(!singleFS){playerSetup();player->fluidInitialize();
 			for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
-				player->pushSoundFont(settingsw->getSFWidget()->item(i)->text().toStdString().c_str());
+				player->pushSoundFont(settingsw->getSFWidget()->item(i)->text().toStdString().c_str());}
 			player->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
 			playerTh=new std::thread(&CMidiPlayer::playerThread,player);
 			st=std::chrono::steady_clock::now();offset=0;
@@ -183,6 +191,7 @@ void qmpMainWindow::updateWidgets()
 			ui->centralWidget->setEnabled(true);
 			delete renderTh;renderTh=NULL;
 			player->rendererDeinit();
+			if(singleFS){player->fluidPreInitialize();playerSetup();player->fluidInitialize();}
 		}
 	}
 	while(!player->isFinished()&&player->getTCeptr()>player->getStamp(ui->hsTimer->value())
@@ -214,7 +223,7 @@ void qmpMainWindow::playerSetup()
 	fluid_settings_setint(fsettings,"synth.polyphony",settings->value("Audio/Polyphony","").toInt());
 	fluid_settings_setint(fsettings,"synth.cpu-cores",settings->value("Audio/Threads","").toInt());
 	char bsmode[4];
-	if(settings->value("Audio/AutoBS",1).toInt()&&player->getFileStandard())
+	if(!singleFS&&settings->value("Audio/AutoBS",1).toInt()&&player->getFileStandard())
 		switch(player->getFileStandard())
 		{
 			case 1:strcpy(bsmode,"gm");break;
@@ -254,9 +263,9 @@ void qmpMainWindow::on_pbPlayPause_clicked()
 		char ts[100];
 		sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
 		ui->lbFinTime->setText(ts);
-		player->playerInit();playerSetup();player->fluidInitialize();
+		player->playerInit();if(!singleFS){playerSetup();player->fluidInitialize();
 		for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
-			player->pushSoundFont(settingsw->getSFWidget()->item(i)->text().toStdString().c_str());
+			player->pushSoundFont(settingsw->getSFWidget()->item(i)->text().toStdString().c_str());}
 		player->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
 		playerTh=new std::thread(&CMidiPlayer::playerThread,player);
 		st=std::chrono::steady_clock::now();offset=0;
@@ -317,6 +326,7 @@ void qmpMainWindow::on_pbStop_clicked()
 	{
 		timer->stop();stopped=true;playing=false;
 		player->playerDeinit();fnA2->setEnabled(stopped);
+		if(singleFS)player->playerPanic();
 		if(playerTh){playerTh->join();delete playerTh;playerTh=NULL;}
 		chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 		ui->pbPlayPause->setIcon(QIcon(":/img/play.png"));
@@ -364,6 +374,7 @@ void qmpMainWindow::on_pbPrev_clicked()
 {
 	timer->stop();player->playerDeinit();
 	if(playerTh){playerTh->join();delete playerTh;playerTh=NULL;}
+	if(singleFS)player->playerPanic();
 	ui->hsTimer->setValue(0);chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 	QString fns=plistw->getPrevItem();if(fns.length()==0)return on_pbStop_clicked();
 	ui->lbFileName->setText(QUrl(fns).fileName());
@@ -371,9 +382,9 @@ void qmpMainWindow::on_pbPrev_clicked()
 	char ts[100];
 	sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
 	ui->lbFinTime->setText(ts);
-	player->playerInit();playerSetup();player->fluidInitialize();
+	player->playerInit();if(!singleFS){playerSetup();player->fluidInitialize();
 	for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
-		player->pushSoundFont(settingsw->getSFWidget()->item(i)->text().toStdString().c_str());
+		player->pushSoundFont(settingsw->getSFWidget()->item(i)->text().toStdString().c_str());}
 	player->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
 	playerTh=new std::thread(&CMidiPlayer::playerThread,player);
 	st=std::chrono::steady_clock::now();offset=0;
@@ -384,6 +395,7 @@ void qmpMainWindow::on_pbNext_clicked()
 {
 	timer->stop();player->playerDeinit();
 	if(playerTh){playerTh->join();delete playerTh;playerTh=NULL;}
+	if(singleFS)player->playerPanic();
 	ui->hsTimer->setValue(0);chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 	QString fns=plistw->getNextItem();if(fns.length()==0)return on_pbStop_clicked();
 	ui->lbFileName->setText(QUrl(fns).fileName());
@@ -391,9 +403,9 @@ void qmpMainWindow::on_pbNext_clicked()
 	char ts[100];
 	sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
 	ui->lbFinTime->setText(ts);
-	player->playerInit();playerSetup();player->fluidInitialize();
+	player->playerInit();if(!singleFS){playerSetup();player->fluidInitialize();
 	for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
-		player->pushSoundFont(settingsw->getSFWidget()->item(i)->text().toStdString().c_str());
+		player->pushSoundFont(settingsw->getSFWidget()->item(i)->text().toStdString().c_str());}
 	player->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
 	playerTh=new std::thread(&CMidiPlayer::playerThread,player);
 	st=std::chrono::steady_clock::now();offset=0;
@@ -406,6 +418,7 @@ void qmpMainWindow::selectionChanged()
 	ui->pbPlayPause->setIcon(QIcon(":/img/pause.png"));
 	timer->stop();player->playerDeinit();
 	if(playerTh){playerTh->join();delete playerTh;playerTh=NULL;}
+	if(singleFS)player->playerPanic();
 	ui->hsTimer->setValue(0);
 	chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 	QString fns=plistw->getSelectedItem();
@@ -414,9 +427,9 @@ void qmpMainWindow::selectionChanged()
 	char ts[100];
 	sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
 	ui->lbFinTime->setText(ts);
-	player->playerInit();playerSetup();player->fluidInitialize();
+	player->playerInit();if(!singleFS){playerSetup();player->fluidInitialize();
 	for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
-		player->pushSoundFont(settingsw->getSFWidget()->item(i)->text().toStdString().c_str());
+		player->pushSoundFont(settingsw->getSFWidget()->item(i)->text().toStdString().c_str());}
 	player->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
 	playerTh=new std::thread(&CMidiPlayer::playerThread,player);
 	st=std::chrono::steady_clock::now();offset=0;
@@ -451,6 +464,7 @@ void qmpMainWindow::onfnA1()
 
 void qmpMainWindow::onfnA2()
 {
+	if(singleFS)player->fluidDeinitialize();
 	player->rendererLoadFile((plistw->getSelectedItem()+QString(".wav")).toStdString().c_str());
 	playerSetup();player->rendererInit(plistw->getSelectedItem().toStdString().c_str());
 	ui->centralWidget->setEnabled(false);

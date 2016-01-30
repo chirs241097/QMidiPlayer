@@ -58,7 +58,7 @@ class CMidiPlayer
 		//0..127:cc 128:pc 129:cp 130:pb 131:tempo 132:ts 133:ks
 		uint16_t mute,solo;
 		double ftime;
-		bool sendSysEx;
+		bool sendSysEx,singleInstance;
 		fluid_settings_t* settings;
 		fluid_synth_t* synth;
 		fluid_audio_driver_t* adriver;
@@ -70,18 +70,19 @@ class CMidiPlayer
 		uint32_t finished,resumed;
 
 		void setBit(uint16_t &n,uint16_t bn,uint16_t b);
-		void fluidDeinitialize();
 		void processEvent(const SEvent *e);
 		void processEventStub(const SEvent *e);
 		void playEvents();
 		void fileTimer1Pass();
 		void fileTimer2Pass();
 	public:
-		CMidiPlayer();
+		CMidiPlayer(bool singleInst=false);
 		~CMidiPlayer();
 		bool playerLoadFile(const char* fn);
 		void playerInit();
+		void fluidPreInitialize();
 		void fluidInitialize();
+		void fluidDeinitialize();
 		void playerDeinit();
 		void playerThread();
 		void playerPanic();

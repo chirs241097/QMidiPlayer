@@ -1,4 +1,9 @@
-2016-01-16 0.6.2 beta
+2016-01-30 0.7.0 beta
+Add support for a single, persistent fluidsynth instance.
+(Experimental, may also break the original mode...)
+A little documentaion work...
+
+2016-01-26 0.6.2 beta
 Maintaince release.
 Use skulpture style dials.
 Use QThread::usleep() in Windows to improve sleep precision.

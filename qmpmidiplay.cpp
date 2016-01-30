@@ -6,6 +6,10 @@
 #include <QThread>
 #endif
 #include "qmpmidiplay.hpp"
+void CMidiPlayer::fluidPreInitialize()
+{
+	settings=new_fluid_settings();
+}
 void CMidiPlayer::fluidInitialize()
 {
 	synth=new_fluid_synth(settings);
@@ -13,15 +17,20 @@ void CMidiPlayer::fluidInitialize()
 	fluid_synth_set_chorus(synth,FLUID_CHORUS_DEFAULT_N,FLUID_CHORUS_DEFAULT_LEVEL,
 						   FLUID_CHORUS_DEFAULT_SPEED,FLUID_CHORUS_DEFAULT_DEPTH,
 						   FLUID_CHORUS_DEFAULT_TYPE);
-	if(midiFile->getStandard()==4)
-	fluid_synth_set_channel_type(synth,9,CHANNEL_TYPE_MELODIC);
-	else if(midiFile->getStandard()==1)
-		fluid_synth_set_channel_type(synth,9,CHANNEL_TYPE_DRUM);
-	else
+#ifndef WIN32
+	if(!singleInstance)
 	{
-		fluid_synth_set_channel_type(synth,9,CHANNEL_TYPE_DRUM);
-		fluid_synth_bank_select(synth,9,128);
+		if(midiFile->getStandard()==4)
+		fluid_synth_set_channel_type(synth,9,CHANNEL_TYPE_MELODIC);
+		else if(midiFile->getStandard()==1)
+			fluid_synth_set_channel_type(synth,9,CHANNEL_TYPE_DRUM);
+		else
+		{
+			fluid_synth_set_channel_type(synth,9,CHANNEL_TYPE_DRUM);
+			fluid_synth_bank_select(synth,9,128);
+		}
 	}
+#endif
 }
 void CMidiPlayer::fluidDeinitialize()
 {
@@ -188,12 +197,12 @@ void CMidiPlayer::fileTimer2Pass()
 		stamps[c++]=midiFile->getEventCount();
 	}
 }
-CMidiPlayer::CMidiPlayer()
+CMidiPlayer::CMidiPlayer(bool singleInst)
 {
-	midiFile=NULL;resumed=false;
+	midiFile=NULL;resumed=false;singleInstance=singleInst;
 	settings=NULL;synth=NULL;adriver=NULL;
 }
-CMidiPlayer::~CMidiPlayer(){}
+CMidiPlayer::~CMidiPlayer(){if(singleInstance)fluidDeinitialize();}
 void CMidiPlayer::playerPanic()
 {
 	for(int i=0;i<16;++i)fluid_synth_all_notes_off(synth,i);
@@ -212,13 +221,14 @@ void CMidiPlayer::playerInit()
 {
 	ctempo=0x7A120;ctsn=4;ctsd=4;cks=0;dpt=ctempo*1000/divs;
 	tceptr=0;tcstop=0;tcpaused=0;finished=0;mute=solo=0;
-	sendSysEx=true;settings=new_fluid_settings();
+	sendSysEx=true;
+	if(!singleInstance)fluidPreInitialize();
 }
 void CMidiPlayer::playerDeinit()
 {
 	tceptr=0;tcstop=1;tcpaused=0;
 	delete midiFile;midiFile=NULL;
-	fluidDeinitialize();
+	if(!singleInstance)fluidDeinitialize();
 }
 void CMidiPlayer::playerThread()
 {

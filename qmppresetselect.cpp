@@ -44,7 +44,7 @@ void qmpPresetSelector::setupWindow(int chid)
 	CMidiPlayer *plyr=qmpMainWindow::getInstance()->getPlayer();
 	if(!plyr->getSFCount())return;
 	ch=chid;int b=0,p=0,r;char name[64];
-	sprintf(name,"Preset Selection - Channel #%d",ch);
+	sprintf(name,"Preset Selection - Channel #%d",ch+1);
 	setWindowTitle(name);
 	plyr->getChannelPreset(chid,&b,&p,name);
 	for(int i=0;i<ui->lwBankSelect->count();++i)

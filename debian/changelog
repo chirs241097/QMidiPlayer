@@ -1,3 +1,9 @@
+qmidiplayer (0.7.0-0) UNRELEASED; urgency=low
+
+  * New upstream release.
+
+ -- chrisoft <chirs241097@gmail.com>  Sat, 30 Jan 2016 23:47:54 +0800
+
 qmidiplayer (0.6.2-3) UNRELEASED; urgency=low
 
   * Maintaince release.

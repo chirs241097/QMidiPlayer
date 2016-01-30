@@ -148,6 +148,9 @@ void qmpSettingsWindow::settingsInit()
 	settings->setValue("Behavior/SaveEfxParam",settings->value("Behavior/SaveEfxParam",1));
 	ui->cbSaveEfxParam->setChecked(settings->value("Behavior/SaveEfxParam",1).toInt());
 
+	settings->setValue("Behavior/SingleInstance",settings->value("Behavior/SingleInstance",0));
+	ui->cbPersistentfs->setChecked(settings->value("Behavior/SingleInstance",0).toInt());
+
 	settings->sync();
 	delete_fluid_settings(fsettings);
 }
@@ -219,6 +222,7 @@ void qmpSettingsWindow::settingsUpdate()
 		settings->remove("Effects/ChorusType");
 	}
 
+	settings->setValue("Behavior/SingleInstance",ui->cbPersistentfs->isChecked()?1:0);
 	settings->sync();
 }
 

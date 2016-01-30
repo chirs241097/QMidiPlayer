@@ -66,7 +66,7 @@ class qmpMainWindow:public QMainWindow
 	private:
 		Ui::qmpMainWindow *ui;
 		QTimer *timer;
-		bool playing,stopped,dragging,fin;
+		bool playing,stopped,dragging,fin,singleFS;
 		std::thread *playerTh=NULL;
 		std::thread *renderTh=NULL;
 		std::chrono::steady_clock::time_point st;
