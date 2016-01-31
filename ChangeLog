@@ -1,3 +1,7 @@
+2016-01-31 0.7.0 beta
+Modify default settings in for Win32.
+Initial MIDI mapper stub.
+
 2016-01-30 0.7.0 beta
 Add support for a single, persistent fluidsynth instance.
 (Experimental, may also break the original mode...)

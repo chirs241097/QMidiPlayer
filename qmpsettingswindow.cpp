@@ -78,15 +78,21 @@ void qmpSettingsWindow::settingsInit()
 	if(~selected)ui->cbAudioDrv->setCurrentIndex(selected);
 	settings->setValue("Audio/Driver",ui->cbAudioDrv->currentText());
 
+#ifdef WIN32
+#define DefBufSize 8192
+#else
+#define DefBufSize 128
+#endif
 	selected=-1;
 	for(int i=0;i<ui->cbBufSize->count();++i)
-	if(ui->cbBufSize->itemText(i).toInt()==settings->value("Audio/BufSize",128).toInt())
+	if(ui->cbBufSize->itemText(i).toInt()==settings->value("Audio/BufSize",DefBufSize).toInt())
 	{selected=i;break;}
 	if(~selected)ui->cbBufSize->setCurrentIndex(selected);
-	else if(settings->value("Audio/BufSize",128).toInt()>=64&&settings->value("Audio/BufSize",128).toInt()<=8192)
-		ui->cbBufSize->setCurrentText(settings->value("Audio/BufSize",128).toString());
-	else ui->cbBufSize->setCurrentText("128");
+	else if(settings->value("Audio/BufSize",DefBufSize).toInt()>=64&&settings->value("Audio/BufSize",DefBufSize).toInt()<=8192)
+		ui->cbBufSize->setCurrentText(settings->value("Audio/BufSize",DefBufSize).toString());
+	else ui->cbBufSize->setCurrentText(QString::number(DefBufSize));
 	settings->setValue("Audio/BufSize",ui->cbBufSize->currentText().toInt());
+#undef DefBufSize
 
 	selected=-1;
 	for(int i=0;i<ui->cbBufCnt->count();++i)

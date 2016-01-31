@@ -36,7 +36,8 @@ HEADERS  += qmpmainwindow.hpp \
 	qmpinfowindow.hpp \
 	qmpsettingswindow.hpp \
 	qmphelpwindow.hpp \
-    qdialskulpturestyle.hpp
+    qdialskulpturestyle.hpp \
+    qmpimidimapper.hpp
 
 FORMS    += qmpmainwindow.ui \
 	qmpplistwindow.ui \
