@@ -63,6 +63,9 @@ void qmpSettingsWindow::settingsInit()
 	settings->setValue("Midi/SendSysEx",settings->value("Midi/SendSysEx",1));
 	ui->cbSendSysx->setChecked(settings->value("Midi/SendSysEx",1).toInt());
 
+	settings->setValue("Midi/WaitVoice",settings->value("Midi/WaitVoice",1));
+	ui->cbWaitVoice->setChecked(settings->value("Midi/WaitVoice",1).toInt());
+
 	int selected=-1;
 	for(int i=0;i<ui->cbEncoding->count();++i)
 	if(ui->cbEncoding->itemText(i)==settings->value("Midi/TextEncoding","Unicode").toString())
@@ -170,6 +173,8 @@ void qmpSettingsWindow::settingsUpdate()
 	settings->setValue("Midi/DisableMapping",ui->cbDisableMapping->isChecked()?1:0);
 
 	settings->setValue("Midi/SendSysEx",ui->cbSendSysx->isChecked()?1:0);
+
+	settings->setValue("Midi/WaitVoice",ui->cbWaitVoice->isChecked()?1:0);
 
 	settings->setValue("Midi/TextEncoding",ui->cbEncoding->currentText());
 

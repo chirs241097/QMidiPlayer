@@ -1,4 +1,9 @@
 2016-02-28 0.7.0 beta
+RPN pitch bend range handling.
+Added an option to disable waiting for remaining voices before stopping.
+Documentation...
+
+2016-02-28 0.7.0 beta
 Significant sleep precision improvments for Windows.
 Also save master volume in configuration file.
 

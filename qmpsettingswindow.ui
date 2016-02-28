@@ -29,102 +29,159 @@
       <attribute name="title">
        <string>Midi</string>
       </attribute>
-      <layout class="QGridLayout" name="gridLayout">
-       <item row="1" column="0">
+      <layout class="QVBoxLayout" name="verticalLayout_4">
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_6">
+         <item>
+          <widget class="QLabel" name="lbOutputDevice">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Default Output Device</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="cbOutputDevice">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <item>
+            <property name="text">
+             <string>Internal FluidSynth</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
         <widget class="QCheckBox" name="cbDisableMapping">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="text">
           <string>Disable Midi Mapping</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="lbOutputDevice">
-         <property name="text">
-          <string>Default Output Device</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QComboBox" name="cbOutputDevice">
-         <item>
-          <property name="text">
-           <string>Internal FluidSynth</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item row="2" column="0">
+       <item>
         <widget class="QCheckBox" name="cbSendSysx">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="text">
           <string>Send SysEx</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="lbEncoding">
+       <item>
+        <widget class="QCheckBox" name="cbWaitVoice">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="text">
-          <string>Text Encoding</string>
+          <string>Wait for remaining voices before stopping</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="1">
-        <widget class="QComboBox" name="cbEncoding">
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_7">
          <item>
-          <property name="text">
-           <string>Unicode</string>
-          </property>
+          <widget class="QLabel" name="lbEncoding">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text">
+            <string>Text Encoding</string>
+           </property>
+          </widget>
          </item>
          <item>
-          <property name="text">
-           <string>Big5</string>
-          </property>
+          <widget class="QComboBox" name="cbEncoding">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <item>
+            <property name="text">
+             <string>Unicode</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Big5</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Big5-HKSCS</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>CP949</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>EUC-JP</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>EUC-KR</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>GB18030</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>KOI8-R</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>KOI8-U</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Macintosh</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Shift-JIS</string>
+            </property>
+           </item>
+          </widget>
          </item>
-         <item>
-          <property name="text">
-           <string>Big5-HKSCS</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>CP949</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>EUC-JP</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>EUC-KR</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>GB18030</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>KOI8-R</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>KOI8-U</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Macintosh</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Shift-JIS</string>
-          </property>
-         </item>
-        </widget>
+        </layout>
        </item>
       </layout>
      </widget>

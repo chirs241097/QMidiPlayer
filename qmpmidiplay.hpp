@@ -54,11 +54,12 @@ class CMidiPlayer
 	private:
 		CMidiFile *midiFile;
 		uint32_t stamps[101];
-		uint32_t ccstamps[101][16][134],ccc[16][134];
-		//0..127:cc 128:pc 129:cp 130:pb 131:tempo 132:ts 133:ks
+		uint32_t ccstamps[101][16][135],ccc[16][135];
+		//0..127:cc 128:pc 129:cp 130:pb 131:tempo 132:ts 133:ks 134:pbr
+		int32_t rpnid,rpnval;
 		uint16_t mute,solo;
 		double ftime;
-		bool sendSysEx,singleInstance;
+		bool sendSysEx,singleInstance,waitvoice;
 		fluid_settings_t* settings;
 		fluid_synth_t* synth;
 		fluid_audio_driver_t* adriver;
@@ -85,7 +86,7 @@ class CMidiPlayer
 		void fluidDeinitialize();
 		void playerDeinit();
 		void playerThread();
-		void playerPanic();
+		void playerPanic(bool reset=false);
 
 		void rendererLoadFile(const char* ofn);
 		void rendererInit(const char *fn);
@@ -100,6 +101,7 @@ class CMidiPlayer
 		void setTCpaused(uint32_t ps);
 		uint32_t isFinished();
 		void setResumed();
+		void setWaitVoice(bool wv);
 
 		double getFtime();
 		void getCurrentTimeSignature(int *n,int *d);

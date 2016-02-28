@@ -53,6 +53,13 @@ void CMidiPlayer::processEvent(const SEvent *e)
 			fluid_synth_noteon(synth,e->type&0x0F,e->p1,e->p2);
 		break;
 		case 0xB0://CC
+			if(e->p1==100)rpnid=e->p2;
+			if(e->p1==6)rpnval=e->p2;
+			if(~rpnid&&~rpnval)
+			{
+				if(rpnid==0)fluid_synth_pitch_wheel_sens(synth,e->type&0x0F,rpnval);
+				rpnid=rpnval=-1;
+			}
 			fluid_synth_cc(synth,e->type&0x0F,e->p1,e->p2);
 		break;
 		case 0xC0://PC
@@ -96,6 +103,13 @@ void CMidiPlayer::processEventStub(const SEvent *e)
 	switch(e->type&0xF0)
 	{
 		case 0xB0://CC
+			if(e->p1==100)rpnid=e->p2;
+			if(e->p1==6)rpnval=e->p2;
+			if(~rpnid&&~rpnval)
+			{
+				if(rpnid==0)ccc[e->type&0x0F][134]=rpnval;
+				rpnid=rpnval=-1;
+			}
 			ccc[e->type&0x0F][e->p1]=e->p2;
 		break;
 		case 0xC0://PC
@@ -159,7 +173,7 @@ void CMidiPlayer::playEvents()
 		if(tcstop||!midiFile)break;
 		ct=midiFile->getEvent(tceptr)->time;
 	}
-	while(!tcstop&&synth&&fluid_synth_get_active_voice_count(synth)>0)std::this_thread::sleep_for(std::chrono::microseconds(100));
+	while(!tcstop&&synth&&(waitvoice&&fluid_synth_get_active_voice_count(synth)>0))std::this_thread::sleep_for(std::chrono::milliseconds(2));
 	finished=1;
 }
 void CMidiPlayer::fileTimer1Pass()
@@ -178,16 +192,16 @@ void CMidiPlayer::fileTimer2Pass()
 {
 	double ctime=.0;uint32_t c=1;ctempo=0x7A120;dpt=ctempo*1000/divs;
 	memset(stamps,0,sizeof(stamps));memset(ccstamps,0,sizeof(ccstamps));
-	memset(ccc,0,sizeof(ccc));for(int i=0;i<16;++i)
+	memset(ccc,0,sizeof(ccc));rpnid=rpnval=-1;for(int i=0;i<16;++i)
 	{
 		ccc[i][7]=100;ccc[i][10]=64;ccc[i][11]=127;
 		ccc[i][11]=127;ccc[i][71]=64;ccc[i][72]=64;
 		ccc[i][73]=64;ccc[i][74]=64;ccc[i][75]=64;
 		ccc[i][76]=64;ccc[i][77]=64;ccc[i][78]=64;
 		ccc[0][131]=dpt;ccc[0][132]=0x04021808;
-		ccc[0][133]=0;
+		ccc[0][133]=0;ccc[0][134]=2;
 	}if(midiFile->getStandard()!=4)ccc[9][0]=128;
-	for(int i=0;i<16;++i)for(int j=0;j<134;++j)
+	for(int i=0;i<16;++i)for(int j=0;j<135;++j)
 		ccstamps[0][i][j]=ccc[i][j];
 	for(uint32_t eptr=0,ct=midiFile->getEvent(0)->time;eptr<midiFile->getEventCount();)
 	{
@@ -197,7 +211,7 @@ void CMidiPlayer::fileTimer2Pass()
 		ctime+=(midiFile->getEvent(eptr)->time-ct)*dpt/1e9;
 		while(ctime>ftime*c/100.)
 		{
-			for(int i=0;i<16;++i)for(int j=0;j<134;++j)
+			for(int i=0;i<16;++i)for(int j=0;j<135;++j)
 				ccstamps[c][i][j]=ccc[i][j];
 			stamps[c++]=eptr;
 			if(c>100)break;
@@ -206,7 +220,7 @@ void CMidiPlayer::fileTimer2Pass()
 	}
 	while(c<101)
 	{
-		for(int i=0;i<16;++i)for(int j=0;j<132;++j)
+		for(int i=0;i<16;++i)for(int j=0;j<135;++j)
 			ccstamps[c][i][j]=ccc[i][j];
 		stamps[c++]=midiFile->getEventCount();
 	}
@@ -214,13 +228,19 @@ void CMidiPlayer::fileTimer2Pass()
 CMidiPlayer::CMidiPlayer(bool singleInst)
 {
 	midiFile=NULL;resumed=false;singleInstance=singleInst;
-	settings=NULL;synth=NULL;adriver=NULL;
+	settings=NULL;synth=NULL;adriver=NULL;waitvoice=true;
 }
 CMidiPlayer::~CMidiPlayer(){if(singleInstance)fluidDeinitialize();}
-void CMidiPlayer::playerPanic()
+void CMidiPlayer::playerPanic(bool reset)
 {
+	if(reset)for(int i=0;i<16;++i)
+	{
+		fluid_synth_pitch_bend(synth,i,8192);
+		fluid_synth_cc(synth,i,7,100);
+		fluid_synth_cc(synth,i,10,64);
+		fluid_synth_cc(synth,i,11,127);
+	}
 	for(int i=0;i<16;++i)fluid_synth_all_notes_off(synth,i);
-	//for(int i=0;i<16;++i)for(int j=0;j<128;++j)fluid_synth_noteoff(synth,i,j);
 }
 bool CMidiPlayer::playerLoadFile(const char* fn)
 {
@@ -235,7 +255,7 @@ void CMidiPlayer::playerInit()
 {
 	ctempo=0x7A120;ctsn=4;ctsd=4;cks=0;dpt=ctempo*1000/divs;
 	tceptr=0;tcstop=0;tcpaused=0;finished=0;mute=solo=0;
-	sendSysEx=true;
+	sendSysEx=true;rpnid=rpnval=-1;
 	if(!singleInstance)fluidPreInitialize();
 }
 void CMidiPlayer::playerDeinit()
@@ -307,6 +327,7 @@ uint32_t CMidiPlayer::getTCpaused(){return tcpaused;}
 void CMidiPlayer::setTCpaused(uint32_t ps){tcpaused=ps;}
 uint32_t CMidiPlayer::isFinished(){return finished;}
 void CMidiPlayer::setResumed(){resumed=true;}
+void CMidiPlayer::setWaitVoice(bool wv){waitvoice=wv;}
 void CMidiPlayer::setGain(double gain){if(settings)fluid_settings_setnum(settings,"synth.gain",gain);}
 int CMidiPlayer::getPolyphone(){return synth?fluid_synth_get_active_voice_count(synth):0;}
 int CMidiPlayer::getMaxPolyphone(){return synth?fluid_synth_get_polyphony(synth):0;}
