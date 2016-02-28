@@ -78,7 +78,7 @@ void qmpSettingsWindow::settingsInit()
 	if(~selected)ui->cbAudioDrv->setCurrentIndex(selected);
 	settings->setValue("Audio/Driver",ui->cbAudioDrv->currentText());
 
-#ifdef WIN32
+#ifdef _WIN32
 #define DefBufSize 8192
 #else
 #define DefBufSize 128
@@ -136,6 +136,7 @@ void qmpSettingsWindow::settingsInit()
 	{selected=i;break;}
 	if(~selected)ui->cbBSMode->setCurrentIndex(selected);
 	settings->setValue("Audio/BankSelect",ui->cbBSMode->currentText());
+	settings->setValue("Audio/Gain",settings->value("Audio/Gain",50));
 
 	int sfc=settings->value("SoundFonts/SFCount",0).toInt();
 	ui->lwSoundfont->clear();for(int i=1;i<=sfc;++i)

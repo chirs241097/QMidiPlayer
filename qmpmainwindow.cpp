@@ -47,6 +47,7 @@ qmpMainWindow::qmpMainWindow(QWidget *parent) :
 	{ui->pbChannels->setChecked(true);on_pbChannels_clicked();}
 	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/EfxWShown",0).toInt())
 	{ui->pbEfx->setChecked(true);on_pbEfx_clicked();}
+	ui->vsMasterVol->setValue(qmpSettingsWindow::getSettingsIntf()->value("Audio/Gain",50).toInt());
 	connect(fnA1,SIGNAL(triggered()),this,SLOT(onfnA1()));
 	connect(fnA2,SIGNAL(triggered()),this,SLOT(onfnA2()));
 	connect(timer,SIGNAL(timeout()),this,SLOT(updateWidgets()));
@@ -318,6 +319,7 @@ void qmpMainWindow::on_hsTimer_sliderReleased()
 void qmpMainWindow::on_vsMasterVol_valueChanged()
 {
 	if(!stopped)player->setGain(ui->vsMasterVol->value()/250.);
+	qmpSettingsWindow::getSettingsIntf()->setValue("Audio/Gain",ui->vsMasterVol->value());
 }
 
 void qmpMainWindow::on_pbStop_clicked()

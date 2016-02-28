@@ -1,3 +1,7 @@
+2016-02-28 0.7.0 beta
+Significant sleep precision improvments for Windows.
+Also save master volume in configuration file.
+
 2016-01-31 0.7.0 beta
 Modify default settings in for Win32.
 Initial MIDI mapper stub.

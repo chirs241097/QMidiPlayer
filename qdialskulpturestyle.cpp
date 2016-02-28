@@ -26,6 +26,10 @@
 
 #include "qdialskulpturestyle.hpp"
 
+#ifndef M_PI
+#define M_PI 3.141592653589793f
+#endif
+
 static const bool UsePixmapCache = true;
 
 static void

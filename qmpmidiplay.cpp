@@ -2,10 +2,10 @@
 #include <chrono>
 #include <thread>
 #include <fluidsynth.h>
-#ifdef _WIN32
-#include <QThread>
-#endif
 #include "qmpmidiplay.hpp"
+#ifdef _WIN32
+#include <windows.h>
+#endif
 void CMidiPlayer::fluidPreInitialize()
 {
 	settings=new_fluid_settings();
@@ -17,7 +17,7 @@ void CMidiPlayer::fluidInitialize()
 	fluid_synth_set_chorus(synth,FLUID_CHORUS_DEFAULT_N,FLUID_CHORUS_DEFAULT_LEVEL,
 						   FLUID_CHORUS_DEFAULT_SPEED,FLUID_CHORUS_DEFAULT_DEPTH,
 						   FLUID_CHORUS_DEFAULT_TYPE);
-#ifndef WIN32
+#ifndef _WIN32
 	if(!singleInstance)
 	{
 		if(midiFile->getStandard()==4)
@@ -127,6 +127,20 @@ void CMidiPlayer::processEventStub(const SEvent *e)
 		break;
 	}
 }
+#ifdef _WIN32
+void w32usleep(uint64_t t)
+{
+	uint64_t st=0,ct=0,f=0;
+	QueryPerformanceFrequency((LARGE_INTEGER*)&f);
+	QueryPerformanceCounter((LARGE_INTEGER*)&st);
+	do{
+		if(t>10000+(ct-st)*1000000/f)Sleep((t-(ct-st)*1000000/f)/2000);
+		else if(t>5000+(ct-st)*1000000/f)Sleep(1);
+		else std::this_thread::yield();
+		QueryPerformanceCounter((LARGE_INTEGER*)&ct);
+	}while((ct-st)*1000000<t*f);
+}
+#endif
 void CMidiPlayer::playEvents()
 {
 	for(uint32_t ct=midiFile->getEvent(0)->time;tceptr<midiFile->getEventCount();)
@@ -138,7 +152,7 @@ void CMidiPlayer::playEvents()
 		if(resumed)resumed=false;
 		else
 #ifdef _WIN32
-		QThread::usleep((midiFile->getEvent(tceptr)->time-ct)*(dpt/1000));
+		w32usleep((midiFile->getEvent(tceptr)->time-ct)*(dpt/1000));
 #else
 		std::this_thread::sleep_for(std::chrono::nanoseconds(midiFile->getEvent(tceptr)->time-ct)*dpt);
 #endif
