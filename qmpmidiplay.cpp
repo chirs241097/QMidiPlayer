@@ -5,6 +5,7 @@
 #include "qmpmidiplay.hpp"
 #ifdef _WIN32
 #include <windows.h>
+uint64_t pf;
 #endif
 void CMidiPlayer::fluidPreInitialize()
 {
@@ -144,15 +145,14 @@ void CMidiPlayer::processEventStub(const SEvent *e)
 #ifdef _WIN32
 void w32usleep(uint64_t t)
 {
-	uint64_t st=0,ct=0,f=0;
-	QueryPerformanceFrequency((LARGE_INTEGER*)&f);
+	uint64_t st=0,ct=0;
 	QueryPerformanceCounter((LARGE_INTEGER*)&st);
 	do{
-		if(t>10000+(ct-st)*1000000/f)Sleep((t-(ct-st)*1000000/f)/2000);
-		else if(t>5000+(ct-st)*1000000/f)Sleep(1);
+		if(t>10000+(ct-st)*1000000/pf)Sleep((t-(ct-st)*1000000/pf)/2000);
+		else if(t>5000+(ct-st)*1000000/pf)Sleep(1);
 		else std::this_thread::yield();
 		QueryPerformanceCounter((LARGE_INTEGER*)&ct);
-	}while((ct-st)*1000000<t*f);
+	}while((ct-st)*1000000<t*pf);
 }
 #endif
 void CMidiPlayer::playEvents()
@@ -229,6 +229,9 @@ CMidiPlayer::CMidiPlayer(bool singleInst)
 {
 	midiFile=NULL;resumed=false;singleInstance=singleInst;
 	settings=NULL;synth=NULL;adriver=NULL;waitvoice=true;
+#ifdef _WIN32
+	QueryPerformanceFrequency((LARGE_INTEGER*)&pf);
+#endif
 }
 CMidiPlayer::~CMidiPlayer(){if(singleInstance)fluidDeinitialize();}
 void CMidiPlayer::playerPanic(bool reset)

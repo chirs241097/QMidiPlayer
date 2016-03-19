@@ -1,3 +1,7 @@
+2016-03-19 0.7.0 beta
+Minor changes on w32usleep...
+Sync with the Windows build.
+
 2016-02-28 0.7.0 beta
 RPN pitch bend range handling.
 Added an option to disable waiting for remaining voices before stopping.
