@@ -135,7 +135,7 @@ void qmpMainWindow::dropEvent(QDropEvent *event)
 	QList<QUrl> l=event->mimeData()->urls();
 	QStringList sl;
 	for(int i=0;i<l.size();++i)
-		sl.push_back(l.at(i).path());
+		sl.push_back(l.at(i).toLocalFile());
 	plistw->insertItems(sl);
 }
 void qmpMainWindow::dragEnterEvent(QDragEnterEvent *event)
