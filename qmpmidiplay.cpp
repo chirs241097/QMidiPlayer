@@ -87,7 +87,7 @@ void CMidiPlayer::processEvent(const SEvent *e)
 					case 0x01:case 0x02:case 0x03:
 					case 0x04:case 0x05:case 0x06:
 					case 0x07:
-						if(e->str)puts(e->str);
+						//if(e->str)puts(e->str);
 					break;
 				}
 			}
@@ -146,6 +146,7 @@ void CMidiPlayer::processEventStub(const SEvent *e)
 void w32usleep(uint64_t t)
 {
 	uint64_t st=0,ct=0;
+	timeBeginPeriod(1);
 	QueryPerformanceCounter((LARGE_INTEGER*)&st);
 	do{
 		if(t>10000+(ct-st)*1000000/pf)Sleep((t-(ct-st)*1000000/pf)/2000);
@@ -153,6 +154,7 @@ void w32usleep(uint64_t t)
 		else std::this_thread::yield();
 		QueryPerformanceCounter((LARGE_INTEGER*)&ct);
 	}while((ct-st)*1000000<t*pf);
+	timeEndPeriod(1);
 }
 #endif
 void CMidiPlayer::playEvents()
@@ -165,7 +167,7 @@ void CMidiPlayer::playEvents()
 		if(tcstop||!midiFile||tceptr>=midiFile->getEventCount())break;
 		if(resumed)resumed=false;
 		else
-#ifdef _WIN32
+#if 0
 		w32usleep((midiFile->getEvent(tceptr)->time-ct)*(dpt/1000));
 #else
 		std::this_thread::sleep_for(std::chrono::nanoseconds(midiFile->getEvent(tceptr)->time-ct)*dpt);
@@ -233,7 +235,10 @@ CMidiPlayer::CMidiPlayer(bool singleInst)
 	QueryPerformanceFrequency((LARGE_INTEGER*)&pf);
 #endif
 }
-CMidiPlayer::~CMidiPlayer(){if(singleInstance)fluidDeinitialize();}
+CMidiPlayer::~CMidiPlayer()
+{
+	if(singleInstance)fluidDeinitialize();
+}
 void CMidiPlayer::playerPanic(bool reset)
 {
 	if(reset)for(int i=0;i<16;++i)

@@ -6,6 +6,9 @@
 #include "qmpmainwindow.hpp"
 #include "ui_qmpmainwindow.h"
 #include "qmpmidiplay.hpp"
+#ifdef _WIN32
+#include <Windows.h>
+#endif
 
 qmpMainWindow* qmpMainWindow::ref=NULL;
 
@@ -181,6 +184,9 @@ void qmpMainWindow::updateWidgets()
 			player->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
 			player->setWaitVoice(qmpSettingsWindow::getSettingsIntf()->value("Midi/WaitVoice",1).toInt());
 			playerTh=new std::thread(&CMidiPlayer::playerThread,player);
+#ifdef _WIN32
+			SetThreadPriority(playerTh->native_handle(),THREAD_PRIORITY_TIME_CRITICAL);
+#endif
 			st=std::chrono::steady_clock::now();offset=0;
 			timer->start(100);
 		}
@@ -271,6 +277,9 @@ void qmpMainWindow::on_pbPlayPause_clicked()
 		player->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
 		player->setWaitVoice(qmpSettingsWindow::getSettingsIntf()->value("Midi/WaitVoice",1).toInt());
 		playerTh=new std::thread(&CMidiPlayer::playerThread,player);
+#ifdef _WIN32
+			SetThreadPriority(playerTh->native_handle(),THREAD_PRIORITY_TIME_CRITICAL);
+#endif
 		st=std::chrono::steady_clock::now();offset=0;
 		timer->start(100);
 		stopped=false;
@@ -392,6 +401,9 @@ void qmpMainWindow::on_pbPrev_clicked()
 	player->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
 	player->setWaitVoice(qmpSettingsWindow::getSettingsIntf()->value("Midi/WaitVoice",1).toInt());
 	playerTh=new std::thread(&CMidiPlayer::playerThread,player);
+#ifdef _WIN32
+			SetThreadPriority(playerTh->native_handle(),THREAD_PRIORITY_TIME_CRITICAL);
+#endif
 	st=std::chrono::steady_clock::now();offset=0;
 	timer->start(100);
 }
@@ -414,6 +426,9 @@ void qmpMainWindow::on_pbNext_clicked()
 	player->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
 	player->setWaitVoice(qmpSettingsWindow::getSettingsIntf()->value("Midi/WaitVoice",1).toInt());
 	playerTh=new std::thread(&CMidiPlayer::playerThread,player);
+#ifdef _WIN32
+			SetThreadPriority(playerTh->native_handle(),THREAD_PRIORITY_TIME_CRITICAL);
+#endif
 	st=std::chrono::steady_clock::now();offset=0;
 	timer->start(100);
 }
@@ -439,6 +454,9 @@ void qmpMainWindow::selectionChanged()
 	player->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
 	player->setWaitVoice(qmpSettingsWindow::getSettingsIntf()->value("Midi/WaitVoice",1).toInt());
 	playerTh=new std::thread(&CMidiPlayer::playerThread,player);
+#ifdef _WIN32
+			SetThreadPriority(playerTh->native_handle(),THREAD_PRIORITY_TIME_CRITICAL);
+#endif
 	st=std::chrono::steady_clock::now();offset=0;
 	timer->start(100);
 }

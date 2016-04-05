@@ -219,7 +219,6 @@ CMidiFile::CMidiFile(const char* fn)
 		if(!(f=fopen(fn,"rb")))throw (fprintf(stderr,"E: file %s doesn't exist!\n",fn),2);
 		chunkReader(1);
 		for(uint32_t i=0;i<trk;i+=chunkReader(0));
-		printf("%d note(s)\n",notes);
 		fclose(f);
 		std::sort(eventList,eventList+eventc,cmp);
 	}

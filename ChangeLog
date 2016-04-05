@@ -1,3 +1,12 @@
+2016-04-05 0.7.0 beta
+Raise player thread priority in Windows.
+I've been so tired with the timing bug...
+Remove several printf's.
+
+2016-03-23 0.7.0 beta
+Fix drag&drop behavior in Windows.
+Use winmm functions to ensure timing precision.
+
 2016-03-19 0.7.0 beta
 Minor changes on w32usleep...
 Sync with the Windows build.
