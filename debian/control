@@ -3,9 +3,18 @@ Maintainer: Chris Xiong <chirs241097@gmail.com>
 Section: sound
 Priority: optional
 Standards-Version: 3.9.2
-Build-Depends: debhelper (>= 9), qtbase5-dev, qt5-qmake, libfluidsynth-dev
+Build-Depends: debhelper (>= 9), qtbase5-dev, qt5-qmake, libfluidsynth-dev, 
+	qml-module-qtquick-controls,
+	qml-module-qtquick-window2,
+	qml-module-qtquick2,
+	libqt5qml5
 
 Package: qmidiplayer
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Midi player based on Qt and fluidsynth.
+
+Package: qmidiplayer-lite
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Midi player based on Qt and fluidsynth (Lite version).

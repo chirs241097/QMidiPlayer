@@ -4,7 +4,7 @@
 #include <QUrl>
 #include <thread>
 #include <fluidsynth.h>
-#include "../common/qmpmidiplay.hpp"
+#include "../core/qmpmidiplay.hpp"
 class CQMPCoreWrapper:public QObject
 {
 	Q_OBJECT

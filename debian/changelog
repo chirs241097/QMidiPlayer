@@ -1,3 +1,27 @@
+qmidiplayer (0.7.0-6) UNRELEASED; urgency=low
+
+  * Package qmidiplayer-lite.
+
+ -- chrisoft <chirs241097@gmail.com>  Wed, 06 Apr 2016 16:45:02 +0800
+
+qmidiplayer (0.7.0-5) UNRELEASED; urgency=low
+
+  * New upstream release.
+
+ -- chrisoft <chirs241097@gmail.com>  Wed, 06 Apr 2016 09:43:57 +0800
+
+qmidiplayer (0.7.0-4) UNRELEASED; urgency=low
+
+  * New upstream release.
+
+ -- chrisoft <chirs241097@gmail.com>  Tue, 05 Apr 2016 22:17:31 +0800
+
+qmidiplayer (0.7.0-3) UNRELEASED; urgency=low
+
+  * New upstream release.
+
+ -- chrisoft <chirs241097@gmail.com>  Wed, 23 Mar 2016 15:41:15 +0800
+
 qmidiplayer (0.7.0-2) UNRELEASED; urgency=low
 
   * New upstream release.

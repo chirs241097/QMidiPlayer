@@ -2,4 +2,4 @@
 %:
 	dh $@ --parallel
 override_dh_auto_install:
-	$(MAKE) INSTALL_ROOT=$$(pwd)/debian/qmidiplayer prefix=/usr install
+	$(MAKE) INSTALL_ROOT=$$(pwd)/debian/tmp prefix=/usr install
