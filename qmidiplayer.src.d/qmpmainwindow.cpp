@@ -5,7 +5,7 @@
 #include <QDesktopWidget>
 #include "qmpmainwindow.hpp"
 #include "ui_qmpmainwindow.h"
-#include "qmpmidiplay.hpp"
+#include "../common/qmpmidiplay.hpp"
 #ifdef _WIN32
 #include <Windows.h>
 #endif

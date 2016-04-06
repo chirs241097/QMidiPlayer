@@ -11,7 +11,7 @@
 #include <QMenu>
 #include <thread>
 #include <chrono>
-#include "qmpmidiplay.hpp"
+#include "../common/qmpmidiplay.hpp"
 #include "qmpplistwindow.hpp"
 #include "qmpchannelswindow.hpp"
 #include "qmpefxwindow.hpp"
