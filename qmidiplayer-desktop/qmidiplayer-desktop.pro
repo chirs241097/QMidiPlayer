@@ -24,7 +24,8 @@ SOURCES += main.cpp\
 	qmpinfowindow.cpp \
 	qmpsettingswindow.cpp \
 	qmphelpwindow.cpp \
-	qdialskulpturestyle.cpp
+	qdialskulpturestyle.cpp \
+	../core/qmpmidimapperrtmidi.cpp
 
 HEADERS  += qmpmainwindow.hpp \
 	../core/qmpmidiplay.hpp \
@@ -37,7 +38,7 @@ HEADERS  += qmpmainwindow.hpp \
 	qmpsettingswindow.hpp \
 	qmphelpwindow.hpp \
 	qdialskulpturestyle.hpp \
-	qmpimidimapper.hpp
+	../core/qmpmidimappers.hpp
 
 FORMS    += qmpmainwindow.ui \
 	qmpplistwindow.ui \
@@ -57,7 +58,7 @@ unix{
 	target.path = $$BINDIR
 	INSTALLS += target
 	QMAKE_CXXFLAGS += -std=c++11 -Wall
-	LIBS += -lfluidsynth
+	LIBS += -lfluidsynth -lrtmidi
 }
 win32:LIBS += e:/libs/fluidsynth/fluidsynth.lib winmm.lib #You have to change these
 win32:INCLUDEPATH += e:/libs/fluidsynth/include           #before building...

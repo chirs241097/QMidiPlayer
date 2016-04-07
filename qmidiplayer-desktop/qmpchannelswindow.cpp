@@ -13,16 +13,19 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent) :
 	pselectw=new qmpPresetSelector(this);
 	ceditw=new qmpChannelEditor(this);
 	connect(this,SIGNAL(dialogClosing()),parent,SLOT(dialogClosed()));
+	mapper=qmpMainWindow::getInstance()->getPlayer()->getMidiMapper();
+	int devc=mapper->enumDevices();
 	for(int i=0;i<16;++i)
 	{
 		ui->twChannels->setCellWidget(i,0,new QCheckBox(""));
 		connect(ui->twChannels->cellWidget(i,0),SIGNAL(stateChanged(int)),this,SLOT(channelMSChanged()));
 		ui->twChannels->setCellWidget(i,1,new QCheckBox(""));
 		connect(ui->twChannels->cellWidget(i,1),SIGNAL(stateChanged(int)),this,SLOT(channelMSChanged()));
-		ui->twChannels->setCellWidget(i,2,new QComboBox());
-		QComboBox *cb=(QComboBox*)ui->twChannels->cellWidget(i,2);
-		//stub
-		cb->addItem("Internal FluidSynth");
+		ui->twChannels->setCellWidget(i,2,new QDCComboBox());
+		QDCComboBox *cb=(QDCComboBox*)ui->twChannels->cellWidget(i,2);
+		cb->addItem("Internal FluidSynth");cb->setID(i);
+		for(int j=0;j<devc;++j)cb->addItem(mapper->deviceName(j).c_str());
+		connect(cb,SIGNAL(onChange(int,int)),this,SLOT(changeMidiMapping(int,int)));
 		ui->twChannels->setCellWidget(i,3,new QDCLabel(""));
 		((QDCLabel*)ui->twChannels->cellWidget(i,3))->setID(i);
 		connect(ui->twChannels->cellWidget(i,3),SIGNAL(onDoubleClick(int)),this,SLOT(showPresetWindow(int)));
@@ -129,4 +132,9 @@ void qmpChannelsWindow::showChannelEditorWindow(int chid)
 {
 	ceditw->show();
 	ceditw->setupWindow(chid);
+}
+
+void qmpChannelsWindow::changeMidiMapping(int chid,int idx)
+{
+	qmpMainWindow::getInstance()->getPlayer()->setChannelOutput(chid,idx);
 }

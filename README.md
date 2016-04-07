@@ -12,7 +12,7 @@ Features:
 * Editing synthesizer effects
 * Rendering midi to wave file
 * Visualization using SMELT (not implemented)
-* MIDI mapping (not implemented)
+* MIDI mapping (experimental, based on RtMidi)
 
 Tested on Debian sid and Windows Vista~10.
 

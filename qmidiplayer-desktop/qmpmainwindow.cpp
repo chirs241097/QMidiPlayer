@@ -20,6 +20,8 @@ qmpMainWindow::qmpMainWindow(QWidget *parent) :
 	ui->lbFileName->setText("");ref=this;
 	playing=false;stopped=true;dragging=false;
 	settingsw=new qmpSettingsWindow(this);
+	singleFS=qmpSettingsWindow::getSettingsIntf()->value("Behavior/SingleInstance",0).toInt();
+	player=new CMidiPlayer(singleFS);
 	plistw=new qmpPlistWindow(this);
 	chnlw=new qmpChannelsWindow(this);
 	efxw=new qmpEfxWindow(this);
@@ -30,8 +32,6 @@ qmpMainWindow::qmpMainWindow(QWidget *parent) :
 	fnA2=new QAction("Render to Wave",ui->lbFileName);
 	ui->lbFileName->addAction(fnA1);
 	ui->lbFileName->addAction(fnA2);
-	singleFS=qmpSettingsWindow::getSettingsIntf()->value("Behavior/SingleInstance",0).toInt();
-	player=new CMidiPlayer(singleFS);
 	if(singleFS){player->fluidPreInitialize();playerSetup();player->fluidInitialize();
 		for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
 			player->pushSoundFont(settingsw->getSFWidget()->item(i)->text().toStdString().c_str());}

@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <fluidsynth.h>
+#include "qmpmidimappers.hpp"
 struct SEvent
 {
 	uint32_t iid,time,p1,p2;
@@ -69,6 +70,8 @@ class CMidiPlayer
 		//thread control
 		uint32_t tceptr,tcpaused,tcstop;
 		uint32_t finished,resumed;
+		qmpMidiMapperRtMidi *mapper;
+		int mappedoutput[16],deviceusage[16],deviceiid[128];
 
 		void setBit(uint16_t &n,uint16_t bn,uint16_t b);
 		void processEvent(const SEvent *e);
@@ -133,5 +136,8 @@ class CMidiPlayer
 		void pushSoundFont(const char* sf);
 		int getSFCount();
 		fluid_sfont_t* getSFPtr(int sfid);
+
+		qmpMidiMapperRtMidi* getMidiMapper();
+		void setChannelOutput(int ch,int devid);
 };
 #endif

@@ -4,11 +4,13 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QDialog>
+#include <QComboBox>
 #include <QShowEvent>
 #include <QCloseEvent>
 #include <QMoveEvent>
 #include "qmppresetselect.hpp"
 #include "qmpchanneleditor.hpp"
+#include "../core/qmpmidimappers.hpp"
 
 namespace Ui {
 	class qmpChannelsWindow;
@@ -42,6 +44,20 @@ class QDCPushButton:public QPushButton
 		void onClick(int id);
 };
 
+class QDCComboBox:public QComboBox
+{
+	Q_OBJECT
+	private:
+		int id;
+	public:
+		QDCComboBox():QComboBox(){id=-1;connect(this,SIGNAL(currentIndexChanged(int)),this,SLOT(indexChangedSlot(int)));}
+		void setID(int _id){id=_id;}
+	signals:
+		void onChange(int id,int idx);
+	public slots:
+		void indexChangedSlot(int idx){emit(onChange(id,idx));}
+};
+
 class qmpChannelsWindow:public QDialog
 {
 	Q_OBJECT
@@ -59,6 +75,7 @@ class qmpChannelsWindow:public QDialog
 		void channelMSChanged();
 		void showPresetWindow(int chid);
 		void showChannelEditorWindow(int chid);
+		void changeMidiMapping(int chid,int idx);
 		void on_pbUnmute_clicked();
 		void on_pbUnsolo_clicked();
 
@@ -66,6 +83,7 @@ class qmpChannelsWindow:public QDialog
 		Ui::qmpChannelsWindow *ui;
 		qmpPresetSelector *pselectw;
 		qmpChannelEditor *ceditw;
+		qmpMidiMapperRtMidi *mapper;
 };
 
 #endif // QMPCHANNELSWINDOW_H

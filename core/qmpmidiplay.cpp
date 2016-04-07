@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <cstring>
 #include <chrono>
 #include <thread>
 #include <fluidsynth.h>
@@ -46,12 +47,18 @@ void CMidiPlayer::processEvent(const SEvent *e)
 	switch(e->type&0xF0)
 	{
 		case 0x80://Note off
-			fluid_synth_noteoff(synth,e->type&0x0F,e->p1);
+			if(mappedoutput[e->type&0x0F])
+				mapper->noteOff(mappedoutput[e->type&0x0F]-1,e->type*0x0F,e->p1);
+			else
+				fluid_synth_noteoff(synth,e->type&0x0F,e->p1);
 		break;
 		case 0x90://Note on
 			if((mute>>(e->type&0x0F))&1)break;//muted
 			if(solo&&!((solo>>(e->type&0x0F))&1))break;
-			fluid_synth_noteon(synth,e->type&0x0F,e->p1,e->p2);
+			if(mappedoutput[e->type&0x0F])
+				mapper->noteOn(mappedoutput[e->type&0x0F]-1,e->type*0x0F,e->p1,e->p2);
+			else
+				fluid_synth_noteon(synth,e->type&0x0F,e->p1,e->p2);
 		break;
 		case 0xB0://CC
 			if(e->p1==100)rpnid=e->p2;
@@ -61,13 +68,22 @@ void CMidiPlayer::processEvent(const SEvent *e)
 				if(rpnid==0)fluid_synth_pitch_wheel_sens(synth,e->type&0x0F,rpnval);
 				rpnid=rpnval=-1;
 			}
-			fluid_synth_cc(synth,e->type&0x0F,e->p1,e->p2);
+			if(mappedoutput[e->type&0x0F])
+				mapper->ctrlChange(mappedoutput[e->type&0x0F]-1,e->type*0x0F,e->p1,e->p2);
+			else
+				fluid_synth_cc(synth,e->type&0x0F,e->p1,e->p2);
 		break;
 		case 0xC0://PC
-			fluid_synth_program_change(synth,e->type&0x0F,e->p1);
+			if(mappedoutput[e->type&0x0F])
+				mapper->progChange(mappedoutput[e->type&0x0F]-1,e->type*0x0F,e->p1);
+			else
+				fluid_synth_program_change(synth,e->type&0x0F,e->p1);
 		break;
 		case 0xE0://PW
-			fluid_synth_pitch_bend(synth,e->type&0x0F,e->p1);
+			if(mappedoutput[e->type&0x0F])
+				mapper->pitchBend(mappedoutput[e->type&0x0F]-1,e->type*0x0F,e->p1);
+			else
+				fluid_synth_pitch_bend(synth,e->type&0x0F,e->p1);
 		break;
 		case 0xF0://Meta/SysEx
 			if((e->type&0x0F)==0x0F)
@@ -94,7 +110,11 @@ void CMidiPlayer::processEvent(const SEvent *e)
 			if((e->type&0x0F)==0x00||(e->type&0x0F)==07)
 			{
 				int io=0;
-				if(sendSysEx)fluid_synth_sysex(synth,e->str,e->p1,NULL,&io,NULL,0);
+				if(sendSysEx)
+				{
+					for(int i=0;i<16;++i)if(deviceusage[i])mapper->sysEx(i,e->p1,e->str);
+					fluid_synth_sysex(synth,e->str,e->p1,NULL,&io,NULL,0);
+				}
 			}
 		break;
 	}
@@ -231,6 +251,9 @@ CMidiPlayer::CMidiPlayer(bool singleInst)
 {
 	midiFile=NULL;resumed=false;singleInstance=singleInst;
 	settings=NULL;synth=NULL;adriver=NULL;waitvoice=true;
+	memset(mappedoutput,0,sizeof(mappedoutput));
+	memset(deviceusage,0,sizeof(deviceusage));
+	mapper=new qmpMidiMapperRtMidi();
 #ifdef _WIN32
 	QueryPerformanceFrequency((LARGE_INTEGER*)&pf);
 #endif
@@ -238,6 +261,7 @@ CMidiPlayer::CMidiPlayer(bool singleInst)
 CMidiPlayer::~CMidiPlayer()
 {
 	if(singleInstance)fluidDeinitialize();
+	delete mapper;
 }
 void CMidiPlayer::playerPanic(bool reset)
 {
@@ -402,3 +426,21 @@ int CMidiPlayer::getSFCount()
 {return synth?fluid_synth_sfcount(synth):0;}
 fluid_sfont_t* CMidiPlayer::getSFPtr(int sfid)
 {return synth&&sfid<getSFCount()?fluid_synth_get_sfont(synth,sfid):NULL;}
+
+qmpMidiMapperRtMidi* CMidiPlayer::getMidiMapper(){return mapper;}
+void CMidiPlayer::setChannelOutput(int ch,int devid)
+{
+	int origoutput=mappedoutput[ch];
+	int newoutput=0;
+	if(devid>0)
+	{
+		if(!deviceusage[devid-1])deviceiid[devid]=newoutput=mapper->deviceInit(devid-1);
+		++deviceusage[deviceiid[devid]];
+	}
+	mappedoutput[ch]=devid?deviceiid[devid]+1:0;
+	if(origoutput>0)
+	{
+		--deviceusage[origoutput-1];
+		if(!deviceusage[origoutput-1])mapper->deviceDeinit(origoutput-1);
+	}
+}
