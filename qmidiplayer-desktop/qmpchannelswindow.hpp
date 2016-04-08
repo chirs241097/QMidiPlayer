@@ -10,6 +10,7 @@
 #include <QMoveEvent>
 #include "qmppresetselect.hpp"
 #include "qmpchanneleditor.hpp"
+#include "../core/qmpmidiplay.hpp"
 #include "../core/qmpmidimappers.hpp"
 
 namespace Ui {
@@ -58,6 +59,15 @@ class QDCComboBox:public QComboBox
 		void indexChangedSlot(int idx){emit(onChange(id,idx));}
 };
 
+class qmpCWNoteOnCB:public QObject,public CMidiCallBack
+{
+	Q_OBJECT
+	public:
+		void callBack(void *data){if(data)data=NULL;emit(onNoteOn());}
+	signals:
+		void onNoteOn();
+};
+
 class qmpChannelsWindow:public QDialog
 {
 	Q_OBJECT
@@ -72,6 +82,7 @@ class qmpChannelsWindow:public QDialog
 		void dialogClosing();
 	public slots:
 		void channelWindowsUpdate();
+		void updateChannelActivity();
 		void channelMSChanged();
 		void showPresetWindow(int chid);
 		void showChannelEditorWindow(int chid);
@@ -84,6 +95,8 @@ class qmpChannelsWindow:public QDialog
 		qmpPresetSelector *pselectw;
 		qmpChannelEditor *ceditw;
 		qmpMidiMapperRtMidi *mapper;
+		QPixmap *cha,*chi;
+		qmpCWNoteOnCB *cb;
 };
 
 #endif // QMPCHANNELSWINDOW_H

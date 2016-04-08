@@ -22,5 +22,14 @@ HEADERS += \
 	../core/qmpmidiplay.hpp \
 	qmpcorewrapper.hpp \
 	../core/qmpmidimappers.hpp
-
+unix{
 LIBS += -lfluidsynth -lrtmidi
+}
+
+win32{
+	#change these before building...
+	LIBS += e:/libs/fluidsynth/fluidsynth.lib winmm.lib
+	LIBS += e:/libs/rtmidi/rtmidi.lib
+	INCLUDEPATH += e:/libs/fluidsynth/include
+	INCLUDEPATH += e:/libs/rtmidi
+}

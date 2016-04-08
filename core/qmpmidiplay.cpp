@@ -55,10 +55,12 @@ void CMidiPlayer::processEvent(const SEvent *e)
 		case 0x90://Note on
 			if((mute>>(e->type&0x0F))&1)break;//muted
 			if(solo&&!((solo>>(e->type&0x0F))&1))break;
+			if(noteOnCB)noteOnCB->callBack(noteOnCBUserData);
 			if(mappedoutput[e->type&0x0F])
 				mapper->noteOn(mappedoutput[e->type&0x0F]-1,e->type*0x0F,e->p1,e->p2);
 			else
 				fluid_synth_noteon(synth,e->type&0x0F,e->p1,e->p2);
+			chstate[e->type&0x0F]=1;
 		break;
 		case 0xB0://CC
 			if(e->p1==100)rpnid=e->p2;
@@ -182,15 +184,20 @@ void CMidiPlayer::playEvents()
 	for(uint32_t ct=midiFile->getEvent(0)->time;tceptr<midiFile->getEventCount();)
 	{
 		while(tcpaused)std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		using namespace std::chrono;
+		high_resolution_clock::time_point b=high_resolution_clock::now();
 		while(!tcstop&&midiFile&&tceptr<midiFile->getEventCount()&&ct==midiFile->getEvent(tceptr)->time)
 			processEvent(midiFile->getEvent(tceptr++));
 		if(tcstop||!midiFile||tceptr>=midiFile->getEventCount())break;
+		high_resolution_clock::time_point a=high_resolution_clock::now();
+		auto sendtime=a-b;
 		if(resumed)resumed=false;
 		else
+		if(sendtime.count()<(midiFile->getEvent(tceptr)->time-ct)*dpt)
 #if 0
 		w32usleep((midiFile->getEvent(tceptr)->time-ct)*(dpt/1000));
 #else
-		std::this_thread::sleep_for(std::chrono::nanoseconds(midiFile->getEvent(tceptr)->time-ct)*dpt);
+		std::this_thread::sleep_for(std::chrono::nanoseconds((midiFile->getEvent(tceptr)->time-ct)*dpt-sendtime.count()));
 #endif
 		if(tcstop||!midiFile)break;
 		ct=midiFile->getEvent(tceptr)->time;
@@ -251,6 +258,7 @@ CMidiPlayer::CMidiPlayer(bool singleInst)
 {
 	midiFile=NULL;resumed=false;singleInstance=singleInst;
 	settings=NULL;synth=NULL;adriver=NULL;waitvoice=true;
+	noteOnCB=NULL;noteOnCBUserData=NULL;
 	memset(mappedoutput,0,sizeof(mappedoutput));
 	memset(deviceusage,0,sizeof(deviceusage));
 	mapper=new qmpMidiMapperRtMidi();
@@ -444,3 +452,6 @@ void CMidiPlayer::setChannelOutput(int ch,int devid)
 		if(!deviceusage[origoutput-1])mapper->deviceDeinit(origoutput-1);
 	}
 }
+uint8_t* CMidiPlayer::getChstates(){return chstate;}
+void CMidiPlayer::setNoteOnCallBack(CMidiCallBack *cb,void *userdata)
+{noteOnCB=cb;noteOnCBUserData=userdata;}

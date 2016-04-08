@@ -11,6 +11,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = qmidiplayer
 TEMPLATE = app
 
+CONFIG += c++11
 
 SOURCES += main.cpp\
 	qmpmainwindow.cpp \
@@ -57,9 +58,14 @@ unix{
 	BINDIR = $$PREFIX/bin
 	target.path = $$BINDIR
 	INSTALLS += target
-	QMAKE_CXXFLAGS += -std=c++11 -Wall
+	QMAKE_CXXFLAGS += -Wall
 	LIBS += -lfluidsynth -lrtmidi
 }
-win32:LIBS += e:/libs/fluidsynth/fluidsynth.lib winmm.lib #You have to change these
-win32:INCLUDEPATH += e:/libs/fluidsynth/include           #before building...
+win32{
+	#change these before building...
+	LIBS += e:/libs/fluidsynth/fluidsynth.lib winmm.lib
+	LIBS += e:/libs/rtmidi/rtmidi.lib
+	INCLUDEPATH += e:/libs/fluidsynth/include
+	INCLUDEPATH += e:/libs/rtmidi
+}
 RESOURCES     = resources.qrc

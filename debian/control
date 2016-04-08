@@ -3,11 +3,15 @@ Maintainer: Chris Xiong <chirs241097@gmail.com>
 Section: sound
 Priority: optional
 Standards-Version: 3.9.2
-Build-Depends: debhelper (>= 9), qtbase5-dev, qt5-qmake, libfluidsynth-dev, 
+Build-Depends: debhelper (>= 9),
+	qtbase5-dev,
+	qt5-qmake,
+	libfluidsynth-dev, 
 	qml-module-qtquick-controls,
 	qml-module-qtquick-window2,
 	qml-module-qtquick2,
-	libqt5qml5
+	libqt5qml5,
+	librtmidi-dev
 
 Package: qmidiplayer
 Architecture: any

@@ -19,6 +19,13 @@ struct SEvent
 		if(s){str=new char[strlen(s)+2];strcpy(str,s);}else str=NULL;
 	}
 };
+class CMidiCallBack
+{
+	public:
+		CMidiCallBack(){}
+		virtual void callBack(void* data)=0;
+		virtual ~CMidiCallBack(){}
+};
 class CMidiFile
 {
 	private:
@@ -72,6 +79,9 @@ class CMidiPlayer
 		uint32_t finished,resumed;
 		qmpMidiMapperRtMidi *mapper;
 		int mappedoutput[16],deviceusage[16],deviceiid[128];
+		uint8_t chstate[16];
+		CMidiCallBack *noteOnCB;
+		void* noteOnCBUserData;
 
 		void setBit(uint16_t &n,uint16_t bn,uint16_t b);
 		void processEvent(const SEvent *e);
@@ -139,5 +149,7 @@ class CMidiPlayer
 
 		qmpMidiMapperRtMidi* getMidiMapper();
 		void setChannelOutput(int ch,int devid);
+		uint8_t* getChstates();
+		void setNoteOnCallBack(CMidiCallBack *cb,void *userdata);
 };
 #endif

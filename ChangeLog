@@ -1,3 +1,10 @@
+2016-04-08 0.7.1 beta
+Add MIDI activity indicator.
+Substract time taken by sending midi data from sleep time.
+Fix no soundfont loaded after rendering a file.
+Modify default settings for Windows, solving the timing
+problem for me.
+
 2016-04-07 0.7.1 beta
 MIDI mapper: first steps.
 

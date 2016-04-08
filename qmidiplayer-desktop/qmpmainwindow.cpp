@@ -9,6 +9,7 @@
 #ifdef _WIN32
 #include <Windows.h>
 #endif
+#define UPDATE_INTERVAL 66
 
 qmpMainWindow* qmpMainWindow::ref=NULL;
 
@@ -188,7 +189,7 @@ void qmpMainWindow::updateWidgets()
 			SetThreadPriority(playerTh->native_handle(),THREAD_PRIORITY_TIME_CRITICAL);
 #endif
 			st=std::chrono::steady_clock::now();offset=0;
-			timer->start(100);
+			timer->start(UPDATE_INTERVAL);
 		}
 	}
 	if(renderTh)
@@ -199,7 +200,14 @@ void qmpMainWindow::updateWidgets()
 			ui->centralWidget->setEnabled(true);
 			delete renderTh;renderTh=NULL;
 			player->rendererDeinit();
-			if(singleFS){player->fluidPreInitialize();playerSetup();player->fluidInitialize();}
+			if(singleFS)
+			{
+				player->fluidPreInitialize();
+				playerSetup();
+				player->fluidInitialize();
+				for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
+				player->pushSoundFont(settingsw->getSFWidget()->item(i)->text().toStdString().c_str());
+			}
 		}
 	}
 	while(!player->isFinished()&&player->getTCeptr()>player->getStamp(ui->hsTimer->value())
@@ -281,7 +289,7 @@ void qmpMainWindow::on_pbPlayPause_clicked()
 			SetThreadPriority(playerTh->native_handle(),THREAD_PRIORITY_TIME_CRITICAL);
 #endif
 		st=std::chrono::steady_clock::now();offset=0;
-		timer->start(100);
+		timer->start(UPDATE_INTERVAL);
 		stopped=false;
 	}
 	else
@@ -405,7 +413,7 @@ void qmpMainWindow::on_pbPrev_clicked()
 			SetThreadPriority(playerTh->native_handle(),THREAD_PRIORITY_TIME_CRITICAL);
 #endif
 	st=std::chrono::steady_clock::now();offset=0;
-	timer->start(100);
+	timer->start(UPDATE_INTERVAL);
 }
 
 void qmpMainWindow::on_pbNext_clicked()
@@ -430,7 +438,7 @@ void qmpMainWindow::on_pbNext_clicked()
 			SetThreadPriority(playerTh->native_handle(),THREAD_PRIORITY_TIME_CRITICAL);
 #endif
 	st=std::chrono::steady_clock::now();offset=0;
-	timer->start(100);
+	timer->start(UPDATE_INTERVAL);
 }
 
 void qmpMainWindow::selectionChanged()
@@ -458,7 +466,7 @@ void qmpMainWindow::selectionChanged()
 			SetThreadPriority(playerTh->native_handle(),THREAD_PRIORITY_TIME_CRITICAL);
 #endif
 	st=std::chrono::steady_clock::now();offset=0;
-	timer->start(100);
+	timer->start(UPDATE_INTERVAL);
 }
 
 void qmpMainWindow::on_pbEfx_clicked()
@@ -495,7 +503,7 @@ void qmpMainWindow::onfnA2()
 	ui->centralWidget->setEnabled(false);
 	for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
 		player->pushSoundFont(settingsw->getSFWidget()->item(i)->text().toStdString().c_str());
-	player->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();timer->start(100);
+	player->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();timer->start(UPDATE_INTERVAL);
 	renderTh=new std::thread(&CMidiPlayer::rendererThread,player);
 }
 
