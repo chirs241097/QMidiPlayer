@@ -97,6 +97,8 @@ class qmpChannelsWindow:public QDialog
 		qmpMidiMapperRtMidi *mapper;
 		QPixmap *cha,*chi;
 		qmpCWNoteOnCB *cb;
+		//callback fuse... (avoid black midi blocking the main thread)
+		int callbacksc,cbcnt,fused;
 };
 
 #endif // QMPCHANNELSWINDOW_H

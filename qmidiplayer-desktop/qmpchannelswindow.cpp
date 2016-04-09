@@ -1,3 +1,4 @@
+#include <cstdio>
 #include <QCheckBox>
 #include <QPushButton>
 #include <QComboBox>
@@ -15,7 +16,7 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent) :
 	connect(this,SIGNAL(dialogClosing()),parent,SLOT(dialogClosed()));
 	mapper=qmpMainWindow::getInstance()->getPlayer()->getMidiMapper();
 	cha=new QPixmap(":/img/ledon.png");chi=new QPixmap(":/img/ledoff.png");
-	cb=new qmpCWNoteOnCB();
+	cb=new qmpCWNoteOnCB();fused=callbacksc=cbcnt=0;
 	qmpMainWindow::getInstance()->getPlayer()->setNoteOnCallBack(cb,NULL);
 	connect(cb,SIGNAL(onNoteOn()),this,SLOT(updateChannelActivity()));
 	int devc=mapper->enumDevices();
@@ -78,6 +79,7 @@ void qmpChannelsWindow::moveEvent(QMoveEvent *event)
 
 void qmpChannelsWindow::updateChannelActivity()
 {
+	++callbacksc;
 	for(int i=0;i<16;++i)
 	ui->twChannels->item(i,0)->setIcon(
 	qmpMainWindow::getInstance()->getPlayer()->getChstates()[i]?*cha:*chi);
@@ -89,7 +91,19 @@ void qmpChannelsWindow::channelWindowsUpdate()
 	{
 		for(int i=0;i<16;++i)
 			((QLabel*)ui->twChannels->cellWidget(i,4))->setText("");
-		return;
+		connect(cb,SIGNAL(onNoteOn()),this,SLOT(updateChannelActivity()));
+		fused=0;return;
+	}
+	++cbcnt;
+	if(cbcnt>15)
+	{
+		if(callbacksc>8192)
+		{
+			disconnect(cb,SIGNAL(onNoteOn()),this,SLOT(updateChannelActivity()));
+			fprintf(stderr,"Fuse!\n");fused=1;
+		}
+		cbcnt=0;
+		callbacksc=0;
 	}
 	for(int i=0;i<16;++i)
 	{
@@ -97,6 +111,15 @@ void qmpChannelsWindow::channelWindowsUpdate()
 		int b,p;
 		qmpMainWindow::getInstance()->getPlayer()->getChannelPreset(i,&b,&p,nm);
 		sprintf(data,"%d:%d %s",b,p,nm);
+		if(fused)
+		{
+			if(strcmp(((QLabel*)ui->twChannels->cellWidget(i,4))->
+					  text().toStdString().c_str(),data))
+			{
+				connect(cb,SIGNAL(onNoteOn()),this,SLOT(updateChannelActivity()));
+				fused=0;
+			}
+		}
 		((QLabel*)ui->twChannels->cellWidget(i,4))->setText(data);
 		ui->twChannels->item(i,0)->setIcon(
 		qmpMainWindow::getInstance()->getPlayer()->getChstates()[i]?*cha:*chi);
