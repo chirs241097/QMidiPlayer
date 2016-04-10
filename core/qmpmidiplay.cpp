@@ -48,7 +48,7 @@ void CMidiPlayer::processEvent(const SEvent *e)
 	{
 		case 0x80://Note off
 			if(mappedoutput[e->type&0x0F])
-				mapper->noteOff(mappedoutput[e->type&0x0F]-1,e->type*0x0F,e->p1);
+				mapper->noteOff(mappedoutput[e->type&0x0F]-1,e->type&0x0F,e->p1);
 			else
 				fluid_synth_noteoff(synth,e->type&0x0F,e->p1);
 		break;
@@ -57,7 +57,7 @@ void CMidiPlayer::processEvent(const SEvent *e)
 			if(solo&&!((solo>>(e->type&0x0F))&1))break;
 			if(noteOnCB)noteOnCB->callBack(noteOnCBUserData);
 			if(mappedoutput[e->type&0x0F])
-				mapper->noteOn(mappedoutput[e->type&0x0F]-1,e->type*0x0F,e->p1,e->p2);
+				mapper->noteOn(mappedoutput[e->type&0x0F]-1,e->type&0x0F,e->p1,e->p2);
 			else
 				fluid_synth_noteon(synth,e->type&0x0F,e->p1,e->p2);
 			chstate[e->type&0x0F]=1;
@@ -71,19 +71,19 @@ void CMidiPlayer::processEvent(const SEvent *e)
 				rpnid=rpnval=-1;
 			}
 			if(mappedoutput[e->type&0x0F])
-				mapper->ctrlChange(mappedoutput[e->type&0x0F]-1,e->type*0x0F,e->p1,e->p2);
+				mapper->ctrlChange(mappedoutput[e->type&0x0F]-1,e->type&0x0F,e->p1,e->p2);
 			else
 				fluid_synth_cc(synth,e->type&0x0F,e->p1,e->p2);
 		break;
 		case 0xC0://PC
 			if(mappedoutput[e->type&0x0F])
-				mapper->progChange(mappedoutput[e->type&0x0F]-1,e->type*0x0F,e->p1);
+				mapper->progChange(mappedoutput[e->type&0x0F]-1,e->type&0x0F,e->p1);
 			else
 				fluid_synth_program_change(synth,e->type&0x0F,e->p1);
 		break;
 		case 0xE0://PW
 			if(mappedoutput[e->type&0x0F])
-				mapper->pitchBend(mappedoutput[e->type&0x0F]-1,e->type*0x0F,e->p1);
+				mapper->pitchBend(mappedoutput[e->type&0x0F]-1,e->type&0x0F,e->p1);
 			else
 				fluid_synth_pitch_bend(synth,e->type&0x0F,e->p1);
 		break;

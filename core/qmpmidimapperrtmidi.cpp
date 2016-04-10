@@ -77,8 +77,8 @@ void qmpMidiMapperRtMidi::pitchBend(int iid,int ch,int val)
 {
 	if(!ports[iid])return;ch&=0x0F;
 	std::vector<unsigned char>message;
-	message.push_back(0xE0|ch);message.push_back(val&0xFF);
-	message.push_back(val>>8);ports[iid]->sendMessage(&message);
+	message.push_back(0xE0|ch);message.push_back(val&0x7F);
+	message.push_back(val>>7);ports[iid]->sendMessage(&message);
 }
 void qmpMidiMapperRtMidi::sysEx(int iid,int length,const char *data)
 {

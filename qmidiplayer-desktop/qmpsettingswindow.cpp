@@ -4,7 +4,8 @@
 #include "ui_qmpsettingswindow.h"
 #include "qmpmainwindow.hpp"
 
-QSettings *qmpSettingsWindow::settings=NULL;
+QSettings* qmpSettingsWindow::settings=NULL;
+QComboBox* qmpSettingsWindow::outwidget=NULL;
 
 void qmpFluidForEachOpt(void* data,char* /*name*/,char* option)
 {
@@ -19,7 +20,7 @@ qmpSettingsWindow::qmpSettingsWindow(QWidget *parent) :
 	ui->setupUi(this);
 	connect(this,SIGNAL(dialogClosing()),parent,SLOT(dialogClosed()));
 	settings=new QSettings(QDir::homePath()+QString("/.config/qmprc"),QSettings::IniFormat);
-	settingsInit();
+	settingsInit();outwidget=ui->cbOutputDevice;
 }
 
 qmpSettingsWindow::~qmpSettingsWindow()
@@ -37,6 +38,7 @@ void qmpSettingsWindow::closeEvent(QCloseEvent *event)
 }
 
 QListWidget* qmpSettingsWindow::getSFWidget(){return ui->lwSoundfont;}
+QComboBox* qmpSettingsWindow::getDefaultOutWidget(){return outwidget;}
 
 void qmpSettingsWindow::on_buttonBox_accepted()
 {
@@ -173,8 +175,7 @@ void qmpSettingsWindow::settingsInit()
 
 void qmpSettingsWindow::settingsUpdate()
 {
-	settings->setValue("Midi/DefaultOutput",settings->value("Midi/DefaultOutput","Internal FluidSynth"));
-	//this item is still a stub...
+	settings->setValue("Midi/DefaultOutput",ui->cbOutputDevice->currentText());
 
 	settings->setValue("Midi/DisableMapping",ui->cbDisableMapping->isChecked()?1:0);
 

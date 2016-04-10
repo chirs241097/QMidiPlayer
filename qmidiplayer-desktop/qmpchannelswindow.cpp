@@ -20,6 +20,18 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent) :
 	qmpMainWindow::getInstance()->getPlayer()->setNoteOnCallBack(cb,NULL);
 	connect(cb,SIGNAL(onNoteOn()),this,SLOT(updateChannelActivity()));
 	int devc=mapper->enumDevices();
+	//We setup default output here...
+	//Pretty strange...
+	for(int i=0;i<devc;++i)
+	{
+		qmpSettingsWindow::getDefaultOutWidget()->addItem(mapper->deviceName(i).c_str());
+		if(!QString(mapper->deviceName(i).c_str()).compare(qmpSettingsWindow::getSettingsIntf()->
+				value("Midi/DefaultOutput","Internal FluidSynth").toString()))
+			qmpSettingsWindow::getDefaultOutWidget()->setCurrentIndex(i+1);
+	}
+	qmpSettingsWindow::getSettingsIntf()->setValue("Midi/DefaultOutput",
+			qmpSettingsWindow::getDefaultOutWidget()->currentText());
+	qmpSettingsWindow::getSettingsIntf();
 	for(int i=0;i<16;++i)
 	{
 		ui->twChannels->setItem(i,0,new QTableWidgetItem());
@@ -32,7 +44,19 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent) :
 		ui->twChannels->setCellWidget(i,3,new QDCComboBox());
 		QDCComboBox *cb=(QDCComboBox*)ui->twChannels->cellWidget(i,3);
 		cb->addItem("Internal FluidSynth");cb->setID(i);
-		for(int j=0;j<devc;++j)cb->addItem(mapper->deviceName(j).c_str());
+		for(int j=0;j<devc;++j)
+		{
+			cb->addItem(mapper->deviceName(j).c_str());
+			if(!qmpSettingsWindow::getSettingsIntf()->
+					value("Midi/DefaultOutput","Internal FluidSynth").toString().compare(
+					QString(mapper->deviceName(j).c_str())))
+			{
+				cb->setCurrentIndex(j+1);
+				changeMidiMapping(i,j+1);
+			}
+		}
+		if(qmpSettingsWindow::getSettingsIntf()->value("Midi/DisableMapping",0).toInt())
+			cb->setEnabled(false);
 		connect(cb,SIGNAL(onChange(int,int)),this,SLOT(changeMidiMapping(int,int)));
 		ui->twChannels->setCellWidget(i,4,new QDCLabel(""));
 		((QDCLabel*)ui->twChannels->cellWidget(i,4))->setID(i);

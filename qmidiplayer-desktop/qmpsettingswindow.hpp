@@ -5,6 +5,7 @@
 #include <QCloseEvent>
 #include <QSettings>
 #include <QListWidget>
+#include <QComboBox>
 
 namespace Ui {
 	class qmpSettingsWindow;
@@ -41,7 +42,10 @@ class qmpSettingsWindow:public QDialog
 		Ui::qmpSettingsWindow *ui;
 		void settingsUpdate();
 		static QSettings *settings;
-	public: static QSettings* getSettingsIntf(){return settings;}
+		static QComboBox* outwidget;
+	public:
+		static QSettings* getSettingsIntf(){return settings;}
+		static QComboBox* getDefaultOutWidget();
 };
 
 #endif // QMPSETTINGSWINDOW_H
