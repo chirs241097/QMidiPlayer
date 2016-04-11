@@ -86,3 +86,9 @@ void qmpMidiMapperRtMidi::sysEx(int iid,int length,const char *data)
 	std::vector<unsigned char>message(data,data+length);
 	ports[iid]->sendMessage(&message);
 }
+void qmpMidiMapperRtMidi::panic(int iid,int ch)
+{
+	//maybe all notes off is more close to panic?
+	ctrlChange(iid,ch,120,0);
+	//ctrlChange(iid,ch,123,0);
+}

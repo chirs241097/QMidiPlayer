@@ -70,12 +70,14 @@ void CMidiPlayer::processEvent(const SEvent *e)
 				if(rpnid==0)fluid_synth_pitch_wheel_sens(synth,e->type&0x0F,rpnval);
 				rpnid=rpnval=-1;
 			}
+			chstatus[e->type&0x0F][e->p1]=e->p2;
 			if(mappedoutput[e->type&0x0F])
 				mapper->ctrlChange(mappedoutput[e->type&0x0F]-1,e->type&0x0F,e->p1,e->p2);
 			else
 				fluid_synth_cc(synth,e->type&0x0F,e->p1,e->p2);
 		break;
 		case 0xC0://PC
+			chstatus[e->type&0x0F][128]=e->p1;
 			if(mappedoutput[e->type&0x0F])
 				mapper->progChange(mappedoutput[e->type&0x0F]-1,e->type&0x0F,e->p1);
 			else
@@ -280,6 +282,7 @@ void CMidiPlayer::playerPanic(bool reset)
 		fluid_synth_cc(synth,i,10,64);
 		fluid_synth_cc(synth,i,11,127);
 	}
+	//all sounds off causes the minus polyphone bug...
 	for(int i=0;i<16;++i)fluid_synth_all_notes_off(synth,i);
 }
 bool CMidiPlayer::playerLoadFile(const char* fn)
@@ -295,7 +298,12 @@ void CMidiPlayer::playerInit()
 {
 	ctempo=0x7A120;ctsn=4;ctsd=4;cks=0;dpt=ctempo*1000/divs;
 	tceptr=0;tcstop=0;tcpaused=0;finished=0;mute=solo=0;
-	sendSysEx=true;rpnid=rpnval=-1;
+	sendSysEx=true;rpnid=rpnval=-1;memset(chstatus,0,sizeof(chstatus));
+	for(int i=0;i<16;++i)
+		chstatus[i][7]=100,chstatus[i][11]=127,
+		chstatus[i][10]=chstatus[i][71]=chstatus[i][72]=
+		chstatus[i][73]=chstatus[i][74]=chstatus[i][75]=
+		chstatus[i][76]=chstatus[i][77]=chstatus[i][78]=64;
 	if(!singleInstance)fluidPreInitialize();
 }
 void CMidiPlayer::playerDeinit()
@@ -375,17 +383,38 @@ void CMidiPlayer::setMaxPolyphone(int p){if(synth)fluid_synth_set_polyphony(synt
 
 void CMidiPlayer::getChannelPreset(int ch,int *b,int *p,char *name)
 {
-	if(!synth)return(void)(b=0,p=0,strcpy(name,""));
-	fluid_synth_channel_info_t info;
-	fluid_synth_get_channel_info(synth,ch,&info);
-	*b=info.bank;*p=info.program;
-	strcpy(name,info.name);
+	if(!synth)return(void)(*b=0,*p=0,strcpy(name,""));
+	if(mappedoutput[ch])
+	{
+		*b=((int)chstatus[ch][0]<<7)|chstatus[ch][32];
+		*p=chstatus[ch][128];
+		strcpy(name,"");
+	}
+	else
+	{
+		fluid_synth_channel_info_t info;
+		fluid_synth_get_channel_info(synth,ch,&info);
+		*b=info.bank;*p=info.program;
+		strcpy(name,info.name);
+	}
 }
 void CMidiPlayer::setChannelPreset(int ch,int b,int p)
 {
 	if(!synth)return;
-	fluid_synth_bank_select(synth,ch,b);
-	fluid_synth_program_change(synth,ch,p);
+	chstatus[ch][0]=b;//!!FIXME: This is not correct...
+	chstatus[ch][128]=p;
+	if(mappedoutput[ch])
+	{
+		//external device mode?
+		mapper->ctrlChange(mappedoutput[ch]-1,ch,0,b);
+		mapper->ctrlChange(mappedoutput[ch]-1,ch,32,b);
+		mapper->progChange(mappedoutput[ch]-1,ch,p);
+	}
+	else
+	{
+		fluid_synth_bank_select(synth,ch,b);
+		fluid_synth_program_change(synth,ch,p);
+	}
 }
 //16MSB..LSB1
 void CMidiPlayer::setBit(uint16_t &n, uint16_t bn, uint16_t b)
@@ -394,10 +423,21 @@ void CMidiPlayer::setMute(int ch,bool m)
 {setBit(mute,ch,m?1:0);}
 void CMidiPlayer::setSolo(int ch,bool s)
 {setBit(solo,ch,s?1:0);}
-int CMidiPlayer::getCC(int ch, int id)
-{int ret=0;synth?fluid_synth_get_cc(synth,ch,id,&ret):0;return ret;}
-void CMidiPlayer::setCC(int ch, int id, int val)
-{synth?fluid_synth_cc(synth,ch,id,val):0;}
+int CMidiPlayer::getCC(int ch,int id)
+{
+	int ret=0;
+	if(mappedoutput[ch])
+		ret=chstatus[ch][id];
+	else
+		if(synth)fluid_synth_get_cc(synth,ch,id,&ret);
+	return ret;
+}
+void CMidiPlayer::setCC(int ch,int id,int val)
+{
+	if(!synth)return;
+	mappedoutput[ch]?mapper->ctrlChange(mappedoutput[ch]-1,ch,id,val):
+					 (void)fluid_synth_cc(synth,ch,id,val);
+}
 void CMidiPlayer::getReverbPara(double *r,double *d,double *w,double *l)
 {
 	if(!synth)return;
@@ -443,14 +483,22 @@ void CMidiPlayer::setChannelOutput(int ch,int devid)
 	if(devid>0)
 	{
 		if(!deviceusage[devid-1])deviceiid[devid]=newoutput=mapper->deviceInit(devid-1);
-		++deviceusage[deviceiid[devid]];
+		++deviceusage[deviceiid[devid]];mapper->progChange(deviceiid[devid],ch,chstatus[ch][128]);
+		for(int i=0;i<128;++i)if(i!=100&&i!=101)mapper->ctrlChange(deviceiid[devid],ch,i,chstatus[ch][i]);
+	}
+	else
+	{
+		fluid_synth_bank_select(synth,ch,chstatus[ch][0]);
+		fluid_synth_program_change(synth,ch,chstatus[ch][128]);
+		for(int i=0;i<128;++i)if(i!=100&&i!=101&&i!=0&&i!=32)
+			fluid_synth_cc(synth,ch,i,chstatus[ch][i]);
 	}
 	mappedoutput[ch]=devid?deviceiid[devid]+1:0;
 	if(origoutput>0)
 	{
-		--deviceusage[origoutput-1];
+		--deviceusage[origoutput-1];mapper->panic(origoutput-1,ch);
 		if(!deviceusage[origoutput-1])mapper->deviceDeinit(origoutput-1);
-	}
+	}else fluid_synth_all_notes_off(synth,ch);
 }
 uint8_t* CMidiPlayer::getChstates(){return chstate;}
 void CMidiPlayer::setNoteOnCallBack(CMidiCallBack *cb,void *userdata)

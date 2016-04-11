@@ -79,7 +79,7 @@ class CMidiPlayer
 		uint32_t finished,resumed;
 		qmpMidiMapperRtMidi *mapper;
 		int mappedoutput[16],deviceusage[16],deviceiid[128];
-		uint8_t chstate[16];
+		uint8_t chstate[16],chstatus[16][130];//0..127: cc 128: pc
 		CMidiCallBack *noteOnCB;
 		void* noteOnCBUserData;
 
