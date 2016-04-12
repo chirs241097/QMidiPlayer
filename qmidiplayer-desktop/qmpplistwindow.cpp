@@ -185,15 +185,15 @@ void qmpPlistWindow::on_pbRepeat_clicked()
 	{
 		case 0:
 			ui->pbRepeat->setIcon(QIcon(":/img/repeat-non.png"));
-			ui->pbRepeat->setText("Repeat Off");
+			ui->pbRepeat->setText(tr("Repeat Off"));
 		break;
 		case 1:
 			ui->pbRepeat->setIcon(QIcon(":/img/repeat-one.png"));
-			ui->pbRepeat->setText("Repeat One");
+			ui->pbRepeat->setText(tr("Repeat One"));
 		break;
 		case 2:
 			ui->pbRepeat->setIcon(QIcon(":/img/repeat-all.png"));
-			ui->pbRepeat->setText("Repeat All");
+			ui->pbRepeat->setText(tr("Repeat All"));
 		break;
 	}
 }
@@ -205,12 +205,12 @@ void qmpPlistWindow::on_pbShuffle_clicked()
 	{
 		case 1:
 			ui->pbShuffle->setIcon(QIcon(":/img/shuffle.png"));
-			ui->pbShuffle->setText("Shuffle On");
+			ui->pbShuffle->setText(tr("Shuffle On"));
 		break;
 		case 0:
 		default:
 			ui->pbShuffle->setIcon(QIcon(":/img/shuffle-off.png"));
-			ui->pbShuffle->setText("Shuffle Off");
+			ui->pbShuffle->setText(tr("Shuffle Off"));
 		break;
 	}
 }
@@ -256,7 +256,7 @@ void qmpPlistWindow::on_lwFiles_itemDoubleClicked()
 
 void qmpPlistWindow::on_pbSave_clicked()
 {
-	QSettings* plist=new QSettings(QFileDialog::getSaveFileName(this,"Save playlist",""),
+	QSettings* plist=new QSettings(QFileDialog::getSaveFileName(this,tr("Save playlist"),""),
 								   QSettings::IniFormat);
 	plist->setValue("Playlist/FileCount",ui->lwFiles->count());
 	for(int i=0;i<ui->lwFiles->count();++i)
@@ -269,7 +269,7 @@ void qmpPlistWindow::on_pbSave_clicked()
 
 void qmpPlistWindow::on_pbLoad_clicked()
 {
-	QSettings* plist=new QSettings(QFileDialog::getOpenFileName(this,"Load playlist",""),
+	QSettings* plist=new QSettings(QFileDialog::getOpenFileName(this,tr("Load playlist"),""),
 								   QSettings::IniFormat);
 	int fc=plist->value("Playlist/FileCount",0).toInt();
 	if(!fc)return;
@@ -281,27 +281,27 @@ void qmpPlistWindow::on_pbLoad_clicked()
 	{
 		case 1:
 			ui->pbShuffle->setIcon(QIcon(":/img/shuffle.png"));
-			ui->pbShuffle->setText("Shuffle On");
+			ui->pbShuffle->setText(tr("Shuffle On"));
 		break;
 		case 0:
 		default:
 			ui->pbShuffle->setIcon(QIcon(":/img/shuffle-off.png"));
-			ui->pbShuffle->setText("Shuffle Off");
+			ui->pbShuffle->setText(tr("Shuffle Off"));
 		break;
 	}
 	switch(repeat)
 	{
 		case 0:
 			ui->pbRepeat->setIcon(QIcon(":/img/repeat-non.png"));
-			ui->pbRepeat->setText("Repeat Off");
+			ui->pbRepeat->setText(tr("Repeat Off"));
 		break;
 		case 1:
 			ui->pbRepeat->setIcon(QIcon(":/img/repeat-one.png"));
-			ui->pbRepeat->setText("Repeat One");
+			ui->pbRepeat->setText(tr("Repeat One"));
 		break;
 		case 2:
 			ui->pbRepeat->setIcon(QIcon(":/img/repeat-all.png"));
-			ui->pbRepeat->setText("Repeat All");
+			ui->pbRepeat->setText(tr("Repeat All"));
 		break;
 	}
 	delete plist;

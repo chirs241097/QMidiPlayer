@@ -19,7 +19,6 @@ int qmpMidiMapperRtMidi::enumDevices()
 }
 std::string qmpMidiMapperRtMidi::deviceName(int id)
 {
-	fprintf(stderr,"port #%d: %s\n",id,dummy->getPortName(id).c_str());
 	return dummy->getPortName(id);
 }
 int qmpMidiMapperRtMidi::deviceInit(int id)

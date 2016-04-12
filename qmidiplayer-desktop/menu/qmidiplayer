@@ -1,0 +1,3 @@
+?package(qmidiplayer):needs="X11" section="Applications/Sound"\
+  title="qmidiplayer" command="/usr/bin/qmidiplayer" hints="MIDI Player"\
+  icon="/usr/share/pixmaps/qmidiplayer.xpm"

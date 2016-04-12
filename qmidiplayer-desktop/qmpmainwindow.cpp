@@ -8,6 +8,30 @@
 #include "../core/qmpmidiplay.hpp"
 #ifdef _WIN32
 #include <Windows.h>
+char* wcsto8bit(const wchar_t* s)
+{
+	int size=WideCharToMultiByte(CP_OEMCP,WC_NO_BEST_FIT_CHARS,s,-1,0,0,0,0);
+	char* c=(char*)calloc(size,sizeof(char));
+	WideCharToMultiByte(CP_OEMCP,WC_NO_BEST_FIT_CHARS,s,-1,c,size,0,0);
+	return c;
+}
+#define LOAD_SOUNDFONT \
+	{\
+		char* c=wcsto8bit(settingsw->getSFWidget()->item(i)->text().toStdWString().c_str());\
+		player->pushSoundFont(c);\
+		free(c);\
+	}
+#define LOAD_FILE \
+	{\
+		char* c=wcsto8bit(fns.toStdWString().c_str());\
+		if(!player->playerLoadFile(c)){free(c);return;}\
+		free(c);\
+	}
+#else
+#define LOAD_SOUNDFONT \
+	player->pushSoundFont(settingsw->getSFWidget()->item(i)->text().toStdString().c_str())
+#define LOAD_FILE \
+	if(!player->playerLoadFile(fns.toStdString().c_str()))return
 #endif
 #define UPDATE_INTERVAL 66
 
@@ -35,7 +59,7 @@ qmpMainWindow::qmpMainWindow(QWidget *parent) :
 	ui->lbFileName->addAction(fnA2);
 	if(singleFS){player->fluidPreInitialize();playerSetup();player->fluidInitialize();
 		for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
-			player->pushSoundFont(settingsw->getSFWidget()->item(i)->text().toStdString().c_str());}
+			LOAD_SOUNDFONT;}
 	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus",0).toInt())
 	{
 		QRect g=geometry();
@@ -175,13 +199,13 @@ void qmpMainWindow::updateWidgets()
 			chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 			QString fns=plistw->getNextItem();
 			ui->lbFileName->setText(QUrl(fns).fileName());
-			if(!player->playerLoadFile(fns.toStdString().c_str()))return;
+			LOAD_FILE;
 			char ts[100];
 			sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
 			ui->lbFinTime->setText(ts);
 			player->playerInit();if(!singleFS){playerSetup();player->fluidInitialize();
 			for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
-				player->pushSoundFont(settingsw->getSFWidget()->item(i)->text().toStdString().c_str());}
+				LOAD_SOUNDFONT;}
 			player->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
 			player->setWaitVoice(qmpSettingsWindow::getSettingsIntf()->value("Midi/WaitVoice",1).toInt());
 			playerTh=new std::thread(&CMidiPlayer::playerThread,player);
@@ -206,7 +230,7 @@ void qmpMainWindow::updateWidgets()
 				playerSetup();
 				player->fluidInitialize();
 				for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
-				player->pushSoundFont(settingsw->getSFWidget()->item(i)->text().toStdString().c_str());
+				LOAD_SOUNDFONT;
 			}
 		}
 	}
@@ -275,13 +299,13 @@ void qmpMainWindow::on_pbPlayPause_clicked()
 			if(!fns.length())return(void)(playing=false);
 		}
 		ui->lbFileName->setText(QUrl(fns).fileName());
-		if(!player->playerLoadFile(fns.toStdString().c_str()))return;
+		LOAD_FILE;
 		char ts[100];
 		sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
 		ui->lbFinTime->setText(ts);
 		player->playerInit();if(!singleFS){playerSetup();player->fluidInitialize();
 		for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
-			player->pushSoundFont(settingsw->getSFWidget()->item(i)->text().toStdString().c_str());}
+			LOAD_SOUNDFONT;}
 		player->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
 		player->setWaitVoice(qmpSettingsWindow::getSettingsIntf()->value("Midi/WaitVoice",1).toInt());
 		playerTh=new std::thread(&CMidiPlayer::playerThread,player);
@@ -399,13 +423,13 @@ void qmpMainWindow::on_pbPrev_clicked()
 	ui->hsTimer->setValue(0);chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 	QString fns=plistw->getPrevItem();if(fns.length()==0)return on_pbStop_clicked();
 	ui->lbFileName->setText(QUrl(fns).fileName());
-	if(!player->playerLoadFile(fns.toStdString().c_str()))return;
+	LOAD_FILE;
 	char ts[100];
 	sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
 	ui->lbFinTime->setText(ts);
 	player->playerInit();if(!singleFS){playerSetup();player->fluidInitialize();
 	for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
-		player->pushSoundFont(settingsw->getSFWidget()->item(i)->text().toStdString().c_str());}
+		LOAD_SOUNDFONT;}
 	player->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
 	player->setWaitVoice(qmpSettingsWindow::getSettingsIntf()->value("Midi/WaitVoice",1).toInt());
 	playerTh=new std::thread(&CMidiPlayer::playerThread,player);
@@ -424,13 +448,13 @@ void qmpMainWindow::on_pbNext_clicked()
 	ui->hsTimer->setValue(0);chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 	QString fns=plistw->getNextItem();if(fns.length()==0)return on_pbStop_clicked();
 	ui->lbFileName->setText(QUrl(fns).fileName());
-	if(!player->playerLoadFile(fns.toStdString().c_str()))return;
+	LOAD_FILE;
 	char ts[100];
 	sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
 	ui->lbFinTime->setText(ts);
 	player->playerInit();if(!singleFS){playerSetup();player->fluidInitialize();
 	for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
-		player->pushSoundFont(settingsw->getSFWidget()->item(i)->text().toStdString().c_str());}
+		LOAD_SOUNDFONT;}
 	player->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
 	player->setWaitVoice(qmpSettingsWindow::getSettingsIntf()->value("Midi/WaitVoice",1).toInt());
 	playerTh=new std::thread(&CMidiPlayer::playerThread,player);
@@ -452,13 +476,13 @@ void qmpMainWindow::selectionChanged()
 	chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 	QString fns=plistw->getSelectedItem();
 	ui->lbFileName->setText(QUrl(fns).fileName());
-	if(!player->playerLoadFile(fns.toStdString().c_str()))return;
+	LOAD_FILE;
 	char ts[100];
 	sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
 	ui->lbFinTime->setText(ts);
 	player->playerInit();if(!singleFS){playerSetup();player->fluidInitialize();
 	for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
-		player->pushSoundFont(settingsw->getSFWidget()->item(i)->text().toStdString().c_str());}
+		LOAD_SOUNDFONT;}
 	player->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
 	player->setWaitVoice(qmpSettingsWindow::getSettingsIntf()->value("Midi/WaitVoice",1).toInt());
 	playerTh=new std::thread(&CMidiPlayer::playerThread,player);
@@ -498,11 +522,19 @@ void qmpMainWindow::onfnA1()
 void qmpMainWindow::onfnA2()
 {
 	if(singleFS)player->fluidDeinitialize();
+#ifdef _WIN32
+	char* ofstr=wcsto8bit((plistw->getSelectedItem()+QString(".wav")).toStdWString().c_str());
+	char* ifstr=wcsto8bit(plistw->getSelectedItem().toStdWString().c_str());
+	player->rendererLoadFile(ofstr);
+	playerSetup();player->rendererInit(ifstr);
+	free(ofstr);free(ifstr);
+#else
 	player->rendererLoadFile((plistw->getSelectedItem()+QString(".wav")).toStdString().c_str());
 	playerSetup();player->rendererInit(plistw->getSelectedItem().toStdString().c_str());
+#endif
 	ui->centralWidget->setEnabled(false);
 	for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
-		player->pushSoundFont(settingsw->getSFWidget()->item(i)->text().toStdString().c_str());
+		LOAD_SOUNDFONT;
 	player->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();timer->start(UPDATE_INTERVAL);
 	renderTh=new std::thread(&CMidiPlayer::rendererThread,player);
 }

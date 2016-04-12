@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop">
+ <id>qmidiplayer.desktop</id>
+ <metadata_license>GPL-3+</metadata_license>
+ <project_license>GPL-3+</project_license>
+ <name>QMidiPlayer</name>
+ <summary>A cross-platform midi file player based on libfluidsynth and Qt.</summary>
+ <description>
+  <p>QMidiPlayer is a cross-platform midi file player based on libfluidsynth and Qt.</p>
+ </description>
+ <screenshots>
+  <screenshot type="default">
+   <image>https://chrisoft.org/QMidiPlayer/qmidiplyr.png</image>
+   <caption>The screenshot showing the application in action</caption>
+  </screenshot>
+ </screenshots>
+ <url type="homepage">https://chrisoft.org/QMidiPlayer/</url>
+ <updatecontact>chirs241097@gmail.com</updatecontact>
+ <project_group>chrisoft.org</project_group>
+ <kudos>
+  <kudo>HiDpiIcon</kudo>
+  <kudo>ModernToolkit</kudo>
+ </kudos>
+</component>

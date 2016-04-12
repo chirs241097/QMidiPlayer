@@ -1,0 +1,44 @@
+#panel ul{
+padding:0;
+}
+#panel li a{
+display:block;
+padding-left:1.5em;
+padding-top:0.2em;
+padding-bottom:0.2em;
+list-style-type:none;
+}
+#panel li a.active {
+background-color:#AEA;
+}
+#panel li a:hover:not(.active) {
+background-color:#DED;
+}
+a:link { 
+color:#1194FF; 
+text-decoration:none; 
+} 
+a:visited { 
+color:#20ACFF; 
+text-decoration:none; 
+} 
+a:hover { 
+color:#3FBFFF; 
+text-decoration:none; 
+} 
+a:active { 
+color:#CCCCFF; 
+text-decoration:none; 
+} 
+#panel {
+width:20%;
+height:100%;
+background-color:#EEE;
+position:fixed;
+top:0px;
+left:0px;
+overflow:auto;
+}
+#content {
+margin-left:20%;
+}

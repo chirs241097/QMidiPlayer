@@ -1,3 +1,9 @@
+2016-04-12 0.7.2 beta
+Partially fixed unicode file name issue on Windows.
+First steps to l10n.
+Move documentation online.
+Improved deployment on debian based system.
+
 2016-04-11 0.7.1 beta
 Sanitise MIDI mapping functionality.
 

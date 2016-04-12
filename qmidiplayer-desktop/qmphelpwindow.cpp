@@ -8,7 +8,7 @@ qmpHelpWindow::qmpHelpWindow(QWidget *parent) :
 {
 	ui->setupUi(this);
 	ui->textBrowser->setSearchPaths(QStringList(QString(":/doc"))+QStringList(QString(":/img")));
-	ui->textBrowser->setSource(QUrl("qrc:///doc/index.html"));
+	ui->textBrowser->setSource(QUrl("qrc:///doc/index_internal.html"));
 }
 
 qmpHelpWindow::~qmpHelpWindow()
@@ -18,7 +18,7 @@ qmpHelpWindow::~qmpHelpWindow()
 
 void qmpHelpWindow::on_textBrowser_sourceChanged(const QUrl &src)
 {
-	if(src.fileName()==QString("version.html"))
+	if(src.fileName()==QString("version_internal.html"))
 	{
 		QString s=ui->textBrowser->toHtml();
 		s.replace("CT_QT_VERSION_STR",QT_VERSION_STR);

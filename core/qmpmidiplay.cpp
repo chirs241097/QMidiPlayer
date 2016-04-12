@@ -264,6 +264,12 @@ CMidiPlayer::CMidiPlayer(bool singleInst)
 	memset(mappedoutput,0,sizeof(mappedoutput));
 	memset(deviceusage,0,sizeof(deviceusage));
 	mapper=new qmpMidiMapperRtMidi();
+	memset(chstatus,0,sizeof(chstatus));
+	for(int i=0;i<16;++i)
+		chstatus[i][7]=100,chstatus[i][11]=127,
+		chstatus[i][10]=chstatus[i][71]=chstatus[i][72]=
+		chstatus[i][73]=chstatus[i][74]=chstatus[i][75]=
+		chstatus[i][76]=chstatus[i][77]=chstatus[i][78]=64;
 #ifdef _WIN32
 	QueryPerformanceFrequency((LARGE_INTEGER*)&pf);
 #endif
@@ -435,6 +441,7 @@ int CMidiPlayer::getCC(int ch,int id)
 void CMidiPlayer::setCC(int ch,int id,int val)
 {
 	if(!synth)return;
+	chstatus[ch][id]=val;
 	mappedoutput[ch]?mapper->ctrlChange(mappedoutput[ch]-1,ch,id,val):
 					 (void)fluid_synth_cc(synth,ch,id,val);
 }

@@ -27,12 +27,8 @@
         <file>../img/visualization.png</file>
         <file>../img/ledon.png</file>
         <file>../img/ledoff.png</file>
-        <file>../img/mainw.png</file>
-        <file>../img/chanw.png</file>
-        <file>../doc/index.html</file>
-        <file>../doc/version.html</file>
-        <file>../doc/license.html</file>
-        <file>../doc/mainwindow.html</file>
-        <file>../doc/channeldialog.html</file>
+        <file>../doc/index_internal.html</file>
+        <file>../doc/version_internal.html</file>
+        <file>../doc/license_internal.html</file>
     </qresource>
 </RCC>

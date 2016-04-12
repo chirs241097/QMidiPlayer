@@ -7,7 +7,7 @@ qmpChannelEditor::qmpChannelEditor(QWidget *parent) :
 	QDialog(parent),
 	ui(new Ui::qmpChannelEditor)
 {
-	ui->setupUi(this);
+	ui->setupUi(this);ch=0;
 	styl=new QDialSkulptureStyle();
 	QList<QDial*> dials=findChildren<QDial*>();
 	for(int i=0;i<dials.count();++i)
@@ -23,8 +23,7 @@ qmpChannelEditor::~qmpChannelEditor()
 void qmpChannelEditor::setupWindow(int chid)
 {
 	char str[256];if(~chid)ch=chid;
-	sprintf(str,"Channel Parameter Editor - Channel #%d",ch+1);
-	setWindowTitle(str);
+	setWindowTitle(tr("Channel Parameter Editor - Channel #%1").arg(ch+1));
 	CMidiPlayer* player=qmpMainWindow::getInstance()->getPlayer();
 	int b,p;
 	player->getChannelPreset(ch,&b,&p,str);

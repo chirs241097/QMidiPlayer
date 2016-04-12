@@ -51,13 +51,32 @@ FORMS    += qmpmainwindow.ui \
 	qmpsettingswindow.ui \
 	qmphelpwindow.ui
 
+TRANSLATIONS += translations/qmp_zh_CN.ts
+
 unix{
 	isEmpty(PREFIX) {
 		PREFIX = /usr/local
 	}
 	BINDIR = $$PREFIX/bin
 	target.path = $$BINDIR
-	INSTALLS += target
+	DATADIR = $$PREFIX/share
+	INSTALLS += target desktop iconbmp iconsvg iconxpm doc docimg appdata menu
+	desktop.path = $$DATADIR/applications
+	desktop.files += $${TARGET}.desktop
+	iconbmp.path = $$DATADIR/icons/hicolor/64x64/apps
+	iconbmp.files += ../img/qmidiplyr.png
+	iconsvg.path = $$DATADIR/icons/hicolor/scalable/apps
+	iconsvg.files += ../img/qmidiplyr.svg
+	iconxpm.path = $$DATADIR/pixmaps
+	iconxpm.files += ../img/qmidiplyr.xpm
+	doc.path = $$DATADIR/qmidiplayer/doc
+	doc.files += ../doc/*
+	docimg.path = $$DATADIR/qmidiplayer/img
+	docimg.files += ../img/mainw.png ../img/chanw.png ../img/chparaw.png ../img/qmidiplyr.png
+	appdata.path = $${DATADIR}/appdata
+	appdata.files += $${TARGET}.appdata.xml
+	menu.path = $${DATADIR}/menu
+	menu.files += ./menu/$${TARGET}
 	QMAKE_CXXFLAGS += -Wall
 	LIBS += -lfluidsynth -lrtmidi
 }
