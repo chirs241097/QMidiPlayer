@@ -101,6 +101,11 @@ void qmpChannelsWindow::moveEvent(QMoveEvent *event)
 	}
 }
 
+void qmpChannelsWindow::resetAcitivity()
+{
+	for(int i=0;i<16;++i)ui->twChannels->item(i,0)->setIcon(*chi);
+}
+
 void qmpChannelsWindow::updateChannelActivity()
 {
 	++callbacksc;

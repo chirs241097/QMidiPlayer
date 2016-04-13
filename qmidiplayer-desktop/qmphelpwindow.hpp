@@ -2,7 +2,7 @@
 #define QMPHELPWINDOW_H
 
 #include <QDialog>
-#define APP_VERSION "0.7.1"
+#define APP_VERSION "0.7.2"
 
 namespace Ui {
 	class qmpHelpWindow;

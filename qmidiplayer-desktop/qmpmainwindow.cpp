@@ -180,7 +180,7 @@ void qmpMainWindow::updateWidgets()
 		if(!plistw->getRepeat())
 		{
 			timer->stop();stopped=true;playing=false;
-			fnA2->setEnabled(stopped);
+			fnA2->setEnabled(stopped);chnlw->resetAcitivity();
 			player->playerDeinit();playerTh->join();
 			delete playerTh;playerTh=NULL;
 			if(singleFS)player->playerPanic(true);
@@ -320,7 +320,7 @@ void qmpMainWindow::on_pbPlayPause_clicked()
 	{
 		if(!playing)
 		{
-			player->playerPanic();
+			player->playerPanic();chnlw->resetAcitivity();
 			offset=ui->hsTimer->value()/100.*player->getFtime();
 		}
 		else
@@ -371,7 +371,7 @@ void qmpMainWindow::on_pbStop_clicked()
 	{
 		timer->stop();stopped=true;playing=false;
 		player->playerDeinit();fnA2->setEnabled(stopped);
-		if(singleFS)player->playerPanic(true);
+		if(singleFS)player->playerPanic(true);chnlw->resetAcitivity();
 		if(playerTh){playerTh->join();delete playerTh;playerTh=NULL;}
 		chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 		ui->pbPlayPause->setIcon(QIcon(":/img/play.png"));

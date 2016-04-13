@@ -1,10 +1,12 @@
+#!/usr/bin/env xdg-open
 [Desktop Entry]
+Type=Application
 Name=QMidiPlayer
 Version=0.7.2
 GenericName=MIDI Player
 Comment=QMidiPlayer is a midi file player based on Fluidsynth and Qt.
 Exec=/usr/bin/qmidiplayer
 Icon=qmidiplyr
+Keywords=audio;sound;
 Categories=Audio;AudioVideo;Midi;X-Alsa;X-Jack;Qt;
 Terminal=false
-Type=Application

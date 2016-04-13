@@ -86,5 +86,6 @@ win32{
 	LIBS += e:/libs/rtmidi/rtmidi.lib
 	INCLUDEPATH += e:/libs/fluidsynth/include
 	INCLUDEPATH += e:/libs/rtmidi
+	RC_FILE = qmidiplayer.rc
 }
 RESOURCES     = resources.qrc

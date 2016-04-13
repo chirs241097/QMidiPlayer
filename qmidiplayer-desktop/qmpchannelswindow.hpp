@@ -78,6 +78,7 @@ class qmpChannelsWindow:public QDialog
 		void showEvent(QShowEvent *event);
 		void closeEvent(QCloseEvent *event);
 		void moveEvent(QMoveEvent *event);
+		void resetAcitivity();
 	signals:
 		void dialogClosing();
 	public slots:

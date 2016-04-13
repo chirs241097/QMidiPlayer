@@ -73,6 +73,7 @@ void qmpPresetSelector::on_pbCancel_clicked()
 void qmpPresetSelector::on_pbOk_clicked()
 {
 	CMidiPlayer *plyr=qmpMainWindow::getInstance()->getPlayer();
+	if(!ui->lwBankSelect->currentItem()||!ui->lwPresetSelect->currentItem())return (void)close();
 	int b,p;sscanf(ui->lwBankSelect->currentItem()->text().toStdString().c_str(),"%d",&b);
 	sscanf(ui->lwPresetSelect->currentItem()->text().toStdString().c_str(),"%d",&p);
 	plyr->setChannelPreset(ch,b,p);

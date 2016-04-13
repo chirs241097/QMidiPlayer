@@ -1,3 +1,6 @@
+body {
+	font-family: 'FreeMono', 'Courier New', Courier, monospace;
+}
 #panel ul{
 padding:0;
 }
