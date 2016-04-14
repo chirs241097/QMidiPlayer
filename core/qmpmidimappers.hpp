@@ -18,6 +18,7 @@ public:
 	void pitchBend(int iid,int ch,int val);
 	void sysEx(int iid,int length,const char* data);
 	void panic(int iid,int ch);
+	void reset(int iid,int ch);
 	int enumDevices();
 	std::string deviceName(int id);
 };

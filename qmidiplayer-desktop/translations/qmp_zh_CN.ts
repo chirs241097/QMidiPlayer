@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="zh_CN">
+<TS version="2.0" language="zh_CN">
 <context>
     <name>qmpChannelEditor</name>
     <message>
@@ -159,7 +159,7 @@
     <message>
         <location filename="../qmpchannelswindow.ui" line="92"/>
         <source>Preset</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">乐器</translation>
     </message>
     <message>
         <location filename="../qmpchannelswindow.ui" line="97"/>
@@ -179,12 +179,12 @@
     <message>
         <location filename="../qmpchannelswindow.ui" line="134"/>
         <source>Unmute All</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">取消全部静音</translation>
     </message>
     <message>
         <location filename="../qmpchannelswindow.ui" line="141"/>
         <source>Unsolo All</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">取消全部独奏</translation>
     </message>
 </context>
 <context>
@@ -248,7 +248,7 @@
     <message>
         <location filename="../qmpefxwindow.ui" line="437"/>
         <source>Sine</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">正弦</translation>
     </message>
     <message>
         <location filename="../qmpefxwindow.ui" line="450"/>
@@ -261,7 +261,7 @@
     <message>
         <location filename="../qmphelpwindow.ui" line="20"/>
         <source>Help</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">帮助</translation>
     </message>
 </context>
 <context>
@@ -388,24 +388,24 @@
         <location filename="../qmpplistwindow.cpp" line="188"/>
         <location filename="../qmpplistwindow.cpp" line="296"/>
         <source>Repeat Off</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">循环关</translation>
     </message>
     <message>
         <location filename="../qmpplistwindow.ui" line="122"/>
         <location filename="../qmpplistwindow.cpp" line="213"/>
         <location filename="../qmpplistwindow.cpp" line="289"/>
         <source>Shuffle Off</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">随机关</translation>
     </message>
     <message>
         <location filename="../qmpplistwindow.ui" line="148"/>
         <source>Save</source>
-        <translation type="unfinished">保存播放列表</translation>
+        <translation type="unfinished">保存列表</translation>
     </message>
     <message>
         <location filename="../qmpplistwindow.ui" line="174"/>
         <source>Load</source>
-        <translation type="unfinished">打开播放列表</translation>
+        <translation type="unfinished">加载列表</translation>
     </message>
     <message>
         <location filename="../qmpplistwindow.ui" line="200"/>
@@ -421,29 +421,29 @@
         <location filename="../qmpplistwindow.cpp" line="192"/>
         <location filename="../qmpplistwindow.cpp" line="300"/>
         <source>Repeat One</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">循环当前</translation>
     </message>
     <message>
         <location filename="../qmpplistwindow.cpp" line="196"/>
         <location filename="../qmpplistwindow.cpp" line="304"/>
         <source>Repeat All</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">循环全部</translation>
     </message>
     <message>
         <location filename="../qmpplistwindow.cpp" line="208"/>
         <location filename="../qmpplistwindow.cpp" line="284"/>
         <source>Shuffle On</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">随机开</translation>
     </message>
     <message>
         <location filename="../qmpplistwindow.cpp" line="259"/>
         <source>Save playlist</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">保存播放列表</translation>
     </message>
     <message>
         <location filename="../qmpplistwindow.cpp" line="272"/>
         <source>Load playlist</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">加载播放列表</translation>
     </message>
 </context>
 <context>
@@ -451,27 +451,27 @@
     <message>
         <location filename="../qmppresetselect.ui" line="26"/>
         <source>Preset Selection</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">乐器选择</translation>
     </message>
     <message>
         <location filename="../qmppresetselect.ui" line="61"/>
         <source>Bank</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">乐器库</translation>
     </message>
     <message>
         <location filename="../qmppresetselect.ui" line="74"/>
         <source>Preset</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">乐器</translation>
     </message>
     <message>
         <location filename="../qmppresetselect.ui" line="87"/>
         <source>OK</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">确定</translation>
     </message>
     <message>
         <location filename="../qmppresetselect.ui" line="100"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">取消</translation>
     </message>
 </context>
 <context>
@@ -499,7 +499,7 @@
     <message>
         <location filename="../qmpsettingswindow.ui" line="74"/>
         <source>Disable Midi Mapping</source>
-        <translation type="unfinished">禁用MIDI输出分配</translation>
+        <translation type="unfinished">只使用默认输出设备</translation>
     </message>
     <message>
         <location filename="../qmpsettingswindow.ui" line="87"/>
@@ -740,7 +740,7 @@
     <message>
         <location filename="../qmpsettingswindow.ui" line="441"/>
         <source>Soundfonts</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">音源</translation>
     </message>
     <message>
         <location filename="../qmpsettingswindow.ui" line="527"/>

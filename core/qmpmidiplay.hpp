@@ -86,6 +86,7 @@ class CMidiPlayer
 		void setBit(uint16_t &n,uint16_t bn,uint16_t b);
 		void processEvent(const SEvent *e);
 		void processEventStub(const SEvent *e);
+		void prePlayInit();
 		void playEvents();
 		void fileTimer1Pass();
 		void fileTimer2Pass();

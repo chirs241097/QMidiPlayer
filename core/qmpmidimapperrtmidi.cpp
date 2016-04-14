@@ -91,3 +91,8 @@ void qmpMidiMapperRtMidi::panic(int iid,int ch)
 	ctrlChange(iid,ch,120,0);
 	//ctrlChange(iid,ch,123,0);
 }
+void qmpMidiMapperRtMidi::reset(int iid,int ch)
+{
+	ctrlChange(iid,ch,120,0);
+	ctrlChange(iid,ch,121,0);
+}

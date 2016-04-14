@@ -181,6 +181,12 @@ void w32usleep(uint64_t t)
 	timeEndPeriod(1);
 }
 #endif
+void CMidiPlayer::prePlayInit()
+{
+	playerPanic(true);
+	for(int i=0;i<16;++i)if(deviceusage[i])
+	for(int j=0;j<16;++j)mapper->reset(i,j);
+}
 void CMidiPlayer::playEvents()
 {
 	for(uint32_t ct=midiFile->getEvent(0)->time;tceptr<midiFile->getEventCount();)
@@ -287,6 +293,7 @@ void CMidiPlayer::playerPanic(bool reset)
 		fluid_synth_cc(synth,i,7,100);
 		fluid_synth_cc(synth,i,10,64);
 		fluid_synth_cc(synth,i,11,127);
+		if(deviceusage[i])for(int j=0;j<16;++j)mapper->reset(i,j);
 	}
 	//all sounds off causes the minus polyphone bug...
 	for(int i=0;i<16;++i)fluid_synth_all_notes_off(synth,i);
@@ -320,6 +327,7 @@ void CMidiPlayer::playerDeinit()
 }
 void CMidiPlayer::playerThread()
 {
+	prePlayInit();
 	playEvents();
 }
 
@@ -376,7 +384,7 @@ uint32_t CMidiPlayer::getFileNoteCount(){return midiFile?midiFile->getNoteCount(
 uint32_t CMidiPlayer::getFileStandard(){return midiFile?midiFile->getStandard():0;}
 const char* CMidiPlayer::getTitle(){return midiFile?midiFile->getTitle():"";}
 const char* CMidiPlayer::getCopyright(){return midiFile?midiFile->getCopyright():"";}
-double CMidiPlayer::getTempo(){return 60./(ctempo/1e6)/**ctsd/4.*/;}
+double CMidiPlayer::getTempo(){return 60./(ctempo/1e6);}
 uint32_t CMidiPlayer::getTCpaused(){return tcpaused;}
 void CMidiPlayer::setTCpaused(uint32_t ps){tcpaused=ps;}
 uint32_t CMidiPlayer::isFinished(){return finished;}
