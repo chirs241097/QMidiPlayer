@@ -29,6 +29,7 @@ class qmpMainWindow:public QMainWindow
 
 	public:
 		explicit qmpMainWindow(QWidget *parent = 0);
+		void init();
 		void closeEvent(QCloseEvent *event);
 		void moveEvent(QMoveEvent *event);
 		void dropEvent(QDropEvent *event);
@@ -66,7 +67,7 @@ class qmpMainWindow:public QMainWindow
 	private:
 		Ui::qmpMainWindow *ui;
 		QTimer *timer;
-		bool playing,stopped,dragging,fin,singleFS;
+		bool playing,stopped,dragging,fin,singleFS,havemidi;
 		std::thread *playerTh=NULL;
 		std::thread *renderTh=NULL;
 		std::chrono::steady_clock::time_point st;

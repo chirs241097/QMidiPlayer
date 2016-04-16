@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>QMidiPlayer Help</title>
+<link rel=stylesheet href='styles.css' type='text/css'>
+</head>
+<body>
+	<div id="panel">
+		<ul>
+			<li><a href="index.html">Overview</a></li>
+			<li><a href="mainwindow.html">Main Window</a></li>
+			<li><a href="channeldialog.html">Channels Dialog</a></li>
+			<li><a href="channeleditor.html">Channel Editor</a></li>
+			<li><a href="plistdialog.html">Playlist</a></li>
+			<li><a href="efxdialog.html">Effects</a></li>
+			<li><a class="active" href="optionsdialog.html">Settings</a></li>
+			<li><a href="cmdargs.html">Commandline arguments</a></li>
+			<li><a href="troubleshooting.html">Troubleshooting</a></li>
+			<li><a href="version.html">Version Info.</a></li>
+			<li><a href="license.html">License</a></li>
+		</ul>
+	</div>
+	<div id="content">
+	<h1>Settings Dialog</h1>
+	Settings are stored in $HOME/.config/qmprc<br>
+	For Windows users, $HOME refers to X:\Users\&lt;your user name&gt;\.config, where X is the system drive of your
+	Windows installation.<br>
+	Options with one asterisk will be applied after restarting QMidiPlayer.<br>
+	Options with two asterisks will be applied after the internal fluidsynth is restarted.<br>
+	Other options are applied immediately.<br>
+	<img src="../img/options1.png"><br>
+	<ul>
+		<li>Default Output Device*: specify the default midi device to use.</li>
+		<li>Disable Midi Mapping*: only use the default output device.</li>
+		<li>Send SysEx: whether to send system exclusive messages or not.</li>
+		<li>Wait for remaining voices before stopping:<br>
+		If checked, the player will not stop until the current polyphone reaches 0.<br>
+		Otherwise it will stop immediately after the last event is sent.
+		</li>
+		<li>Text encoding: text encoding used in the midi file.</li>
+	</ul>
+	<img src="../img/options2.png"><br>
+	<ul>
+		<li>Audio Driver**: specify the audio backend used by the internal synthesizer.</li>
+		<li>Audio Buffer Size**: Size per buffer used by the fluidsynth engine.</li>
+		<li>Audio Buffer Count**: Number of buffers used by the fluidsynth engine.</li>
+		<li>Audio Format**: audio output format of the fluidsynth engine.</li>
+		<li>Audio Frequency**: audio output sampling frequency of the fluidsynth engine.</li>
+		<li>Max Polyphony**: maximum simultaniously played voices of synthesizer.</li>
+		<li>CPU Cores**: threads used by the internal synthesizer.</li>
+		<li>Auto bank select mode:<br>
+		If checked, the player will choose the appropriate bank selecting mode
+		according to the file standard. If the file doesn't specify the standard
+		the player will fallback to the default bank select mode.
+		Otherwise the player will only use the default bank select mode.
+		</li>
+		<li>(Fallback) Bank Select Mode: the default bank select mode.</li>
+	</ul>
+	<img src="../img/options3.png"><br>
+	You can manage soundfont used by the internal fluidsynth engine here.<br>
+	If multiple soundfonts provide instruments with the same bank numbers and preset numbers,
+	the preset provided by the top most soundfont will be used.<br>
+	<img src="../img/options4.png"><br>
+	<ul>
+		<li>Restore last playlist on startup*: If checked and QMidiPlayer is started without files
+		to open, the playlist from the last session will be used instead of an empty playlist.</li>
+		<li>Load files in the same folder*: If checked, QMidiPlayer will add all midi files in the
+		same folder to the playlist when started with a file.</li>
+		<li>Save dialog status*: Save dialog positions and restore on start up.</li>
+		<li>Save parameters in effects window</li>
+		<li>Persistent fluidsynth instance*: If checked, the synthesizer engine will keep running
+		through the whole session. Otherwise it is restarted every time when a new song is played.</li>
+	</ul>
+	<br><a href="index.html">Return</a>
+	</div>
+</body>
+</html> 

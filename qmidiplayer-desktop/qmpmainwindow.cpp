@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <QUrl>
+#include <QFileInfo>
 #include <QMimeData>
 #include <QDirIterator>
 #include <QDesktopWidget>
@@ -45,9 +46,20 @@ qmpMainWindow::qmpMainWindow(QWidget *parent) :
 	ui->lbFileName->setText("");ref=this;
 	playing=false;stopped=true;dragging=false;
 	settingsw=new qmpSettingsWindow(this);
+	plistw=new qmpPlistWindow(this);player=NULL;timer=NULL;
 	singleFS=qmpSettingsWindow::getSettingsIntf()->value("Behavior/SingleInstance",0).toInt();
+}
+
+qmpMainWindow::~qmpMainWindow()
+{
+	if(player)delete player;
+	if(timer)delete timer;
+	delete ui;
+}
+
+void qmpMainWindow::init()
+{
 	player=new CMidiPlayer(singleFS);
-	plistw=new qmpPlistWindow(this);
 	chnlw=new qmpChannelsWindow(this);
 	efxw=new qmpEfxWindow(this);
 	infow=new qmpInfoWindow(this);
@@ -81,18 +93,12 @@ qmpMainWindow::qmpMainWindow(QWidget *parent) :
 	connect(timer,SIGNAL(timeout()),this,SLOT(updateWidgets()));
 	connect(timer,SIGNAL(timeout()),chnlw,SLOT(channelWindowsUpdate()));
 	connect(timer,SIGNAL(timeout()),infow,SLOT(updateInfo()));
-}
-
-qmpMainWindow::~qmpMainWindow()
-{
-	delete player;
-	delete timer;
-	delete ui;
+	if(havemidi)on_pbPlayPause_clicked();
 }
 
 int qmpMainWindow::pharseArgs(int argc,char** argv)
 {
-	bool havemidi=false,loadfolder=false;
+	bool loadfolder=false;havemidi=false;
 	for(int i=1;i<argc;++i)
 	{
 		if(argv[i][0]=='-')
@@ -101,9 +107,9 @@ int qmpMainWindow::pharseArgs(int argc,char** argv)
 			{
 				printf("Usage: %s [Options] [Midi Files]\n",argv[0]);
 				printf("Possible options are: \n");
-				printf("-l, --load-all-files  Load all files from the same folder.\n");
-				printf("--help                Show this help and exit.\n");
-				printf("--version             Show this version information and exit.\n");
+				printf("  -l, --load-all-files  Load all files from the same folder.\n");
+				printf("  --help                Show this help and exit.\n");
+				printf("  --version             Show this version information and exit.\n");
 				return 1;
 			}
 			if(!strcmp(argv[i],"--version"))
@@ -120,7 +126,7 @@ int qmpMainWindow::pharseArgs(int argc,char** argv)
 			if(!havemidi){havemidi=true;plistw->emptyList();}
 			if(loadfolder||qmpSettingsWindow::getSettingsIntf()->value("Behavior/LoadFolder",0).toInt())
 			{
-				QDirIterator di(QUrl(argv[i]).adjusted(QUrl::RemoveFilename).toString());
+				QDirIterator di(QFileInfo(argv[i]).absolutePath());
 				while(di.hasNext())
 				{
 					QString c=di.next();
@@ -132,7 +138,6 @@ int qmpMainWindow::pharseArgs(int argc,char** argv)
 			plistw->insertItem(argv[i]);
 		}
 	}
-	if(havemidi)on_pbPlayPause_clicked();
 	return 0;
 }
 

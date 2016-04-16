@@ -1,3 +1,8 @@
+2016-04-16 0.7.2 beta
+Don't do full initialization before pharsing arguments.
+Fixed load folder not working properly when a relative path is given.
+Documentation...
+
 2016-04-15 0.7.2 beta
 A little documentation work...
 

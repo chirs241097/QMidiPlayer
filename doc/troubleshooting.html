@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>QMidiPlayer Help</title>
+<link rel=stylesheet href='styles.css' type='text/css'>
+</head>
+<body>
+	<div id="panel">
+		<ul>
+			<li><a href="index.html">Overview</a></li>
+			<li><a href="mainwindow.html">Main Window</a></li>
+			<li><a href="channeldialog.html">Channels Dialog</a></li>
+			<li><a href="channeleditor.html">Channel Editor</a></li>
+			<li><a href="plistdialog.html">Playlist</a></li>
+			<li><a href="efxdialog.html">Effects</a></li>
+			<li><a href="optionsdialog.html">Settings</a></li>
+			<li><a href="cmdargs.html">Commandline arguments</a></li>
+			<li><a class="active" href="troubleshooting.html">Troubleshooting</a></li>
+			<li><a href="version.html">Version Info.</a></li>
+			<li><a href="license.html">License</a></li>
+		</ul>
+	</div>
+	<div id="content">
+		If troubleshooting cannot solve your problem, please don't hesitate to report an issue.
+		<h3>1. I can't hear anything!</h3>
+		<p>
+			1) Check current audio driver in the option dialog. Do not use an audio driver
+			that is not installed on your system.<br>
+			2) If no soundfont is loaded, the synthesizer won't make any sound...<br>
+			3) Check audio buffer settings in the synth section.<br>
+			4) Check if your midi file is valid.
+		</p>
+		<h3>2. The playback is intermittent.</h3>
+		<p>
+			Try increasing audio buffer size and/or audio buffer count in synth options.
+		</p>
+		<h3>3. MIDI timing is messed up.</h3>
+		<p>
+			This is a known issue under Windows. Try decreasing audio buffer size and
+			increasing audio buffer count.
+		</p>
+		<h3>4. Some files cannot be played.</h3>
+		<h3>5. Some soundfonts cannot be loaded.</h3>
+		<p>
+			Files names with characters unsupported by the system locale
+			won't load correctly in Windows. This is a known issue.
+		</p>
+		<h3>6. Sound is distorted.</h3>
+		<p>
+			Try reducing the master volume.
+		</p>
+		<h3>7. Bank selecting is incorrect for the internal synth.</h3>
+		<p>
+			Change default midi mapping if necessary.
+		</p>
+		<h3>8. Bank selecting is incorrect for external devices.</h3>
+		<p>
+			Bank selecting to external devices is sent in raw format. The midi
+			file may be incompatible with your device.
+		</p>
+	</div>
+</body>
+</html>
