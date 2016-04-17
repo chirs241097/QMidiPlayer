@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>QMidiPlayer Help</title>
+<link rel=stylesheet href='styles.css' type='text/css'>
+</head>
+<body>
+	<div id="panel">
+		<ul>
+			<li><a href="index.html">Overview</a></li>
+			<li><a href="mainwindow.html">Main Window</a></li>
+			<li><a href="channeldialog.html">Channels Dialog</a></li>
+			<li><a href="channeleditor.html">Channel Editor</a></li>
+			<li><a href="plistdialog.html">Playlist</a></li>
+			<li><a href="efxdialog.html">Effects</a></li>
+			<li><a href="optionsdialog.html">Settings</a></li>
+			<li><a href="cmdargs.html">Commandline arguments</a></li>
+			<li><a href="troubleshooting.html">Troubleshooting</a></li>
+			<li><a class="active" href="miscellaneous.html">Miscellaneous</a></li>
+			<li><a href="version.html">Version Info.</a></li>
+			<li><a href="license.html">License</a></li>
+		</ul>
+	</div>
+	<div id="content">
+		<ul>
+			<li><a href="#build">Building QMidiPlayer from source</a></li>
+			<li><a href="#ms">Roadmap/Milestones</a></li>
+			<li><a href="#faq">FAQs</a></li>
+			<li><a href="#contact">Contact the author</a></li>
+		</ul>
+		<h3 id="build">Building QMidiPlayer from source</h3>
+		Building QMidiPlayer from source is as easy as any other qmake projects.<br>
+		1. Get the dependencies.<br>
+		Currently QMidiPlayer depends on these libraries:<br>
+		<pre style="background-color:#eee;padding:0.2em;">qt5, libfluidsynth(FluidSynth), librtmidi(RtMidi)</pre>
+		If you want to build the lite version as well, you need several QML core modules.<br>
+		Get the libraries for your platform, open the project with Qt Creator, configure and hit Build!
+		(You may also use the qmake-make way).<br>
+		Please note that QMidiPlayer <i>requires</i> C++11 to build.
+		<h3 id="ms">Roadmap/Milestones</h3>
+		<ul>
+			<li>0.5 Basic functionality</li>
+			<li>0.6  Settings and experimental Windows support</li>
+			<li>0.7  MIDI mapping, first stable version</li>
+			<li>0.8  Visualization</li>
+			<li>0.9  Stable version</li>
+			<li>1.x+ Translation, documentation, Maintaince only</li>
+		</ul>
+		<h3 id="faq">FAQs</h3>
+		<h4>0. (Windows version) It complains about a missing dll!</h4>
+		<p>
+		Please download and install <a href="https://www.microsoft.com/en-us/download/details.aspx?id=48145">
+		Visual Studio 2015 Runtime Library</a>.
+		</p>
+		<h4>1. Can I help translate this program?</h4>
+		<p>
+		Of course! Please make a pull request or contact me.
+		</p>
+		<h4>2. I have found a bug in this program. Where to report the bug?</h4>
+		<p>
+		Please use the <a href="https://github.com/chirs241097/QMidiPlayer/issues">
+		github issue tracker</a>. Don't forget to check if the bug has already been
+		fixed in a newer version!
+		</p>
+		<h3 id="contact">Contact the author</h3>
+		<p>
+		E-mail: chirs241097 'at' gmail 'dot' com
+		Twitter: @chirs241097
+		</p>
+	</div>
+</body>
+</html>
