@@ -1,3 +1,8 @@
+2016-04-18 0.7.2 beta
+Use std::vector for the event list.
+Add panic action.
+Minor changes on the panic function.
+
 2016-04-17 0.7.2 beta
 A little more documentaion work...
 

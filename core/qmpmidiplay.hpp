@@ -4,6 +4,7 @@
 #include <cstring>
 #include <cstdint>
 #include <cstdlib>
+#include <vector>
 #include <fluidsynth.h>
 #include "qmpmidimappers.hpp"
 struct SEvent
@@ -29,9 +30,9 @@ class CMidiCallBack
 class CMidiFile
 {
 	private:
-		SEvent *eventList[10000000];
+		std::vector<SEvent*>eventList;
 		char *title,*copyright;
-		uint32_t eventc,std;//standard 0=? 1=GM 2=GM2 3=GS 4=XG
+		uint32_t std;//standard 0=? 1=GM 2=GM2 3=GS 4=XG
 		uint32_t fmt,trk,divs;
 		FILE *f;
 		int byteread,valid;

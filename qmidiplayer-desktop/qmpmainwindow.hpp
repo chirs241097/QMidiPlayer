@@ -57,6 +57,7 @@ class qmpMainWindow:public QMainWindow
 		void on_pbSettings_clicked();
 		void onfnA1();
 		void onfnA2();
+		void onfnA3();
 
 		void on_pushButton_clicked();
 
@@ -80,7 +81,7 @@ class qmpMainWindow:public QMainWindow
 		qmpSettingsWindow *settingsw;
 		qmpHelpWindow *helpw;
 
-		QAction *fnA1,*fnA2;
+		QAction *fnA1,*fnA2,*fnA3;
 		void playerSetup();
 
 	private:

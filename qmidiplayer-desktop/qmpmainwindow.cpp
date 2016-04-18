@@ -65,10 +65,12 @@ void qmpMainWindow::init()
 	infow=new qmpInfoWindow(this);
 	helpw=new qmpHelpWindow(this);
 	timer=new QTimer(this);
-	fnA1=new QAction("File Information",ui->lbFileName);
-	fnA2=new QAction("Render to Wave",ui->lbFileName);
+	fnA1=new QAction(tr("File Information"),ui->lbFileName);
+	fnA2=new QAction(tr("Render to Wave"),ui->lbFileName);
+	fnA3=new QAction(tr("Panic"),ui->lbFileName);
 	ui->lbFileName->addAction(fnA1);
 	ui->lbFileName->addAction(fnA2);
+	ui->lbFileName->addAction(fnA3);
 	if(singleFS){player->fluidPreInitialize();playerSetup();player->fluidInitialize();
 		for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
 			LOAD_SOUNDFONT;}
@@ -90,6 +92,7 @@ void qmpMainWindow::init()
 	ui->vsMasterVol->setValue(qmpSettingsWindow::getSettingsIntf()->value("Audio/Gain",50).toInt());
 	connect(fnA1,SIGNAL(triggered()),this,SLOT(onfnA1()));
 	connect(fnA2,SIGNAL(triggered()),this,SLOT(onfnA2()));
+	connect(fnA3,SIGNAL(triggered()),this,SLOT(onfnA3()));
 	connect(timer,SIGNAL(timeout()),this,SLOT(updateWidgets()));
 	connect(timer,SIGNAL(timeout()),chnlw,SLOT(channelWindowsUpdate()));
 	connect(timer,SIGNAL(timeout()),infow,SLOT(updateInfo()));
@@ -542,6 +545,11 @@ void qmpMainWindow::onfnA2()
 		LOAD_SOUNDFONT;
 	player->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();timer->start(UPDATE_INTERVAL);
 	renderTh=new std::thread(&CMidiPlayer::rendererThread,player);
+}
+
+void qmpMainWindow::onfnA3()
+{
+	player->playerPanic();
 }
 
 void qmpMainWindow::on_pbSettings_clicked()

@@ -56,37 +56,37 @@ retry:
 	{
 		case 0x80://Note Off
 			p1=fgetc(f);p2=fgetc(f);byteread+=2;
-			eventList[eventc++]=new SEvent(curid,curt,type,p1,p2);
+			eventList.push_back(new SEvent(curid,curt,type,p1,p2));
 		break;
 		case 0x90://Note On
 			p1=fgetc(f);p2=fgetc(f);byteread+=2;
 			if(p2)
 			{
 				++notes;
-				eventList[eventc++]=new SEvent(curid,curt,type,p1,p2);
+				eventList.push_back(new SEvent(curid,curt,type,p1,p2));
 			}
 			else
-				eventList[eventc++]=new SEvent(curid,curt,(type&0x0F)|0x80,p1,p2);
+				eventList.push_back(new SEvent(curid,curt,(type&0x0F)|0x80,p1,p2));
 		break;
 		case 0xA0://Note Aftertouch
 			p1=fgetc(f);p2=fgetc(f);byteread+=2;
-			eventList[eventc++]=new SEvent(curid,curt,type,p1,p2);
+			eventList.push_back(new SEvent(curid,curt,type,p1,p2));
 		break;
 		case 0xB0://Controller Change
 			p1=fgetc(f);p2=fgetc(f);byteread+=2;
-			eventList[eventc++]=new SEvent(curid,curt,type,p1,p2);
+			eventList.push_back(new SEvent(curid,curt,type,p1,p2));
 		break;
 		case 0xC0://Patch Change
 			p1=fgetc(f);++byteread;
-			eventList[eventc++]=new SEvent(curid,curt,type,p1,0);
+			eventList.push_back(new SEvent(curid,curt,type,p1,0));
 		break;
 		case 0xD0://Channel Aftertouch
 			p1=fgetc(f);++byteread;
-			eventList[eventc++]=new SEvent(curid,curt,type,p1,0);
+			eventList.push_back(new SEvent(curid,curt,type,p1,0));
 		break;
 		case 0xE0://Pitch wheel
 			p1=fgetc(f);p2=fgetc(f);byteread+=2;
-			eventList[eventc++]=new SEvent(curid,curt,type,(p1|(p2<<7))&0x3FFF,0);
+			eventList.push_back(new SEvent(curid,curt,type,(p1|(p2<<7))&0x3FFF,0));
 		break;
 		case 0xF0:
 			if((type&0x0F)==0x0F)//Meta Event
@@ -107,7 +107,7 @@ retry:
 					break;
 					case 0x51://Set Tempo
 						p1=readDW();p1&=0x00FFFFFF;
-						eventList[eventc++]=new SEvent(curid,curt,type,metatype,p1);
+						eventList.push_back(new SEvent(curid,curt,type,metatype,p1));
 					break;
 					case 0x54://SMTPE offset, not handled.
 						fgetc(f);fgetc(f);fgetc(f);
@@ -117,12 +117,12 @@ retry:
 					case 0x58://Time signature
 						fgetc(f);++byteread;
 						p1=readDW();
-						eventList[eventc++]=new SEvent(curid,curt,type,metatype,p1);
+						eventList.push_back(new SEvent(curid,curt,type,metatype,p1));
 					break;
 					case 0x59://Key signature
 						fgetc(f);++byteread;
 						p1=readSW();
-						eventList[eventc++]=new SEvent(curid,curt,type,metatype,p1);
+						eventList.push_back(new SEvent(curid,curt,type,metatype,p1));
 					break;
 					case 0x01:case 0x02:case 0x03:
 					case 0x04:case 0x05:case 0x06:
@@ -134,7 +134,7 @@ retry:
 						{
 							++byteread;if(str)str[c]=fgetc(f);else fgetc(f);
 						}
-						if(str)str[c]='\0';eventList[eventc++]=new SEvent(curid,curt,type,metatype,0,str);
+						if(str)str[c]='\0';eventList.push_back(new SEvent(curid,curt,type,metatype,0,str));
 						if(str&&metatype==0x03&&!title)
 						{
 							title=new char[len+8];
@@ -159,7 +159,7 @@ retry:
 					for(c=1;c<len;++c){++byteread;str[c]=fgetc(f);}
 				}
 				else for(c=0;c<len;++c){++byteread;str[c]=fgetc(f);}
-				eventList[eventc++]=new SEvent(curid,curt,type,len,0,str);
+				eventList.push_back(new SEvent(curid,curt,type,len,0,str));
 				if(!strcmp(str,GM1SysX))std=1;
 				if(!strcmp(str,GM2SysX))std=2;
 				if(!strcmp(str,GSSysEx))std=3;
@@ -213,24 +213,24 @@ int CMidiFile::chunkReader(int hdrXp)
 }
 CMidiFile::CMidiFile(const char* fn)
 {
-	title=copyright=NULL;notes=eventc=0;std=0;valid=1;
+	title=copyright=NULL;notes=0;std=0;valid=1;
 	try
 	{
 		if(!(f=fopen(fn,"rb")))throw (fprintf(stderr,"E: file %s doesn't exist!\n",fn),2);
 		chunkReader(1);
 		for(uint32_t i=0;i<trk;i+=chunkReader(0));
 		fclose(f);
-		std::sort(eventList,eventList+eventc,cmp);
+		std::sort(eventList.begin(),eventList.end(),cmp);
 	}
 	catch(int){fprintf(stderr,"E: %s is not a supported file.\n",fn);valid=0;}
 }
 CMidiFile::~CMidiFile()
 {
-	for(uint32_t i=0;i<eventc;++i)delete eventList[i];
+	for(uint32_t i=0;i<eventList.size();++i)delete eventList[i];eventList.clear();
 	if(title)delete[] title;if(copyright)delete[] copyright;
 }
-const SEvent* CMidiFile::getEvent(uint32_t id){return id<eventc?eventList[id]:NULL;}
-uint32_t CMidiFile::getEventCount(){return eventc;}
+const SEvent* CMidiFile::getEvent(uint32_t id){return id<eventList.size()?eventList[id]:NULL;}
+uint32_t CMidiFile::getEventCount(){return eventList.size();}
 uint32_t CMidiFile::getDivision(){return divs;}
 uint32_t CMidiFile::getNoteCount(){return notes;}
 uint32_t CMidiFile::getStandard(){return std;}

@@ -287,16 +287,21 @@ CMidiPlayer::~CMidiPlayer()
 }
 void CMidiPlayer::playerPanic(bool reset)
 {
-	if(reset)for(int i=0;i<16;++i)
+	for(int i=0;i<16;++i)
 	{
-		fluid_synth_pitch_bend(synth,i,8192);
-		fluid_synth_cc(synth,i,7,100);
-		fluid_synth_cc(synth,i,10,64);
-		fluid_synth_cc(synth,i,11,127);
-		if(deviceusage[i])for(int j=0;j<16;++j)mapper->reset(i,j);
+		if(reset)
+		{
+			fluid_synth_pitch_bend(synth,i,8192);
+			fluid_synth_cc(synth,i,7,100);
+			fluid_synth_cc(synth,i,10,64);
+			fluid_synth_cc(synth,i,11,127);
+		}
+		fluid_synth_cc(synth,i,64,0);
+		//all sounds off causes the minus polyphone bug...
+		fluid_synth_all_notes_off(synth,i);
+		if(deviceusage[i])for(int j=0;j<16;++j)
+		reset?mapper->reset(i,j):mapper->panic(i,j);
 	}
-	//all sounds off causes the minus polyphone bug...
-	for(int i=0;i<16;++i)fluid_synth_all_notes_off(synth,i);
 }
 bool CMidiPlayer::playerLoadFile(const char* fn)
 {

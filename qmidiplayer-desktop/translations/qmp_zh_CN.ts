@@ -365,6 +365,21 @@
         <source>?</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <location filename="../qmpmainwindow.cpp" line="68"/>
+        <source>File Information</source>
+        <translation type="unfinished">文件信息</translation>
+    </message>
+    <message>
+        <location filename="../qmpmainwindow.cpp" line="69"/>
+        <source>Render to Wave</source>
+        <translation type="unfinished">输出到wav文件</translation>
+    </message>
+    <message>
+        <location filename="../qmpmainwindow.cpp" line="70"/>
+        <source>Panic</source>
+        <translation type="unfinished">关闭所有音符</translation>
+    </message>
 </context>
 <context>
     <name>qmpPlistWindow</name>
