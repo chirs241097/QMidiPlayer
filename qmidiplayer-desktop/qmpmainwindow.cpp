@@ -99,37 +99,60 @@ void qmpMainWindow::init()
 	if(havemidi)on_pbPlayPause_clicked();
 }
 
-int qmpMainWindow::pharseArgs(int argc,char** argv)
+int qmpMainWindow::pharseArgs()
 {
 	bool loadfolder=false;havemidi=false;
-	for(int i=1;i<argc;++i)
+	QStringList args=QApplication::arguments();
+	for(int i=1;i<args.size();++i)
 	{
-		if(argv[i][0]=='-')
+		if(args.at(i).at(0)=='-')
 		{
-			if(!strcmp(argv[i],"--help"))
+			if(args.at(i)==QString("--help"))
 			{
-				printf("Usage: %s [Options] [Midi Files]\n",argv[0]);
+				printf("Usage: %s [Options] [Midi Files]\n",args.at(0).toStdString().c_str());
 				printf("Possible options are: \n");
 				printf("  -l, --load-all-files  Load all files from the same folder.\n");
 				printf("  --help                Show this help and exit.\n");
 				printf("  --version             Show this version information and exit.\n");
 				return 1;
 			}
-			if(!strcmp(argv[i],"--version"))
+			if(args.at(i)==QString("--version"))
 			{
 				printf("QMidiPlayer %s\n",APP_VERSION);
 				return 1;
 			}
-			if(!strcmp(argv[i],"-l")||!strcmp(argv[i],"--load-all-files"))
+			if(args.at(i)==QString("-l")||args.at(i)==QString("--load-all-files"))
 				loadfolder=true;
 		}
 		else
-		if(fluid_is_midifile(argv[i]))
+#ifdef _WIN32
+		{
+			char* c=wcsto8bit(args.at(i).toStdWString().c_str());
+			if(fluid_is_midifile(c))
+			{
+				if(!havemidi){havemidi=true;plistw->emptyList();}
+				if(loadfolder||qmpSettingsWindow::getSettingsIntf()->value("Behavior/LoadFolder",0).toInt())
+				{
+					QDirIterator di(QFileInfo(args.at(i)).absolutePath());
+					while(di.hasNext())
+					{
+						QString c=di.next();char* cc=wcsto8bit(c.toStdWString().c_str());
+						if((c.endsWith(".mid")||c.endsWith(".midi"))&&fluid_is_midifile(cc))
+						plistw->insertItem(c);free(cc);
+					}
+				}
+				else
+				plistw->insertItem(args.at(i));
+			}
+			free(c);
+		}
+#else
+		if(fluid_is_midifile(args.at(i).toStdString().c_str()))
 		{
 			if(!havemidi){havemidi=true;plistw->emptyList();}
 			if(loadfolder||qmpSettingsWindow::getSettingsIntf()->value("Behavior/LoadFolder",0).toInt())
 			{
-				QDirIterator di(QFileInfo(argv[i]).absolutePath());
+				QDirIterator di(QFileInfo(args.at(i)).absolutePath());
 				while(di.hasNext())
 				{
 					QString c=di.next();
@@ -138,8 +161,9 @@ int qmpMainWindow::pharseArgs(int argc,char** argv)
 				}
 			}
 			else
-			plistw->insertItem(argv[i]);
+			plistw->insertItem(args.at(i).toStdString().c_str());
 		}
+#endif
 	}
 	return 0;
 }
@@ -206,7 +230,7 @@ void qmpMainWindow::updateWidgets()
 			if(singleFS)player->playerPanic(true);
 			chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 			QString fns=plistw->getNextItem();
-			ui->lbFileName->setText(QUrl(fns).fileName());
+			ui->lbFileName->setText(QUrl::fromLocalFile(fns).fileName());
 			LOAD_FILE;
 			char ts[100];
 			sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
@@ -306,7 +330,7 @@ void qmpMainWindow::on_pbPlayPause_clicked()
 			fns=plistw->getFirstItem();
 			if(!fns.length())return(void)(playing=false);
 		}
-		ui->lbFileName->setText(QUrl(fns).fileName());
+		ui->lbFileName->setText(QUrl::fromLocalFile(fns).fileName());
 		LOAD_FILE;
 		char ts[100];
 		sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
@@ -430,7 +454,7 @@ void qmpMainWindow::on_pbPrev_clicked()
 	if(singleFS)player->playerPanic(true);
 	ui->hsTimer->setValue(0);chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 	QString fns=plistw->getPrevItem();if(fns.length()==0)return on_pbStop_clicked();
-	ui->lbFileName->setText(QUrl(fns).fileName());
+	ui->lbFileName->setText(QUrl::fromLocalFile(fns).fileName());
 	LOAD_FILE;
 	char ts[100];
 	sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
@@ -455,7 +479,7 @@ void qmpMainWindow::on_pbNext_clicked()
 	if(singleFS)player->playerPanic(true);
 	ui->hsTimer->setValue(0);chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 	QString fns=plistw->getNextItem();if(fns.length()==0)return on_pbStop_clicked();
-	ui->lbFileName->setText(QUrl(fns).fileName());
+	ui->lbFileName->setText(QUrl::fromLocalFile(fns).fileName());
 	LOAD_FILE;
 	char ts[100];
 	sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
@@ -483,7 +507,7 @@ void qmpMainWindow::selectionChanged()
 	ui->hsTimer->setValue(0);
 	chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 	QString fns=plistw->getSelectedItem();
-	ui->lbFileName->setText(QUrl(fns).fileName());
+	ui->lbFileName->setText(QUrl::fromLocalFile(fns).fileName());
 	LOAD_FILE;
 	char ts[100];
 	sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);

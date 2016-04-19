@@ -9,6 +9,7 @@
 #include <QDragEnterEvent>
 #include <QAction>
 #include <QMenu>
+#include <QApplication>
 #include <thread>
 #include <chrono>
 #include "../core/qmpmidiplay.hpp"
@@ -39,7 +40,7 @@ class qmpMainWindow:public QMainWindow
 		QTimer* getTimer(){return timer;}
 		bool isFinalizing(){return fin;}
 		QString getFileName();
-		int pharseArgs(int argc,char** argv);
+		int pharseArgs();
 
 	private slots:
 		void on_pbPlayPause_clicked();

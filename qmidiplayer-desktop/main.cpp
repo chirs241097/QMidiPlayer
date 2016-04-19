@@ -32,7 +32,7 @@ int main(int argc,char **argv)
 	qmpTranslator.load("qmp_"+QLocale::system().name());
 	a.installTranslator(&qmpTranslator);
 	qmpMainWindow w;
-	if(w.pharseArgs(argc,argv)==1)return 0;
+	if(w.pharseArgs()==1)return 0;
 	w.init();
 
 	return a.exec();

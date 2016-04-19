@@ -1,4 +1,7 @@
 2016-04-18 0.7.2 beta
+Fixed several bugs in command line parsing (on Windows).
+
+2016-04-18 0.7.2 beta
 Use std::vector for the event list.
 Add panic action.
 Minor changes on the panic function.
