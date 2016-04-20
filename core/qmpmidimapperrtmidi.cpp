@@ -88,6 +88,7 @@ void qmpMidiMapperRtMidi::sysEx(int iid,int length,const char *data)
 void qmpMidiMapperRtMidi::panic(int iid,int ch)
 {
 	//maybe all notes off is more close to panic?
+	pitchBend(iid,ch,8192);
 	ctrlChange(iid,ch,120,0);
 	//ctrlChange(iid,ch,123,0);
 }

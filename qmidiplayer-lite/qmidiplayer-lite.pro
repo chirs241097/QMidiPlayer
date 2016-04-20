@@ -29,7 +29,8 @@ LIBS += -lfluidsynth -lrtmidi
 win32{
 	#change these before building...
 	LIBS += e:/libs/fluidsynth/fluidsynth.lib winmm.lib
-	LIBS += e:/libs/rtmidi/rtmidi.lib
+	Release:LIBS += e:/libs/rtmidi/rtmidi.lib
+	Debug:LIBS += e:/libs/rtmidi/rtmidid.lib
 	INCLUDEPATH += e:/libs/fluidsynth/include
 	INCLUDEPATH += e:/libs/rtmidi
 }

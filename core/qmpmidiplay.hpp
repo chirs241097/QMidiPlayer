@@ -13,6 +13,7 @@ struct SEvent
 	uint8_t type;
 	char *str;
 	SEvent(){time=p1=p2=0;type=0;str=NULL;}
+	~SEvent(){if(str){delete[] str;str=NULL;}}
 	SEvent(uint32_t _iid,uint32_t _t,char _tp,uint32_t _p1,uint32_t _p2,const char* s=NULL)
 	{
 		iid=_iid;time=_t;type=_tp;
@@ -46,6 +47,7 @@ class CMidiFile
 		void trackChunkReader();
 		void headerChunkReader();
 		int chunkReader(int hdrXp);
+		void dumpEvents();
 	public:
 		CMidiFile(const char* fn);
 		~CMidiFile();

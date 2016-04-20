@@ -51,7 +51,7 @@ int CMidiFile::eventReader()//returns 0 if End of Track encountered
 	uint32_t delta=readVL();curt+=delta;
 	char type=fgetc(f);++byteread;uint32_t p1,p2;
 	static char lasttype;
-retry:
+	if(!(type&0x80)){fseek(f,-1,SEEK_CUR);--byteread;type=lasttype;}
 	switch(type&0xF0)
 	{
 		case 0x80://Note Off
@@ -164,11 +164,12 @@ retry:
 				if(!strcmp(str,GM2SysX))std=2;
 				if(!strcmp(str,GSSysEx))std=3;
 				if(!strcmp(str,XGSysEx))std=4;
+				delete[] str;
 			}
 			else error(0,"W: Unknown event type %#x",type);
 		break;
 		default:
-			fseek(f,-1,SEEK_CUR);--byteread;type=lasttype;goto retry;
+			error(0,"W: Unknown event type %#x",type);
 	}
 	lasttype=type;++curid;
 	return 1;
@@ -210,6 +211,16 @@ int CMidiFile::chunkReader(int hdrXp)
 			for(int chnklen=readDW();chnklen>0;--chnklen)fgetc(f);return 0;
 		}
 		else return trackChunkReader(),1;
+}
+void CMidiFile::dumpEvents()
+{
+	for(uint32_t i=0;i<eventList.size();++i)
+	if(eventList[i]->str)
+		printf("type %x #%d @%d p1 %d p2 %d str %s\n",eventList[i]->type,
+		eventList[i]->iid,eventList[i]->time,eventList[i]->p1,eventList[i]->p2,eventList[i]->str);
+	else
+		printf("type %x #%d @%d p1 %d p2 %d\n",eventList[i]->type,
+		eventList[i]->iid,eventList[i]->time,eventList[i]->p1,eventList[i]->p2);
 }
 CMidiFile::CMidiFile(const char* fn)
 {

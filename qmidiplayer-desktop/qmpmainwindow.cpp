@@ -1,7 +1,9 @@
 #include <cstdio>
+#include <cmath>
 #include <QUrl>
 #include <QFileInfo>
 #include <QMimeData>
+#include <QFont>
 #include <QDirIterator>
 #include <QDesktopWidget>
 #include "qmpmainwindow.hpp"
@@ -43,6 +45,7 @@ qmpMainWindow::qmpMainWindow(QWidget *parent) :
 	ui(new Ui::qmpMainWindow)
 {
 	ui->setupUi(this);
+	ui->lnPolyphone->display("00000-00000");
 	ui->lbFileName->setText("");ref=this;
 	playing=false;stopped=true;dragging=false;
 	settingsw=new qmpSettingsWindow(this);
@@ -219,7 +222,7 @@ void qmpMainWindow::updateWidgets()
 			chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 			ui->pbPlayPause->setIcon(QIcon(":/img/play.png"));
 			ui->hsTimer->setValue(0);
-			ui->lbPolyphone->setText("Poly: 0/0");
+			ui->lnPolyphone->display("00000-00000");
 			ui->lbCurTime->setText("00:00");
 		}
 		else
@@ -230,7 +233,8 @@ void qmpMainWindow::updateWidgets()
 			if(singleFS)player->playerPanic(true);
 			chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 			QString fns=plistw->getNextItem();
-			ui->lbFileName->setText(QUrl::fromLocalFile(fns).fileName());
+			ui->lbFileName->setText(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.')));
+			onfnChanged();
 			LOAD_FILE;
 			char ts[100];
 			sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
@@ -276,8 +280,9 @@ void qmpMainWindow::updateWidgets()
 		char ts[100];
 		sprintf(ts,"%02d:%02d",(int)(elapsed.count()+offset)/60,(int)(elapsed.count()+offset)%60);
 		ui->lbCurTime->setText(ts);
-		sprintf(ts,"Poly: %d/%d",player->getPolyphone(),player->getMaxPolyphone());
-		ui->lbPolyphone->setText(ts);
+		//sprintf(ts,"Poly: %d/%d",player->getPolyphone(),player->getMaxPolyphone());
+		ui->lnPolyphone->display(QString("%1-%2").arg(player->getPolyphone(),5,10,QChar('0'))
+		.arg(player->getMaxPolyphone(),5,10,QChar('0')));
 	}
 }
 
@@ -330,7 +335,8 @@ void qmpMainWindow::on_pbPlayPause_clicked()
 			fns=plistw->getFirstItem();
 			if(!fns.length())return(void)(playing=false);
 		}
-		ui->lbFileName->setText(QUrl::fromLocalFile(fns).fileName());
+		ui->lbFileName->setText(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.')));
+		onfnChanged();
 		LOAD_FILE;
 		char ts[100];
 		sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
@@ -408,7 +414,7 @@ void qmpMainWindow::on_pbStop_clicked()
 		chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 		ui->pbPlayPause->setIcon(QIcon(":/img/play.png"));
 		ui->hsTimer->setValue(0);
-		ui->lbPolyphone->setText("Poly: 0/0");
+		ui->lnPolyphone->display("00000-00000");
 		ui->lbCurTime->setText("00:00");
 	}
 }
@@ -454,7 +460,8 @@ void qmpMainWindow::on_pbPrev_clicked()
 	if(singleFS)player->playerPanic(true);
 	ui->hsTimer->setValue(0);chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 	QString fns=plistw->getPrevItem();if(fns.length()==0)return on_pbStop_clicked();
-	ui->lbFileName->setText(QUrl::fromLocalFile(fns).fileName());
+	ui->lbFileName->setText(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.')));
+	onfnChanged();
 	LOAD_FILE;
 	char ts[100];
 	sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
@@ -479,7 +486,8 @@ void qmpMainWindow::on_pbNext_clicked()
 	if(singleFS)player->playerPanic(true);
 	ui->hsTimer->setValue(0);chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 	QString fns=plistw->getNextItem();if(fns.length()==0)return on_pbStop_clicked();
-	ui->lbFileName->setText(QUrl::fromLocalFile(fns).fileName());
+	ui->lbFileName->setText(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.')));
+	onfnChanged();
 	LOAD_FILE;
 	char ts[100];
 	sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
@@ -507,7 +515,8 @@ void qmpMainWindow::selectionChanged()
 	ui->hsTimer->setValue(0);
 	chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 	QString fns=plistw->getSelectedItem();
-	ui->lbFileName->setText(QUrl::fromLocalFile(fns).fileName());
+	ui->lbFileName->setText(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.')));
+	onfnChanged();
 	LOAD_FILE;
 	char ts[100];
 	sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
@@ -544,6 +553,19 @@ void qmpMainWindow::on_lbFileName_customContextMenuRequested(const QPoint &pos)
 	QMenu menu(ui->lbFileName);
 	menu.addActions(ui->lbFileName->actions());
 	menu.exec(this->pos()+ui->lbFileName->pos()+pos);
+}
+
+void qmpMainWindow::onfnChanged()
+{
+	if(!ui->lbFileName->text().length())return;
+	QFont f=ui->lbFileName->font();f.setPointSize(18);
+	QFontMetrics fm(f);
+	QSize size=fm.size(0,ui->lbFileName->text());
+	double fw=ui->lbFileName->width()/(double)size.width();
+	double fh=ui->lbFileName->height()/(double)size.height();
+	double ps=floor(f.pointSizeF()*(fw<fh?fw:fh));if(ps<6)ps=6;
+	f.setPointSizeF(ps>18?18:ps);
+	ui->lbFileName->setFont(f);
 }
 
 void qmpMainWindow::onfnA1()

@@ -7,9 +7,11 @@
 #include <QMoveEvent>
 #include <QDropEvent>
 #include <QDragEnterEvent>
+#include <QMouseEvent>
 #include <QAction>
 #include <QMenu>
 #include <QApplication>
+#include <QSlider>
 #include <thread>
 #include <chrono>
 #include "../core/qmpmidiplay.hpp"
@@ -23,6 +25,24 @@
 namespace Ui {
 	class qmpMainWindow;
 }
+
+class QClickableSlider:public QSlider
+{
+	Q_OBJECT
+	public:
+		explicit QClickableSlider(QWidget *parent=0):QSlider(parent){}
+	protected:
+		void mouseReleaseEvent(QMouseEvent *e)
+		{
+			QSlider::mouseReleaseEvent(e);
+			if(e->buttons()^Qt::LeftButton)
+			{
+				double p=e->pos().x()/(double)width();
+				setValue(p*(maximum()-minimum())+minimum());
+				emit sliderReleased();
+			}
+		}
+};
 
 class qmpMainWindow:public QMainWindow
 {
@@ -83,6 +103,7 @@ class qmpMainWindow:public QMainWindow
 		qmpHelpWindow *helpw;
 
 		QAction *fnA1,*fnA2,*fnA3;
+		void onfnChanged();
 		void playerSetup();
 
 	private:

@@ -1,4 +1,14 @@
-2016-04-18 0.7.2 beta
+2016-04-20 0.7.2 beta
+UI refinements:
+	Use Qt layouts in most of the dialogs.
+	Allow seeking with a single click on the slider.
+	Remove file extension from the file name on main window.
+	Use QLCDNumber to display current polyphone.
+Fixed two memory leaks.
+Minor improvement in MIDI reading process.
+Added a function to dump midi file content (for debugging).
+
+2016-04-19 0.7.2 beta
 Fixed several bugs in command line parsing (on Windows).
 
 2016-04-18 0.7.2 beta
