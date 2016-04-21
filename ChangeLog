@@ -1,3 +1,7 @@
+2016-04-21 0.7.2 beta
+Minor change to the main window.
+Added "click to copy" to the file information window.
+
 2016-04-20 0.7.2 beta
 UI refinements:
 	Use Qt layouts in most of the dialogs.

@@ -21,7 +21,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QLabel" name="lbFileName">
+    <widget class="QClickableLabel" name="lbFileName">
      <property name="text">
       <string>File name: </string>
      </property>
@@ -30,21 +30,21 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QLabel" name="lbTempo">
+      <widget class="QClickableLabel" name="lbTempo">
        <property name="text">
         <string>Tempo: </string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="lbKeySig">
+      <widget class="QClickableLabel" name="lbKeySig">
        <property name="text">
         <string>Key Sig.: </string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="lbTimeSig">
+      <widget class="QClickableLabel" name="lbTimeSig">
        <property name="text">
         <string>Time Sig.:</string>
        </property>
@@ -53,14 +53,14 @@
     </layout>
    </item>
    <item>
-    <widget class="QLabel" name="lbTitle">
+    <widget class="QClickableLabel" name="lbTitle">
      <property name="text">
       <string>Title: </string>
      </property>
     </widget>
    </item>
    <item>
-    <widget class="QLabel" name="lbCopyright">
+    <widget class="QClickableLabel" name="lbCopyright">
      <property name="text">
       <string>Copyright: </string>
      </property>
@@ -69,14 +69,14 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
-      <widget class="QLabel" name="lbNoteCount">
+      <widget class="QClickableLabel" name="lbNoteCount">
        <property name="text">
         <string>Note count: </string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="lbFileStandard">
+      <widget class="QClickableLabel" name="lbFileStandard">
        <property name="text">
         <string>File standard: </string>
        </property>
@@ -86,6 +86,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QClickableLabel</class>
+   <extends>QLabel</extends>
+   <header>qmpinfowindow.hpp</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
