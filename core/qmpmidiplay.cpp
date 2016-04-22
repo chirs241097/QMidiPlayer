@@ -15,6 +15,11 @@ void CMidiPlayer::fluidPreInitialize()
 void CMidiPlayer::fluidInitialize()
 {
 	synth=new_fluid_synth(settings);
+	fluid_set_log_function(FLUID_DBG,NULL,NULL);
+	fluid_set_log_function(FLUID_INFO,NULL,NULL);
+	fluid_set_log_function(FLUID_WARN,NULL,NULL);
+	fluid_set_log_function(FLUID_ERR,fluid_default_log_function,NULL);
+	fluid_set_log_function(FLUID_PANIC,fluid_default_log_function,NULL);
 	adriver=new_fluid_audio_driver(settings,synth);
 	fluid_synth_set_chorus(synth,FLUID_CHORUS_DEFAULT_N,FLUID_CHORUS_DEFAULT_LEVEL,
 						   FLUID_CHORUS_DEFAULT_SPEED,FLUID_CHORUS_DEFAULT_DEPTH,

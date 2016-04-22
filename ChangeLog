@@ -1,3 +1,9 @@
+2016-04-22 0.7.2
+Remove visualization stub in settings window.
+Warn the user when an invalid file is loaded.
+Discard fluidsynth warnings.
+First stable version!
+
 2016-04-21 0.7.2 beta
 Minor change to the main window.
 Added "click to copy" to the file information window.

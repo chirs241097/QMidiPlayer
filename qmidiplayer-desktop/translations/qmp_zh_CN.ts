@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0" language="zh_CN">
+<TS version="2.1" language="zh_CN">
 <context>
     <name>qmpChannelEditor</name>
     <message>
@@ -9,117 +9,117 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qmpchanneleditor.ui" line="38"/>
+        <location filename="../qmpchanneleditor.ui" line="53"/>
         <source>&lt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qmpchanneleditor.ui" line="51"/>
+        <location filename="../qmpchanneleditor.ui" line="66"/>
         <source>1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qmpchanneleditor.ui" line="67"/>
+        <location filename="../qmpchanneleditor.ui" line="88"/>
         <source>&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qmpchanneleditor.ui" line="85"/>
+        <location filename="../qmpchanneleditor.ui" line="124"/>
         <source>Yamaha Grand Piano</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qmpchanneleditor.ui" line="98"/>
+        <location filename="../qmpchanneleditor.ui" line="97"/>
         <source>BK: 0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qmpchanneleditor.ui" line="111"/>
+        <location filename="../qmpchanneleditor.ui" line="104"/>
         <source>PC: 0</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qmpchanneleditor.ui" line="124"/>
+        <location filename="../qmpchanneleditor.ui" line="135"/>
         <source>Filters</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qmpchanneleditor.ui" line="136"/>
+        <location filename="../qmpchanneleditor.ui" line="192"/>
         <source>Res. 64</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qmpchanneleditor.ui" line="190"/>
+        <location filename="../qmpchanneleditor.ui" line="182"/>
         <source>Cut.  64</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qmpchanneleditor.ui" line="207"/>
+        <location filename="../qmpchanneleditor.ui" line="205"/>
         <source>Effects</source>
         <translation type="unfinished">效果</translation>
     </message>
     <message>
-        <location filename="../qmpchanneleditor.ui" line="219"/>
+        <location filename="../qmpchanneleditor.ui" line="262"/>
         <source>Chr. 64</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qmpchanneleditor.ui" line="273"/>
+        <location filename="../qmpchanneleditor.ui" line="252"/>
         <source>Rev.  64</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qmpchanneleditor.ui" line="290"/>
+        <location filename="../qmpchanneleditor.ui" line="349"/>
         <source>Envelope</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qmpchanneleditor.ui" line="302"/>
+        <location filename="../qmpchanneleditor.ui" line="419"/>
         <source>Dec. 64</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qmpchanneleditor.ui" line="356"/>
+        <location filename="../qmpchanneleditor.ui" line="409"/>
         <source>Atk.  64</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qmpchanneleditor.ui" line="391"/>
+        <location filename="../qmpchanneleditor.ui" line="429"/>
         <source>Rel. 64</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qmpchanneleditor.ui" line="408"/>
+        <location filename="../qmpchanneleditor.ui" line="442"/>
         <source>Vibrato</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qmpchanneleditor.ui" line="420"/>
+        <location filename="../qmpchanneleditor.ui" line="512"/>
         <source>Dep. 64</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qmpchanneleditor.ui" line="474"/>
+        <location filename="../qmpchanneleditor.ui" line="502"/>
         <source>Rate  64</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qmpchanneleditor.ui" line="509"/>
+        <location filename="../qmpchanneleditor.ui" line="522"/>
         <source>Del. 64</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qmpchanneleditor.ui" line="526"/>
+        <location filename="../qmpchanneleditor.ui" line="275"/>
         <source>Mixer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qmpchanneleditor.ui" line="538"/>
+        <location filename="../qmpchanneleditor.ui" line="332"/>
         <source>Pan.  C</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qmpchanneleditor.ui" line="573"/>
+        <location filename="../qmpchanneleditor.ui" line="322"/>
         <source>Vol.  127</source>
         <translation type="unfinished"></translation>
     </message>
@@ -320,63 +320,63 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qmpmainwindow.ui" line="54"/>
+        <location filename="../qmpmainwindow.ui" line="84"/>
         <source>somefile.mid</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qmpmainwindow.ui" line="210"/>
+        <location filename="../qmpmainwindow.ui" line="126"/>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Poly&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation type="unfinished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;复音&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <location filename="../qmpmainwindow.ui" line="390"/>
         <source>Channels</source>
         <translation type="unfinished">通道</translation>
     </message>
     <message>
-        <location filename="../qmpmainwindow.ui" line="239"/>
+        <location filename="../qmpmainwindow.ui" line="419"/>
         <source>Playlist</source>
         <translation type="unfinished">播放列表</translation>
     </message>
     <message>
-        <location filename="../qmpmainwindow.ui" line="274"/>
+        <location filename="../qmpmainwindow.ui" line="454"/>
         <source>Effects</source>
         <translation type="unfinished">效果</translation>
     </message>
     <message>
-        <location filename="../qmpmainwindow.ui" line="303"/>
+        <location filename="../qmpmainwindow.ui" line="483"/>
         <source>Visualization</source>
         <translation type="unfinished">可视化</translation>
     </message>
     <message>
-        <location filename="../qmpmainwindow.ui" line="326"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Poly: 0/0&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qmpmainwindow.ui" line="361"/>
+        <location filename="../qmpmainwindow.ui" line="539"/>
         <source>Master</source>
         <translation type="unfinished">主音量</translation>
     </message>
     <message>
-        <location filename="../qmpmainwindow.ui" line="374"/>
-        <location filename="../qmpmainwindow.ui" line="387"/>
+        <location filename="../qmpmainwindow.ui" line="105"/>
+        <location filename="../qmpmainwindow.ui" line="163"/>
         <source>00:00</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qmpmainwindow.ui" line="403"/>
+        <location filename="../qmpmainwindow.ui" line="46"/>
         <source>?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qmpmainwindow.cpp" line="68"/>
+        <location filename="../qmpmainwindow.cpp" line="72"/>
         <source>File Information</source>
         <translation type="unfinished">文件信息</translation>
     </message>
     <message>
-        <location filename="../qmpmainwindow.cpp" line="69"/>
+        <location filename="../qmpmainwindow.cpp" line="73"/>
         <source>Render to Wave</source>
         <translation type="unfinished">输出到wav文件</translation>
     </message>
     <message>
-        <location filename="../qmpmainwindow.cpp" line="70"/>
+        <location filename="../qmpmainwindow.cpp" line="74"/>
         <source>Panic</source>
         <translation type="unfinished">关闭所有音符</translation>
     </message>
@@ -389,46 +389,46 @@
         <translation type="unfinished">播放列表</translation>
     </message>
     <message>
-        <location filename="../qmpplistwindow.ui" line="44"/>
+        <location filename="../qmpplistwindow.ui" line="97"/>
         <source>Add</source>
         <translation type="unfinished">添加</translation>
     </message>
     <message>
-        <location filename="../qmpplistwindow.ui" line="70"/>
+        <location filename="../qmpplistwindow.ui" line="225"/>
         <source>Add Folder</source>
         <translation type="unfinished">添加文件夹</translation>
     </message>
     <message>
-        <location filename="../qmpplistwindow.ui" line="96"/>
+        <location filename="../qmpplistwindow.ui" line="161"/>
         <location filename="../qmpplistwindow.cpp" line="188"/>
         <location filename="../qmpplistwindow.cpp" line="296"/>
         <source>Repeat Off</source>
         <translation type="unfinished">循环关</translation>
     </message>
     <message>
-        <location filename="../qmpplistwindow.ui" line="122"/>
+        <location filename="../qmpplistwindow.ui" line="257"/>
         <location filename="../qmpplistwindow.cpp" line="213"/>
         <location filename="../qmpplistwindow.cpp" line="289"/>
         <source>Shuffle Off</source>
         <translation type="unfinished">随机关</translation>
     </message>
     <message>
-        <location filename="../qmpplistwindow.ui" line="148"/>
+        <location filename="../qmpplistwindow.ui" line="65"/>
         <source>Save</source>
         <translation type="unfinished">保存列表</translation>
     </message>
     <message>
-        <location filename="../qmpplistwindow.ui" line="174"/>
+        <location filename="../qmpplistwindow.ui" line="129"/>
         <source>Load</source>
         <translation type="unfinished">加载列表</translation>
     </message>
     <message>
-        <location filename="../qmpplistwindow.ui" line="200"/>
+        <location filename="../qmpplistwindow.ui" line="193"/>
         <source>Remove</source>
         <translation type="unfinished">移除</translation>
     </message>
     <message>
-        <location filename="../qmpplistwindow.ui" line="226"/>
+        <location filename="../qmpplistwindow.ui" line="289"/>
         <source>Clear</source>
         <translation type="unfinished">清空</translation>
     </message>
@@ -469,22 +469,22 @@
         <translation type="unfinished">乐器选择</translation>
     </message>
     <message>
-        <location filename="../qmppresetselect.ui" line="61"/>
+        <location filename="../qmppresetselect.ui" line="39"/>
         <source>Bank</source>
         <translation type="unfinished">乐器库</translation>
     </message>
     <message>
-        <location filename="../qmppresetselect.ui" line="74"/>
+        <location filename="../qmppresetselect.ui" line="66"/>
         <source>Preset</source>
         <translation type="unfinished">乐器</translation>
     </message>
     <message>
-        <location filename="../qmppresetselect.ui" line="87"/>
+        <location filename="../qmppresetselect.ui" line="114"/>
         <source>OK</source>
         <translation type="unfinished">确定</translation>
     </message>
     <message>
-        <location filename="../qmppresetselect.ui" line="100"/>
+        <location filename="../qmppresetselect.ui" line="101"/>
         <source>Cancel</source>
         <translation type="unfinished">取消</translation>
     </message>
@@ -786,26 +786,6 @@
         <location filename="../qmpsettingswindow.ui" line="561"/>
         <source>Persistent fluidsynth instance</source>
         <translation type="unfinished">单一fluidsynth实例</translation>
-    </message>
-    <message>
-        <location filename="../qmpsettingswindow.ui" line="570"/>
-        <source>Visualization Mode</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qmpsettingswindow.ui" line="584"/>
-        <source>View distance</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qmpsettingswindow.ui" line="627"/>
-        <source>Note stretch</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qmpsettingswindow.ui" line="670"/>
-        <source>Fog Start</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>

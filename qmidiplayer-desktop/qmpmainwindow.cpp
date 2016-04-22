@@ -6,6 +6,7 @@
 #include <QFont>
 #include <QDirIterator>
 #include <QDesktopWidget>
+#include <QMessageBox>
 #include "qmpmainwindow.hpp"
 #include "ui_qmpmainwindow.h"
 #include "../core/qmpmidiplay.hpp"
@@ -27,14 +28,14 @@ char* wcsto8bit(const wchar_t* s)
 #define LOAD_FILE \
 	{\
 		char* c=wcsto8bit(fns.toStdWString().c_str());\
-		if(!player->playerLoadFile(c)){free(c);return;}\
+		if(!player->playerLoadFile(c)){free(c);QMessageBox::critical(this,tr("Error"),tr("%1 is not a valid midi file.").arg(fns));return;}\
 		free(c);\
 	}
 #else
 #define LOAD_SOUNDFONT \
 	player->pushSoundFont(settingsw->getSFWidget()->item(i)->text().toStdString().c_str())
 #define LOAD_FILE \
-	if(!player->playerLoadFile(fns.toStdString().c_str()))return
+	if(!player->playerLoadFile(fns.toStdString().c_str())){QMessageBox::critical(this,tr("Error"),tr("%1 is not a valid midi file.").arg(fns));return;}
 #endif
 #define UPDATE_INTERVAL 66
 
