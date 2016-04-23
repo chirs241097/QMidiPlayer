@@ -38,7 +38,7 @@ class qmpSettingsWindow:public QDialog
 
 		void on_cbAutoBS_stateChanged();
 
-		private:
+	private:
 		Ui::qmpSettingsWindow *ui;
 		void settingsUpdate();
 		static QSettings *settings;

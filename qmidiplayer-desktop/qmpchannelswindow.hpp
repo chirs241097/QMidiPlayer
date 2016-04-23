@@ -59,11 +59,11 @@ class QDCComboBox:public QComboBox
 		void indexChangedSlot(int idx){emit(onChange(id,idx));}
 };
 
-class qmpCWNoteOnCB:public QObject,public CMidiCallBack
+class qmpCWNoteOnCB:public QObject,public IMidiCallBack
 {
 	Q_OBJECT
 	public:
-		void callBack(void *data){if(data)data=NULL;emit(onNoteOn());}
+		void callBack(void*,void*){emit onNoteOn();}
 	signals:
 		void onNoteOn();
 };

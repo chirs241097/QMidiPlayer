@@ -15,6 +15,7 @@
 #include <thread>
 #include <chrono>
 #include "../core/qmpmidiplay.hpp"
+#include "qmpplugin.hpp"
 #include "qmpplistwindow.hpp"
 #include "qmpchannelswindow.hpp"
 #include "qmpefxwindow.hpp"
@@ -57,6 +58,7 @@ class qmpMainWindow:public QMainWindow
 		void dragEnterEvent(QDragEnterEvent *event);
 		~qmpMainWindow();
 		CMidiPlayer* getPlayer(){return player;}
+		qmpSettingsWindow* getSettingsWindow(){return settingsw;}
 		QTimer* getTimer(){return timer;}
 		bool isFinalizing(){return fin;}
 		QString getFileName();
@@ -95,6 +97,7 @@ class qmpMainWindow:public QMainWindow
 		std::chrono::steady_clock::time_point st;
 		double offset;
 		CMidiPlayer *player;
+		qmpPluginManager *pmgr;
 		qmpPlistWindow *plistw;
 		qmpChannelsWindow *chnlw;
 		qmpEfxWindow *efxw;

@@ -49,6 +49,7 @@ void CMidiPlayer::fluidDeinitialize()
 }
 void CMidiPlayer::processEvent(const SEvent *e)
 {
+	SEventCallBackData cbd(e->type,e->p1,e->p2);
 	switch(e->type&0xF0)
 	{
 		case 0x80://Note off
@@ -60,7 +61,7 @@ void CMidiPlayer::processEvent(const SEvent *e)
 		case 0x90://Note on
 			if((mute>>(e->type&0x0F))&1)break;//muted
 			if(solo&&!((solo>>(e->type&0x0F))&1))break;
-			if(noteOnCB)noteOnCB->callBack(noteOnCBUserData);
+			if(noteOnCB)noteOnCB->callBack(&cbd,noteOnCBUserData);
 			if(mappedoutput[e->type&0x0F])
 				mapper->noteOn(mappedoutput[e->type&0x0F]-1,e->type&0x0F,e->p1,e->p2);
 			else
@@ -397,6 +398,7 @@ uint32_t CMidiPlayer::getFileStandard(){return midiFile?midiFile->getStandard():
 const char* CMidiPlayer::getTitle(){return midiFile?midiFile->getTitle():"";}
 const char* CMidiPlayer::getCopyright(){return midiFile?midiFile->getCopyright():"";}
 double CMidiPlayer::getTempo(){return 60./(ctempo/1e6);}
+uint32_t CMidiPlayer::getDivision(){return divs;}
 uint32_t CMidiPlayer::getTCpaused(){return tcpaused;}
 void CMidiPlayer::setTCpaused(uint32_t ps){tcpaused=ps;}
 uint32_t CMidiPlayer::isFinished(){return finished;}
@@ -528,5 +530,5 @@ void CMidiPlayer::setChannelOutput(int ch,int devid)
 	}else fluid_synth_all_notes_off(synth,ch);
 }
 uint8_t* CMidiPlayer::getChstates(){return chstate;}
-void CMidiPlayer::setNoteOnCallBack(CMidiCallBack *cb,void *userdata)
+void CMidiPlayer::setNoteOnCallBack(IMidiCallBack *cb,void *userdata)
 {noteOnCB=cb;noteOnCBUserData=userdata;}

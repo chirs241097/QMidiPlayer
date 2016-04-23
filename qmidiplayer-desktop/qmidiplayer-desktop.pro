@@ -26,7 +26,8 @@ SOURCES += main.cpp\
 	qmpsettingswindow.cpp \
 	qmphelpwindow.cpp \
 	qdialskulpturestyle.cpp \
-	../core/qmpmidimapperrtmidi.cpp
+	../core/qmpmidimapperrtmidi.cpp \
+	qmpplugin.cpp
 
 HEADERS  += qmpmainwindow.hpp \
 	../core/qmpmidiplay.hpp \
@@ -39,7 +40,9 @@ HEADERS  += qmpmainwindow.hpp \
 	qmpsettingswindow.hpp \
 	qmphelpwindow.hpp \
 	qdialskulpturestyle.hpp \
-	../core/qmpmidimappers.hpp
+	../core/qmpmidimappers.hpp \
+	../include/qmpcorepublic.hpp \
+	qmpplugin.hpp
 
 FORMS    += qmpmainwindow.ui \
 	qmpplistwindow.ui \
@@ -78,7 +81,7 @@ unix{
 	menu.path = $${DATADIR}/menu
 	menu.files += ./menu/$${TARGET}
 	QMAKE_CXXFLAGS += -Wall
-	LIBS += -lfluidsynth -lrtmidi
+	LIBS += -lfluidsynth -lrtmidi -ldl
 }
 win32{
 	#change these before building...

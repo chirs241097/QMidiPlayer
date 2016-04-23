@@ -49,7 +49,7 @@ qmpMainWindow::qmpMainWindow(QWidget *parent) :
 	ui->lnPolyphone->display("00000-00000");
 	ui->lbFileName->setText("");ref=this;
 	playing=false;stopped=true;dragging=false;
-	settingsw=new qmpSettingsWindow(this);
+	settingsw=new qmpSettingsWindow(this);pmgr=new qmpPluginManager();
 	plistw=new qmpPlistWindow(this);player=NULL;timer=NULL;
 	singleFS=qmpSettingsWindow::getSettingsIntf()->value("Behavior/SingleInstance",0).toInt();
 }
@@ -58,7 +58,7 @@ qmpMainWindow::~qmpMainWindow()
 {
 	if(player)delete player;
 	if(timer)delete timer;
-	delete ui;
+	delete pmgr;delete ui;
 }
 
 void qmpMainWindow::init()

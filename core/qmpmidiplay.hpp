@@ -2,10 +2,10 @@
 #ifndef QMPMIDIPLAY_H
 #define QMPMIDIPLAY_H
 #include <cstring>
-#include <cstdint>
 #include <cstdlib>
 #include <vector>
 #include <fluidsynth.h>
+#include "../include/qmpcorepublic.hpp"
 #include "qmpmidimappers.hpp"
 struct SEvent
 {
@@ -20,13 +20,6 @@ struct SEvent
 		p1=_p1;p2=_p2;
 		if(s){str=new char[strlen(s)+2];strcpy(str,s);}else str=NULL;
 	}
-};
-class CMidiCallBack
-{
-	public:
-		CMidiCallBack(){}
-		virtual void callBack(void* data)=0;
-		virtual ~CMidiCallBack(){}
 };
 class CMidiFile
 {
@@ -83,7 +76,7 @@ class CMidiPlayer
 		qmpMidiMapperRtMidi *mapper;
 		int mappedoutput[16],deviceusage[16],deviceiid[128];
 		uint8_t chstate[16],chstatus[16][130];//0..127: cc 128: pc
-		CMidiCallBack *noteOnCB;
+		IMidiCallBack *noteOnCB;
 		void* noteOnCBUserData;
 
 		void setBit(uint16_t &n,uint16_t bn,uint16_t b);
@@ -126,6 +119,7 @@ class CMidiPlayer
 		uint32_t getFileNoteCount();
 		uint32_t getFileStandard();
 		double getTempo();
+		uint32_t getDivision();
 		const char* getTitle();
 		const char* getCopyright();
 
@@ -154,6 +148,6 @@ class CMidiPlayer
 		qmpMidiMapperRtMidi* getMidiMapper();
 		void setChannelOutput(int ch,int devid);
 		uint8_t* getChstates();
-		void setNoteOnCallBack(CMidiCallBack *cb,void *userdata);
+		void setNoteOnCallBack(IMidiCallBack *cb,void *userdata);
 };
 #endif

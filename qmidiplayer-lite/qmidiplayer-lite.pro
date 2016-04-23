@@ -21,7 +21,8 @@ include(deployment.pri)
 HEADERS += \
 	../core/qmpmidiplay.hpp \
 	qmpcorewrapper.hpp \
-	../core/qmpmidimappers.hpp
+	../core/qmpmidimappers.hpp \
+    ../include/qmpcorepublic.hpp
 unix{
 LIBS += -lfluidsynth -lrtmidi
 }
