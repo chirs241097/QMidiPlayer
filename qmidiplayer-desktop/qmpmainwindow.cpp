@@ -75,6 +75,7 @@ void qmpMainWindow::init()
 	ui->lbFileName->addAction(fnA1);
 	ui->lbFileName->addAction(fnA2);
 	ui->lbFileName->addAction(fnA3);
+	pmgr->scanPlugins();pmgr->initPlugins();
 	if(singleFS){player->fluidPreInitialize();playerSetup();player->fluidInitialize();
 		for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
 			LOAD_SOUNDFONT;}

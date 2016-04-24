@@ -45,7 +45,7 @@ void qmpInfoWindow::updateInfo()
 	}
 	else ui->lbCopyright->setText(QString("Copyright: "));
 	ui->lbTempo->setText(QString("Tempo: ")+QString::number(player->getTempo(),'g',5));
-	int t,r;player->getCurrentKeySignature(&t);r=(int8_t)((t>>8)&0xFF)+7;
+	int t,r;t=player->getCurrentKeySignature();r=(int8_t)((t>>8)&0xFF)+7;
 	strncpy(str,t&0xFF?minors+2*r:majors+2*r,2);str[2]='\0';
 	ui->lbKeySig->setText(QString("Key Sig.: ")+str);
 	player->getCurrentTimeSignature(&t,&r);sprintf(str,"Time Sig.: %d/%d",t,r);

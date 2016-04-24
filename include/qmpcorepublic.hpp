@@ -17,10 +17,11 @@ class IMidiCallBack
 class qmpPluginIntf
 {
 	public:
-		virtual void init();
-		virtual void deinit();
-		virtual const char* pluginGetName();
-		virtual const char* pluginGetVersion();
+		virtual ~qmpPluginIntf(){}
+		virtual void init(){}
+		virtual void deinit(){}
+		virtual const char* pluginGetName(){return "";}
+		virtual const char* pluginGetVersion(){return "";}
 };
 class qmpVisualizationIntf
 {
@@ -28,6 +29,7 @@ class qmpVisualizationIntf
 		virtual void show();
 		virtual void close();
 };
+extern "C"{
 class qmpPluginAPI
 {
 	public:
@@ -35,15 +37,15 @@ class qmpPluginAPI
 		uint32_t getRawTempo();
 		double getRealTempo();
 		uint32_t getTimeSig();
-		uint32_t getKeySig();
+		int getKeySig();
 		uint32_t getNoteCount();
 		uint32_t getCurrentPolyphone();
 		uint32_t getMaxPolyphone();
 		uint32_t getCurrentTimeStamp();
 		int registerVisualizationIntf(qmpVisualizationIntf* i);
 		void unregisterVisualizationIntf(int intfhandle);
-		int registerEventReadHandlerIntf(IMidiCallBack* cb,void* userdata);
-		void unregisterEventReadHandlerIntf(IMidiCallBack* cb,void* userdata);
+		int registerEventReaderIntf(IMidiCallBack* cb,void* userdata);
+		void unregisterEventReaderIntf(int intfhandle);
 		int registerEventHandlerIntf(IMidiCallBack* cb,void* userdata);
 		void unregisterEventHandlerIntf(int intfhandle);
 		void registerOptionInt(std::string desc,std::string key,int defaultval);
@@ -53,5 +55,6 @@ class qmpPluginAPI
 		void registerOptionString(std::string desc,std::string key,std::string defaultval);
 		std::string getOptionString(std::string key);
 };
+}
 typedef qmpPluginIntf*(*qmpPluginEntry)(qmpPluginAPI*);
 #endif // QMPCOREPUBLIC_H

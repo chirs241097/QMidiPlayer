@@ -50,6 +50,8 @@ void CMidiPlayer::fluidDeinitialize()
 void CMidiPlayer::processEvent(const SEvent *e)
 {
 	SEventCallBackData cbd(e->type,e->p1,e->p2);
+	for(int i=0;i<16;++i)if(eventHandlerCB[i])
+		eventHandlerCB[i]->callBack(&cbd,eventHandlerCBuserdata[i]);
 	switch(e->type&0xF0)
 	{
 		case 0x80://Note off
@@ -61,7 +63,6 @@ void CMidiPlayer::processEvent(const SEvent *e)
 		case 0x90://Note on
 			if((mute>>(e->type&0x0F))&1)break;//muted
 			if(solo&&!((solo>>(e->type&0x0F))&1))break;
-			if(noteOnCB)noteOnCB->callBack(&cbd,noteOnCBUserData);
 			if(mappedoutput[e->type&0x0F])
 				mapper->noteOn(mappedoutput[e->type&0x0F]-1,e->type&0x0F,e->p1,e->p2);
 			else
@@ -272,7 +273,10 @@ CMidiPlayer::CMidiPlayer(bool singleInst)
 {
 	midiFile=NULL;resumed=false;singleInstance=singleInst;
 	settings=NULL;synth=NULL;adriver=NULL;waitvoice=true;
-	noteOnCB=NULL;noteOnCBUserData=NULL;
+	memset(eventHandlerCB,0,sizeof(eventHandlerCB));
+	memset(eventHandlerCBuserdata,0,sizeof(eventHandlerCBuserdata));
+	memset(eventReaderCB,0,sizeof(eventReaderCB));
+	memset(eventReaderCBuserdata,0,sizeof(eventReaderCBuserdata));
 	memset(mappedoutput,0,sizeof(mappedoutput));
 	memset(deviceusage,0,sizeof(deviceusage));
 	mapper=new qmpMidiMapperRtMidi();
@@ -314,6 +318,8 @@ void CMidiPlayer::playerPanic(bool reset)
 bool CMidiPlayer::playerLoadFile(const char* fn)
 {
 	midiFile=new CMidiFile(fn);
+	memcpy(midiFile->eventReaderCB,this->eventReaderCB,sizeof(this->eventReaderCB));
+	memcpy(midiFile->eventReaderCBuserdata,this->eventReaderCBuserdata,sizeof(this->eventReaderCBuserdata));
 	if(!midiFile->isValid())return false;
 	divs=midiFile->getDivision();
 	fileTimer1Pass();
@@ -392,12 +398,13 @@ void CMidiPlayer::setTCeptr(uint32_t ep,uint32_t st)
 }
 double CMidiPlayer::getFtime(){return ftime;}
 void CMidiPlayer::getCurrentTimeSignature(int *n,int *d){*n=ctsn;*d=ctsd;}
-void CMidiPlayer::getCurrentKeySignature(int *ks){*ks=cks;}
+int CMidiPlayer::getCurrentKeySignature(){return cks;}
 uint32_t CMidiPlayer::getFileNoteCount(){return midiFile?midiFile->getNoteCount():0;}
 uint32_t CMidiPlayer::getFileStandard(){return midiFile?midiFile->getStandard():0;}
 const char* CMidiPlayer::getTitle(){return midiFile?midiFile->getTitle():"";}
 const char* CMidiPlayer::getCopyright(){return midiFile?midiFile->getCopyright():"";}
 double CMidiPlayer::getTempo(){return 60./(ctempo/1e6);}
+uint32_t CMidiPlayer::getRawTempo(){return ctempo;}
 uint32_t CMidiPlayer::getDivision(){return divs;}
 uint32_t CMidiPlayer::getTCpaused(){return tcpaused;}
 void CMidiPlayer::setTCpaused(uint32_t ps){tcpaused=ps;}
@@ -530,5 +537,33 @@ void CMidiPlayer::setChannelOutput(int ch,int devid)
 	}else fluid_synth_all_notes_off(synth,ch);
 }
 uint8_t* CMidiPlayer::getChstates(){return chstate;}
-void CMidiPlayer::setNoteOnCallBack(IMidiCallBack *cb,void *userdata)
-{noteOnCB=cb;noteOnCBUserData=userdata;}
+int CMidiPlayer::setEventHandlerCB(IMidiCallBack *cb,void *userdata)
+{
+	for(int i=0;i<16;++i)
+	{
+		if(eventHandlerCB[i]==cb)return i;
+		if(eventHandlerCB[i]==NULL)
+		{
+			eventHandlerCB[i]=cb;eventHandlerCBuserdata[i]=userdata;
+			return i;
+		}
+	}
+	return -1;
+}
+void CMidiPlayer::unsetEventHandlerCB(int id)
+{eventHandlerCB[id]=NULL;eventHandlerCBuserdata[id]=NULL;}
+int CMidiPlayer::setEventReaderCB(IMidiCallBack *cb,void *userdata)
+{
+	for(int i=0;i<16;++i)
+	{
+		if(eventReaderCB[i]==cb)return i;
+		if(eventReaderCB[i]==NULL)
+		{
+			eventReaderCB[i]=cb;eventReaderCBuserdata[i]=userdata;
+			return i;
+		}
+	}
+	return -1;
+}
+void CMidiPlayer::unsetEventReaderCB(int id)
+{eventReaderCB[id]=NULL;eventReaderCBuserdata[id]=NULL;}

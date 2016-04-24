@@ -1,4 +1,12 @@
 2016-04-23 0.7.8 alpha
+More implementation of plugin support.
+Migrate channel activity indicator to the new
+callback system.
+Added a testing plugin.
+Plugins are now loaded correctly.
+However the plugin API is not working properly.
+
+2016-04-23 0.7.8 alpha
 Basic stubs for plugin support.
 
 2016-04-22 0.7.2

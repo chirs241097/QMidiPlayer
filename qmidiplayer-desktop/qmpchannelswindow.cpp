@@ -17,7 +17,7 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent) :
 	mapper=qmpMainWindow::getInstance()->getPlayer()->getMidiMapper();
 	cha=new QPixmap(":/img/ledon.png");chi=new QPixmap(":/img/ledoff.png");
 	cb=new qmpCWNoteOnCB();fused=callbacksc=cbcnt=0;
-	qmpMainWindow::getInstance()->getPlayer()->setNoteOnCallBack(cb,NULL);
+	qmpMainWindow::getInstance()->getPlayer()->setEventHandlerCB(cb,NULL);
 	connect(cb,SIGNAL(onNoteOn()),this,SLOT(updateChannelActivity()));
 	int devc=mapper->enumDevices();
 	//We setup default output here...

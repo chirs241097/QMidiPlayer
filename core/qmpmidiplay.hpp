@@ -23,6 +23,7 @@ struct SEvent
 };
 class CMidiFile
 {
+	friend class CMidiPlayer;
 	private:
 		std::vector<SEvent*>eventList;
 		char *title,*copyright;
@@ -31,6 +32,8 @@ class CMidiFile
 		FILE *f;
 		int byteread,valid;
 		uint32_t notes,curt,curid;
+		IMidiCallBack* eventReaderCB[16];
+		void* eventReaderCBuserdata[16];
 
 		void error(int fatal,const char* format,...);
 		uint32_t readSW();
@@ -76,8 +79,10 @@ class CMidiPlayer
 		qmpMidiMapperRtMidi *mapper;
 		int mappedoutput[16],deviceusage[16],deviceiid[128];
 		uint8_t chstate[16],chstatus[16][130];//0..127: cc 128: pc
-		IMidiCallBack *noteOnCB;
-		void* noteOnCBUserData;
+		IMidiCallBack* eventHandlerCB[16];
+		IMidiCallBack* eventReaderCB[16];
+		void* eventHandlerCBuserdata[16];
+		void* eventReaderCBuserdata[16];
 
 		void setBit(uint16_t &n,uint16_t bn,uint16_t b);
 		void processEvent(const SEvent *e);
@@ -115,10 +120,11 @@ class CMidiPlayer
 
 		double getFtime();
 		void getCurrentTimeSignature(int *n,int *d);
-		void getCurrentKeySignature(int *ks);
+		int getCurrentKeySignature();
 		uint32_t getFileNoteCount();
 		uint32_t getFileStandard();
 		double getTempo();
+		uint32_t getRawTempo();
 		uint32_t getDivision();
 		const char* getTitle();
 		const char* getCopyright();
@@ -148,6 +154,9 @@ class CMidiPlayer
 		qmpMidiMapperRtMidi* getMidiMapper();
 		void setChannelOutput(int ch,int devid);
 		uint8_t* getChstates();
-		void setNoteOnCallBack(IMidiCallBack *cb,void *userdata);
+		int setEventHandlerCB(IMidiCallBack *cb,void *userdata);
+		void unsetEventHandlerCB(int id);
+		int setEventReaderCB(IMidiCallBack *cb,void *userdata);
+		void unsetEventReaderCB(int id);
 };
 #endif
