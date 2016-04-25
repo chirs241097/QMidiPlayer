@@ -89,3 +89,11 @@ int qmpPluginAPI::registerEventReaderIntf(IMidiCallBack *cb,void *userdata)
 {return qmw->getPlayer()->setEventReaderCB(cb,userdata);}
 void qmpPluginAPI::unregisterEventReaderIntf(int intfhandle)
 {qmw->getPlayer()->unsetEventReaderCB(intfhandle);}
+int qmpPluginAPI::registerVisualizationIntf(qmpVisualizationIntf*){return 0;}
+void qmpPluginAPI::unregisterVisualizationIntf(int){}
+void qmpPluginAPI::registerOptionInt(std::string,std::string,int){}
+int qmpPluginAPI::getOptionInt(std::string){return 0;}
+void qmpPluginAPI::registerOptionDouble(std::string,std::string,double){}
+double qmpPluginAPI::getOptionDouble(std::string){return 0;}
+void qmpPluginAPI::registerOptionString(std::string,std::string,std::string){}
+std::string qmpPluginAPI::getOptionString(std::string){return "";}

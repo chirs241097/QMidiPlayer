@@ -1,4 +1,9 @@
-2016-04-23 0.7.8 alpha
+2016-04-25 0.7.8 alpha
+Plugin API now works correctly.
+Port part of the old visualization code to the
+new Plugin API.
+
+2016-04-24 0.7.8 alpha
 More implementation of plugin support.
 Migrate channel activity indicator to the new
 callback system.

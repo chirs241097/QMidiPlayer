@@ -23,7 +23,6 @@ struct SEvent
 };
 class CMidiFile
 {
-	friend class CMidiPlayer;
 	private:
 		std::vector<SEvent*>eventList;
 		char *title,*copyright;
@@ -45,7 +44,7 @@ class CMidiFile
 		int chunkReader(int hdrXp);
 		void dumpEvents();
 	public:
-		CMidiFile(const char* fn);
+		CMidiFile(const char* fn,IMidiCallBack** ercb,void** ercbdata);
 		~CMidiFile();
 		const SEvent* getEvent(uint32_t id);
 		uint32_t getEventCount();

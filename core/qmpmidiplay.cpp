@@ -49,7 +49,7 @@ void CMidiPlayer::fluidDeinitialize()
 }
 void CMidiPlayer::processEvent(const SEvent *e)
 {
-	SEventCallBackData cbd(e->type,e->p1,e->p2);
+	SEventCallBackData cbd(e->type,e->p1,e->p2,tceptr);
 	for(int i=0;i<16;++i)if(eventHandlerCB[i])
 		eventHandlerCB[i]->callBack(&cbd,eventHandlerCBuserdata[i]);
 	switch(e->type&0xF0)
@@ -317,9 +317,7 @@ void CMidiPlayer::playerPanic(bool reset)
 }
 bool CMidiPlayer::playerLoadFile(const char* fn)
 {
-	midiFile=new CMidiFile(fn);
-	memcpy(midiFile->eventReaderCB,this->eventReaderCB,sizeof(this->eventReaderCB));
-	memcpy(midiFile->eventReaderCBuserdata,this->eventReaderCBuserdata,sizeof(this->eventReaderCBuserdata));
+	midiFile=new CMidiFile(fn,this->eventReaderCB,this->eventReaderCBuserdata);
 	if(!midiFile->isValid())return false;
 	divs=midiFile->getDivision();
 	fileTimer1Pass();

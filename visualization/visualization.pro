@@ -20,4 +20,10 @@ HEADERS += qmpvisualization.hpp
 unix {
 	target.path = /usr/lib/qmidiplayer
 	INSTALLS += target
+	QMAKE_CXXFLAGS += -pthread -fPIC
 }
+#well...
+INCLUDEPATH += /home/chrisoft/devel/BulletLabRemixIII/include/ /usr/include/freetype2
+LIBS += -L/home/chrisoft/devel/BulletLabRemixIII/smelt/sdl/
+LIBS += -L/home/chrisoft/devel/BulletLabRemixIII/extensions/
+LIBS += -lstdc++ -lSDL2 -ljpeg -lpng -lfreetype -lz -lsmeltext -lsmelt-dumb -lCxImage

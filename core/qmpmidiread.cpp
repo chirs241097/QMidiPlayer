@@ -172,6 +172,10 @@ int CMidiFile::eventReader()//returns 0 if End of Track encountered
 			error(0,"W: Unknown event type %#x",type);
 	}
 	lasttype=type;++curid;
+	SEvent* le=eventList[eventList.size()-1];
+	SEventCallBackData cbd(le->type,le->p1,le->p2,le->time);
+	for(int i=0;i<16;++i)if(eventReaderCB[i])
+		eventReaderCB[i]->callBack(&cbd,eventReaderCBuserdata[i]);
 	return 1;
 }
 void CMidiFile::trackChunkReader()
@@ -222,9 +226,11 @@ void CMidiFile::dumpEvents()
 		printf("type %x #%d @%d p1 %d p2 %d\n",eventList[i]->type,
 		eventList[i]->iid,eventList[i]->time,eventList[i]->p1,eventList[i]->p2);
 }
-CMidiFile::CMidiFile(const char* fn)
+CMidiFile::CMidiFile(const char* fn,IMidiCallBack **ercb,void **ercbdata)
 {
 	title=copyright=NULL;notes=0;std=0;valid=1;
+	memcpy(eventReaderCB,ercb,sizeof(eventReaderCB));
+	memcpy(eventReaderCBuserdata,ercbdata,sizeof(eventReaderCBuserdata));
 	try
 	{
 		if(!(f=fopen(fn,"rb")))throw (fprintf(stderr,"E: file %s doesn't exist!\n",fn),2);
