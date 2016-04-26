@@ -63,6 +63,8 @@ class qmpMainWindow:public QMainWindow
 		bool isFinalizing(){return fin;}
 		QString getFileName();
 		int pharseArgs();
+		int registerVisualizationIntf(qmpVisualizationIntf* intf);
+		void unregisterVisualizationIntf(int handle);
 
 	private slots:
 		void on_pbPlayPause_clicked();
@@ -84,7 +86,9 @@ class qmpMainWindow:public QMainWindow
 
 		void on_pushButton_clicked();
 
-	public slots:
+		void on_pbVisualization_clicked();
+
+		public slots:
 		void dialogClosed();
 		void selectionChanged();
 
@@ -104,6 +108,7 @@ class qmpMainWindow:public QMainWindow
 		qmpInfoWindow *infow;
 		qmpSettingsWindow *settingsw;
 		qmpHelpWindow *helpw;
+		qmpVisualizationIntf* VIs[16];
 
 		QAction *fnA1,*fnA2,*fnA3;
 		void onfnChanged();

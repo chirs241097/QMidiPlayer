@@ -10,13 +10,21 @@
 #include "../include/qmpcorepublic.hpp"
 
 class qmpVisualization;
-class CTestCallBack:public IMidiCallBack
+class CReaderCallBack:public IMidiCallBack
 {
 	private:
 		qmpVisualization *par;
 	public:
-		CTestCallBack(qmpVisualization *_par){par=_par;}
+		CReaderCallBack(qmpVisualization *_par){par=_par;}
 		void callBack(void *callerdata,void *userdata);
+};
+class CHandlerCallBack:public IMidiCallBack
+{
+	private:
+		qmpVisualization *par;
+	public:
+		CHandlerCallBack(qmpVisualization *_par){par=_par;}
+		void callBack(void*,void*);
 };
 struct MidiVisualEvent
 {
@@ -26,22 +34,26 @@ struct MidiVisualEvent
 };
 class qmpVisualization:public qmpPluginIntf
 {
+	friend class CHandlerCallBack;
 	private:
 		qmpPluginAPI* api;
-		CTestCallBack* cb;
+		CReaderCallBack* cb;
+		CHandlerCallBack* hcb;
 		qmpVisualizationIntf* vi;
 		std::thread* rendererTh;
 		std::vector<MidiVisualEvent*>pool;
-		smHandler* h;
+		smHandler *h,*closeh;
 		std::stack<uint32_t> pendingt[16][128],pendingv[16][128];
 		SMELT *sm;
 		SMTRG tdscn;
 		SMTEX chequer;
 		smTTFont font;
 		float pos[3],rot[3],lastx,lasty;
-		uint32_t ctc,dvs,ctk,fintk;
+		uint32_t ctc,ctk,fintk,elb;
 		double etps;
+		bool shouldclose,playing;
 		void drawCube(smvec3d a,smvec3d b,DWORD col,SMTEX tex);
+		void showThread();
 	public:
 		qmpVisualization(qmpPluginAPI* _api);
 		~qmpVisualization();
@@ -69,6 +81,12 @@ class CMidiVisualHandler:public smHandler
 	public:
 		CMidiVisualHandler(qmpVisualization* par){p=par;}
 		bool handlerFunc(){return p->update();}
+};
+
+class RefuseCloseHandler:public smHandler
+{
+	public:
+		bool handlerFunc(){return true;}
 };
 
 class CDemoVisualization:public qmpVisualizationIntf

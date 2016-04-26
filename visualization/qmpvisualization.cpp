@@ -2,17 +2,24 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
+#include <algorithm>
 #include "qmpvisualization.hpp"
 
 const int viewdist=100;
 const int notestretch=100;//length of quarter note
 const int minnotelength=100;
+const int noteappearance=1;
 DWORD chcolors[]={0XFFFF0000,0XFFFF8000,0XFFFFBF00,0XFFFFFF00,
 				  0XFFBFFF00,0XFF80FF00,0XFF00FF00,0XFF00FFBF,
 				  0XFF00FFFF,0XFF333333,0XFF00BFFF,0XFF007FFF,
 				  0XFF0000FF,0XFF7F00FF,0XFFBF00FF,0XFFFF00BF};
 
-void CTestCallBack::callBack(void *callerdata,void *)
+bool cmp(MidiVisualEvent* a,MidiVisualEvent* b)
+{
+	if(a->tcs<b->tcs)return true;if(a->tcs>b->tcs)return false;
+	if(a->tce<b->tce)return true;return false;
+}
+void CReaderCallBack::callBack(void *callerdata,void *)
 {
 	SEventCallBackData* cbd=(SEventCallBackData*)callerdata;
 	switch(cbd->type&0xF0)
@@ -25,15 +32,21 @@ void CTestCallBack::callBack(void *callerdata,void *)
 		break;
 	}
 }
-void qmpVisualization::show()
+void CHandlerCallBack::callBack(void*,void*)
+{
+	if(par->ctk>par->api->getCurrentTimeStamp()+par->api->getDivision()/3)
+		par->elb=0;
+	par->ctk=par->api->getCurrentTimeStamp();
+}
+void qmpVisualization::showThread()
 {
 	sm=smGetInterface(SMELT_APILEVEL);
 	sm->smVidMode(800,600,true);
-	sm->smUpdateFunc(h);
-	sm->smWinTitle("A Stupid Midi Visualization");
+	sm->smUpdateFunc(h);sm->smQuitFunc(closeh);
+	sm->smWinTitle("QMidiPlayer Visualization");
 	sm->smSetFPS(FPS_VSYNC);
 	sm->smNoSuspend(true);
-	sm->smInit();
+	sm->smInit();shouldclose=false;
 	sm->smTextureOpt(TPOT_POT,TFLT_LINEAR);
 	chequer=sm->smTextureLoad("chequerboard.png");
 	tdscn=sm->smTargetCreate(800,600);
@@ -41,10 +54,16 @@ void qmpVisualization::show()
 	printf("W: Font load failed.\n");
 	pos[0]=-0;pos[1]=70;pos[2]=20;
 	rot[0]=0;rot[1]=90;rot[2]=90;ctk=0;
-	rendererTh=new std::thread(&SMELT::smMainLoop,sm);
+	sm->smMainLoop();
+}
+void qmpVisualization::show()
+{
+	rendererTh=new std::thread(&qmpVisualization::showThread,this);
 }
 void qmpVisualization::close()
 {
+	shouldclose=true;
+	rendererTh->join();
 	sm->smFinale();
 	font.releaseTTF();
 	sm->smTextureFree(chequer);
@@ -54,13 +73,16 @@ void qmpVisualization::close()
 void qmpVisualization::reset()
 {
 	for(unsigned i=0;i<pool.size();++i)delete pool[i];
-	pool.clear();
+	pool.clear();elb=ctk=0;
 	for(int i=0;i<16;++i)for(int j=0;j<128;++j)
 	{
 		while(!pendingt[i][j].empty())pendingt[i][j].pop();
 		while(!pendingv[i][j].empty())pendingv[i][j].pop();
 	}
 }
+void qmpVisualization::start(){playing=true;std::sort(pool.begin(),pool.end(),cmp);}
+void qmpVisualization::stop(){playing=false;}
+void qmpVisualization::pause(){playing=!playing;}
 bool qmpVisualization::update()
 {
 	smQuad q;
@@ -104,20 +126,21 @@ bool qmpVisualization::update()
 	if(sm->smGetKeyState(SMK_O))rot[2]-=1;
 	//printf("pos: %f %f %f\n",pos[0],pos[1],pos[2]);
 	//printf("rot: %f %f %f\n",rot[0],rot[1],rot[2]);
-	double lpt=(double)notestretch/dvs/10.;
-	for(uint32_t i=0;i<pool.size();++i)//need optimisation here
+	double lpt=(double)notestretch/api->getDivision()/10.;
+	for(uint32_t i=elb;i<pool.size();++i)
 	{
+		if(((double)pool[i]->tcs-ctk)*lpt>viewdist*2)break;
 		if(fabs((double)pool[i]->tcs-ctk)*lpt<viewdist*2||fabs((double)pool[i]->tce-ctk)*lpt<viewdist*2)
 		{
 			smvec3d a(((double)pool[i]->key-64),pool[i]->ch*-2.,((double)pool[i]->tce-ctk)*lpt);
-			smvec3d b(((double)pool[i]->key-64)+.9,pool[i]->ch*-2.+1.6,((double)pool[i]->tcs-ctk)*lpt);
+			smvec3d b(((double)pool[i]->key-64)+.9,pool[i]->ch*-2.+.6,((double)pool[i]->tcs-ctk)*lpt);
 			if(((double)pool[i]->tce-pool[i]->tcs)*lpt<minnotelength/100.)a.z=((double)pool[i]->tcs-ctk)*lpt-minnotelength/100.;
 			drawCube(a,b,SETA(chcolors[pool[i]->ch],pool[i]->vel),0);
 		}
 	}
-	//ctk+=(int)(etps*sm->smGetDelta());
-	ctk=api->getCurrentTimeStamp();
-	if(ctk>fintk)return true;
+	if(playing)ctk+=(int)(1e6/(api->getRawTempo()/api->getDivision())*sm->smGetDelta());
+	while(pool.size()&&((double)ctk-pool[elb]->tce)*lpt>viewdist*2)++elb;
+	//if(ctk>fintk)return true;
 	sm->smRenderEnd();
 	for(int i=0;i<4;++i){q.v[i].col=0xFFFFFFFF;q.v[i].z=0;}
 	q.tex=sm->smTargetTexture(tdscn);
@@ -128,70 +151,90 @@ bool qmpVisualization::update()
 	q.v[0].x=q.v[1].x=0;q.v[2].x=q.v[3].x=800;
 	q.v[0].y=q.v[3].y=0;q.v[1].y=q.v[2].y=600;
 	sm->smRenderQuad(&q);
+	font.updateString(L"Tempo: %.2f",api->getRealTempo());
+	font.render(1,556,0xFFFFFFFF,ALIGN_LEFT);
+	font.render(0,555,0xFF000000,ALIGN_LEFT);
+	font.updateString(L"Current tick: %d",ctk);
+	font.render(1,576,0xFFFFFFFF,ALIGN_LEFT);
+	font.render(0,575,0xFF000000,ALIGN_LEFT);
 	font.updateString(L"FPS: %.2f",sm->smGetFPS());
-	font.render(1,586,0xFFFFFFFF,ALIGN_LEFT);
-	font.render(0,585,0xFF000000,ALIGN_LEFT);
+	font.render(1,596,0xFFFFFFFF,ALIGN_LEFT);
+	font.render(0,595,0xFF000000,ALIGN_LEFT);
 	sm->smRenderEnd();
-	return false;
+	return shouldclose;
 }
 
 void qmpVisualization::drawCube(smvec3d a,smvec3d b,DWORD col,SMTEX tex)
 {
 	smQuad q;q.blend=BLEND_ALPHABLEND;
 	q.tex=tex;for(int i=0;i<4;++i)q.v[i].col=col;
-	//top
-	q.v[0].x=a.x;q.v[0].y=a.y;q.v[0].z=a.z;
-	q.v[1].x=b.x;q.v[1].y=a.y;q.v[1].z=a.z;
-	q.v[2].x=b.x;q.v[2].y=b.y;q.v[2].z=a.z;
-	q.v[3].x=a.x;q.v[3].y=b.y;q.v[3].z=a.z;
-	sm->smRenderQuad(&q);
-	//bottom
-	q.v[0].x=a.x;q.v[0].y=a.y;q.v[0].z=b.z;
-	q.v[1].x=b.x;q.v[1].y=a.y;q.v[1].z=b.z;
-	q.v[2].x=b.x;q.v[2].y=b.y;q.v[2].z=b.z;
-	q.v[3].x=a.x;q.v[3].y=b.y;q.v[3].z=b.z;
-	sm->smRenderQuad(&q);
-	//left
-	q.v[0].x=a.x;q.v[0].y=b.y;q.v[0].z=a.z;
-	q.v[1].x=a.x;q.v[1].y=b.y;q.v[1].z=b.z;
-	q.v[2].x=a.x;q.v[2].y=a.y;q.v[2].z=b.z;
-	q.v[3].x=a.x;q.v[3].y=a.y;q.v[3].z=a.z;
-	sm->smRenderQuad(&q);
-	//right
-	q.v[0].x=b.x;q.v[0].y=b.y;q.v[0].z=a.z;
-	q.v[1].x=b.x;q.v[1].y=b.y;q.v[1].z=b.z;
-	q.v[2].x=b.x;q.v[2].y=a.y;q.v[2].z=b.z;
-	q.v[3].x=b.x;q.v[3].y=a.y;q.v[3].z=a.z;
-	sm->smRenderQuad(&q);
-	//front
-	q.v[0].x=a.x;q.v[0].y=b.y;q.v[0].z=a.z;
-	q.v[1].x=b.x;q.v[1].y=b.y;q.v[1].z=a.z;
-	q.v[2].x=b.x;q.v[2].y=b.y;q.v[2].z=b.z;
-	q.v[3].x=a.x;q.v[3].y=b.y;q.v[3].z=b.z;
-	sm->smRenderQuad(&q);
-	//back
-	q.v[0].x=a.x;q.v[0].y=a.y;q.v[0].z=a.z;
-	q.v[1].x=b.x;q.v[1].y=a.y;q.v[1].z=a.z;
-	q.v[2].x=b.x;q.v[2].y=a.y;q.v[2].z=b.z;
-	q.v[3].x=a.x;q.v[3].y=a.y;q.v[3].z=b.z;
-	sm->smRenderQuad(&q);
+	if(noteappearance==1)
+	{
+		//top
+		q.v[0].x=a.x;q.v[0].y=a.y;q.v[0].z=a.z;
+		q.v[1].x=b.x;q.v[1].y=a.y;q.v[1].z=a.z;
+		q.v[2].x=b.x;q.v[2].y=b.y;q.v[2].z=a.z;
+		q.v[3].x=a.x;q.v[3].y=b.y;q.v[3].z=a.z;
+		sm->smRenderQuad(&q);
+		//bottom
+		q.v[0].x=a.x;q.v[0].y=a.y;q.v[0].z=b.z;
+		q.v[1].x=b.x;q.v[1].y=a.y;q.v[1].z=b.z;
+		q.v[2].x=b.x;q.v[2].y=b.y;q.v[2].z=b.z;
+		q.v[3].x=a.x;q.v[3].y=b.y;q.v[3].z=b.z;
+		sm->smRenderQuad(&q);
+		//left
+		q.v[0].x=a.x;q.v[0].y=b.y;q.v[0].z=a.z;
+		q.v[1].x=a.x;q.v[1].y=b.y;q.v[1].z=b.z;
+		q.v[2].x=a.x;q.v[2].y=a.y;q.v[2].z=b.z;
+		q.v[3].x=a.x;q.v[3].y=a.y;q.v[3].z=a.z;
+		sm->smRenderQuad(&q);
+		//right
+		q.v[0].x=b.x;q.v[0].y=b.y;q.v[0].z=a.z;
+		q.v[1].x=b.x;q.v[1].y=b.y;q.v[1].z=b.z;
+		q.v[2].x=b.x;q.v[2].y=a.y;q.v[2].z=b.z;
+		q.v[3].x=b.x;q.v[3].y=a.y;q.v[3].z=a.z;
+		sm->smRenderQuad(&q);
+		//front
+		q.v[0].x=a.x;q.v[0].y=b.y;q.v[0].z=a.z;
+		q.v[1].x=b.x;q.v[1].y=b.y;q.v[1].z=a.z;
+		q.v[2].x=b.x;q.v[2].y=b.y;q.v[2].z=b.z;
+		q.v[3].x=a.x;q.v[3].y=b.y;q.v[3].z=b.z;
+		sm->smRenderQuad(&q);
+		//back
+		q.v[0].x=a.x;q.v[0].y=a.y;q.v[0].z=a.z;
+		q.v[1].x=b.x;q.v[1].y=a.y;q.v[1].z=a.z;
+		q.v[2].x=b.x;q.v[2].y=a.y;q.v[2].z=b.z;
+		q.v[3].x=a.x;q.v[3].y=a.y;q.v[3].z=b.z;
+		sm->smRenderQuad(&q);
+	}
+	else
+	{
+		q.v[0].x=a.x;q.v[0].y=b.y;q.v[0].z=a.z;
+		q.v[1].x=b.x;q.v[1].y=b.y;q.v[1].z=a.z;
+		q.v[2].x=b.x;q.v[2].y=b.y;q.v[2].z=b.z;
+		q.v[3].x=a.x;q.v[3].y=b.y;q.v[3].z=b.z;
+		sm->smRenderQuad(&q);
+	}
 }
 
 qmpVisualization::qmpVisualization(qmpPluginAPI* _api){api=_api;}
 qmpVisualization::~qmpVisualization(){api=NULL;}
 void qmpVisualization::init()
 {
-	puts("hello world from test plugin!");
-	cb=new CTestCallBack(this);
+	cb=new CReaderCallBack(this);
+	hcb=new CHandlerCallBack(this);
 	vi=new CDemoVisualization(this);
 	h=new CMidiVisualHandler(this);
+	closeh=new RefuseCloseHandler();
 	api->registerVisualizationIntf(vi);
 	api->registerEventReaderIntf(cb,NULL);
+	api->registerEventHandlerIntf(hcb,NULL);
 }
 void qmpVisualization::deinit()
 {
-	delete cb;delete vi;
-	delete h;
+	close();
+	delete cb;delete hcb;delete vi;
+	delete h;delete closeh;
 }
 const char* qmpVisualization::pluginGetName()
 {return "QMidiPlayer Default Visualization Plugin";}
@@ -210,6 +253,7 @@ void qmpVisualization::pushNoteOff(uint32_t tc,uint32_t ch,uint32_t key)
 	ne->tcs=pendingt[ch][key].top();pendingt[ch][key].pop();
 	ne->tce=tc;ne->ch=ch;ne->key=key;
 	ne->vel=pendingv[ch][key].top();pendingv[ch][key].pop();
+	pool.push_back(ne);
 	if(tc>fintk)fintk=tc;
 }
 

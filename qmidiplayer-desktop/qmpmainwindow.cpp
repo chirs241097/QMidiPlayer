@@ -27,6 +27,7 @@ char* wcsto8bit(const wchar_t* s)
 	}
 #define LOAD_FILE \
 	{\
+		for(int i=0;i<16;++i)if(VIs[i])VIs[i]->reset();\
 		char* c=wcsto8bit(fns.toStdWString().c_str());\
 		if(!player->playerLoadFile(c)){free(c);QMessageBox::critical(this,tr("Error"),tr("%1 is not a valid midi file.").arg(fns));return;}\
 		free(c);\
@@ -35,7 +36,10 @@ char* wcsto8bit(const wchar_t* s)
 #define LOAD_SOUNDFONT \
 	player->pushSoundFont(settingsw->getSFWidget()->item(i)->text().toStdString().c_str())
 #define LOAD_FILE \
-	if(!player->playerLoadFile(fns.toStdString().c_str())){QMessageBox::critical(this,tr("Error"),tr("%1 is not a valid midi file.").arg(fns));return;}
+	{\
+		for(int i=0;i<16;++i)if(VIs[i])VIs[i]->reset();\
+		if(!player->playerLoadFile(fns.toStdString().c_str())){QMessageBox::critical(this,tr("Error"),tr("%1 is not a valid midi file.").arg(fns));return;}\
+	}
 #endif
 #define UPDATE_INTERVAL 66
 
@@ -48,7 +52,7 @@ qmpMainWindow::qmpMainWindow(QWidget *parent) :
 	ui->setupUi(this);
 	ui->lnPolyphone->display("00000-00000");
 	ui->lbFileName->setText("");ref=this;
-	playing=false;stopped=true;dragging=false;
+	playing=false;stopped=true;dragging=false;memset(VIs,0,sizeof(VIs));
 	settingsw=new qmpSettingsWindow(this);pmgr=new qmpPluginManager();
 	plistw=new qmpPlistWindow(this);player=NULL;timer=NULL;
 	singleFS=qmpSettingsWindow::getSettingsIntf()->value("Behavior/SingleInstance",0).toInt();
@@ -217,6 +221,7 @@ void qmpMainWindow::updateWidgets()
 		if(!plistw->getRepeat())
 		{
 			timer->stop();stopped=true;playing=false;
+			for(int i=0;i<16;++i)if(VIs[i])VIs[i]->stop();
 			fnA2->setEnabled(stopped);chnlw->resetAcitivity();
 			player->playerDeinit();playerTh->join();
 			delete playerTh;playerTh=NULL;
@@ -232,6 +237,7 @@ void qmpMainWindow::updateWidgets()
 			timer->stop();player->playerDeinit();playerTh->join();
 			delete playerTh;playerTh=NULL;
 			ui->hsTimer->setValue(0);
+			for(int i=0;i<16;++i)if(VIs[i])VIs[i]->stop();
 			if(singleFS)player->playerPanic(true);
 			chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 			QString fns=plistw->getNextItem();
@@ -244,6 +250,7 @@ void qmpMainWindow::updateWidgets()
 			player->playerInit();if(!singleFS){playerSetup();player->fluidInitialize();
 			for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
 				LOAD_SOUNDFONT;}
+			for(int i=0;i<16;++i)if(VIs[i])VIs[i]->start();
 			player->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
 			player->setWaitVoice(qmpSettingsWindow::getSettingsIntf()->value("Midi/WaitVoice",1).toInt());
 			playerTh=new std::thread(&CMidiPlayer::playerThread,player);
@@ -346,6 +353,7 @@ void qmpMainWindow::on_pbPlayPause_clicked()
 		player->playerInit();if(!singleFS){playerSetup();player->fluidInitialize();
 		for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
 			LOAD_SOUNDFONT;}
+		for(int i=0;i<16;++i)if(VIs[i])VIs[i]->start();
 		player->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
 		player->setWaitVoice(qmpSettingsWindow::getSettingsIntf()->value("Midi/WaitVoice",1).toInt());
 		playerTh=new std::thread(&CMidiPlayer::playerThread,player);
@@ -369,6 +377,7 @@ void qmpMainWindow::on_pbPlayPause_clicked()
 			player->setResumed();
 		}
 		player->setTCpaused(!playing);
+		for(int i=0;i<16;++i)if(VIs[i])VIs[i]->pause();
 	}
 	ui->pbPlayPause->setIcon(QIcon(playing?":/img/pause.png":":/img/play.png"));
 }
@@ -410,6 +419,7 @@ void qmpMainWindow::on_pbStop_clicked()
 	if(!stopped)
 	{
 		timer->stop();stopped=true;playing=false;
+		for(int i=0;i<16;++i)if(VIs[i])VIs[i]->stop();
 		player->playerDeinit();fnA2->setEnabled(stopped);
 		if(singleFS)player->playerPanic(true);chnlw->resetAcitivity();
 		if(playerTh){playerTh->join();delete playerTh;playerTh=NULL;}
@@ -460,6 +470,7 @@ void qmpMainWindow::on_pbPrev_clicked()
 	timer->stop();player->playerDeinit();
 	if(playerTh){playerTh->join();delete playerTh;playerTh=NULL;}
 	if(singleFS)player->playerPanic(true);
+	for(int i=0;i<16;++i)if(VIs[i])VIs[i]->stop();
 	ui->hsTimer->setValue(0);chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 	QString fns=plistw->getPrevItem();if(fns.length()==0)return on_pbStop_clicked();
 	ui->lbFileName->setText(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.')));
@@ -471,6 +482,7 @@ void qmpMainWindow::on_pbPrev_clicked()
 	player->playerInit();if(!singleFS){playerSetup();player->fluidInitialize();
 	for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
 		LOAD_SOUNDFONT;}
+	for(int i=0;i<16;++i)if(VIs[i])VIs[i]->start();
 	player->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
 	player->setWaitVoice(qmpSettingsWindow::getSettingsIntf()->value("Midi/WaitVoice",1).toInt());
 	playerTh=new std::thread(&CMidiPlayer::playerThread,player);
@@ -486,6 +498,7 @@ void qmpMainWindow::on_pbNext_clicked()
 	timer->stop();player->playerDeinit();
 	if(playerTh){playerTh->join();delete playerTh;playerTh=NULL;}
 	if(singleFS)player->playerPanic(true);
+	for(int i=0;i<16;++i)if(VIs[i])VIs[i]->stop();
 	ui->hsTimer->setValue(0);chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 	QString fns=plistw->getNextItem();if(fns.length()==0)return on_pbStop_clicked();
 	ui->lbFileName->setText(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.')));
@@ -497,6 +510,7 @@ void qmpMainWindow::on_pbNext_clicked()
 	player->playerInit();if(!singleFS){playerSetup();player->fluidInitialize();
 	for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
 		LOAD_SOUNDFONT;}
+	for(int i=0;i<16;++i)if(VIs[i])VIs[i]->start();
 	player->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
 	player->setWaitVoice(qmpSettingsWindow::getSettingsIntf()->value("Midi/WaitVoice",1).toInt());
 	playerTh=new std::thread(&CMidiPlayer::playerThread,player);
@@ -512,6 +526,7 @@ void qmpMainWindow::selectionChanged()
 	stopped=false;playing=true;
 	ui->pbPlayPause->setIcon(QIcon(":/img/pause.png"));
 	timer->stop();player->playerDeinit();
+	for(int i=0;i<16;++i)if(VIs[i])VIs[i]->stop();
 	if(playerTh){playerTh->join();delete playerTh;playerTh=NULL;}
 	if(singleFS)player->playerPanic(true);
 	ui->hsTimer->setValue(0);
@@ -526,6 +541,7 @@ void qmpMainWindow::selectionChanged()
 	player->playerInit();if(!singleFS){playerSetup();player->fluidInitialize();
 	for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
 		LOAD_SOUNDFONT;}
+	for(int i=0;i<16;++i)if(VIs[i])VIs[i]->start();
 	player->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
 	player->setWaitVoice(qmpSettingsWindow::getSettingsIntf()->value("Midi/WaitVoice",1).toInt());
 	playerTh=new std::thread(&CMidiPlayer::playerThread,player);
@@ -570,6 +586,20 @@ void qmpMainWindow::onfnChanged()
 	ui->lbFileName->setFont(f);
 }
 
+int qmpMainWindow::registerVisualizationIntf(qmpVisualizationIntf* intf)
+{
+	for(int i=0;i<16;++i)
+	{
+		if(VIs[i]==intf)return i;
+		if(VIs[i]==NULL){VIs[i]=intf;return i;}
+	}
+	return -1;
+}
+void qmpMainWindow::unregisterVisualizationIntf(int handle)
+{
+	VIs[handle]=NULL;
+}
+
 void qmpMainWindow::onfnA1()
 {
 	infow->show();
@@ -608,4 +638,12 @@ void qmpMainWindow::on_pbSettings_clicked()
 void qmpMainWindow::on_pushButton_clicked()
 {
 	helpw->show();
+}
+
+void qmpMainWindow::on_pbVisualization_clicked()
+{
+	if(ui->pbVisualization->isChecked())
+	{for(int i=0;i<16;++i)if(VIs[i])VIs[i]->show();}
+	else
+	{for(int i=0;i<16;++i)if(VIs[i])VIs[i]->close();}
 }

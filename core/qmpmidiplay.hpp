@@ -73,7 +73,7 @@ class CMidiPlayer
 		uint32_t ctempo,ctsn,ctsd,dpt,divs,cks;
 		//raw tempo, timesig num., timesig den., delay per tick, division, keysig
 		//thread control
-		uint32_t tceptr,tcpaused,tcstop;
+		uint32_t tceptr,tcpaused,tcstop,ct;
 		uint32_t finished,resumed;
 		qmpMidiMapperRtMidi *mapper;
 		int mappedoutput[16],deviceusage[16],deviceiid[128];
@@ -123,6 +123,7 @@ class CMidiPlayer
 		uint32_t getFileNoteCount();
 		uint32_t getFileStandard();
 		double getTempo();
+		uint32_t getTick();
 		uint32_t getRawTempo();
 		uint32_t getDivision();
 		const char* getTitle();

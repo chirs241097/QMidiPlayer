@@ -62,25 +62,30 @@ void qmpPluginManager::initPlugins()
 		plugins[i].interface->init();
 	}
 }
+void qmpPluginManager::deinitPlugins()
+{
+	for(unsigned i=0;i<plugins.size();++i)
+		plugins[i].interface->deinit();
+}
 
 uint32_t qmpPluginAPI::getDivision()
-{return qmw->getPlayer()->getDivision();}
+{return qmw&&qmw->getPlayer()?qmw->getPlayer()->getDivision():0;}
 uint32_t qmpPluginAPI::getRawTempo()
-{return qmw->getPlayer()->getRawTempo();}
+{return qmw&&qmw->getPlayer()?qmw->getPlayer()->getRawTempo():0;}
 double qmpPluginAPI::getRealTempo()
-{return qmw->getPlayer()->getTempo();}
+{return qmw&&qmw->getPlayer()?qmw->getPlayer()->getTempo():0;}
 uint32_t qmpPluginAPI::getTimeSig()
-{int n,d=0,t;qmw->getPlayer()->getCurrentTimeSignature(&n,&t);for(;t>>=1;++d);return n<<8|d;}
+{int n,d=0,t;qmw&&qmw->getPlayer()?qmw->getPlayer()->getCurrentTimeSignature(&n,&t):void(0);for(;t>>=1;++d);return n<<8|d;}
 int qmpPluginAPI::getKeySig()
-{return qmw->getPlayer()->getCurrentKeySignature();}
+{return qmw&&qmw->getPlayer()?qmw->getPlayer()->getCurrentKeySignature():0;}
 uint32_t qmpPluginAPI::getNoteCount()
-{return qmw->getPlayer()->getFileNoteCount();}
+{return qmw&&qmw->getPlayer()?qmw->getPlayer()->getFileNoteCount():0;}
 uint32_t qmpPluginAPI::getCurrentPolyphone()
-{return qmw->getPlayer()->getPolyphone();}
+{return qmw&&qmw->getPlayer()?qmw->getPlayer()->getPolyphone():0;}
 uint32_t qmpPluginAPI::getMaxPolyphone()
-{return qmw->getPlayer()->getMaxPolyphone();}
+{return qmw&&qmw->getPlayer()?qmw->getPlayer()->getMaxPolyphone():0;}
 uint32_t qmpPluginAPI::getCurrentTimeStamp()
-{return qmw->getPlayer()->getTCeptr();}
+{return qmw&&qmw->getPlayer()?qmw->getPlayer()->getTick():0;}
 int qmpPluginAPI::registerEventHandlerIntf(IMidiCallBack *cb,void *userdata)
 {return qmw->getPlayer()->setEventHandlerCB(cb,userdata);}
 void qmpPluginAPI::unregisterEventHandlerIntf(int intfhandle)
@@ -89,8 +94,10 @@ int qmpPluginAPI::registerEventReaderIntf(IMidiCallBack *cb,void *userdata)
 {return qmw->getPlayer()->setEventReaderCB(cb,userdata);}
 void qmpPluginAPI::unregisterEventReaderIntf(int intfhandle)
 {qmw->getPlayer()->unsetEventReaderCB(intfhandle);}
-int qmpPluginAPI::registerVisualizationIntf(qmpVisualizationIntf*){return 0;}
-void qmpPluginAPI::unregisterVisualizationIntf(int){}
+int qmpPluginAPI::registerVisualizationIntf(qmpVisualizationIntf* intf)
+{return qmw->registerVisualizationIntf(intf);}
+void qmpPluginAPI::unregisterVisualizationIntf(int intfhandle)
+{qmw->unregisterVisualizationIntf(intfhandle);}
 void qmpPluginAPI::registerOptionInt(std::string,std::string,int){}
 int qmpPluginAPI::getOptionInt(std::string){return 0;}
 void qmpPluginAPI::registerOptionDouble(std::string,std::string,double){}

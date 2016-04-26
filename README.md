@@ -9,7 +9,7 @@ Features:
 * Playlists
 * Editing synthesizer effects
 * Rendering midi to wave file
-* Visualization using SMELT (not implemented)
+* Visualization using SMELT (currently Linux only)
 * MIDI mapping (based on RtMidi)
 
 Tested on Debian sid and Windows Vista~10.

@@ -196,7 +196,7 @@ void CMidiPlayer::prePlayInit()
 }
 void CMidiPlayer::playEvents()
 {
-	for(uint32_t ct=midiFile->getEvent(0)->time;tceptr<midiFile->getEventCount();)
+	for(ct=midiFile->getEvent(0)->time;tceptr<midiFile->getEventCount();)
 	{
 		while(tcpaused)std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		using namespace std::chrono;
@@ -402,6 +402,7 @@ uint32_t CMidiPlayer::getFileStandard(){return midiFile?midiFile->getStandard():
 const char* CMidiPlayer::getTitle(){return midiFile?midiFile->getTitle():"";}
 const char* CMidiPlayer::getCopyright(){return midiFile?midiFile->getCopyright():"";}
 double CMidiPlayer::getTempo(){return 60./(ctempo/1e6);}
+uint32_t CMidiPlayer::getTick(){return ct;}
 uint32_t CMidiPlayer::getRawTempo(){return ctempo;}
 uint32_t CMidiPlayer::getDivision(){return divs;}
 uint32_t CMidiPlayer::getTCpaused(){return tcpaused;}

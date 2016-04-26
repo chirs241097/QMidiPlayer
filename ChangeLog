@@ -1,3 +1,7 @@
+2016-04-26 0.7.8 beta
+Now the default visualization plugin works as expected.
+Avoid null pointers in the API implementation.
+
 2016-04-25 0.7.8 alpha
 Plugin API now works correctly.
 Port part of the old visualization code to the

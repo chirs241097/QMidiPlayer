@@ -49,7 +49,7 @@ class qmpPluginAPI
 		virtual uint32_t getCurrentPolyphone();
 		virtual uint32_t getMaxPolyphone();
 		virtual uint32_t getCurrentTimeStamp();
-		virtual int registerVisualizationIntf(qmpVisualizationIntf* i);
+		virtual int registerVisualizationIntf(qmpVisualizationIntf* intf);
 		virtual void unregisterVisualizationIntf(int intfhandle);
 		virtual int registerEventReaderIntf(IMidiCallBack* cb,void* userdata);
 		virtual void unregisterEventReaderIntf(int intfhandle);
