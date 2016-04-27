@@ -52,6 +52,8 @@ void qmpVisualization::showThread()
 	tdscn=sm->smTargetCreate(800,600);
 	if(!font.loadTTF("/usr/share/fonts/truetype/freefont/FreeMono.ttf",16))
 	printf("W: Font load failed.\n");
+	if(!font2.loadTTF("/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",16))
+	printf("W: Font load failed.\n");
 	pos[0]=-0;pos[1]=70;pos[2]=20;
 	rot[0]=0;rot[1]=90;rot[2]=90;ctk=0;
 	sm->smMainLoop();
@@ -66,6 +68,7 @@ void qmpVisualization::close()
 	rendererTh->join();
 	sm->smFinale();
 	font.releaseTTF();
+	font2.releaseTTF();
 	sm->smTextureFree(chequer);
 	sm->smTargetFree(tdscn);
 	sm->smRelease();
@@ -132,8 +135,12 @@ bool qmpVisualization::update()
 		if(((double)pool[i]->tcs-ctk)*lpt>viewdist*2)break;
 		if(fabs((double)pool[i]->tcs-ctk)*lpt<viewdist*2||fabs((double)pool[i]->tce-ctk)*lpt<viewdist*2)
 		{
-			smvec3d a(((double)pool[i]->key-64),pool[i]->ch*-2.,((double)pool[i]->tce-ctk)*lpt);
-			smvec3d b(((double)pool[i]->key-64)+.9,pool[i]->ch*-2.+.6,((double)pool[i]->tcs-ctk)*lpt);
+			if(api->getChannelMask(pool[i]->ch))continue;
+			smvec3d a(((double)pool[i]->key-64),15+pool[i]->ch*-3.,((double)pool[i]->tce-ctk)*lpt);
+			smvec3d b(((double)pool[i]->key-64)+.9,15+pool[i]->ch*-3.+.6,((double)pool[i]->tcs-ctk)*lpt);
+			if(pool[i]->tcs<=ctk&&pool[i]->tce>=ctk)
+			a.x=((double)pool[i]->key-64+api->getPitchBend(pool[i]->ch)),
+			b.x=((double)pool[i]->key-64+api->getPitchBend(pool[i]->ch))+.9;
 			if(((double)pool[i]->tce-pool[i]->tcs)*lpt<minnotelength/100.)a.z=((double)pool[i]->tcs-ctk)*lpt-minnotelength/100.;
 			drawCube(a,b,SETA(chcolors[pool[i]->ch],pool[i]->vel),0);
 		}
@@ -151,6 +158,11 @@ bool qmpVisualization::update()
 	q.v[0].x=q.v[1].x=0;q.v[2].x=q.v[3].x=800;
 	q.v[0].y=q.v[3].y=0;q.v[1].y=q.v[2].y=600;
 	sm->smRenderQuad(&q);
+	wchar_t ws[1024];memset(ws,0,sizeof(ws));
+	mbstowcs(ws,api->getTitle().c_str(),1024);
+	font2.updateString(L"Title: %ls",ws);
+	font2.render(1,536,0xFFFFFFFF,ALIGN_LEFT);
+	font2.render(0,535,0xFF000000,ALIGN_LEFT);
 	font.updateString(L"Tempo: %.2f",api->getRealTempo());
 	font.render(1,556,0xFFFFFFFF,ALIGN_LEFT);
 	font.render(0,555,0xFF000000,ALIGN_LEFT);
@@ -225,7 +237,7 @@ void qmpVisualization::init()
 	hcb=new CHandlerCallBack(this);
 	vi=new CDemoVisualization(this);
 	h=new CMidiVisualHandler(this);
-	closeh=new RefuseCloseHandler();
+	closeh=new CloseHandler(this);
 	api->registerVisualizationIntf(vi);
 	api->registerEventReaderIntf(cb,NULL);
 	api->registerEventHandlerIntf(hcb,NULL);
@@ -256,26 +268,3 @@ void qmpVisualization::pushNoteOff(uint32_t tc,uint32_t ch,uint32_t key)
 	pool.push_back(ne);
 	if(tc>fintk)fintk=tc;
 }
-
-//dummy implementations of the api...
-uint32_t qmpPluginAPI::getDivision(){return 0;}
-uint32_t qmpPluginAPI::getRawTempo(){return 0;}
-double qmpPluginAPI::getRealTempo(){return 0;}
-uint32_t qmpPluginAPI::getTimeSig(){return 0;}
-int qmpPluginAPI::getKeySig(){return 0;}
-uint32_t qmpPluginAPI::getNoteCount(){return 0;}
-uint32_t qmpPluginAPI::getCurrentPolyphone(){return 0;}
-uint32_t qmpPluginAPI::getMaxPolyphone(){return 0;}
-uint32_t qmpPluginAPI::getCurrentTimeStamp(){return 0;}
-int qmpPluginAPI::registerEventHandlerIntf(IMidiCallBack*,void*){return -1;}
-void qmpPluginAPI::unregisterEventHandlerIntf(int){}
-int qmpPluginAPI::registerEventReaderIntf(IMidiCallBack*,void*){return -1;}
-void qmpPluginAPI::unregisterEventReaderIntf(int){}
-int qmpPluginAPI::registerVisualizationIntf(qmpVisualizationIntf*){return 0;}
-void qmpPluginAPI::unregisterVisualizationIntf(int){}
-void qmpPluginAPI::registerOptionInt(std::string,std::string,int){}
-int qmpPluginAPI::getOptionInt(std::string){return 0;}
-void qmpPluginAPI::registerOptionDouble(std::string,std::string,double){}
-double qmpPluginAPI::getOptionDouble(std::string){return 0;}
-void qmpPluginAPI::registerOptionString(std::string,std::string,std::string){}
-std::string qmpPluginAPI::getOptionString(std::string){return "";}

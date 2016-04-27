@@ -4,6 +4,7 @@
 #include <QFileInfo>
 #include <QMimeData>
 #include <QFont>
+#include <QTextCodec>
 #include <QDirIterator>
 #include <QDesktopWidget>
 #include <QMessageBox>
@@ -240,7 +241,7 @@ void qmpMainWindow::updateWidgets()
 			for(int i=0;i<16;++i)if(VIs[i])VIs[i]->stop();
 			if(singleFS)player->playerPanic(true);
 			chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
-			QString fns=plistw->getNextItem();
+			QString fns=plistw->getNextItem();setWindowTitle(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.'))+" - QMidiPlayer");
 			ui->lbFileName->setText(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.')));
 			onfnChanged();
 			LOAD_FILE;
@@ -296,6 +297,14 @@ void qmpMainWindow::updateWidgets()
 }
 
 QString qmpMainWindow::getFileName(){return ui->lbFileName->text();}
+std::string qmpMainWindow::getTitle()
+{
+	if(!qmpSettingsWindow::getSettingsIntf())return "";
+	return QTextCodec::codecForName(
+				qmpSettingsWindow::getSettingsIntf()->value("Midi/TextEncoding","").
+				toString().toStdString().c_str())->
+			toUnicode(player->getTitle()).toStdString();
+}
 
 void qmpMainWindow::playerSetup()
 {
@@ -343,7 +352,7 @@ void qmpMainWindow::on_pbPlayPause_clicked()
 			plistw->on_pbAdd_clicked();
 			fns=plistw->getFirstItem();
 			if(!fns.length())return(void)(playing=false);
-		}
+		}setWindowTitle(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.'))+" - QMidiPlayer");
 		ui->lbFileName->setText(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.')));
 		onfnChanged();
 		LOAD_FILE;
@@ -473,6 +482,7 @@ void qmpMainWindow::on_pbPrev_clicked()
 	for(int i=0;i<16;++i)if(VIs[i])VIs[i]->stop();
 	ui->hsTimer->setValue(0);chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 	QString fns=plistw->getPrevItem();if(fns.length()==0)return on_pbStop_clicked();
+	setWindowTitle(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.'))+" - QMidiPlayer");
 	ui->lbFileName->setText(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.')));
 	onfnChanged();
 	LOAD_FILE;
@@ -502,6 +512,7 @@ void qmpMainWindow::on_pbNext_clicked()
 	ui->hsTimer->setValue(0);chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 	QString fns=plistw->getNextItem();if(fns.length()==0)return on_pbStop_clicked();
 	ui->lbFileName->setText(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.')));
+	setWindowTitle(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.'))+" - QMidiPlayer");
 	onfnChanged();
 	LOAD_FILE;
 	char ts[100];
@@ -533,6 +544,7 @@ void qmpMainWindow::selectionChanged()
 	chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 	QString fns=plistw->getSelectedItem();
 	ui->lbFileName->setText(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.')));
+	setWindowTitle(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.'))+" - QMidiPlayer");
 	onfnChanged();
 	LOAD_FILE;
 	char ts[100];

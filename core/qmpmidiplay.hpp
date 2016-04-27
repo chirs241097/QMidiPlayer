@@ -75,6 +75,7 @@ class CMidiPlayer
 		//thread control
 		uint32_t tceptr,tcpaused,tcstop,ct;
 		uint32_t finished,resumed;
+		uint32_t pbr[16],pbv[16];
 		qmpMidiMapperRtMidi *mapper;
 		int mappedoutput[16],deviceusage[16],deviceiid[128];
 		uint8_t chstate[16],chstatus[16][130];//0..127: cc 128: pc
@@ -126,6 +127,7 @@ class CMidiPlayer
 		uint32_t getTick();
 		uint32_t getRawTempo();
 		uint32_t getDivision();
+		double getPitchBend(int ch);
 		const char* getTitle();
 		const char* getCopyright();
 
@@ -139,6 +141,7 @@ class CMidiPlayer
 		void getChannelPreset(int ch,int *b,int *p,char *name);
 		void setMute(int ch,bool m);
 		void setSolo(int ch,bool s);
+		bool getChannelMask(int ch);
 		int getCC(int ch,int id);
 		void setCC(int ch,int id,int val);
 		void getReverbPara(double *r,double *d,double *w,double *l);

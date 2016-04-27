@@ -25,7 +25,7 @@ qmpSettingsWindow::qmpSettingsWindow(QWidget *parent) :
 
 qmpSettingsWindow::~qmpSettingsWindow()
 {
-	delete settings;
+	delete settings;settings=NULL;
 	delete ui;
 }
 

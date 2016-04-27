@@ -1,5 +1,6 @@
 #ifndef QMPPLUGIN_H
 #define QMPPLUGIN_H
+#define QMP_MAIN
 #include <string>
 #include <vector>
 #include "../include/qmpcorepublic.hpp"

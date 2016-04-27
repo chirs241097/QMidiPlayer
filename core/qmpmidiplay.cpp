@@ -75,6 +75,7 @@ void CMidiPlayer::processEvent(const SEvent *e)
 			if(~rpnid&&~rpnval)
 			{
 				if(rpnid==0)fluid_synth_pitch_wheel_sens(synth,e->type&0x0F,rpnval);
+				pbr[e->type&0x0F]=rpnval;
 				rpnid=rpnval=-1;
 			}
 			chstatus[e->type&0x0F][e->p1]=e->p2;
@@ -91,6 +92,7 @@ void CMidiPlayer::processEvent(const SEvent *e)
 				fluid_synth_program_change(synth,e->type&0x0F,e->p1);
 		break;
 		case 0xE0://PW
+			pbv[e->type&0x0F]=e->p1;
 			if(mappedoutput[e->type&0x0F])
 				mapper->pitchBend(mappedoutput[e->type&0x0F]-1,e->type&0x0F,e->p1);
 			else
@@ -328,6 +330,7 @@ void CMidiPlayer::playerInit()
 {
 	ctempo=0x7A120;ctsn=4;ctsd=4;cks=0;dpt=ctempo*1000/divs;
 	tceptr=0;tcstop=0;tcpaused=0;finished=0;mute=solo=0;
+	for(int i=0;i<16;++i)pbr[i]=2,pbv[i]=8192;
 	sendSysEx=true;rpnid=rpnval=-1;memset(chstatus,0,sizeof(chstatus));
 	for(int i=0;i<16;++i)
 		chstatus[i][7]=100,chstatus[i][11]=127,
@@ -405,6 +408,7 @@ double CMidiPlayer::getTempo(){return 60./(ctempo/1e6);}
 uint32_t CMidiPlayer::getTick(){return ct;}
 uint32_t CMidiPlayer::getRawTempo(){return ctempo;}
 uint32_t CMidiPlayer::getDivision(){return divs;}
+double CMidiPlayer::getPitchBend(int ch){return((int)pbv[ch]-8192)/8192.*pbr[ch];}
 uint32_t CMidiPlayer::getTCpaused(){return tcpaused;}
 void CMidiPlayer::setTCpaused(uint32_t ps){tcpaused=ps;}
 uint32_t CMidiPlayer::isFinished(){return finished;}
@@ -457,6 +461,8 @@ void CMidiPlayer::setMute(int ch,bool m)
 {setBit(mute,ch,m?1:0);}
 void CMidiPlayer::setSolo(int ch,bool s)
 {setBit(solo,ch,s?1:0);}
+bool CMidiPlayer::getChannelMask(int ch)
+{return((mute>>ch)&1)||(solo&&!((solo>>ch)&1));}
 int CMidiPlayer::getCC(int ch,int id)
 {
 	int ret=0;

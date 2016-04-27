@@ -35,6 +35,7 @@ struct MidiVisualEvent
 class qmpVisualization:public qmpPluginIntf
 {
 	friend class CHandlerCallBack;
+	friend class CloseHandler;
 	private:
 		qmpPluginAPI* api;
 		CReaderCallBack* cb;
@@ -47,7 +48,7 @@ class qmpVisualization:public qmpPluginIntf
 		SMELT *sm;
 		SMTRG tdscn;
 		SMTEX chequer;
-		smTTFont font;
+		smTTFont font,font2;
 		float pos[3],rot[3],lastx,lasty;
 		uint32_t ctc,ctk,fintk,elb;
 		double etps;
@@ -83,8 +84,12 @@ class CMidiVisualHandler:public smHandler
 		bool handlerFunc(){return p->update();}
 };
 
-class RefuseCloseHandler:public smHandler
+class CloseHandler:public smHandler
 {
+	private:
+		qmpVisualization *p;
+	public:
+		CloseHandler(qmpVisualization* par){p=par;}
 	public:
 		bool handlerFunc(){return true;}
 };

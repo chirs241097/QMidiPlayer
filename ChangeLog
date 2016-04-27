@@ -1,3 +1,10 @@
+2016-04-27 0.7.8 beta
+Show file name in window title.
+Handle pitch bend in visualization.
+Handle mute and solo in the default visualization.
+A little plugin sdk documentaion...
+Remove stupid things.
+
 2016-04-26 0.7.8 beta
 Now the default visualization plugin works as expected.
 Avoid null pointers in the API implementation.

@@ -62,6 +62,7 @@ class qmpMainWindow:public QMainWindow
 		QTimer* getTimer(){return timer;}
 		bool isFinalizing(){return fin;}
 		QString getFileName();
+		std::string getTitle();
 		int pharseArgs();
 		int registerVisualizationIntf(qmpVisualizationIntf* intf);
 		void unregisterVisualizationIntf(int handle);

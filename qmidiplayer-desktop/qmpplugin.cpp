@@ -13,6 +13,12 @@ qmpPluginAPI pluginAPI;
 qmpMainWindow* qmw;
 qmpSettingsWindow* qsw;
 #ifdef _WIN32
+void qmpPluginManager::scanPlugins()
+{
+	HANDLE dir;
+	std::vector<std::string> cpluginpaths;
+	//FindFirstFile, FindNextFile, FindClose
+}
 #else
 void qmpPluginManager::scanPlugins()
 {
@@ -86,6 +92,13 @@ uint32_t qmpPluginAPI::getMaxPolyphone()
 {return qmw&&qmw->getPlayer()?qmw->getPlayer()->getMaxPolyphone():0;}
 uint32_t qmpPluginAPI::getCurrentTimeStamp()
 {return qmw&&qmw->getPlayer()?qmw->getPlayer()->getTick():0;}
+double qmpPluginAPI::getPitchBend(int ch)
+{return qmw&&qmw->getPlayer()?qmw->getPlayer()->getPitchBend(ch):0;}
+bool qmpPluginAPI::getChannelMask(int ch)
+{return qmw&&qmw->getPlayer()?qmw->getPlayer()->getChannelMask(ch):false;}
+std::string qmpPluginAPI::getTitle()
+{return qmw?qmw->getTitle():"";}
+
 int qmpPluginAPI::registerEventHandlerIntf(IMidiCallBack *cb,void *userdata)
 {return qmw->getPlayer()->setEventHandlerCB(cb,userdata);}
 void qmpPluginAPI::unregisterEventHandlerIntf(int intfhandle)
