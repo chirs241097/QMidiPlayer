@@ -63,15 +63,17 @@ class qmpPluginAPI
 		virtual double getPitchBend(int ch);
 		virtual bool getChannelMask(int ch);
 		virtual std::string getTitle();
+
 		virtual int registerVisualizationIntf(qmpVisualizationIntf* intf);
 		virtual void unregisterVisualizationIntf(int intfhandle);
 		virtual int registerEventReaderIntf(IMidiCallBack* cb,void* userdata);
 		virtual void unregisterEventReaderIntf(int intfhandle);
 		virtual int registerEventHandlerIntf(IMidiCallBack* cb,void* userdata);
 		virtual void unregisterEventHandlerIntf(int intfhandle);
-		virtual void registerOptionInt(std::string desc,std::string key,int defaultval);
+
+		virtual void registerOptionInt(std::string desc,std::string key,int min,int max,int defaultval);
 		virtual int getOptionInt(std::string key);
-		virtual void registerOptionDouble(std::string desc,std::string key,double defaultval);
+		virtual void registerOptionDouble(std::string desc,std::string key,double min,double max,double defaultval);
 		virtual double getOptionDouble(std::string key);
 		virtual void registerOptionString(std::string desc,std::string key,std::string defaultval);
 		virtual std::string getOptionString(std::string key);

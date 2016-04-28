@@ -6,6 +6,7 @@
 #include <QSettings>
 #include <QListWidget>
 #include <QComboBox>
+#include "qmpplugin.hpp"
 
 namespace Ui {
 	class qmpSettingsWindow;
@@ -21,6 +22,7 @@ class qmpSettingsWindow:public QDialog
 		void closeEvent(QCloseEvent *event);
 		void settingsInit();
 		QListWidget* getSFWidget();
+		void updatePluginList(qmpPluginManager *pmgr);
 	signals:
 		void dialogClosing();
 

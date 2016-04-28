@@ -6,13 +6,13 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>494</width>
+    <width>495</width>
     <height>445</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>494</width>
+    <width>495</width>
     <height>445</height>
    </size>
   </property>
@@ -560,6 +560,37 @@
          <property name="text">
           <string>Persistent fluidsynth instance</string>
          </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_5">
+      <attribute name="title">
+       <string>Plugins</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_5">
+       <item>
+        <widget class="QTableWidget" name="twPluginList">
+         <column>
+          <property name="text">
+           <string>E</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Name</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Version</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Path</string>
+          </property>
+         </column>
         </widget>
        </item>
       </layout>

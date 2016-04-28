@@ -238,13 +238,16 @@ void qmpVisualization::init()
 	vi=new CDemoVisualization(this);
 	h=new CMidiVisualHandler(this);
 	closeh=new CloseHandler(this);
-	api->registerVisualizationIntf(vi);
-	api->registerEventReaderIntf(cb,NULL);
-	api->registerEventHandlerIntf(hcb,NULL);
+	hvif=api->registerVisualizationIntf(vi);
+	herif=api->registerEventReaderIntf(cb,NULL);
+	hehif=api->registerEventHandlerIntf(hcb,NULL);
 }
 void qmpVisualization::deinit()
 {
 	close();
+	api->unregisterVisualizationIntf(hvif);
+	api->unregisterEventReaderIntf(herif);
+	api->unregisterEventHandlerIntf(hehif);
 	delete cb;delete hcb;delete vi;
 	delete h;delete closeh;
 }

@@ -58,12 +58,18 @@ qmpPluginManager::qmpPluginManager()
 }
 qmpPluginManager::~qmpPluginManager()
 {
+	for(unsigned i=0;i<plugins.size();++i)delete plugins[i].interface;
 	qmw=NULL;qsw=NULL;
+}
+std::vector<qmpPlugin> *qmpPluginManager::getPlugins()
+{
+	return &plugins;
 }
 void qmpPluginManager::initPlugins()
 {
 	for(unsigned i=0;i<plugins.size();++i)
 	{
+		if(!plugins[i].enabled)continue;
 		printf("Loaded plugin: %s\n",plugins[i].path.c_str());
 		plugins[i].interface->init();
 	}
@@ -111,9 +117,9 @@ int qmpPluginAPI::registerVisualizationIntf(qmpVisualizationIntf* intf)
 {return qmw->registerVisualizationIntf(intf);}
 void qmpPluginAPI::unregisterVisualizationIntf(int intfhandle)
 {qmw->unregisterVisualizationIntf(intfhandle);}
-void qmpPluginAPI::registerOptionInt(std::string,std::string,int){}
+void qmpPluginAPI::registerOptionInt(std::string,std::string,int,int,int){}
 int qmpPluginAPI::getOptionInt(std::string){return 0;}
-void qmpPluginAPI::registerOptionDouble(std::string,std::string,double){}
+void qmpPluginAPI::registerOptionDouble(std::string,std::string,double,double,double){}
 double qmpPluginAPI::getOptionDouble(std::string){return 0;}
 void qmpPluginAPI::registerOptionString(std::string,std::string,std::string){}
 std::string qmpPluginAPI::getOptionString(std::string){return "";}

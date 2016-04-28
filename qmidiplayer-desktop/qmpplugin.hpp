@@ -19,7 +19,7 @@ class qmpPluginManager
 	public:
 		qmpPluginManager();
 		~qmpPluginManager();
-		std::vector<qmpPlugin> getPlugins() const;
+		std::vector<qmpPlugin> *getPlugins();
 		void scanPlugins();
 		void initPlugins();
 		void deinitPlugins();

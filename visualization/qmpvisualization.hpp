@@ -53,6 +53,7 @@ class qmpVisualization:public qmpPluginIntf
 		uint32_t ctc,ctk,fintk,elb;
 		double etps;
 		bool shouldclose,playing;
+		int hvif,herif,hehif;
 		void drawCube(smvec3d a,smvec3d b,DWORD col,SMTEX tex);
 		void showThread();
 	public:

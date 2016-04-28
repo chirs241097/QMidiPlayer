@@ -80,7 +80,7 @@ void qmpMainWindow::init()
 	ui->lbFileName->addAction(fnA1);
 	ui->lbFileName->addAction(fnA2);
 	ui->lbFileName->addAction(fnA3);
-	pmgr->scanPlugins();pmgr->initPlugins();
+	pmgr->scanPlugins();settingsw->updatePluginList(pmgr);pmgr->initPlugins();
 	if(singleFS){player->fluidPreInitialize();playerSetup();player->fluidInitialize();
 		for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
 			LOAD_SOUNDFONT;}
@@ -655,7 +655,15 @@ void qmpMainWindow::on_pushButton_clicked()
 void qmpMainWindow::on_pbVisualization_clicked()
 {
 	if(ui->pbVisualization->isChecked())
-	{for(int i=0;i<16;++i)if(VIs[i])VIs[i]->show();}
+	{
+		bool havevis=false;
+		for(int i=0;i<16;++i)if(VIs[i])VIs[i]->show(),havevis=true;
+		if(!havevis)
+		{
+			QMessageBox::information(this,tr("No visualization plugin enabled"),tr("No visualization plugin enabled. Please enable at least one in plugin settings."));
+			ui->pbVisualization->setChecked(false);
+		}
+	}
 	else
 	{for(int i=0;i<16;++i)if(VIs[i])VIs[i]->close();}
 }

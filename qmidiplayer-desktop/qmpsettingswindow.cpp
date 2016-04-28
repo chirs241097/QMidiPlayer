@@ -242,6 +242,12 @@ void qmpSettingsWindow::settingsUpdate()
 	}
 
 	settings->setValue("Behavior/SingleInstance",ui->cbPersistentfs->isChecked()?1:0);
+
+	for(int i=0;i<ui->twPluginList->rowCount();++i)
+		settings->setValue(
+		QString("PluginSwitch/")+ui->twPluginList->item(i,1)->text(),
+		((QCheckBox*)ui->twPluginList->cellWidget(i,0))->isChecked()?1:0);
+
 	settings->sync();
 }
 
@@ -293,4 +299,27 @@ void qmpSettingsWindow::on_pbDown_clicked()
 void qmpSettingsWindow::on_cbAutoBS_stateChanged()
 {
 	ui->lbBSMode->setText(ui->cbAutoBS->isChecked()?"Fallback bank select mode":"Bank select mode");
+}
+
+void qmpSettingsWindow::updatePluginList(qmpPluginManager *pmgr)
+{
+	std::vector<qmpPlugin> *plugins=pmgr->getPlugins();
+	for(unsigned i=0;i<plugins->size();++i)
+	{
+		ui->twPluginList->insertRow(i);
+		ui->twPluginList->setCellWidget(i,0,new QCheckBox(""));
+		if(settings->value(QString("PluginSwitch/")+QString(plugins->at(i).name.c_str()),0).toInt())
+		{((QCheckBox*)ui->twPluginList->cellWidget(i,0))->setChecked(true);plugins->at(i).enabled=true;}
+		else
+		{((QCheckBox*)ui->twPluginList->cellWidget(i,0))->setChecked(false);plugins->at(i).enabled=false;}
+		ui->twPluginList->setItem(i,1,new QTableWidgetItem(plugins->at(i).name.c_str()));
+		ui->twPluginList->setItem(i,2,new QTableWidgetItem(plugins->at(i).version.c_str()));
+		ui->twPluginList->setItem(i,3,new QTableWidgetItem(plugins->at(i).path.c_str()));
+		for(int j=1;j<=3;++j)
+		ui->twPluginList->item(i,j)->setFlags(ui->twPluginList->item(i,j)->flags()^Qt::ItemIsEditable);
+	}
+	ui->twPluginList->setColumnWidth(0,22);
+	ui->twPluginList->setColumnWidth(1,192);
+	ui->twPluginList->setColumnWidth(2,64);
+	ui->twPluginList->setColumnWidth(3,128);
 }
