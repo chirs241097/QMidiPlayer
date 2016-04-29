@@ -73,6 +73,10 @@ class qmpPluginAPI
 
 		virtual void registerOptionInt(std::string desc,std::string key,int min,int max,int defaultval);
 		virtual int getOptionInt(std::string key);
+		virtual void registerOptionUint(std::string desc,std::string key,unsigned min,unsigned max,unsigned defaultval);
+		virtual unsigned getOptionUint(std::string key);
+		virtual void registerOptionBool(std::string desc,std::string key,bool defaultval);
+		virtual bool getOptionBool(std::string key);
 		virtual void registerOptionDouble(std::string desc,std::string key,double min,double max,double defaultval);
 		virtual double getOptionDouble(std::string key);
 		virtual void registerOptionString(std::string desc,std::string key,std::string defaultval);
