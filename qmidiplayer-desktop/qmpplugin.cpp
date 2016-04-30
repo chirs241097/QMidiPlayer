@@ -117,6 +117,7 @@ int qmpPluginAPI::registerVisualizationIntf(qmpVisualizationIntf* intf)
 {return qmw->registerVisualizationIntf(intf);}
 void qmpPluginAPI::unregisterVisualizationIntf(int intfhandle)
 {qmw->unregisterVisualizationIntf(intfhandle);}
+
 void qmpPluginAPI::registerOptionInt(std::string,std::string,int,int,int){}
 int qmpPluginAPI::getOptionInt(std::string){return 0;}
 void qmpPluginAPI::registerOptionUint(std::string,std::string,unsigned,unsigned,unsigned){}

@@ -62,7 +62,7 @@ class CMidiPlayer
 		uint32_t stamps[101];
 		uint32_t ccstamps[101][16][135],ccc[16][135];
 		//0..127:cc 128:pc 129:cp 130:pb 131:tempo 132:ts 133:ks 134:pbr
-		int32_t rpnid,rpnval;
+		int32_t rpnid[16],rpnval[16];
 		uint16_t mute,solo;
 		double ftime;
 		bool sendSysEx,singleInstance,waitvoice;

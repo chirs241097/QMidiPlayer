@@ -70,13 +70,13 @@ void CMidiPlayer::processEvent(const SEvent *e)
 			chstate[e->type&0x0F]=1;
 		break;
 		case 0xB0://CC
-			if(e->p1==100)rpnid=e->p2;
-			if(e->p1==6)rpnval=e->p2;
-			if(~rpnid&&~rpnval)
+			if(e->p1==100)rpnid[e->type&0x0F]=e->p2;
+			if(e->p1==6)rpnval[e->type&0x0F]=e->p2;
+			if(~rpnid[e->type&0x0F]&&~rpnval[e->type&0x0F])
 			{
-				if(rpnid==0)fluid_synth_pitch_wheel_sens(synth,e->type&0x0F,rpnval);
-				pbr[e->type&0x0F]=rpnval;
-				rpnid=rpnval=-1;
+				if(rpnid[e->type&0x0F]==0)fluid_synth_pitch_wheel_sens(synth,e->type&0x0F,rpnval[e->type&0x0F]);
+				pbr[e->type&0x0F]=rpnval[e->type&0x0F];
+				rpnid[e->type&0x0F]=rpnval[e->type&0x0F]=-1;
 			}
 			chstatus[e->type&0x0F][e->p1]=e->p2;
 			if(mappedoutput[e->type&0x0F])
@@ -137,12 +137,12 @@ void CMidiPlayer::processEventStub(const SEvent *e)
 	switch(e->type&0xF0)
 	{
 		case 0xB0://CC
-			if(e->p1==100)rpnid=e->p2;
-			if(e->p1==6)rpnval=e->p2;
-			if(~rpnid&&~rpnval)
+			if(e->p1==100)rpnid[e->type&0x0F]=e->p2;
+			if(e->p1==6)rpnval[e->type&0x0F]=e->p2;
+			if(~rpnid[e->type&0x0F]&&~rpnval[e->type&0x0F])
 			{
-				if(rpnid==0)ccc[e->type&0x0F][134]=rpnval;
-				rpnid=rpnval=-1;
+				if(rpnid[e->type&0x0F]==0)ccc[e->type&0x0F][134]=rpnval[e->type&0x0F];
+				rpnid[e->type&0x0F]=rpnval[e->type&0x0F]=-1;
 			}
 			ccc[e->type&0x0F][e->p1]=e->p2;
 		break;
@@ -238,7 +238,8 @@ void CMidiPlayer::fileTimer2Pass()
 {
 	double ctime=.0;uint32_t c=1;ctempo=0x7A120;dpt=ctempo*1000/divs;
 	memset(stamps,0,sizeof(stamps));memset(ccstamps,0,sizeof(ccstamps));
-	memset(ccc,0,sizeof(ccc));rpnid=rpnval=-1;for(int i=0;i<16;++i)
+	memset(ccc,0,sizeof(ccc));memset(rpnid,0xFF,sizeof(rpnid));memset(rpnval,0xFF,sizeof(rpnval));
+	for(int i=0;i<16;++i)
 	{
 		ccc[i][7]=100;ccc[i][10]=64;ccc[i][11]=127;
 		ccc[i][11]=127;ccc[i][71]=64;ccc[i][72]=64;
@@ -331,8 +332,8 @@ void CMidiPlayer::playerInit()
 	ctempo=0x7A120;ctsn=4;ctsd=4;cks=0;dpt=ctempo*1000/divs;
 	tceptr=0;tcstop=0;tcpaused=0;finished=0;mute=solo=0;
 	for(int i=0;i<16;++i)pbr[i]=2,pbv[i]=8192;
-	sendSysEx=true;rpnid=rpnval=-1;memset(chstatus,0,sizeof(chstatus));
-	for(int i=0;i<16;++i)
+	sendSysEx=true;memset(rpnid,0xFF,sizeof(rpnid));memset(rpnval,0xFF,sizeof(rpnval));
+	memset(chstatus,0,sizeof(chstatus));for(int i=0;i<16;++i)
 		chstatus[i][7]=100,chstatus[i][11]=127,
 		chstatus[i][10]=chstatus[i][71]=chstatus[i][72]=
 		chstatus[i][73]=chstatus[i][74]=chstatus[i][75]=
