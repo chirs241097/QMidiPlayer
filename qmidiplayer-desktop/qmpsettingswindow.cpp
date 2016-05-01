@@ -265,9 +265,7 @@ void qmpSettingsWindow::on_pbAdd_clicked()
 {
 	QStringList sl=QFileDialog::getOpenFileNames(this,"Add File","","SoundFont files (*.sf2)");
 	for(int i=0;i<sl.size();++i)
-	{
 		ui->lwSoundfont->addItem(new QListWidgetItem(sl.at(i)));
-	}
 }
 
 void qmpSettingsWindow::on_pbRemove_clicked()

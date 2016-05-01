@@ -1,11 +1,13 @@
 #ifndef QMPSETTINGSWINDOW_H
 #define QMPSETTINGSWINDOW_H
 
+#include <map>
 #include <QDialog>
 #include <QCloseEvent>
 #include <QSettings>
 #include <QListWidget>
 #include <QComboBox>
+#include <QFormLayout>
 #include "qmpplugin.hpp"
 
 namespace Ui {
@@ -23,6 +25,7 @@ class qmpSettingsWindow:public QDialog
 		void settingsInit();
 		QListWidget* getSFWidget();
 		void updatePluginList(qmpPluginManager *pmgr);
+		int getOptionInt(std::string key);
 	signals:
 		void dialogClosing();
 
@@ -43,6 +46,8 @@ class qmpSettingsWindow:public QDialog
 	private:
 		Ui::qmpSettingsWindow *ui;
 		void settingsUpdate();
+		std::map<std::string,QWidget*> customOptWidgets;
+		std::map<std::string,QFormLayout*> customOptPages;
 		static QSettings *settings;
 		static QComboBox* outwidget;
 	public:

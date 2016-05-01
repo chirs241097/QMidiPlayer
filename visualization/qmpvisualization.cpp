@@ -9,10 +9,14 @@ const int viewdist=100;
 const int notestretch=100;//length of quarter note
 const int minnotelength=100;
 const int noteappearance=1;
-DWORD chcolors[]={0XFFFF0000,0XFFFF8000,0XFFFFBF00,0XFFFFFF00,
+DWORD iccolors[]={0XFFFF0000,0XFFFF8000,0XFFFFBF00,0XFFFFFF00,
 				  0XFFBFFF00,0XFF80FF00,0XFF00FF00,0XFF00FFBF,
 				  0XFF00FFFF,0XFF333333,0XFF00BFFF,0XFF007FFF,
 				  0XFF0000FF,0XFF7F00FF,0XFFBF00FF,0XFFFF00BF};
+DWORD accolors[]={0XFFFF9999,0XFFFFCC99,0XFFFFEE99,0XFFFFFF99,
+				  0XFFEEFF99,0XFFCCFF99,0XFF99FF99,0XFF99FFCC,
+				  0XFF99FFFF,0XFF999999,0XFF99EEFF,0XFF99CCFF,
+				  0XFF9999FF,0XFFCC99FF,0XFFEE99FF,0XFFFF99EE};
 
 bool cmp(MidiVisualEvent* a,MidiVisualEvent* b)
 {
@@ -138,16 +142,15 @@ bool qmpVisualization::update()
 			if(api->getChannelMask(pool[i]->ch))continue;
 			smvec3d a(((double)pool[i]->key-64),15+pool[i]->ch*-3.,((double)pool[i]->tce-ctk)*lpt);
 			smvec3d b(((double)pool[i]->key-64)+.9,15+pool[i]->ch*-3.+.6,((double)pool[i]->tcs-ctk)*lpt);
-			if(pool[i]->tcs<=ctk&&pool[i]->tce>=ctk)
+			bool isnoteon=pool[i]->tcs<=ctk&&pool[i]->tce>=ctk;if(isnoteon)
 			a.x=((double)pool[i]->key-64+api->getPitchBend(pool[i]->ch)),
 			b.x=((double)pool[i]->key-64+api->getPitchBend(pool[i]->ch))+.9;
 			if(((double)pool[i]->tce-pool[i]->tcs)*lpt<minnotelength/100.)a.z=((double)pool[i]->tcs-ctk)*lpt-minnotelength/100.;
-			drawCube(a,b,SETA(chcolors[pool[i]->ch],pool[i]->vel),0);
+			drawCube(a,b,SETA(isnoteon?accolors[pool[i]->ch]:iccolors[pool[i]->ch],int(pool[i]->vel*(isnoteon?2.0:1.6))),0);
 		}
 	}
 	if(playing)ctk+=(int)(1e6/(api->getRawTempo()/api->getDivision())*sm->smGetDelta());
 	while(pool.size()&&((double)ctk-pool[elb]->tce)*lpt>viewdist*2)++elb;
-	//if(ctk>fintk)return true;
 	sm->smRenderEnd();
 	for(int i=0;i<4;++i){q.v[i].col=0xFFFFFFFF;q.v[i].z=0;}
 	q.tex=sm->smTargetTexture(tdscn);

@@ -172,10 +172,13 @@ int CMidiFile::eventReader()//returns 0 if End of Track encountered
 			error(0,"W: Unknown event type %#x",type);
 	}
 	lasttype=type;++curid;
-	SEvent* le=eventList[eventList.size()-1];
-	SEventCallBackData cbd(le->type,le->p1,le->p2,le->time);
-	for(int i=0;i<16;++i)if(eventReaderCB[i])
-		eventReaderCB[i]->callBack(&cbd,eventReaderCBuserdata[i]);
+	if(eventList.size())
+	{
+		SEvent* le=eventList[eventList.size()-1];
+		SEventCallBackData cbd(le->type,le->p1,le->p2,le->time);
+		for(int i=0;i<16;++i)if(eventReaderCB[i])
+			eventReaderCB[i]->callBack(&cbd,eventReaderCBuserdata[i]);
+	}
 	return 1;
 }
 void CMidiFile::trackChunkReader()

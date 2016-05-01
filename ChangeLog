@@ -1,4 +1,9 @@
 2016-04-30 0.7.8 beta
+Give the visualization a clearer look...
+Now highlights playing notes.
+Avoid a crash in file reading.
+
+2016-04-30 0.7.8 beta
 Fixed a bug in RPN handling.
 
 2016-04-29 0.7.8 beta

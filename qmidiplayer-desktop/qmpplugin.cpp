@@ -120,11 +120,16 @@ void qmpPluginAPI::unregisterVisualizationIntf(int intfhandle)
 
 void qmpPluginAPI::registerOptionInt(std::string,std::string,int,int,int){}
 int qmpPluginAPI::getOptionInt(std::string){return 0;}
+void qmpPluginAPI::setOptionInt(std::string,int){}
 void qmpPluginAPI::registerOptionUint(std::string,std::string,unsigned,unsigned,unsigned){}
 unsigned qmpPluginAPI::getOptionUint(std::string){return 0;}
+void qmpPluginAPI::setOptionUint(std::string,unsigned){}
 void qmpPluginAPI::registerOptionBool(std::string,std::string,bool){}
 bool qmpPluginAPI::getOptionBool(std::string){return false;}
+void qmpPluginAPI::setOptionBool(std::string,bool){}
 void qmpPluginAPI::registerOptionDouble(std::string,std::string,double,double,double){}
 double qmpPluginAPI::getOptionDouble(std::string){return 0;}
+void qmpPluginAPI::setOptionDouble(std::string,double){}
 void qmpPluginAPI::registerOptionString(std::string,std::string,std::string){}
 std::string qmpPluginAPI::getOptionString(std::string){return "";}
+void qmpPluginAPI::setOptionString(std::string,std::string){}
