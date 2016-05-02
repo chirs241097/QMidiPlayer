@@ -17,7 +17,7 @@ qmpSettingsWindow::qmpSettingsWindow(QWidget *parent) :
 	QDialog(parent),
 	ui(new Ui::qmpSettingsWindow)
 {
-	ui->setupUi(this);
+	ui->setupUi(this);customOptions.clear();customOptPages.clear();
 	connect(this,SIGNAL(dialogClosing()),parent,SLOT(dialogClosed()));
 	settings=new QSettings(QDir::homePath()+QString("/.config/qmprc"),QSettings::IniFormat);
 	settingsInit();outwidget=ui->cbOutputDevice;
@@ -247,7 +247,7 @@ void qmpSettingsWindow::settingsUpdate()
 		settings->setValue(
 		QString("PluginSwitch/")+ui->twPluginList->item(i,1)->text(),
 		((QCheckBox*)ui->twPluginList->cellWidget(i,0))->isChecked()?1:0);
-
+	updateCustomeOptions();
 	settings->sync();
 }
 
@@ -320,4 +320,54 @@ void qmpSettingsWindow::updatePluginList(qmpPluginManager *pmgr)
 	ui->twPluginList->setColumnWidth(1,192);
 	ui->twPluginList->setColumnWidth(2,64);
 	ui->twPluginList->setColumnWidth(3,128);
+}
+
+void qmpSettingsWindow::updateCustomeOptions()
+{
+	for(auto i=customOptions.begin();i!=customOptions.end();++i)
+	switch(i->second.type)
+	{
+		case 0:
+			QSpinBox* sb=(QSpinBox*)i->second.widget;
+			settings->setValue(QString(i->first.c_str()),sb->value());
+		break;
+	}
+}
+
+void qmpSettingsWindow::registerOptionInt(std::string tab,std::string desc,std::string key,int min,int max,int defaultval)
+{
+	customOptions[key].widget=NULL;
+	customOptions[key].desc=desc;
+	customOptions[key].defaultval=defaultval;
+	customOptions[key].minv=min;
+	customOptions[key].maxv=max;
+	customOptions[key].type=0;
+	if(desc.length())
+	{
+		QFormLayout* page=NULL;
+		if(customOptPages[tab])page=customOptPages[tab];
+		else
+		{
+			QWidget* w=new QWidget;
+			page=new QFormLayout(w);w->setLayout(page);
+			ui->tabWidget->addTab(w,QString(tab.c_str()));
+			customOptPages[tab]=page;
+		}
+		QSpinBox* sb=new QSpinBox(page->parentWidget());
+		QLabel* lb=new QLabel(desc.c_str(),page->parentWidget());
+		customOptions[key].widget=sb;
+		lb->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
+		page->addRow(lb,sb);
+		sb->setMaximum(max);
+		sb->setMinimum(min);
+		sb->setValue(settings->value(QString(key.c_str()),defaultval).toInt());
+	}
+}
+int qmpSettingsWindow::getOptionInt(std::string key)
+{
+	return settings->value(QString(key.c_str()),customOptions[key].defaultval).toInt();
+}
+void qmpSettingsWindow::SetOptionInt(std::string key,int val)
+{
+	settings->setValue(QString(key.c_str()),val);
 }

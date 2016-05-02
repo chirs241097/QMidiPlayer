@@ -1,4 +1,7 @@
-2016-04-30 0.7.8 beta
+2016-05-02 0.7.8 beta
+Finally finished the option proxying infrastructure...
+
+2016-05-01 0.7.8 beta
 Give the visualization a clearer look...
 Now highlights playing notes.
 Avoid a crash in file reading.

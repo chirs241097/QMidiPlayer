@@ -73,19 +73,19 @@ class qmpPluginAPI
 
 		//if desc=="", the option won't be visible in the settings form.
 		//it will only show up in the configuration file.
-		virtual void registerOptionInt(std::string desc,std::string key,int min,int max,int defaultval);
+		virtual void registerOptionInt(std::string tab,std::string desc,std::string key,int min,int max,int defaultval);
 		virtual int getOptionInt(std::string key);
 		virtual void setOptionInt(std::string key,int val);
-		virtual void registerOptionUint(std::string desc,std::string key,unsigned min,unsigned max,unsigned defaultval);
+		virtual void registerOptionUint(std::string tab,std::string desc,std::string key,unsigned min,unsigned max,unsigned defaultval);
 		virtual unsigned getOptionUint(std::string key);
 		virtual void setOptionUint(std::string key,unsigned val);
-		virtual void registerOptionBool(std::string desc,std::string key,bool defaultval);
+		virtual void registerOptionBool(std::string tab,std::string desc,std::string key,bool defaultval);
 		virtual bool getOptionBool(std::string key);
 		virtual void setOptionBool(std::string key,bool val);
-		virtual void registerOptionDouble(std::string desc,std::string key,double min,double max,double defaultval);
+		virtual void registerOptionDouble(std::string tab,std::string desc,std::string key,double min,double max,double defaultval);
 		virtual double getOptionDouble(std::string key);
 		virtual void setOptionDouble(std::string key,double val);
-		virtual void registerOptionString(std::string desc,std::string key,std::string defaultval);
+		virtual void registerOptionString(std::string tab,std::string desc,std::string key,std::string defaultval);
 		virtual std::string getOptionString(std::string key);
 		virtual void setOptionString(std::string key,std::string val);
 };

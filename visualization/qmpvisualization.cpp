@@ -5,9 +5,9 @@
 #include <algorithm>
 #include "qmpvisualization.hpp"
 
-const int viewdist=100;
-const int notestretch=100;//length of quarter note
-const int minnotelength=100;
+int viewdist=100;
+int notestretch=100;//length of quarter note
+int minnotelength=100;
 const int noteappearance=1;
 DWORD iccolors[]={0XFFFF0000,0XFFFF8000,0XFFFFBF00,0XFFFFFF00,
 				  0XFFBFFF00,0XFF80FF00,0XFF00FF00,0XFF00FFBF,
@@ -60,6 +60,9 @@ void qmpVisualization::showThread()
 	printf("W: Font load failed.\n");
 	pos[0]=-0;pos[1]=70;pos[2]=20;
 	rot[0]=0;rot[1]=90;rot[2]=90;ctk=0;
+	viewdist=api->getOptionInt("Visualization/viewdist");
+	notestretch=api->getOptionInt("Visualization/notestretch");
+	minnotelength=api->getOptionInt("Visualization/minnotelen");
 	sm->smMainLoop();
 }
 void qmpVisualization::show()
@@ -244,6 +247,12 @@ void qmpVisualization::init()
 	hvif=api->registerVisualizationIntf(vi);
 	herif=api->registerEventReaderIntf(cb,NULL);
 	hehif=api->registerEventHandlerIntf(hcb,NULL);
+	api->registerOptionInt("Visualization","View distance","Visualization/viewdist",20,1000,100);
+	api->registerOptionInt("Visualization","Note stretch","Visualization/notestretch",20,500,100);
+	api->registerOptionInt("Visualization","Minimum note length","Visualization/minnotelen",20,500,100);
+	viewdist=api->getOptionInt("Visualization/viewdist");
+	notestretch=api->getOptionInt("Visualization/notestretch");
+	minnotelength=api->getOptionInt("Visualization/minnotelen");
 }
 void qmpVisualization::deinit()
 {

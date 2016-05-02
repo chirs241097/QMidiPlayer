@@ -14,6 +14,13 @@ namespace Ui {
 	class qmpSettingsWindow;
 }
 
+struct qmpCustomOption
+{
+	QWidget* widget;
+	std::string desc;int type;
+	QVariant defaultval,minv,maxv;
+};
+
 class qmpSettingsWindow:public QDialog
 {
 	Q_OBJECT
@@ -25,7 +32,9 @@ class qmpSettingsWindow:public QDialog
 		void settingsInit();
 		QListWidget* getSFWidget();
 		void updatePluginList(qmpPluginManager *pmgr);
+		void registerOptionInt(std::string tab,std::string desc,std::string key,int min,int max,int defaultval);
 		int getOptionInt(std::string key);
+		void SetOptionInt(std::string key,int val);
 	signals:
 		void dialogClosing();
 
@@ -46,8 +55,9 @@ class qmpSettingsWindow:public QDialog
 	private:
 		Ui::qmpSettingsWindow *ui;
 		void settingsUpdate();
-		std::map<std::string,QWidget*> customOptWidgets;
+		std::map<std::string,qmpCustomOption> customOptions;
 		std::map<std::string,QFormLayout*> customOptPages;
+		void updateCustomeOptions();
 		static QSettings *settings;
 		static QComboBox* outwidget;
 	public:

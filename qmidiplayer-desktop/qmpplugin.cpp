@@ -118,18 +118,19 @@ int qmpPluginAPI::registerVisualizationIntf(qmpVisualizationIntf* intf)
 void qmpPluginAPI::unregisterVisualizationIntf(int intfhandle)
 {qmw->unregisterVisualizationIntf(intfhandle);}
 
-void qmpPluginAPI::registerOptionInt(std::string,std::string,int,int,int){}
-int qmpPluginAPI::getOptionInt(std::string){return 0;}
-void qmpPluginAPI::setOptionInt(std::string,int){}
-void qmpPluginAPI::registerOptionUint(std::string,std::string,unsigned,unsigned,unsigned){}
+void qmpPluginAPI::registerOptionInt(std::string tab,std::string desc,std::string key,int min,int max,int defaultval)
+{qsw->registerOptionInt(tab,desc,key,min,max,defaultval);}
+int qmpPluginAPI::getOptionInt(std::string key){return qsw->getOptionInt(key);}
+void qmpPluginAPI::setOptionInt(std::string key,int val){qsw->SetOptionInt(key,val);}
+void qmpPluginAPI::registerOptionUint(std::string,std::string,std::string,unsigned,unsigned,unsigned){}
 unsigned qmpPluginAPI::getOptionUint(std::string){return 0;}
 void qmpPluginAPI::setOptionUint(std::string,unsigned){}
-void qmpPluginAPI::registerOptionBool(std::string,std::string,bool){}
+void qmpPluginAPI::registerOptionBool(std::string,std::string,std::string,bool){}
 bool qmpPluginAPI::getOptionBool(std::string){return false;}
 void qmpPluginAPI::setOptionBool(std::string,bool){}
-void qmpPluginAPI::registerOptionDouble(std::string,std::string,double,double,double){}
+void qmpPluginAPI::registerOptionDouble(std::string,std::string,std::string,double,double,double){}
 double qmpPluginAPI::getOptionDouble(std::string){return 0;}
 void qmpPluginAPI::setOptionDouble(std::string,double){}
-void qmpPluginAPI::registerOptionString(std::string,std::string,std::string){}
+void qmpPluginAPI::registerOptionString(std::string,std::string,std::string,std::string){}
 std::string qmpPluginAPI::getOptionString(std::string){return "";}
 void qmpPluginAPI::setOptionString(std::string,std::string){}
