@@ -1,3 +1,4 @@
+#include <QPlainTextEdit>
 #include <QFileDialog>
 #include <QDir>
 #include "qmpsettingswindow.hpp"
@@ -247,7 +248,7 @@ void qmpSettingsWindow::settingsUpdate()
 		settings->setValue(
 		QString("PluginSwitch/")+ui->twPluginList->item(i,1)->text(),
 		((QCheckBox*)ui->twPluginList->cellWidget(i,0))->isChecked()?1:0);
-	updateCustomeOptions();
+	updateCustomOptions();
 	settings->sync();
 }
 
@@ -322,15 +323,33 @@ void qmpSettingsWindow::updatePluginList(qmpPluginManager *pmgr)
 	ui->twPluginList->setColumnWidth(3,128);
 }
 
-void qmpSettingsWindow::updateCustomeOptions()
+void qmpSettingsWindow::updateCustomOptions()
 {
 	for(auto i=customOptions.begin();i!=customOptions.end();++i)
 	switch(i->second.type)
 	{
-		case 0:
+		case 0:case 1:
+		{
 			QSpinBox* sb=(QSpinBox*)i->second.widget;
 			settings->setValue(QString(i->first.c_str()),sb->value());
-		break;
+			break;
+		}
+		case 2:
+		{
+			settings->setValue(QString(i->first.c_str()),((QCheckBox*)i->second.widget)->isChecked()?1:0);
+			break;
+		}
+		case 3:
+		{
+			QDoubleSpinBox* sb=(QDoubleSpinBox*)i->second.widget;
+			settings->setValue(QString(i->first.c_str()),sb->value());
+			break;
+		}
+		case 4:
+		{
+			QPlainTextEdit* te=(QPlainTextEdit*)i->second.widget;
+			settings->setValue(QString(i->first.c_str()),te->toPlainText());
+		}
 	}
 }
 
@@ -344,20 +363,24 @@ void qmpSettingsWindow::registerOptionInt(std::string tab,std::string desc,std::
 	customOptions[key].type=0;
 	if(desc.length())
 	{
-		QFormLayout* page=NULL;
+		QGridLayout* page=NULL;
 		if(customOptPages[tab])page=customOptPages[tab];
 		else
 		{
 			QWidget* w=new QWidget;
-			page=new QFormLayout(w);w->setLayout(page);
+			page=new QGridLayout(w);
+			w->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 			ui->tabWidget->addTab(w,QString(tab.c_str()));
 			customOptPages[tab]=page;
 		}
 		QSpinBox* sb=new QSpinBox(page->parentWidget());
 		QLabel* lb=new QLabel(desc.c_str(),page->parentWidget());
 		customOptions[key].widget=sb;
-		lb->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
-		page->addRow(lb,sb);
+		sb->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed);
+		lb->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+		int row=page->rowCount();
+		page->addWidget(lb,row,0);
+		page->addWidget(sb,row,1);
 		sb->setMaximum(max);
 		sb->setMinimum(min);
 		sb->setValue(settings->value(QString(key.c_str()),defaultval).toInt());
@@ -367,7 +390,169 @@ int qmpSettingsWindow::getOptionInt(std::string key)
 {
 	return settings->value(QString(key.c_str()),customOptions[key].defaultval).toInt();
 }
-void qmpSettingsWindow::SetOptionInt(std::string key,int val)
+void qmpSettingsWindow::setOptionInt(std::string key,int val)
 {
 	settings->setValue(QString(key.c_str()),val);
+	((QSpinBox*)customOptions[key].widget)->setValue(val);
+}
+
+void qmpSettingsWindow::registerOptionUint(std::string tab,std::string desc,std::string key,unsigned min,unsigned max,unsigned defaultval)
+{
+	customOptions[key].widget=NULL;
+	customOptions[key].desc=desc;
+	customOptions[key].defaultval=defaultval;
+	customOptions[key].minv=min;
+	customOptions[key].maxv=max;
+	customOptions[key].type=1;
+	if(desc.length())
+	{
+		QGridLayout* page=NULL;
+		if(customOptPages[tab])page=customOptPages[tab];
+		else
+		{
+			QWidget* w=new QWidget;
+			page=new QGridLayout(w);
+			w->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+			ui->tabWidget->addTab(w,QString(tab.c_str()));
+			customOptPages[tab]=page;
+		}
+		QSpinBox* sb=new QSpinBox(page->parentWidget());
+		QLabel* lb=new QLabel(desc.c_str(),page->parentWidget());
+		customOptions[key].widget=sb;
+		sb->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed);
+		lb->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+		int row=page->rowCount();
+		page->addWidget(lb,row,0);
+		page->addWidget(sb,row,1);
+		sb->setMaximum(max);
+		sb->setMinimum(min);
+		sb->setValue(settings->value(QString(key.c_str()),defaultval).toUInt());
+	}
+}
+unsigned qmpSettingsWindow::getOptionUint(std::string key)
+{
+	return settings->value(QString(key.c_str()),customOptions[key].defaultval).toUInt();
+}
+void qmpSettingsWindow::setOptionUint(std::string key,unsigned val)
+{
+	settings->setValue(QString(key.c_str()),val);
+	((QSpinBox*)customOptions[key].widget)->setValue(val);
+}
+
+void qmpSettingsWindow::registerOptionBool(std::string tab,std::string desc,std::string key,bool defaultval)
+{
+	customOptions[key].widget=NULL;
+	customOptions[key].desc=desc;
+	customOptions[key].defaultval=defaultval;
+	customOptions[key].type=2;
+	if(desc.length())
+	{
+		QGridLayout* page=NULL;
+		if(customOptPages[tab])page=customOptPages[tab];
+		else
+		{
+			QWidget* w=new QWidget;
+			page=new QGridLayout(w);
+			w->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+			ui->tabWidget->addTab(w,QString(tab.c_str()));
+			customOptPages[tab]=page;
+		}
+		QCheckBox* cb=new QCheckBox(desc.c_str(),page->parentWidget());
+		customOptions[key].widget=cb;
+		cb->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+		int row=page->rowCount();
+		page->addWidget(cb,row,0,1,2);
+		cb->setChecked(settings->value(QString(key.c_str()),(int)defaultval).toInt());
+	}
+}
+bool qmpSettingsWindow::getOptionBool(std::string key)
+{
+	return settings->value(QString(key.c_str()),(int)customOptions[key].defaultval.toBool()).toInt();
+}
+void qmpSettingsWindow::setOptionBool(std::string key,bool val)
+{
+	settings->setValue(QString(key.c_str()),val?1:0);
+	((QCheckBox*)customOptions[key].widget)->setChecked(val);
+}
+
+void qmpSettingsWindow::registerOptionDouble(std::string tab,std::string desc,std::string key,double min,double max,double defaultval)
+{
+	customOptions[key].widget=NULL;
+	customOptions[key].desc=desc;
+	customOptions[key].defaultval=defaultval;
+	customOptions[key].minv=min;
+	customOptions[key].maxv=max;
+	customOptions[key].type=3;
+	if(desc.length())
+	{
+		QGridLayout* page=NULL;
+		if(customOptPages[tab])page=customOptPages[tab];
+		else
+		{
+			QWidget* w=new QWidget;
+			page=new QGridLayout(w);
+			w->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+			ui->tabWidget->addTab(w,QString(tab.c_str()));
+			customOptPages[tab]=page;
+		}
+		QDoubleSpinBox* sb=new QDoubleSpinBox(page->parentWidget());
+		QLabel* lb=new QLabel(desc.c_str(),page->parentWidget());
+		customOptions[key].widget=sb;
+		sb->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed);
+		lb->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+		int row=page->rowCount();
+		page->addWidget(lb,row,0);
+		page->addWidget(sb,row,1);
+		sb->setMaximum(max);
+		sb->setMinimum(min);
+		sb->setValue(settings->value(QString(key.c_str()),defaultval).toDouble());
+	}
+}
+double qmpSettingsWindow::getOptionDouble(std::string key)
+{
+	return settings->value(QString(key.c_str()),customOptions[key].defaultval).toDouble();
+}
+void qmpSettingsWindow::setOptionDouble(std::string key,double val)
+{
+	settings->setValue(QString(key.c_str()),val);
+	((QDoubleSpinBox*)customOptions[key].widget)->setValue(val);
+}
+
+void qmpSettingsWindow::registerOptionString(std::string tab,std::string desc,std::string key,std::string defaultval)
+{
+	customOptions[key].widget=NULL;
+	customOptions[key].desc=desc;
+	customOptions[key].defaultval=QString(defaultval.c_str());
+	customOptions[key].type=4;
+	if(desc.length())
+	{
+		QGridLayout* page=NULL;
+		if(customOptPages[tab])page=customOptPages[tab];
+		else
+		{
+			QWidget* w=new QWidget;
+			page=new QGridLayout(w);
+			w->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+			ui->tabWidget->addTab(w,QString(tab.c_str()));
+			customOptPages[tab]=page;
+		}
+		QPlainTextEdit* te=new QPlainTextEdit(page->parentWidget());
+		QLabel* lb=new QLabel(desc.c_str(),page->parentWidget());
+		customOptions[key].widget=te;
+		te->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed);
+		lb->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+		int row=page->rowCount();
+		page->addWidget(lb,row,0);
+		page->addWidget(te,row,1);
+		te->setPlainText(defaultval.c_str());
+	}
+}
+std::string qmpSettingsWindow::getOptionString(std::string key)
+{
+	return settings->value(QString(key.c_str()),customOptions[key].defaultval).toString().toStdString();
+}
+void qmpSettingsWindow::setOptionString(std::string key,std::string val)
+{
+	settings->setValue(QString(key.c_str()),QString(val.c_str()));
+	((QPlainTextEdit*)customOptions[key].widget)->setPlainText(val.c_str());
 }

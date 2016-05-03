@@ -8,7 +8,9 @@
 int viewdist=100;
 int notestretch=100;//length of quarter note
 int minnotelength=100;
-const int noteappearance=1;
+int noteappearance=1;
+int wwidth=800,wheight=600,wsupersample=1;
+int fov=60;
 DWORD iccolors[]={0XFFFF0000,0XFFFF8000,0XFFFFBF00,0XFFFFFF00,
 				  0XFFBFFF00,0XFF80FF00,0XFF00FF00,0XFF00FFBF,
 				  0XFF00FFFF,0XFF333333,0XFF00BFFF,0XFF007FFF,
@@ -44,8 +46,16 @@ void CHandlerCallBack::callBack(void*,void*)
 }
 void qmpVisualization::showThread()
 {
+	wwidth=api->getOptionInt("Visualization/wwidth");
+	wheight=api->getOptionInt("Visualization/wheight");
+	wsupersample=api->getOptionInt("Visualization/supersampling");
+	fov=api->getOptionInt("Visualization/fov");
+	noteappearance=api->getOptionBool("Visualization/3dnotes");
+	viewdist=api->getOptionInt("Visualization/viewdist");
+	notestretch=api->getOptionInt("Visualization/notestretch");
+	minnotelength=api->getOptionInt("Visualization/minnotelen");
 	sm=smGetInterface(SMELT_APILEVEL);
-	sm->smVidMode(800,600,true);
+	sm->smVidMode(wwidth,wheight,true);
 	sm->smUpdateFunc(h);sm->smQuitFunc(closeh);
 	sm->smWinTitle("QMidiPlayer Visualization");
 	sm->smSetFPS(FPS_VSYNC);
@@ -53,16 +63,15 @@ void qmpVisualization::showThread()
 	sm->smInit();shouldclose=false;
 	sm->smTextureOpt(TPOT_POT,TFLT_LINEAR);
 	chequer=sm->smTextureLoad("chequerboard.png");
-	tdscn=sm->smTargetCreate(800,600);
+	if(!chequer)
+	chequer=sm->smTextureLoad("/usr/share/qmidiplayer/img/chequerboard.png");
+	tdscn=sm->smTargetCreate(wwidth*wsupersample,wheight*wsupersample);
 	if(!font.loadTTF("/usr/share/fonts/truetype/freefont/FreeMono.ttf",16))
 	printf("W: Font load failed.\n");
 	if(!font2.loadTTF("/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",16))
 	printf("W: Font load failed.\n");
 	pos[0]=-0;pos[1]=70;pos[2]=20;
 	rot[0]=0;rot[1]=90;rot[2]=90;ctk=0;
-	viewdist=api->getOptionInt("Visualization/viewdist");
-	notestretch=api->getOptionInt("Visualization/notestretch");
-	minnotelength=api->getOptionInt("Visualization/minnotelen");
 	sm->smMainLoop();
 }
 void qmpVisualization::show()
@@ -103,7 +112,7 @@ bool qmpVisualization::update()
 	q.v[0].y=q.v[1].y=-60;q.v[2].y=q.v[3].y=60;
 	q.v[0].tx=q.v[3].tx=0;q.v[1].tx=q.v[2].tx=15;
 	q.v[0].ty=q.v[1].ty=0;q.v[2].ty=q.v[3].ty=15;
-	sm->smRenderBegin3D(60,tdscn);
+	sm->smRenderBegin3D(fov,tdscn);
 	sm->sm3DCamera6f2v(pos,rot);
 	sm->smClrscr(0xFF666666);
 	sm->smRenderQuad(&q);
@@ -161,23 +170,23 @@ bool qmpVisualization::update()
 	sm->smClrscr(0xFF000000);
 	q.v[0].tx=q.v[3].tx=0;q.v[1].tx=q.v[2].tx=1;
 	q.v[0].ty=q.v[1].ty=0;q.v[2].ty=q.v[3].ty=1;
-	q.v[0].x=q.v[1].x=0;q.v[2].x=q.v[3].x=800;
-	q.v[0].y=q.v[3].y=0;q.v[1].y=q.v[2].y=600;
+	q.v[0].x=q.v[1].x=0;q.v[2].x=q.v[3].x=wwidth;
+	q.v[0].y=q.v[3].y=0;q.v[1].y=q.v[2].y=wheight;
 	sm->smRenderQuad(&q);
 	wchar_t ws[1024];memset(ws,0,sizeof(ws));
 	mbstowcs(ws,api->getTitle().c_str(),1024);
 	font2.updateString(L"Title: %ls",ws);
-	font2.render(1,536,0xFFFFFFFF,ALIGN_LEFT);
-	font2.render(0,535,0xFF000000,ALIGN_LEFT);
+	font2.render(1,wheight-64,0xFFFFFFFF,ALIGN_LEFT);
+	font2.render(0,wheight-65,0xFF000000,ALIGN_LEFT);
 	font.updateString(L"Tempo: %.2f",api->getRealTempo());
-	font.render(1,556,0xFFFFFFFF,ALIGN_LEFT);
-	font.render(0,555,0xFF000000,ALIGN_LEFT);
+	font.render(1,wheight-44,0xFFFFFFFF,ALIGN_LEFT);
+	font.render(0,wheight-45,0xFF000000,ALIGN_LEFT);
 	font.updateString(L"Current tick: %d",ctk);
-	font.render(1,576,0xFFFFFFFF,ALIGN_LEFT);
-	font.render(0,575,0xFF000000,ALIGN_LEFT);
+	font.render(1,wheight-24,0xFFFFFFFF,ALIGN_LEFT);
+	font.render(0,wheight-25,0xFF000000,ALIGN_LEFT);
 	font.updateString(L"FPS: %.2f",sm->smGetFPS());
-	font.render(1,596,0xFFFFFFFF,ALIGN_LEFT);
-	font.render(0,595,0xFF000000,ALIGN_LEFT);
+	font.render(1,wheight-4,0xFFFFFFFF,ALIGN_LEFT);
+	font.render(0,wheight-5,0xFF000000,ALIGN_LEFT);
 	sm->smRenderEnd();
 	return shouldclose;
 }
@@ -247,9 +256,19 @@ void qmpVisualization::init()
 	hvif=api->registerVisualizationIntf(vi);
 	herif=api->registerEventReaderIntf(cb,NULL);
 	hehif=api->registerEventHandlerIntf(hcb,NULL);
+	api->registerOptionBool("Visualization","3D Notes","Visualization/3dnotes",true);
+	api->registerOptionInt("Visualization","Window Width","Visualization/wwidth",320,3200,800);
+	api->registerOptionInt("Visualization","Window Height","Visualization/wheight",320,3200,600);
+	api->registerOptionInt("Visualization","Supersampling","Visualization/supersampling",1,4,1);
+	api->registerOptionInt("Visualization","FOV","Visualization/fov",30,180,60);
 	api->registerOptionInt("Visualization","View distance","Visualization/viewdist",20,1000,100);
 	api->registerOptionInt("Visualization","Note stretch","Visualization/notestretch",20,500,100);
 	api->registerOptionInt("Visualization","Minimum note length","Visualization/minnotelen",20,500,100);
+	wwidth=api->getOptionInt("Visualization/wwidth");
+	wheight=api->getOptionInt("Visualization/wheight");
+	wsupersample=api->getOptionInt("Visualization/supersampling");
+	fov=api->getOptionInt("Visualization/fov");
+	noteappearance=api->getOptionBool("Visualization/3dnotes");
 	viewdist=api->getOptionInt("Visualization/viewdist");
 	notestretch=api->getOptionInt("Visualization/notestretch");
 	minnotelength=api->getOptionInt("Visualization/minnotelen");
@@ -266,7 +285,7 @@ void qmpVisualization::deinit()
 const char* qmpVisualization::pluginGetName()
 {return "QMidiPlayer Default Visualization Plugin";}
 const char* qmpVisualization::pluginGetVersion()
-{return "0.7.8";}
+{return "0.8.0";}
 
 void qmpVisualization::pushNoteOn(uint32_t tc,uint32_t ch,uint32_t key,uint32_t vel)
 {

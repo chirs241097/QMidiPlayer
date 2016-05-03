@@ -22,3 +22,8 @@ Package: qmidiplayer-lite
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Midi player based on Qt and fluidsynth (Lite version).
+
+Package: qmidiplayer-plugin-visualization
+Architecture: any
+Depends: qmidiplayer, ${shlibs:Depends}, ${misc:Depends}
+Description: Midi visualization plugin for QMidiPlayer.

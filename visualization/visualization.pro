@@ -19,8 +19,11 @@ HEADERS += qmpvisualization.hpp
 
 unix {
 	target.path = /usr/lib/qmidiplayer
-	INSTALLS += target
+	DATADIR = $$PREFIX/share
+	INSTALLS += target res
 	QMAKE_CXXFLAGS += -pthread -fPIC
+	res.path = $$DATADIR/qmidiplayer/img
+	res.files += ../img/chequerboard.png
 }
 #well...
 INCLUDEPATH += /home/chrisoft/devel/BulletLabRemixIII/include/ /usr/include/freetype2

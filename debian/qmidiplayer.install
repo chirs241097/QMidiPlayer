@@ -4,4 +4,5 @@ usr/share/applications/qmidiplayer.desktop
 usr/share/icons/hicolor/64x64/apps/qmidiplyr.png
 usr/share/icons/hicolor/scalable/apps/qmidiplyr.svg
 usr/share/menu/qmidiplayer
-usr/share/qmidiplayer
+usr/share/qmidiplayer/doc
+usr/share/qmidiplayer/img/qmidiplyr.png

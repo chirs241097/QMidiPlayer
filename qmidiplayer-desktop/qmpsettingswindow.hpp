@@ -34,7 +34,19 @@ class qmpSettingsWindow:public QDialog
 		void updatePluginList(qmpPluginManager *pmgr);
 		void registerOptionInt(std::string tab,std::string desc,std::string key,int min,int max,int defaultval);
 		int getOptionInt(std::string key);
-		void SetOptionInt(std::string key,int val);
+		void setOptionInt(std::string key,int val);
+		void registerOptionUint(std::string tab,std::string desc,std::string key,unsigned min,unsigned max,unsigned defaultval);
+		unsigned getOptionUint(std::string key);
+		void setOptionUint(std::string key,unsigned val);
+		void registerOptionBool(std::string tab,std::string desc,std::string key,bool defaultval);
+		bool getOptionBool(std::string key);
+		void setOptionBool(std::string key,bool val);
+		void registerOptionDouble(std::string tab,std::string desc,std::string key,double min,double max,double defaultval);
+		double getOptionDouble(std::string key);
+		void setOptionDouble(std::string key,double val);
+		void registerOptionString(std::string tab,std::string desc,std::string key,std::string defaultval);
+		std::string getOptionString(std::string key);
+		void setOptionString(std::string key,std::string val);
 	signals:
 		void dialogClosing();
 
@@ -56,8 +68,8 @@ class qmpSettingsWindow:public QDialog
 		Ui::qmpSettingsWindow *ui;
 		void settingsUpdate();
 		std::map<std::string,qmpCustomOption> customOptions;
-		std::map<std::string,QFormLayout*> customOptPages;
-		void updateCustomeOptions();
+		std::map<std::string,QGridLayout*> customOptPages;
+		void updateCustomOptions();
 		static QSettings *settings;
 		static QComboBox* outwidget;
 	public:

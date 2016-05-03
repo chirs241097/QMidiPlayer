@@ -61,7 +61,6 @@ class qmpVisualization:public qmpPluginIntf
 		~qmpVisualization();
 		void pushNoteOn(uint32_t tc,uint32_t ch,uint32_t key,uint32_t vel);
 		void pushNoteOff(uint32_t tc,uint32_t ch,uint32_t key);
-		void pushPitchBend(uint32_t tc,uint32_t ch,uint32_t key);
 		bool update();
 		void start();
 		void stop();

@@ -60,6 +60,14 @@ unix{
 	isEmpty(PREFIX) {
 		PREFIX = /usr/local
 	}
+	BUILDM = $$(QMP_BUILD_MODE)
+	isEmpty(BUILDM) {
+		message(Building in normal(debugging) mode...)
+	}
+	else {
+		message(Building in packaging mode...)
+		DEFINES += QMP_BUILD_UNIX_PACKAGE
+	}
 	BINDIR = $$PREFIX/bin
 	target.path = $$BINDIR
 	DATADIR = $$PREFIX/share
