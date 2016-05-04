@@ -13,9 +13,13 @@ TEMPLATE = lib
 
 DEFINES += VISUALIZATION_LIBRARY
 
-SOURCES += qmpvisualization.cpp
+SOURCES += qmpvisualization.cpp \
+    extrasmeltutils.cpp \
+    qmpvirtualpiano3d.cpp
 
-HEADERS += qmpvisualization.hpp
+HEADERS += qmpvisualization.hpp \
+    extrasmeltutils.hpp \
+    qmpvirtualpiano3d.hpp
 
 unix {
 	target.path = /usr/lib/qmidiplayer

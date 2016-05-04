@@ -63,6 +63,7 @@ void qmpVisualization::showThread()
 	sm->smInit();shouldclose=false;
 	sm->smTextureOpt(TPOT_POT,TFLT_LINEAR);
 	chequer=sm->smTextureLoad("chequerboard.png");
+	p3d=new qmpVirtualPiano3D();
 	if(!chequer)
 	chequer=sm->smTextureLoad("/usr/share/qmidiplayer/img/chequerboard.png");
 	tdscn=sm->smTargetCreate(wwidth*wsupersample,wheight*wsupersample);
@@ -81,6 +82,7 @@ void qmpVisualization::show()
 void qmpVisualization::close()
 {
 	shouldclose=true;
+	delete p3d;
 	rendererTh->join();
 	sm->smFinale();
 	font.releaseTTF();
@@ -146,6 +148,7 @@ bool qmpVisualization::update()
 	//printf("pos: %f %f %f\n",pos[0],pos[1],pos[2]);
 	//printf("rot: %f %f %f\n",rot[0],rot[1],rot[2]);
 	double lpt=(double)notestretch/api->getDivision()/10.;
+	memset(notestatus,0,sizeof(notestatus));
 	for(uint32_t i=elb;i<pool.size();++i)
 	{
 		if(((double)pool[i]->tcs-ctk)*lpt>viewdist*2)break;
@@ -157,10 +160,21 @@ bool qmpVisualization::update()
 			bool isnoteon=pool[i]->tcs<=ctk&&pool[i]->tce>=ctk;if(isnoteon)
 			a.x=((double)pool[i]->key-64+api->getPitchBend(pool[i]->ch)),
 			b.x=((double)pool[i]->key-64+api->getPitchBend(pool[i]->ch))+.9;
+			notestatus[pool[i]->ch][pool[i]->key]|=isnoteon;
 			if(((double)pool[i]->tce-pool[i]->tcs)*lpt<minnotelength/100.)a.z=((double)pool[i]->tcs-ctk)*lpt-minnotelength/100.;
 			drawCube(a,b,SETA(isnoteon?accolors[pool[i]->ch]:iccolors[pool[i]->ch],int(pool[i]->vel*(isnoteon?2.0:1.6))),0);
 		}
 	}
+	for(int i=0;i<16;++i)
+	for(int j=0;j<128;++j)
+	{
+		if(notestatus[i][j])
+		if(traveld[i][j]<1)traveld[i][j]+=0.2;else traveld[i][j]=1;
+		else
+		if(traveld[i][j]>0)traveld[i][j]-=0.2;else traveld[i][j]=0;
+	}
+	for(int j=0;j<128;++j)p3d->setKeyTravelDist(j,traveld[0][j]);
+	//p3d->render(smvec3d(0,15,10));
 	if(playing)ctk+=(int)(1e6/(api->getRawTempo()/api->getDivision())*sm->smGetDelta());
 	while(pool.size()&&((double)ctk-pool[elb]->tce)*lpt>viewdist*2)++elb;
 	sm->smRenderEnd();
