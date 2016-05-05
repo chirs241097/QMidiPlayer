@@ -50,13 +50,13 @@ class qmpVisualization:public qmpPluginIntf
 		SMTRG tdscn;
 		SMTEX chequer;
 		smTTFont font,font2;
-		qmpVirtualPiano3D* p3d;
+		qmpVirtualPiano3D* p3d[16];
 		float pos[3],rot[3],lastx,lasty;
 		uint32_t ctc,ctk,fintk,elb;
 		double etps;
 		bool shouldclose,playing;
 		int hvif,herif,hehif;
-		double traveld[16][128];bool notestatus[16][128];
+		int traveld[16][128];bool notestatus[16][128];
 		void drawCube(smvec3d a,smvec3d b,DWORD col,SMTEX tex);
 		void showThread();
 	public:

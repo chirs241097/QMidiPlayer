@@ -63,7 +63,8 @@ void qmpVisualization::showThread()
 	sm->smInit();shouldclose=false;
 	sm->smTextureOpt(TPOT_POT,TFLT_LINEAR);
 	chequer=sm->smTextureLoad("chequerboard.png");
-	p3d=new qmpVirtualPiano3D();
+	for(int i=0;i<16;++i)p3d[i]=new qmpVirtualPiano3D();
+	memset(traveld,0,sizeof(traveld));
 	if(!chequer)
 	chequer=sm->smTextureLoad("/usr/share/qmidiplayer/img/chequerboard.png");
 	tdscn=sm->smTargetCreate(wwidth*wsupersample,wheight*wsupersample);
@@ -71,7 +72,7 @@ void qmpVisualization::showThread()
 	printf("W: Font load failed.\n");
 	if(!font2.loadTTF("/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",16))
 	printf("W: Font load failed.\n");
-	pos[0]=-0;pos[1]=70;pos[2]=20;
+	pos[0]=0;pos[1]=100;pos[2]=20;
 	rot[0]=0;rot[1]=90;rot[2]=90;ctk=0;
 	sm->smMainLoop();
 }
@@ -82,8 +83,8 @@ void qmpVisualization::show()
 void qmpVisualization::close()
 {
 	shouldclose=true;
-	delete p3d;
 	rendererTh->join();
+	for(int i=0;i<16;++i)delete p3d[i];
 	sm->smFinale();
 	font.releaseTTF();
 	font2.releaseTTF();
@@ -108,12 +109,12 @@ bool qmpVisualization::update()
 {
 	smQuad q;
 	for(int i=0;i<4;++i)
-	{q.v[i].col=0xFF999999;q.v[i].z=0;}
+	{q.v[i].col=0xFF999999;q.v[i].z=-5;}
 	q.tex=chequer;q.blend=BLEND_ALPHABLEND;
-	q.v[0].x=q.v[3].x=-60;q.v[1].x=q.v[2].x=60;
-	q.v[0].y=q.v[1].y=-60;q.v[2].y=q.v[3].y=60;
-	q.v[0].tx=q.v[3].tx=0;q.v[1].tx=q.v[2].tx=15;
-	q.v[0].ty=q.v[1].ty=0;q.v[2].ty=q.v[3].ty=15;
+	q.v[0].x=q.v[3].x=-120;q.v[1].x=q.v[2].x=120;
+	q.v[0].y=q.v[1].y=-120;q.v[2].y=q.v[3].y=120;
+	q.v[0].tx=q.v[3].tx=0;q.v[1].tx=q.v[2].tx=30;
+	q.v[0].ty=q.v[1].ty=0;q.v[2].ty=q.v[3].ty=30;
 	sm->smRenderBegin3D(fov,tdscn);
 	sm->sm3DCamera6f2v(pos,rot);
 	sm->smClrscr(0xFF666666);
@@ -155,26 +156,28 @@ bool qmpVisualization::update()
 		if(fabs((double)pool[i]->tcs-ctk)*lpt<viewdist*2||fabs((double)pool[i]->tce-ctk)*lpt<viewdist*2)
 		{
 			if(api->getChannelMask(pool[i]->ch))continue;
-			smvec3d a(((double)pool[i]->key-64),15+pool[i]->ch*-3.,((double)pool[i]->tce-ctk)*lpt);
-			smvec3d b(((double)pool[i]->key-64)+.9,15+pool[i]->ch*-3.+.6,((double)pool[i]->tcs-ctk)*lpt);
+			smvec3d a(0.63*((double)pool[i]->key-64),64-pool[i]->ch*8.,((double)pool[i]->tce-ctk)*lpt);
+			smvec3d b(0.63*((double)pool[i]->key-64)+0.6,64-pool[i]->ch*8.+.4,((double)pool[i]->tcs-ctk)*lpt);
 			bool isnoteon=pool[i]->tcs<=ctk&&pool[i]->tce>=ctk;if(isnoteon)
-			a.x=((double)pool[i]->key-64+api->getPitchBend(pool[i]->ch)),
-			b.x=((double)pool[i]->key-64+api->getPitchBend(pool[i]->ch))+.9;
-			notestatus[pool[i]->ch][pool[i]->key]|=isnoteon;
+			a.x=0.63*((double)pool[i]->key-64+api->getPitchBend(pool[i]->ch)),
+			b.x=0.63*((double)pool[i]->key-64+api->getPitchBend(pool[i]->ch))+0.6;
+			notestatus[pool[i]->ch][pool[i]->key]|=isnoteon;a.x*=1.2;b.x*=1.2;
 			if(((double)pool[i]->tce-pool[i]->tcs)*lpt<minnotelength/100.)a.z=((double)pool[i]->tcs-ctk)*lpt-minnotelength/100.;
 			drawCube(a,b,SETA(isnoteon?accolors[pool[i]->ch]:iccolors[pool[i]->ch],int(pool[i]->vel*(isnoteon?2.0:1.6))),0);
 		}
 	}
 	for(int i=0;i<16;++i)
-	for(int j=0;j<128;++j)
 	{
-		if(notestatus[i][j])
-		if(traveld[i][j]<1)traveld[i][j]+=0.2;else traveld[i][j]=1;
-		else
-		if(traveld[i][j]>0)traveld[i][j]-=0.2;else traveld[i][j]=0;
+		for(int j=0;j<128;++j)
+		{
+			if(notestatus[i][j])
+			if(traveld[i][j]<10)traveld[i][j]+=2;else traveld[i][j]=10;
+			else
+			if(traveld[i][j]>0)traveld[i][j]-=2;else traveld[i][j]=0;
+			p3d[i]->setKeyTravelDist(j,traveld[i][j]/10.);
+		}
+		p3d[i]->render(smvec3d(api->getPitchBend(i),62-i*8,0));
 	}
-	for(int j=0;j<128;++j)p3d->setKeyTravelDist(j,traveld[0][j]);
-	//p3d->render(smvec3d(0,15,10));
 	if(playing)ctk+=(int)(1e6/(api->getRawTempo()/api->getDivision())*sm->smGetDelta());
 	while(pool.size()&&((double)ctk-pool[elb]->tce)*lpt>viewdist*2)++elb;
 	sm->smRenderEnd();

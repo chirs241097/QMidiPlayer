@@ -18,6 +18,7 @@ class qmpVirtualPiano3D
 {
 	private:
 		smEntity3D *wkcf,*wkeb,*wkd,*wkg,*wka,*bk;
+		smEntity3DBuffer *ebuf;
 		void buildKeys();
 		double traveld[128];
 	public:

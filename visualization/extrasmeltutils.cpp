@@ -1,91 +1,61 @@
+#include <cstdarg>
 #include "extrasmeltutils.hpp"
-SMELT *smEntity3D::sm=NULL;
-smEntity3D::smEntity3D()
+SMELT* smEntity3DBuffer::sm=NULL;
+smVertex makeVertex(float x,float y,float z,DWORD color,float tx,float ty)
+{smVertex v;v.x=x;v.y=y;v.z=z;v.col=color;v.tx=tx;v.ty=ty;return v;}
+void smEntity3D::addVerices(int n,...)
 {
-	sm=smGetInterface(SMELT_APILEVEL);
-	surfaces.clear();
+	va_list vl;va_start(vl,n);
+	for(int i=0;i<n;++i)
+	{
+		smVertex v=va_arg(vl,smVertex);
+		vertices.push_back(v);
+	}
+	va_end(vl);
 }
-void smEntity3D::pushSurface(smQuad q)
-{surfaces.push_back(q);}
-void smEntity3D::pushCube(smvec3d a,smvec3d b,DWORD color,DWORD mask)
+void smEntity3D::addIndices(int n,...)
+{
+	va_list vl;va_start(vl,n);
+	for(int i=0;i<n;++i)
+	{
+		int idx=va_arg(vl,int);
+		indices.push_back((WORD)idx);
+	}
+	va_end(vl);
+}
+smEntity3D smEntity3D::cube(smvec3d a,smvec3d b,DWORD color)
 {
 	//a: top left corner b: bottom right corner
-	smQuad q;q.blend=BLEND_ALPHABLEND;q.tex=0;
-	for(int i=0;i<4;++i)q.v[i].col=color,q.v[i].tx=q.v[i].ty=0;
-	//top
-	if(mask&1)
+	smEntity3D ret;
+	ret.addVerices(8,
+		makeVertex(a.x,a.y,a.z,color,0,0),makeVertex(b.x,a.y,a.z,color,0,0),
+		makeVertex(b.x,b.y,a.z,color,0,0),makeVertex(a.x,b.y,a.z,color,0,0),
+		makeVertex(a.x,a.y,b.z,color,0,0),makeVertex(b.x,a.y,b.z,color,0,0),
+		makeVertex(b.x,b.y,b.z,color,0,0),makeVertex(a.x,b.y,b.z,color,0,0));
+	ret.addIndices(36,
+		0,1,3,1,2,3, 4,5,7,5,6,7,
+		0,3,7,0,4,7, 1,2,6,1,5,6,
+		2,3,7,2,6,7, 0,1,4,1,4,5);
+	return ret;
+}
+smEntity3DBuffer::smEntity3DBuffer()
+{
+	sm=smGetInterface(SMELT_APILEVEL);
+	vertices.clear();indices.clear();
+}
+void smEntity3DBuffer::addTransformedEntity(smEntity3D *entity,smMatrix t,smvec3d p)
+{
+	if(entity->vertices.size()+vertices.size()>4000)drawBatch();
+	for(unsigned i=0;i<entity->indices.size();++i)
+	indices.push_back(entity->indices[i]+vertices.size());
+	for(unsigned i=0;i<entity->vertices.size();++i)
 	{
-		q.v[0].x=a.x;q.v[0].y=a.y;q.v[0].z=a.z;
-		q.v[1].x=b.x;q.v[1].y=a.y;q.v[1].z=a.z;
-		q.v[2].x=b.x;q.v[2].y=b.y;q.v[2].z=a.z;
-		q.v[3].x=a.x;q.v[3].y=b.y;q.v[3].z=a.z;
-		pushSurface(q);
-	}
-	//bottom
-	if(mask&2)
-	{
-		q.v[0].x=a.x;q.v[0].y=a.y;q.v[0].z=b.z;
-		q.v[1].x=b.x;q.v[1].y=a.y;q.v[1].z=b.z;
-		q.v[2].x=b.x;q.v[2].y=b.y;q.v[2].z=b.z;
-		q.v[3].x=a.x;q.v[3].y=b.y;q.v[3].z=b.z;
-		pushSurface(q);
-	}
-	//left
-	if(mask&4)
-	{
-		q.v[0].x=a.x;q.v[0].y=b.y;q.v[0].z=a.z;
-		q.v[1].x=a.x;q.v[1].y=b.y;q.v[1].z=b.z;
-		q.v[2].x=a.x;q.v[2].y=a.y;q.v[2].z=b.z;
-		q.v[3].x=a.x;q.v[3].y=a.y;q.v[3].z=a.z;
-		pushSurface(q);
-	}
-	//right
-	if(mask&8)
-	{
-		q.v[0].x=b.x;q.v[0].y=b.y;q.v[0].z=a.z;
-		q.v[1].x=b.x;q.v[1].y=b.y;q.v[1].z=b.z;
-		q.v[2].x=b.x;q.v[2].y=a.y;q.v[2].z=b.z;
-		q.v[3].x=b.x;q.v[3].y=a.y;q.v[3].z=a.z;
-		pushSurface(q);
-	}
-	//front
-	if(mask&16)
-	{
-		q.v[0].x=a.x;q.v[0].y=b.y;q.v[0].z=a.z;
-		q.v[1].x=b.x;q.v[1].y=b.y;q.v[1].z=a.z;
-		q.v[2].x=b.x;q.v[2].y=b.y;q.v[2].z=b.z;
-		q.v[3].x=a.x;q.v[3].y=b.y;q.v[3].z=b.z;
-		pushSurface(q);
-	}
-	//back
-	if(mask&32)
-	{
-		q.v[0].x=a.x;q.v[0].y=a.y;q.v[0].z=a.z;
-		q.v[1].x=b.x;q.v[1].y=a.y;q.v[1].z=a.z;
-		q.v[2].x=b.x;q.v[2].y=a.y;q.v[2].z=b.z;
-		q.v[3].x=a.x;q.v[3].y=a.y;q.v[3].z=b.z;
-		pushSurface(q);
+		smvec3d tp=smvec3d(entity->vertices[i].x,entity->vertices[i].y,entity->vertices[i].z);
+		tp=t*tp;tp=tp+p;vertices.push_back(makeVertex(tp.x,tp.y,tp.z,entity->vertices[i].col,entity->vertices[i].tx,entity->vertices[i].ty));
 	}
 }
-void smEntity3D::drawAt(smvec3d p)
+void smEntity3DBuffer::drawBatch()
 {
-	for(unsigned i=0;i<surfaces.size();++i)
-	{
-		smQuad tq=surfaces[i];
-		for(unsigned j=0;j<4;++j)tq.v[j].x+=p.x,tq.v[j].y+=p.y,tq.v[j].z+=p.z;
-		sm->smRenderQuad(&tq);
-	}
-}
-void smEntity3D::drawWithTransformation(smMatrix t,smvec3d p)
-{
-	for(unsigned i=0;i<surfaces.size();++i)
-	{
-		smQuad tq=surfaces[i];
-		for(unsigned j=0;j<4;++j)
-		{
-			smvec3d tp=t*smvec3d(tq.v[j].x,tq.v[j].y,tq.v[j].z);
-			tq.v[j].x=tp.x+p.x;tq.v[j].y=tp.y+p.y;tq.v[j].z=tp.z+p.z;
-		}
-		sm->smRenderQuad(&tq);
-	}
+	sm->smDrawCustomIndexedVertices(&vertices[0],&indices[0],vertices.size(),indices.size(),BLEND_ALPHABLEND,0);
+	vertices.clear();indices.clear();
 }
