@@ -8,9 +8,9 @@
 int viewdist=100;
 int notestretch=100;//length of quarter note
 int minnotelength=100;
-int noteappearance=1;
-int wwidth=800,wheight=600,wsupersample=1;
-int fov=60;
+int noteappearance=1,showpiano=1;
+int wwidth=800,wheight=600,wsupersample=1,wmultisample=1;
+int fov=60,vsync=1,tfps=60;
 DWORD iccolors[]={0XFFFF0000,0XFFFF8000,0XFFFFBF00,0XFFFFFF00,
 				  0XFFBFFF00,0XFF80FF00,0XFF00FF00,0XFF00FFBF,
 				  0XFF00FFFF,0XFF333333,0XFF00BFFF,0XFF007FFF,
@@ -49,8 +49,12 @@ void qmpVisualization::showThread()
 	wwidth=api->getOptionInt("Visualization/wwidth");
 	wheight=api->getOptionInt("Visualization/wheight");
 	wsupersample=api->getOptionInt("Visualization/supersampling");
+	wmultisample=api->getOptionInt("Visualization/multisampling");
 	fov=api->getOptionInt("Visualization/fov");
 	noteappearance=api->getOptionBool("Visualization/3dnotes");
+	showpiano=api->getOptionBool("Visualization/showpiano");
+	vsync=api->getOptionBool("Visualization/vsync");
+	tfps=api->getOptionInt("Visualization/tfps");
 	viewdist=api->getOptionInt("Visualization/viewdist");
 	notestretch=api->getOptionInt("Visualization/notestretch");
 	minnotelength=api->getOptionInt("Visualization/minnotelen");
@@ -58,16 +62,17 @@ void qmpVisualization::showThread()
 	sm->smVidMode(wwidth,wheight,true);
 	sm->smUpdateFunc(h);sm->smQuitFunc(closeh);
 	sm->smWinTitle("QMidiPlayer Visualization");
-	sm->smSetFPS(FPS_VSYNC);
+	sm->smSetFPS(vsync?FPS_VSYNC:tfps);
 	sm->smNoSuspend(true);
 	sm->smInit();shouldclose=false;
 	sm->smTextureOpt(TPOT_POT,TFLT_LINEAR);
-	chequer=sm->smTextureLoad("chequerboard.png");
-	for(int i=0;i<16;++i)p3d[i]=new qmpVirtualPiano3D();
-	memset(traveld,0,sizeof(traveld));
-	if(!chequer)
+	chequer=sm->smTextureLoad("chequerboard.png");if(!chequer)
 	chequer=sm->smTextureLoad("/usr/share/qmidiplayer/img/chequerboard.png");
-	tdscn=sm->smTargetCreate(wwidth*wsupersample,wheight*wsupersample);
+	bgtex=sm->smTextureLoad(api->getOptionString("Visualization/background").c_str());
+	if(showpiano)for(int i=0;i<16;++i)p3d[i]=new qmpVirtualPiano3D();
+	memset(traveld,0,sizeof(traveld));
+	if(noteappearance==1)nebuf=new smEntity3DBuffer();else nebuf=NULL;
+	tdscn=sm->smTargetCreate(wwidth*wsupersample,wheight*wsupersample,wmultisample);
 	if(!font.loadTTF("/usr/share/fonts/truetype/freefont/FreeMono.ttf",16))
 	printf("W: Font load failed.\n");
 	if(!font2.loadTTF("/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",16))
@@ -84,7 +89,9 @@ void qmpVisualization::close()
 {
 	shouldclose=true;
 	rendererTh->join();
-	for(int i=0;i<16;++i)delete p3d[i];
+
+	if(showpiano)for(int i=0;i<16;++i)delete p3d[i];
+	if(noteappearance==1)delete nebuf;
 	sm->smFinale();
 	font.releaseTTF();
 	font2.releaseTTF();
@@ -109,7 +116,7 @@ bool qmpVisualization::update()
 {
 	smQuad q;
 	for(int i=0;i<4;++i)
-	{q.v[i].col=0xFF999999;q.v[i].z=-5;}
+	{q.v[i].col=0xFF999999;q.v[i].z=showpiano?-5:0;}
 	q.tex=chequer;q.blend=BLEND_ALPHABLEND;
 	q.v[0].x=q.v[3].x=-120;q.v[1].x=q.v[2].x=120;
 	q.v[0].y=q.v[1].y=-120;q.v[2].y=q.v[3].y=120;
@@ -117,7 +124,7 @@ bool qmpVisualization::update()
 	q.v[0].ty=q.v[1].ty=0;q.v[2].ty=q.v[3].ty=30;
 	sm->smRenderBegin3D(fov,tdscn);
 	sm->sm3DCamera6f2v(pos,rot);
-	sm->smClrscr(0xFF666666);
+	sm->smClrscr(0,1,1);
 	sm->smRenderQuad(&q);
 	if(sm->smGetKeyState(SMK_D))pos[0]+=cos(smMath::deg2rad(rot[2]-90)),pos[1]+=sin(smMath::deg2rad(rot[2]-90));
 	if(sm->smGetKeyState(SMK_A))pos[0]-=cos(smMath::deg2rad(rot[2]-90)),pos[1]-=sin(smMath::deg2rad(rot[2]-90));
@@ -156,16 +163,18 @@ bool qmpVisualization::update()
 		if(fabs((double)pool[i]->tcs-ctk)*lpt<viewdist*2||fabs((double)pool[i]->tce-ctk)*lpt<viewdist*2)
 		{
 			if(api->getChannelMask(pool[i]->ch))continue;
-			smvec3d a(0.63*((double)pool[i]->key-64),64-pool[i]->ch*8.,((double)pool[i]->tce-ctk)*lpt);
-			smvec3d b(0.63*((double)pool[i]->key-64)+0.6,64-pool[i]->ch*8.+.4,((double)pool[i]->tcs-ctk)*lpt);
+			smvec3d a(0.63*((double)pool[i]->key-64)+.1,64-pool[i]->ch*8.,((double)pool[i]->tce-ctk)*lpt);
+			smvec3d b(0.63*((double)pool[i]->key-64)+.7,64-pool[i]->ch*8.+.4,((double)pool[i]->tcs-ctk)*lpt);
 			bool isnoteon=pool[i]->tcs<=ctk&&pool[i]->tce>=ctk;if(isnoteon)
-			a.x=0.63*((double)pool[i]->key-64+api->getPitchBend(pool[i]->ch)),
-			b.x=0.63*((double)pool[i]->key-64+api->getPitchBend(pool[i]->ch))+0.6;
+			a.x=0.63*((double)pool[i]->key-64+api->getPitchBend(pool[i]->ch))+.1,
+			b.x=0.63*((double)pool[i]->key-64+api->getPitchBend(pool[i]->ch))+.7;
 			notestatus[pool[i]->ch][pool[i]->key]|=isnoteon;a.x*=1.2;b.x*=1.2;
 			if(((double)pool[i]->tce-pool[i]->tcs)*lpt<minnotelength/100.)a.z=((double)pool[i]->tcs-ctk)*lpt-minnotelength/100.;
 			drawCube(a,b,SETA(isnoteon?accolors[pool[i]->ch]:iccolors[pool[i]->ch],int(pool[i]->vel*(isnoteon?2.0:1.6))),0);
 		}
 	}
+	if(noteappearance)nebuf->drawBatch();
+	if(showpiano)
 	for(int i=0;i<16;++i)
 	{
 		for(int j=0;j<128;++j)
@@ -176,15 +185,24 @@ bool qmpVisualization::update()
 			if(traveld[i][j]>0)traveld[i][j]-=2;else traveld[i][j]=0;
 			p3d[i]->setKeyTravelDist(j,traveld[i][j]/10.);
 		}
-		p3d[i]->render(smvec3d(api->getPitchBend(i),62-i*8,0));
+		p3d[i]->render(smvec3d(0.63*api->getPitchBend(i),62-i*8,0));
 	}
 	if(playing)ctk+=(int)(1e6/(api->getRawTempo()/api->getDivision())*sm->smGetDelta());
 	while(pool.size()&&((double)ctk-pool[elb]->tce)*lpt>viewdist*2)++elb;
 	sm->smRenderEnd();
-	for(int i=0;i<4;++i){q.v[i].col=0xFFFFFFFF;q.v[i].z=0;}
-	q.tex=sm->smTargetTexture(tdscn);
 	sm->smRenderBegin2D();
-	sm->smClrscr(0xFF000000);
+	sm->smClrscr(0xFF666666);q.blend=BLEND_ALPHABLEND;
+	for(int i=0;i<4;++i){q.v[i].col=0xFFFFFFFF;q.v[i].z=0;}
+	if(bgtex)
+	{
+		q.tex=bgtex;
+		q.v[0].x=q.v[3].x=0;q.v[1].x=q.v[2].x=wwidth;
+		q.v[0].y=q.v[1].y=0;q.v[2].y=q.v[3].y=wheight;
+		q.v[0].tx=q.v[3].tx=0;q.v[1].tx=q.v[2].tx=1;
+		q.v[0].ty=q.v[1].ty=0;q.v[2].ty=q.v[3].ty=1;
+		sm->smRenderQuad(&q);
+	}
+	q.tex=sm->smTargetTexture(tdscn);
 	q.v[0].tx=q.v[3].tx=0;q.v[1].tx=q.v[2].tx=1;
 	q.v[0].ty=q.v[1].ty=0;q.v[2].ty=q.v[3].ty=1;
 	q.v[0].x=q.v[1].x=0;q.v[2].x=q.v[3].x=wwidth;
@@ -214,42 +232,8 @@ void qmpVisualization::drawCube(smvec3d a,smvec3d b,DWORD col,SMTEX tex)
 	q.tex=tex;for(int i=0;i<4;++i)q.v[i].col=col;
 	if(noteappearance==1)
 	{
-		//top
-		q.v[0].x=a.x;q.v[0].y=a.y;q.v[0].z=a.z;
-		q.v[1].x=b.x;q.v[1].y=a.y;q.v[1].z=a.z;
-		q.v[2].x=b.x;q.v[2].y=b.y;q.v[2].z=a.z;
-		q.v[3].x=a.x;q.v[3].y=b.y;q.v[3].z=a.z;
-		sm->smRenderQuad(&q);
-		//bottom
-		q.v[0].x=a.x;q.v[0].y=a.y;q.v[0].z=b.z;
-		q.v[1].x=b.x;q.v[1].y=a.y;q.v[1].z=b.z;
-		q.v[2].x=b.x;q.v[2].y=b.y;q.v[2].z=b.z;
-		q.v[3].x=a.x;q.v[3].y=b.y;q.v[3].z=b.z;
-		sm->smRenderQuad(&q);
-		//left
-		q.v[0].x=a.x;q.v[0].y=b.y;q.v[0].z=a.z;
-		q.v[1].x=a.x;q.v[1].y=b.y;q.v[1].z=b.z;
-		q.v[2].x=a.x;q.v[2].y=a.y;q.v[2].z=b.z;
-		q.v[3].x=a.x;q.v[3].y=a.y;q.v[3].z=a.z;
-		sm->smRenderQuad(&q);
-		//right
-		q.v[0].x=b.x;q.v[0].y=b.y;q.v[0].z=a.z;
-		q.v[1].x=b.x;q.v[1].y=b.y;q.v[1].z=b.z;
-		q.v[2].x=b.x;q.v[2].y=a.y;q.v[2].z=b.z;
-		q.v[3].x=b.x;q.v[3].y=a.y;q.v[3].z=a.z;
-		sm->smRenderQuad(&q);
-		//front
-		q.v[0].x=a.x;q.v[0].y=b.y;q.v[0].z=a.z;
-		q.v[1].x=b.x;q.v[1].y=b.y;q.v[1].z=a.z;
-		q.v[2].x=b.x;q.v[2].y=b.y;q.v[2].z=b.z;
-		q.v[3].x=a.x;q.v[3].y=b.y;q.v[3].z=b.z;
-		sm->smRenderQuad(&q);
-		//back
-		q.v[0].x=a.x;q.v[0].y=a.y;q.v[0].z=a.z;
-		q.v[1].x=b.x;q.v[1].y=a.y;q.v[1].z=a.z;
-		q.v[2].x=b.x;q.v[2].y=a.y;q.v[2].z=b.z;
-		q.v[3].x=a.x;q.v[3].y=a.y;q.v[3].z=b.z;
-		sm->smRenderQuad(&q);
+		smMatrix I;I.loadIdentity();smEntity3D c=smEntity3D::cube(a,b,col);
+		nebuf->addTransformedEntity(&c,I,smvec3d(0,0,0));
 	}
 	else
 	{
@@ -273,19 +257,28 @@ void qmpVisualization::init()
 	hvif=api->registerVisualizationIntf(vi);
 	herif=api->registerEventReaderIntf(cb,NULL);
 	hehif=api->registerEventHandlerIntf(hcb,NULL);
-	api->registerOptionBool("Visualization","3D Notes","Visualization/3dnotes",true);
-	api->registerOptionInt("Visualization","Window Width","Visualization/wwidth",320,3200,800);
-	api->registerOptionInt("Visualization","Window Height","Visualization/wheight",320,3200,600);
-	api->registerOptionInt("Visualization","Supersampling","Visualization/supersampling",1,4,1);
-	api->registerOptionInt("Visualization","FOV","Visualization/fov",30,180,60);
-	api->registerOptionInt("Visualization","View distance","Visualization/viewdist",20,1000,100);
-	api->registerOptionInt("Visualization","Note stretch","Visualization/notestretch",20,500,100);
-	api->registerOptionInt("Visualization","Minimum note length","Visualization/minnotelen",20,500,100);
+	api->registerOptionBool("Visualization-Appearance","Show Piano","Visualization/showpiano",true);
+	api->registerOptionBool("Visualization-Appearance","3D Notes","Visualization/3dnotes",true);
+	api->registerOptionBool("Visualization-Video","Enable VSync","Visualization/vsync",true);
+	api->registerOptionInt("Visualization-Video","Window Width","Visualization/wwidth",320,3200,800);
+	api->registerOptionInt("Visualization-Video","Window Height","Visualization/wheight",320,3200,600);
+	api->registerOptionInt("Visualization-Video","FPS","Visualization/tfps",5,1000,60);
+	api->registerOptionInt("Visualization-Video","Supersampling","Visualization/supersampling",1,16,0);
+	api->registerOptionInt("Visualization-Video","Multisampling","Visualization/multisampling",0,16,0);
+	api->registerOptionInt("Visualization-Video","FOV","Visualization/fov",30,180,60);
+	api->registerOptionInt("Visualization-Appearance","View distance","Visualization/viewdist",20,1000,100);
+	api->registerOptionInt("Visualization-Appearance","Note stretch","Visualization/notestretch",20,500,100);
+	api->registerOptionInt("Visualization-Appearance","Minimum note length","Visualization/minnotelen",20,500,100);
+	api->registerOptionString("Visualization-Appearance","Background Image","Visualization/background","");
 	wwidth=api->getOptionInt("Visualization/wwidth");
 	wheight=api->getOptionInt("Visualization/wheight");
 	wsupersample=api->getOptionInt("Visualization/supersampling");
+	wmultisample=api->getOptionInt("Visualization/multisampling");
 	fov=api->getOptionInt("Visualization/fov");
 	noteappearance=api->getOptionBool("Visualization/3dnotes");
+	showpiano=api->getOptionBool("Visualization/showpiano");
+	vsync=api->getOptionBool("Visualization/vsync");
+	tfps=api->getOptionInt("Visualization/tfps");
 	viewdist=api->getOptionInt("Visualization/viewdist");
 	notestretch=api->getOptionInt("Visualization/notestretch");
 	minnotelength=api->getOptionInt("Visualization/minnotelen");
@@ -302,7 +295,7 @@ void qmpVisualization::deinit()
 const char* qmpVisualization::pluginGetName()
 {return "QMidiPlayer Default Visualization Plugin";}
 const char* qmpVisualization::pluginGetVersion()
-{return "0.8.0";}
+{return "0.8.1";}
 
 void qmpVisualization::pushNoteOn(uint32_t tc,uint32_t ch,uint32_t key,uint32_t vel)
 {

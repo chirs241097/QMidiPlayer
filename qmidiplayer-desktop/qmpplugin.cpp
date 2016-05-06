@@ -9,7 +9,7 @@
 #include "qmpplugin.hpp"
 #include "qmpmainwindow.hpp"
 #include "qmpsettingswindow.hpp"
-qmpPluginAPI pluginAPI;
+qmpPluginAPI* pluginAPI;
 qmpMainWindow* qmw;
 qmpSettingsWindow* qsw;
 #ifdef _WIN32
@@ -48,7 +48,7 @@ void qmpPluginManager::scanPlugins()
 		void* hndi=dlsym(hso,"qmpPluginGetInterface");
 		if(!hndi)continue;
 		qmpPluginEntry e=(qmpPluginEntry)hndi;
-		qmpPluginIntf* intf=e(&pluginAPI);
+		qmpPluginIntf* intf=e(pluginAPI);
 		plugins.push_back(qmpPlugin(std::string(intf->pluginGetName()),std::string(intf->pluginGetVersion()),std::string(cpluginpaths[i]),intf));
 	}
 }
@@ -57,11 +57,16 @@ qmpPluginManager::qmpPluginManager()
 {
 	qmw=qmpMainWindow::getInstance();
 	qsw=qmw->getSettingsWindow();
+	pluginAPI=new qmpPluginAPI();
 }
 qmpPluginManager::~qmpPluginManager()
 {
-	for(unsigned i=0;i<plugins.size();++i)delete plugins[i].interface;
-	qmw=NULL;qsw=NULL;
+	for(unsigned i=0;i<plugins.size();++i)
+	{
+		if(plugins[i].enabled)plugins[i].interface->deinit();
+		delete plugins[i].interface;
+	}
+	qmw=NULL;qsw=NULL;delete pluginAPI;
 }
 std::vector<qmpPlugin> *qmpPluginManager::getPlugins()
 {
@@ -81,6 +86,8 @@ void qmpPluginManager::deinitPlugins()
 	for(unsigned i=0;i<plugins.size();++i)
 		plugins[i].interface->deinit();
 }
+
+qmpPluginAPI::~qmpPluginAPI(){}
 
 uint32_t qmpPluginAPI::getDivision()
 {return qmw&&qmw->getPlayer()?qmw->getPlayer()->getDivision():0;}

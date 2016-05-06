@@ -48,9 +48,10 @@ class qmpVisualization:public qmpPluginIntf
 		std::stack<uint32_t> pendingt[16][128],pendingv[16][128];
 		SMELT *sm;
 		SMTRG tdscn;
-		SMTEX chequer;
+		SMTEX chequer,bgtex;
 		smTTFont font,font2;
 		qmpVirtualPiano3D* p3d[16];
+		smEntity3DBuffer* nebuf;
 		float pos[3],rot[3],lastx,lasty;
 		uint32_t ctc,ctk,fintk,elb;
 		double etps;

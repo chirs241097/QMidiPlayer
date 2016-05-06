@@ -68,6 +68,10 @@ unix{
 		message(Building in packaging mode...)
 		DEFINES += QMP_BUILD_UNIX_PACKAGE
 	}
+	QMAKE_CXXFLAGS_RELEASE -= -O2
+	QMAKE_CXXFLAGS_RELEASE += -O3
+	QMAKE_LFLAGS_RELEASE -= -O1
+	QMAKE_LFLAGS_RELEASE += -O3
 	BINDIR = $$PREFIX/bin
 	target.path = $$BINDIR
 	DATADIR = $$PREFIX/share

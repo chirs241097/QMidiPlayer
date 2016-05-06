@@ -1,4 +1,4 @@
-#include <QPlainTextEdit>
+#include <QLineEdit>
 #include <QFileDialog>
 #include <QDir>
 #include "qmpsettingswindow.hpp"
@@ -347,8 +347,8 @@ void qmpSettingsWindow::updateCustomOptions()
 		}
 		case 4:
 		{
-			QPlainTextEdit* te=(QPlainTextEdit*)i->second.widget;
-			settings->setValue(QString(i->first.c_str()),te->toPlainText());
+			QLineEdit* te=(QLineEdit*)i->second.widget;
+			settings->setValue(QString(i->first.c_str()),te->text());
 		}
 	}
 }
@@ -536,7 +536,7 @@ void qmpSettingsWindow::registerOptionString(std::string tab,std::string desc,st
 			ui->tabWidget->addTab(w,QString(tab.c_str()));
 			customOptPages[tab]=page;
 		}
-		QPlainTextEdit* te=new QPlainTextEdit(page->parentWidget());
+		QLineEdit* te=new QLineEdit(page->parentWidget());
 		QLabel* lb=new QLabel(desc.c_str(),page->parentWidget());
 		customOptions[key].widget=te;
 		te->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed);
@@ -544,7 +544,7 @@ void qmpSettingsWindow::registerOptionString(std::string tab,std::string desc,st
 		int row=page->rowCount();
 		page->addWidget(lb,row,0);
 		page->addWidget(te,row,1);
-		te->setPlainText(defaultval.c_str());
+		te->setText(settings->value(QString(key.c_str()),defaultval.c_str()).toString());
 	}
 }
 std::string qmpSettingsWindow::getOptionString(std::string key)
@@ -554,5 +554,5 @@ std::string qmpSettingsWindow::getOptionString(std::string key)
 void qmpSettingsWindow::setOptionString(std::string key,std::string val)
 {
 	settings->setValue(QString(key.c_str()),QString(val.c_str()));
-	((QPlainTextEdit*)customOptions[key].widget)->setPlainText(val.c_str());
+	((QLineEdit*)customOptions[key].widget)->setText(val.c_str());
 }

@@ -61,9 +61,8 @@ qmpMainWindow::qmpMainWindow(QWidget *parent) :
 
 qmpMainWindow::~qmpMainWindow()
 {
-	if(player)delete player;
-	if(timer)delete timer;
-	delete pmgr;delete ui;
+	delete pmgr;if(player)delete player;
+	if(timer)delete timer;delete ui;
 }
 
 void qmpMainWindow::init()

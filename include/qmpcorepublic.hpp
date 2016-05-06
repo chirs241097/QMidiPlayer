@@ -51,6 +51,7 @@ extern "C"{
 class qmpPluginAPI
 {
 	public:
+		virtual ~qmpPluginAPI();
 		virtual uint32_t getDivision();
 		virtual uint32_t getRawTempo();
 		virtual double getRealTempo();
