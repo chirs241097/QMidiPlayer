@@ -330,24 +330,25 @@ void qmpSettingsWindow::updateCustomOptions()
 	{
 		case 0:case 1:
 		{
-			QSpinBox* sb=(QSpinBox*)i->second.widget;
+			QSpinBox* sb=(QSpinBox*)i->second.widget;if(!i->second.widget)break;
 			settings->setValue(QString(i->first.c_str()),sb->value());
 			break;
 		}
 		case 2:
 		{
+			if(!i->second.widget)break;
 			settings->setValue(QString(i->first.c_str()),((QCheckBox*)i->second.widget)->isChecked()?1:0);
 			break;
 		}
 		case 3:
 		{
-			QDoubleSpinBox* sb=(QDoubleSpinBox*)i->second.widget;
+			QDoubleSpinBox* sb=(QDoubleSpinBox*)i->second.widget;if(!i->second.widget)break;
 			settings->setValue(QString(i->first.c_str()),sb->value());
 			break;
 		}
 		case 4:
 		{
-			QLineEdit* te=(QLineEdit*)i->second.widget;
+			QLineEdit* te=(QLineEdit*)i->second.widget;if(!i->second.widget)break;
 			settings->setValue(QString(i->first.c_str()),te->text());
 		}
 	}
@@ -393,6 +394,7 @@ int qmpSettingsWindow::getOptionInt(std::string key)
 void qmpSettingsWindow::setOptionInt(std::string key,int val)
 {
 	settings->setValue(QString(key.c_str()),val);
+	if(customOptions[key].widget)
 	((QSpinBox*)customOptions[key].widget)->setValue(val);
 }
 
@@ -436,6 +438,7 @@ unsigned qmpSettingsWindow::getOptionUint(std::string key)
 void qmpSettingsWindow::setOptionUint(std::string key,unsigned val)
 {
 	settings->setValue(QString(key.c_str()),val);
+	if(customOptions[key].widget)
 	((QSpinBox*)customOptions[key].widget)->setValue(val);
 }
 
@@ -472,6 +475,7 @@ bool qmpSettingsWindow::getOptionBool(std::string key)
 void qmpSettingsWindow::setOptionBool(std::string key,bool val)
 {
 	settings->setValue(QString(key.c_str()),val?1:0);
+	if(customOptions[key].widget)
 	((QCheckBox*)customOptions[key].widget)->setChecked(val);
 }
 
@@ -515,6 +519,7 @@ double qmpSettingsWindow::getOptionDouble(std::string key)
 void qmpSettingsWindow::setOptionDouble(std::string key,double val)
 {
 	settings->setValue(QString(key.c_str()),val);
+	if(customOptions[key].widget)
 	((QDoubleSpinBox*)customOptions[key].widget)->setValue(val);
 }
 
@@ -554,5 +559,6 @@ std::string qmpSettingsWindow::getOptionString(std::string key)
 void qmpSettingsWindow::setOptionString(std::string key,std::string val)
 {
 	settings->setValue(QString(key.c_str()),QString(val.c_str()));
+	if(customOptions[key].widget)
 	((QLineEdit*)customOptions[key].widget)->setText(val.c_str());
 }

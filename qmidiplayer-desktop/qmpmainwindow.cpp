@@ -62,7 +62,14 @@ qmpMainWindow::qmpMainWindow(QWidget *parent) :
 qmpMainWindow::~qmpMainWindow()
 {
 	delete pmgr;if(player)delete player;
-	if(timer)delete timer;delete ui;
+	if(timer)delete timer;
+	delete helpw;helpw=NULL;
+	delete efxw;efxw=NULL;
+	delete chnlw;chnlw=NULL;
+	delete plistw;plistw=NULL;
+	delete infow;infow=NULL;
+	delete settingsw;settingsw=NULL;
+	delete ui;
 }
 
 void qmpMainWindow::init()
@@ -183,12 +190,6 @@ void qmpMainWindow::closeEvent(QCloseEvent *event)
 	efxw->close();chnlw->close();
 	plistw->close();infow->close();
 	settingsw->close();
-	delete helpw;helpw=NULL;
-	delete efxw;efxw=NULL;
-	delete chnlw;chnlw=NULL;
-	delete plistw;plistw=NULL;
-	delete infow;infow=NULL;
-	delete settingsw;settingsw=NULL;
 	event->accept();
 }
 

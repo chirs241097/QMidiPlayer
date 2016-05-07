@@ -8,7 +8,7 @@
 int viewdist=100;
 int notestretch=100;//length of quarter note
 int minnotelength=100;
-int noteappearance=1,showpiano=1;
+int noteappearance=1,showpiano=1,stairpiano=1,savevp=1;
 int wwidth=800,wheight=600,wsupersample=1,wmultisample=1;
 int fov=60,vsync=1,tfps=60;
 DWORD iccolors[]={0XFFFF0000,0XFFFF8000,0XFFFFBF00,0XFFFFFF00,
@@ -53,6 +53,8 @@ void qmpVisualization::showThread()
 	fov=api->getOptionInt("Visualization/fov");
 	noteappearance=api->getOptionBool("Visualization/3dnotes");
 	showpiano=api->getOptionBool("Visualization/showpiano");
+	stairpiano=api->getOptionBool("Visualization/stairpiano");
+	savevp=api->getOptionBool("Visualization/savevp");
 	vsync=api->getOptionBool("Visualization/vsync");
 	tfps=api->getOptionInt("Visualization/tfps");
 	viewdist=api->getOptionInt("Visualization/viewdist");
@@ -77,8 +79,17 @@ void qmpVisualization::showThread()
 	printf("W: Font load failed.\n");
 	if(!font2.loadTTF("/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",16))
 	printf("W: Font load failed.\n");
-	pos[0]=0;pos[1]=100;pos[2]=20;
-	rot[0]=0;rot[1]=90;rot[2]=90;ctk=0;
+	pos[0]=0;pos[1]=120;pos[2]=70;
+	rot[0]=0;rot[1]=75;rot[2]=90;ctk=0;
+	if(savevp)
+	{
+		pos[0]=api->getOptionDouble("Visualization/px");
+		pos[1]=api->getOptionDouble("Visualization/py");
+		pos[2]=api->getOptionDouble("Visualization/pz");
+		rot[0]=api->getOptionDouble("Visualization/rx");
+		rot[1]=api->getOptionDouble("Visualization/ry");
+		rot[2]=api->getOptionDouble("Visualization/rz");
+	}
 	sm->smMainLoop();
 }
 void qmpVisualization::show()
@@ -88,14 +99,24 @@ void qmpVisualization::show()
 void qmpVisualization::close()
 {
 	shouldclose=true;
-	rendererTh->join();
+	rendererTh->join();delete rendererTh;
 
 	if(showpiano)for(int i=0;i<16;++i)delete p3d[i];
 	if(noteappearance==1)delete nebuf;
 	sm->smFinale();
+	if(savevp)
+	{
+		api->setOptionDouble("Visualization/px",pos[0]);
+		api->setOptionDouble("Visualization/py",pos[1]);
+		api->setOptionDouble("Visualization/pz",pos[2]);
+		api->setOptionDouble("Visualization/rx",rot[0]);
+		api->setOptionDouble("Visualization/ry",rot[1]);
+		api->setOptionDouble("Visualization/rz",rot[2]);
+	}
 	font.releaseTTF();
 	font2.releaseTTF();
 	sm->smTextureFree(chequer);
+	if(bgtex)sm->smTextureFree(bgtex);
 	sm->smTargetFree(tdscn);
 	sm->smRelease();
 }
@@ -163,13 +184,13 @@ bool qmpVisualization::update()
 		if(fabs((double)pool[i]->tcs-ctk)*lpt<viewdist*2||fabs((double)pool[i]->tce-ctk)*lpt<viewdist*2)
 		{
 			if(api->getChannelMask(pool[i]->ch))continue;
-			smvec3d a(0.63*((double)pool[i]->key-64)+.1,64-pool[i]->ch*8.,((double)pool[i]->tce-ctk)*lpt);
-			smvec3d b(0.63*((double)pool[i]->key-64)+.7,64-pool[i]->ch*8.+.4,((double)pool[i]->tcs-ctk)*lpt);
+			smvec3d a(0.63*((double)pool[i]->key-64)+.1,(stairpiano?(56-pool[i]->ch*7.):(64-pool[i]->ch*8.)),((double)pool[i]->tce-ctk)*lpt+stairpiano*pool[i]->ch*2.);
+			smvec3d b(0.63*((double)pool[i]->key-64)+.7,(stairpiano?(56-pool[i]->ch*7.):(64-pool[i]->ch*8.))+.4,((double)pool[i]->tcs-ctk)*lpt+stairpiano*pool[i]->ch*2.);
 			bool isnoteon=pool[i]->tcs<=ctk&&pool[i]->tce>=ctk;if(isnoteon)
 			a.x=0.63*((double)pool[i]->key-64+api->getPitchBend(pool[i]->ch))+.1,
 			b.x=0.63*((double)pool[i]->key-64+api->getPitchBend(pool[i]->ch))+.7;
 			notestatus[pool[i]->ch][pool[i]->key]|=isnoteon;a.x*=1.2;b.x*=1.2;
-			if(((double)pool[i]->tce-pool[i]->tcs)*lpt<minnotelength/100.)a.z=((double)pool[i]->tcs-ctk)*lpt-minnotelength/100.;
+			if(((double)pool[i]->tce-pool[i]->tcs)*lpt<minnotelength/100.)a.z=((double)pool[i]->tcs-ctk)*lpt-minnotelength/100.+stairpiano*pool[i]->ch*2;
 			drawCube(a,b,SETA(isnoteon?accolors[pool[i]->ch]:iccolors[pool[i]->ch],int(pool[i]->vel*(isnoteon?2.0:1.6))),0);
 		}
 	}
@@ -185,10 +206,10 @@ bool qmpVisualization::update()
 			if(traveld[i][j]>0)traveld[i][j]-=2;else traveld[i][j]=0;
 			p3d[i]->setKeyTravelDist(j,traveld[i][j]/10.);
 		}
-		p3d[i]->render(smvec3d(0.63*api->getPitchBend(i),62-i*8,0));
+		p3d[i]->render(smvec3d(0.756*api->getPitchBend(i),stairpiano?55-i*7:62-i*8,stairpiano*i*2));
 	}
 	if(playing)ctk+=(int)(1e6/(api->getRawTempo()/api->getDivision())*sm->smGetDelta());
-	while(pool.size()&&((double)ctk-pool[elb]->tce)*lpt>viewdist*2)++elb;
+	while(pool.size()&&elb<pool.size()&&((double)ctk-pool[elb]->tce)*lpt>viewdist*2)++elb;
 	sm->smRenderEnd();
 	sm->smRenderBegin2D();
 	sm->smClrscr(0xFF666666);q.blend=BLEND_ALPHABLEND;
@@ -259,7 +280,9 @@ void qmpVisualization::init()
 	hehif=api->registerEventHandlerIntf(hcb,NULL);
 	api->registerOptionBool("Visualization-Appearance","Show Piano","Visualization/showpiano",true);
 	api->registerOptionBool("Visualization-Appearance","3D Notes","Visualization/3dnotes",true);
+	api->registerOptionBool("Visualization-Appearance","Arrange channels on a stair","Visualization/stairpiano",true);
 	api->registerOptionBool("Visualization-Video","Enable VSync","Visualization/vsync",true);
+	api->registerOptionBool("Visualization-Video","Save Viewport","Visualization/savevp",true);
 	api->registerOptionInt("Visualization-Video","Window Width","Visualization/wwidth",320,3200,800);
 	api->registerOptionInt("Visualization-Video","Window Height","Visualization/wheight",320,3200,600);
 	api->registerOptionInt("Visualization-Video","FPS","Visualization/tfps",5,1000,60);
@@ -270,6 +293,12 @@ void qmpVisualization::init()
 	api->registerOptionInt("Visualization-Appearance","Note stretch","Visualization/notestretch",20,500,100);
 	api->registerOptionInt("Visualization-Appearance","Minimum note length","Visualization/minnotelen",20,500,100);
 	api->registerOptionString("Visualization-Appearance","Background Image","Visualization/background","");
+	api->registerOptionDouble("","","Visualization/px",-999999999,999999999,0);
+	api->registerOptionDouble("","","Visualization/py",-999999999,999999999,120);
+	api->registerOptionDouble("","","Visualization/pz",-999999999,999999999,70);
+	api->registerOptionDouble("","","Visualization/rx",-999999999,999999999,0);
+	api->registerOptionDouble("","","Visualization/ry",-999999999,999999999,75);
+	api->registerOptionDouble("","","Visualization/rz",-999999999,999999999,90);
 	wwidth=api->getOptionInt("Visualization/wwidth");
 	wheight=api->getOptionInt("Visualization/wheight");
 	wsupersample=api->getOptionInt("Visualization/supersampling");
@@ -277,6 +306,8 @@ void qmpVisualization::init()
 	fov=api->getOptionInt("Visualization/fov");
 	noteappearance=api->getOptionBool("Visualization/3dnotes");
 	showpiano=api->getOptionBool("Visualization/showpiano");
+	stairpiano=api->getOptionBool("Visualization/stairpiano");
+	savevp=api->getOptionBool("Visualization/savevp");
 	vsync=api->getOptionBool("Visualization/vsync");
 	tfps=api->getOptionInt("Visualization/tfps");
 	viewdist=api->getOptionInt("Visualization/viewdist");
@@ -285,7 +316,8 @@ void qmpVisualization::init()
 }
 void qmpVisualization::deinit()
 {
-	close();
+	if(!api)return;close();
+	for(unsigned i=0;i<pool.size();++i)delete pool[i];pool.clear();
 	api->unregisterVisualizationIntf(hvif);
 	api->unregisterEventReaderIntf(herif);
 	api->unregisterEventHandlerIntf(hehif);

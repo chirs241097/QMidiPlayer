@@ -1,3 +1,9 @@
 Use qmake or Qt Creator.
-Dependencies: libfluidsynth 1.1.4+, Qt5 (not sure whether 4 will work) and RtMidi.
+
+Dependencies:
+> libfluidsynth 1.1.4+, Qt5 (not sure whether 4 will work) and RtMidi.
+
 C++11 is required to build the project.
+
+To build the default visualization plugin, you need the latest SMELT,
+which can be found [here](https://github.com/BearKidsTeam/SMELT).
