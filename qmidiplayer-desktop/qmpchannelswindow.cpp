@@ -66,10 +66,10 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent) :
 		connect(ui->twChannels->cellWidget(i,5),SIGNAL(onClick(int)),this,SLOT(showChannelEditorWindow(int)));
 	}
 	ui->twChannels->setColumnWidth(0,24);
-	ui->twChannels->setColumnWidth(1,32);
-	ui->twChannels->setColumnWidth(2,32);
+	ui->twChannels->setColumnWidth(1,24);
+	ui->twChannels->setColumnWidth(2,24);
 	ui->twChannels->setColumnWidth(3,192);
-	ui->twChannels->setColumnWidth(4,192);
+	ui->twChannels->setColumnWidth(4,208);
 	ui->twChannels->setColumnWidth(5,32);
 }
 
@@ -136,10 +136,10 @@ void qmpChannelsWindow::channelWindowsUpdate()
 	}
 	for(int i=0;i<16;++i)
 	{
-		char data[128],nm[24];
+		char data[128],nm[25];
 		int b,p;
 		qmpMainWindow::getInstance()->getPlayer()->getChannelPreset(i,&b,&p,nm);
-		sprintf(data,"%d:%d %s",b,p,nm);
+		sprintf(data,"%03d:%03d %s",b,p,nm);
 		if(fused)
 		{
 			if(strcmp(((QLabel*)ui->twChannels->cellWidget(i,4))->

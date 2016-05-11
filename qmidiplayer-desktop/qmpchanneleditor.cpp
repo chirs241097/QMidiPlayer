@@ -28,8 +28,8 @@ void qmpChannelEditor::setupWindow(int chid)
 	int b,p;
 	player->getChannelPreset(ch,&b,&p,str);
 	ui->lbPresetName->setText(str);
-	sprintf(str,"BK: %d",b);ui->lbBank->setText(str);
-	sprintf(str,"PC: %d",p);ui->lbPreset->setText(str);
+	sprintf(str,"BK: %03d",b);ui->lbBank->setText(str);
+	sprintf(str,"PC: %03d",p);ui->lbPreset->setText(str);
 	ui->lbChannelNumber->setText(QString::number(ch+1));
 #define setupControl(ccid,lb,d,ccname)\
 	b=player->getCC(ch,ccid);\

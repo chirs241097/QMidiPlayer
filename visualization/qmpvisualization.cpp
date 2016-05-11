@@ -99,7 +99,12 @@ void qmpVisualization::show()
 void qmpVisualization::close()
 {
 	shouldclose=true;
-	rendererTh->join();delete rendererTh;
+	if(rendererTh)
+	{
+		rendererTh->join();
+		delete rendererTh;
+		rendererTh=NULL;
+	}else return;
 
 	if(showpiano)for(int i=0;i<16;++i)delete p3d[i];
 	if(noteappearance==1)delete nebuf;
@@ -184,8 +189,8 @@ bool qmpVisualization::update()
 		if(fabs((double)pool[i]->tcs-ctk)*lpt<viewdist*2||fabs((double)pool[i]->tce-ctk)*lpt<viewdist*2)
 		{
 			if(api->getChannelMask(pool[i]->ch))continue;
-			smvec3d a(0.63*((double)pool[i]->key-64)+.1,(stairpiano?(56-pool[i]->ch*7.):(64-pool[i]->ch*8.)),((double)pool[i]->tce-ctk)*lpt+stairpiano*pool[i]->ch*2.);
-			smvec3d b(0.63*((double)pool[i]->key-64)+.7,(stairpiano?(56-pool[i]->ch*7.):(64-pool[i]->ch*8.))+.4,((double)pool[i]->tcs-ctk)*lpt+stairpiano*pool[i]->ch*2.);
+			smvec3d a(0.63*((double)pool[i]->key-64)+.1,(stairpiano?(56-pool[i]->ch*7.):(64-pool[i]->ch*8.)),((double)pool[i]->tce-ctk)*lpt+(stairpiano&&showpiano)*pool[i]->ch*2.);
+			smvec3d b(0.63*((double)pool[i]->key-64)+.7,(stairpiano?(56-pool[i]->ch*7.):(64-pool[i]->ch*8.))+.4,((double)pool[i]->tcs-ctk)*lpt+(stairpiano&&showpiano)*pool[i]->ch*2.);
 			bool isnoteon=pool[i]->tcs<=ctk&&pool[i]->tce>=ctk;if(isnoteon)
 			a.x=0.63*((double)pool[i]->key-64+api->getPitchBend(pool[i]->ch))+.1,
 			b.x=0.63*((double)pool[i]->key-64+api->getPitchBend(pool[i]->ch))+.7;
@@ -207,6 +212,10 @@ bool qmpVisualization::update()
 			p3d[i]->setKeyTravelDist(j,traveld[i][j]/10.);
 		}
 		p3d[i]->render(smvec3d(0.756*api->getPitchBend(i),stairpiano?55-i*7:62-i*8,stairpiano*i*2));
+		std::string s=api->getChannelPresetString(i);
+		wchar_t ws[1024];mbstowcs(ws,s.c_str(),1024);
+		font.updateString(ws);
+		//font.render(-42,stairpiano?55-i*7:62-i*8,stairpiano*i*2,0xFFFFFFFF,ALIGN_RIGHT);
 	}
 	if(playing)ctk+=(int)(1e6/(api->getRawTempo()/api->getDivision())*sm->smGetDelta());
 	while(pool.size()&&elb<pool.size()&&((double)ctk-pool[elb]->tce)*lpt>viewdist*2)++elb;
@@ -232,17 +241,17 @@ bool qmpVisualization::update()
 	wchar_t ws[1024];memset(ws,0,sizeof(ws));
 	mbstowcs(ws,api->getTitle().c_str(),1024);
 	font2.updateString(L"Title: %ls",ws);
-	font2.render(1,wheight-64,0xFFFFFFFF,ALIGN_LEFT);
-	font2.render(0,wheight-65,0xFF000000,ALIGN_LEFT);
+	font2.render(1,wheight-64,0.5,0xFFFFFFFF,ALIGN_LEFT);
+	font2.render(0,wheight-65,0.5,0xFF000000,ALIGN_LEFT);
 	font.updateString(L"Tempo: %.2f",api->getRealTempo());
-	font.render(1,wheight-44,0xFFFFFFFF,ALIGN_LEFT);
-	font.render(0,wheight-45,0xFF000000,ALIGN_LEFT);
+	font.render(1,wheight-44,0.5,0xFFFFFFFF,ALIGN_LEFT);
+	font.render(0,wheight-45,0.5,0xFF000000,ALIGN_LEFT);
 	font.updateString(L"Current tick: %d",ctk);
-	font.render(1,wheight-24,0xFFFFFFFF,ALIGN_LEFT);
-	font.render(0,wheight-25,0xFF000000,ALIGN_LEFT);
+	font.render(1,wheight-24,0.5,0xFFFFFFFF,ALIGN_LEFT);
+	font.render(0,wheight-25,0.5,0xFF000000,ALIGN_LEFT);
 	font.updateString(L"FPS: %.2f",sm->smGetFPS());
-	font.render(1,wheight-4,0xFFFFFFFF,ALIGN_LEFT);
-	font.render(0,wheight-5,0xFF000000,ALIGN_LEFT);
+	font.render(1,wheight-4,0.5,0xFFFFFFFF,ALIGN_LEFT);
+	font.render(0,wheight-5,0.5,0xFF000000,ALIGN_LEFT);
 	sm->smRenderEnd();
 	return shouldclose;
 }
@@ -275,6 +284,7 @@ void qmpVisualization::init()
 	vi=new CDemoVisualization(this);
 	h=new CMidiVisualHandler(this);
 	closeh=new CloseHandler(this);
+	rendererTh=NULL;
 	hvif=api->registerVisualizationIntf(vi);
 	herif=api->registerEventReaderIntf(cb,NULL);
 	hehif=api->registerEventHandlerIntf(hcb,NULL);

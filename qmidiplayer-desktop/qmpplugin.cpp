@@ -113,6 +113,16 @@ bool qmpPluginAPI::getChannelMask(int ch)
 {return qmw&&qmw->getPlayer()?qmw->getPlayer()->getChannelMask(ch):false;}
 std::string qmpPluginAPI::getTitle()
 {return qmw?qmw->getTitle():"";}
+std::string qmpPluginAPI::getChannelPresetString(int ch)
+{
+	int b,p;char nm[25],ret[33];ret[0]=0;
+	if(qmw&&qmw->getPlayer())
+	{
+		qmw->getPlayer()->getChannelPreset(ch,&b,&p,nm);
+		sprintf(ret,"%03d:%03d %s",b,p,nm);
+	}
+	return std::string(ret);
+}
 
 int qmpPluginAPI::registerEventHandlerIntf(IMidiCallBack *cb,void *userdata)
 {return qmw->getPlayer()->setEventHandlerCB(cb,userdata);}

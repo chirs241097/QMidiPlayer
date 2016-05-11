@@ -1,3 +1,10 @@
+2016-05-11 0.8.1 alpha
+Fixed a bug when piano is hidden but the option "arrange
+channels on a stair" is enabled.
+Fixed a crash caused by the visualization plugin.
+Add channel label display. However it's still buggy so it's
+currently disabled.
+
 2016-05-07 0.8.1 alpha
 Added two new options.
 Fixed several crashes related to options without a description.

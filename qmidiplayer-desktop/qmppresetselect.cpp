@@ -49,7 +49,7 @@ void qmpPresetSelector::setupWindow(int chid)
 	plyr->getChannelPreset(chid,&b,&p,name);
 	for(int i=0;i<ui->lwBankSelect->count();++i)
 	{
-		sscanf(ui->lwBankSelect->item(i)->text().toStdString().c_str(),"%d",&r);
+		sscanf(ui->lwBankSelect->item(i)->text().toStdString().c_str(),"%3d",&r);
 		if(r==b){ui->lwBankSelect->setCurrentRow(i);break;}
 	}
 	r=0;
@@ -57,7 +57,7 @@ void qmpPresetSelector::setupWindow(int chid)
 	for(int i=0,cr=0;i<128;++i)
 	if(strlen(presets[b][i]))
 	{
-		sprintf(name,"%d %s",i,presets[b][i]);
+		sprintf(name,"%03d %s",i,presets[b][i]);
 		if(i==p)r=cr;
 		ui->lwPresetSelect->addItem(name);
 		cr++;
@@ -94,7 +94,7 @@ void qmpPresetSelector::on_lwBankSelect_currentRowChanged()
 	for(int i=0;i<128;++i)
 	if(strlen(presets[b][i]))
 	{
-		sprintf(name,"%d %s",i,presets[b][i]);
+		sprintf(name,"%03d %s",i,presets[b][i]);
 		ui->lwPresetSelect->addItem(name);
 	}
 }
