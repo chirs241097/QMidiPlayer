@@ -49,7 +49,7 @@ class qmpVisualization:public qmpPluginIntf
 		SMELT *sm;
 		SMTRG tdscn;
 		SMTEX chequer,bgtex;
-		smTTFont font,font2;
+		smTTFont font,font2,fonthdpi;
 		qmpVirtualPiano3D* p3d[16];
 		smEntity3DBuffer* nebuf;
 		float pos[3],rot[3],lastx,lasty;

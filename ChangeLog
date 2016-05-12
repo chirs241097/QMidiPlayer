@@ -1,9 +1,19 @@
+2016-05-12 0.8.1 alpha
+Now channel labels are displayed correctly.
+Add an option to change the tint of the chequer board.
+Show unsigned integer options in hexadecimal format.
+Fixed a crash caused by attemting seeking when no file is
+being played.
+
 2016-05-11 0.8.1 alpha
 Fixed a bug when piano is hidden but the option "arrange
 channels on a stair" is enabled.
 Fixed a crash caused by the visualization plugin.
 Add channel label display. However it's still buggy so it's
 currently disabled.
+
+2016-05-09 0.8.1 alpha
+Add visualization documentaion stub.
 
 2016-05-07 0.8.1 alpha
 Added two new options.

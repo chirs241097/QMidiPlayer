@@ -7,6 +7,7 @@
 #include <QSettings>
 #include <QListWidget>
 #include <QComboBox>
+#include <QSpinBox>
 #include <QFormLayout>
 #include "qmpplugin.hpp"
 
@@ -19,6 +20,41 @@ struct qmpCustomOption
 	QWidget* widget;
 	std::string desc;int type;
 	QVariant defaultval,minv,maxv;
+};
+
+class QHexSpinBox:public QSpinBox
+{
+	public:
+		QHexSpinBox(QWidget *parent=0):QSpinBox(parent)
+		{
+			setPrefix("0x");
+			setDisplayIntegerBase(16);
+			setRange(-0x80000000,0x7FFFFFFF);
+		}
+	protected:
+		QString textFromValue(int value)const
+		{
+			return QString::number(u(value),16).toUpper();
+		}
+		int valueFromText(const QString &text)const
+		{
+			return i(text.toUInt(0,16));
+		}
+		QValidator::State validate(QString &input,int &pos)const
+		{
+			QString t=input;
+			if(t.startsWith("0x"))t.remove(0,2);
+			pos-=t.size()-t.trimmed().size();t=t.trimmed();
+			if(t.isEmpty())return QValidator::Intermediate;
+			input=QString("0x")+t.toUpper();
+			bool okay;t.toUInt(&okay,16);
+			if(!okay)return QValidator::Invalid;
+			return QValidator::Acceptable;
+		}
+		inline unsigned int u(int i)const
+		{return *reinterpret_cast<unsigned int*>(&i);}
+		inline int i(unsigned int u)const
+		{return *reinterpret_cast<int*>(&u);}
 };
 
 class qmpSettingsWindow:public QDialog

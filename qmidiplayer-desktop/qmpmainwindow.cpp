@@ -409,6 +409,7 @@ void qmpMainWindow::on_hsTimer_sliderReleased()
 	}
 	else
 	{
+		if(stopped){ui->hsTimer->setValue(0);}return;
 		player->setTCeptr(player->getStamp(ui->hsTimer->value()),ui->hsTimer->value());
 		offset=ui->hsTimer->value()/100.*player->getFtime();
 		char ts[100];

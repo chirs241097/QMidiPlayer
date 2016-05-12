@@ -328,10 +328,17 @@ void qmpSettingsWindow::updateCustomOptions()
 	for(auto i=customOptions.begin();i!=customOptions.end();++i)
 	switch(i->second.type)
 	{
-		case 0:case 1:
+		case 0:
 		{
 			QSpinBox* sb=(QSpinBox*)i->second.widget;if(!i->second.widget)break;
 			settings->setValue(QString(i->first.c_str()),sb->value());
+			break;
+		}
+		case 1:
+		{
+			QHexSpinBox* sb=(QHexSpinBox*)i->second.widget;if(!i->second.widget)break;
+			int v=sb->value();
+			settings->setValue(QString(i->first.c_str()),*reinterpret_cast<unsigned int*>(&v));
 			break;
 		}
 		case 2:
@@ -418,7 +425,7 @@ void qmpSettingsWindow::registerOptionUint(std::string tab,std::string desc,std:
 			ui->tabWidget->addTab(w,QString(tab.c_str()));
 			customOptPages[tab]=page;
 		}
-		QSpinBox* sb=new QSpinBox(page->parentWidget());
+		QHexSpinBox* sb=new QHexSpinBox(page->parentWidget());
 		QLabel* lb=new QLabel(desc.c_str(),page->parentWidget());
 		customOptions[key].widget=sb;
 		sb->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed);
@@ -426,8 +433,7 @@ void qmpSettingsWindow::registerOptionUint(std::string tab,std::string desc,std:
 		int row=page->rowCount();
 		page->addWidget(lb,row,0);
 		page->addWidget(sb,row,1);
-		sb->setMaximum(max);
-		sb->setMinimum(min);
+		//sb->setMaximum(i(max));sb->setMinimum(i(min));
 		sb->setValue(settings->value(QString(key.c_str()),defaultval).toUInt());
 	}
 }
@@ -439,7 +445,7 @@ void qmpSettingsWindow::setOptionUint(std::string key,unsigned val)
 {
 	settings->setValue(QString(key.c_str()),val);
 	if(customOptions[key].widget)
-	((QSpinBox*)customOptions[key].widget)->setValue(val);
+	((QHexSpinBox*)customOptions[key].widget)->setValue(val);
 }
 
 void qmpSettingsWindow::registerOptionBool(std::string tab,std::string desc,std::string key,bool defaultval)
