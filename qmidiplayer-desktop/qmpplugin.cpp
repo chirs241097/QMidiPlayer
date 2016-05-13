@@ -157,3 +157,7 @@ void qmpPluginAPI::registerOptionString(std::string tab,std::string desc,std::st
 {qsw->registerOptionString(tab,desc,key,defaultval);}
 std::string qmpPluginAPI::getOptionString(std::string key){return qsw->getOptionString(key);}
 void qmpPluginAPI::setOptionString(std::string key,std::string val){return qsw->setOptionString(key,val);}
+void qmpPluginAPI::registerOptionEnumInt(std::string tab,std::string desc,std::string key,std::vector<std::string> options,int defaultval)
+{qsw->registerOptionEnumInt(tab,desc,key,options,defaultval);}
+int qmpPluginAPI::getOptionEnumInt(std::string key){return qsw->getOptionEnumInt(key);}
+void qmpPluginAPI::setOptionEnumInt(std::string key,int val){return qsw->setOptionEnumInt(key,val);}

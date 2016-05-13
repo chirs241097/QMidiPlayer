@@ -79,10 +79,13 @@ void qmpVisualization::showThread()
 	if(noteappearance==1)nebuf=new smEntity3DBuffer();else nebuf=NULL;
 	tdscn=sm->smTargetCreate(wwidth*wsupersample,wheight*wsupersample,wmultisample);
 	if(!font.loadTTF("/usr/share/fonts/truetype/freefont/FreeMono.ttf",16))
+	if(!font.loadTTF("/usr/share/fonts/gnu-free-fonts/FreeMono.otf",16))
 	printf("W: Font load failed.\n");
 	if(!fonthdpi.loadTTF("/usr/share/fonts/truetype/freefont/FreeMono.ttf",180))
+	if(!fonthdpi.loadTTF("/usr/share/fonts/gnu-free-fonts/FreeMono.otf",180))
 	printf("W: Font load failed.\n");
 	if(!font2.loadTTF("/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",16))
+	if(!font2.loadTTF("/usr/share/fonts/wenquanyi/wqy-microhei/wqy-microhei.ttc",16))
 	printf("W: Font load failed.\n");
 	pos[0]=0;pos[1]=120;pos[2]=70;
 	rot[0]=0;rot[1]=75;rot[2]=90;ctk=0;

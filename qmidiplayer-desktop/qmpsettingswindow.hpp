@@ -1,7 +1,9 @@
 #ifndef QMPSETTINGSWINDOW_H
 #define QMPSETTINGSWINDOW_H
 
+#include <string>
 #include <map>
+#include <vector>
 #include <QDialog>
 #include <QCloseEvent>
 #include <QSettings>
@@ -83,6 +85,9 @@ class qmpSettingsWindow:public QDialog
 		void registerOptionString(std::string tab,std::string desc,std::string key,std::string defaultval);
 		std::string getOptionString(std::string key);
 		void setOptionString(std::string key,std::string val);
+		void registerOptionEnumInt(std::string tab,std::string desc,std::string key,std::vector<std::string> options,int defaultval);
+		int getOptionEnumInt(std::string key);
+		void setOptionEnumInt(std::string key,int val);
 	signals:
 		void dialogClosing();
 

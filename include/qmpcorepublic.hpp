@@ -90,6 +90,9 @@ class qmpPluginAPI
 		virtual void registerOptionString(std::string tab,std::string desc,std::string key,std::string defaultval);
 		virtual std::string getOptionString(std::string key);
 		virtual void setOptionString(std::string key,std::string val);
+		virtual void registerOptionEnumInt(std::string tab,std::string desc,std::string key,std::vector<std::string> options,int defaultval);
+		virtual int getOptionEnumInt(std::string key);
+		virtual void setOptionEnumInt(std::string key,int val);
 };
 #ifdef QMP_MAIN
 }

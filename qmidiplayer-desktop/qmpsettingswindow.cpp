@@ -357,6 +357,13 @@ void qmpSettingsWindow::updateCustomOptions()
 		{
 			QLineEdit* te=(QLineEdit*)i->second.widget;if(!i->second.widget)break;
 			settings->setValue(QString(i->first.c_str()),te->text());
+			break;
+		}
+		case 5:
+		{
+			QComboBox* cb=(QComboBox*)i->second.widget;if(!i->second.widget)break;
+			settings->setValue(QString(i->first.c_str()),cb->currentIndex());
+			break;
 		}
 	}
 }
@@ -567,4 +574,46 @@ void qmpSettingsWindow::setOptionString(std::string key,std::string val)
 	settings->setValue(QString(key.c_str()),QString(val.c_str()));
 	if(customOptions[key].widget)
 	((QLineEdit*)customOptions[key].widget)->setText(val.c_str());
+}
+
+void qmpSettingsWindow::registerOptionEnumInt(std::string tab,std::string desc,std::string key,std::vector<std::string> options,int defaultval)
+{
+	customOptions[key].widget=NULL;
+	customOptions[key].desc=desc;
+	customOptions[key].defaultval=defaultval;
+	customOptions[key].type=5;
+	if(desc.length())
+	{
+		QGridLayout* page=NULL;
+		if(customOptPages[tab])page=customOptPages[tab];
+		else
+		{
+			QWidget* w=new QWidget;
+			page=new QGridLayout(w);
+			w->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+			ui->tabWidget->addTab(w,QString(tab.c_str()));
+			customOptPages[tab]=page;
+		}
+		QComboBox* sb=new QComboBox(page->parentWidget());
+		QLabel* lb=new QLabel(desc.c_str(),page->parentWidget());
+		customOptions[key].widget=sb;
+		for(unsigned i=0;i<options.size();++i)sb->addItem(options[i].c_str());
+		sb->setCurrentIndex(settings->value(QString(key.c_str()),defaultval).toInt());
+		sb->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed);
+		lb->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+		int row=page->rowCount();
+		page->addWidget(lb,row,0);
+		page->addWidget(sb,row,1);
+
+	}
+}
+int qmpSettingsWindow::getOptionEnumInt(std::string key)
+{
+	return settings->value(QString(key.c_str()),customOptions[key].defaultval).toInt();
+}
+void qmpSettingsWindow::setOptionEnumInt(std::string key,int val)
+{
+	settings->setValue(QString(key.c_str()),val);
+	if(customOptions[key].widget)
+	((QComboBox*)customOptions[key].widget)->setCurrentIndex(val);
 }
