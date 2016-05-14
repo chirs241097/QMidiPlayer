@@ -22,12 +22,19 @@ HEADERS += \
 	../core/qmpmidiplay.hpp \
 	qmpcorewrapper.hpp \
 	../core/qmpmidimappers.hpp \
-    ../include/qmpcorepublic.hpp
+	../include/qmpcorepublic.hpp
 unix{
 LIBS += -lfluidsynth -lrtmidi
+exists("/usr/include/RtMidi.h") {
+	DEFINES += RT_MIDI_H=\\\"/usr/include/RtMidi.h\\\"
+}
+exists("/usr/include/rtmidi/RtMidi.h") {
+	DEFINES += RT_MIDI_H=\\\"/usr/include/rtmidi/RtMidi.h\\\"
+}
 }
 
 win32{
+	DEFINES += RT_MIDI_H=\\\"RtMidi.h\\\"
 	#change these before building...
 	LIBS += e:/libs/fluidsynth/fluidsynth.lib winmm.lib
 	Release:LIBS += e:/libs/rtmidi/rtmidi.lib

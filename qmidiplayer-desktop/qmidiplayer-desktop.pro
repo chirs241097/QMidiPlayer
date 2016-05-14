@@ -68,6 +68,12 @@ unix{
 		message(Building in packaging mode...)
 		DEFINES += QMP_BUILD_UNIX_PACKAGE
 	}
+	exists("/usr/include/RtMidi.h") {
+		DEFINES += RT_MIDI_H=\\\"/usr/include/RtMidi.h\\\"
+	}
+	exists("/usr/include/rtmidi/RtMidi.h") {
+		DEFINES += RT_MIDI_H=\\\"/usr/include/rtmidi/RtMidi.h\\\"
+	}
 	QMAKE_CXXFLAGS_RELEASE -= -O2
 	QMAKE_CXXFLAGS_RELEASE += -O3
 	QMAKE_LFLAGS_RELEASE -= -O1
@@ -96,6 +102,7 @@ unix{
 	LIBS += -lfluidsynth -lrtmidi -ldl
 }
 win32{
+	DEFINES += RT_MIDI_H=\\\"RtMidi.h\\\"
 	#change these before building...
 	LIBS += e:/libs/fluidsynth/fluidsynth.lib winmm.lib
 	Release:LIBS += e:/libs/rtmidi/rtmidi.lib

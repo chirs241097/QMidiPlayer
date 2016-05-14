@@ -1,3 +1,7 @@
+2016-05-14 0.8.1 alpha
+This _should_ fix building under arch linux.
+(Linking order problems and include problems).
+
 2016-05-13 0.8.1 alpha
 Added enumerate integer options support.
 Workaroud for different fonts locations in arch linux.
