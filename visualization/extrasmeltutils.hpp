@@ -29,5 +29,59 @@ class smEntity3DBuffer
 		void drawBatch();
 
 };
+class smPSEmissionPositionGenerator
+{
+	public:
+		virtual smvec3d genPos();
+};
+class smParticleSystemInfo
+{
+	public:
+		smvec3d vel,velvar,acc,accvar;
+		smvec3d rotv,rotvvar,rota,rotavar;
+		double lifespan,lifespanvar;
+		int maxcount,emissioncount,ecvar;
+		double emissiondelay,edvar;
+		double initsize,initsizevar;
+		double finalsize,finalsizevar;
+		DWORD initcolor,initcolorvar;
+		DWORD finalcolor,finalcolorvar;
+		SMTEX texture;int blend;
+};
+class smParticle
+{
+	friend class smParticleSystem;
+	private:
+		static SMELT* sm;
+		smvec3d pos,rot;
+		smvec3d vel,accel,rotv,rota;
+		double lifespan,clifespan;
+		double initsize,finalsize,size;
+		DWORD color,initcolor,finalcolor;
+		smQuad q;
+	public:
+		smParticle();
+		~smParticle();
+		void render();
+		void update();
+};
+class smParticleSystem
+{
+	private:
+		std::vector<smParticle*> particles;
+		smParticleSystemInfo psinfo;
+		smvec3d pos;
+		smPSEmissionPositionGenerator* posGenerator;
+	public:
+		smParticleSystem();
+		~smParticleSystem();
+		void setParticleSystemInfo(smParticleSystemInfo _psinfo);
+		void setPos(smvec3d _pos);
+		void setPSEmissionPosGen(smPSEmissionPositionGenerator* _gen);
+		void startPS();
+		void stopPS();
+		void updatePS();
+		void renderPS();
+};
 extern smVertex makeVertex(float x,float y,float z,DWORD color,float tx,float ty);
 #endif // EXTRASMELTUTILS_H

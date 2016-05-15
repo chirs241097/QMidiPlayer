@@ -1,3 +1,7 @@
+2016-05-15 0.8.1 alpha
+Initial stubs for the particle system.
+Use layouts in the effects window.
+
 2016-05-14 0.8.1 alpha
 This _should_ fix building under arch linux.
 (Linking order problems and include problems).

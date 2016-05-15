@@ -1,6 +1,6 @@
 #ifndef QMPMIDIMAPPERS_H
 #define QMPMIDIMAPPERS_H
-#include "RtMidi.h"
+#include RT_MIDI_H
 class qmpMidiMapperRtMidi
 {
 private:

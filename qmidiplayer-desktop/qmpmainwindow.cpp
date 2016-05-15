@@ -61,6 +61,7 @@ qmpMainWindow::qmpMainWindow(QWidget *parent) :
 
 qmpMainWindow::~qmpMainWindow()
 {
+	pmgr->deinitPlugins();
 	delete pmgr;if(player)delete player;
 	if(timer)delete timer;
 	delete helpw;helpw=NULL;

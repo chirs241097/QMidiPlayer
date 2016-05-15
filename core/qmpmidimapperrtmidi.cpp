@@ -1,7 +1,7 @@
 #include <cstdio>
 #include <cstring>
 #include <vector>
-#include "RtMidi.h"
+#include RT_MIDI_H
 #include "qmpmidimappers.hpp"
 RtMidiOut* qmpMidiMapperRtMidi::dummy=NULL;
 qmpMidiMapperRtMidi::qmpMidiMapperRtMidi()

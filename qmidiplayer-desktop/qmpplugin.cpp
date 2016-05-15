@@ -84,7 +84,7 @@ void qmpPluginManager::initPlugins()
 void qmpPluginManager::deinitPlugins()
 {
 	for(unsigned i=0;i<plugins.size();++i)
-		plugins[i].interface->deinit();
+	{plugins[i].interface->deinit();plugins[i].enabled=false;}
 }
 
 qmpPluginAPI::~qmpPluginAPI(){}

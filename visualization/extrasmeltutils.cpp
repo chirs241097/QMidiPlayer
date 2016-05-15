@@ -1,6 +1,7 @@
 #include <cstdarg>
 #include "extrasmeltutils.hpp"
 SMELT* smEntity3DBuffer::sm=NULL;
+SMELT* smParticle::sm=NULL;
 smVertex makeVertex(float x,float y,float z,DWORD color,float tx,float ty)
 {smVertex v;v.x=x;v.y=y;v.z=z;v.col=color;v.tx=tx;v.ty=ty;return v;}
 void smEntity3D::addVerices(int n,...)
@@ -59,3 +60,35 @@ void smEntity3DBuffer::drawBatch()
 	sm->smDrawCustomIndexedVertices(&vertices[0],&indices[0],vertices.size(),indices.size(),BLEND_ALPHABLEND,0);
 	vertices.clear();indices.clear();
 }
+smParticle::smParticle(){sm=smGetInterface(SMELT_APILEVEL);}
+smParticle::~smParticle(){sm->smRelease();}
+void smParticle::render()
+{sm->smRenderQuad(&q);}
+void smParticle::update()
+{
+	clifespan+=sm->smGetDelta();
+	vel=vel+accel;pos=pos+vel;rotv=rotv+rota;rot=rot+rotv;
+	size=clifespan/lifespan*(finalsize-initsize)+initsize;
+	color=ARGB(
+		(DWORD)(clifespan/lifespan*(GETA(finalcolor)-GETA(initcolor)+GETA(initcolor))),
+		(DWORD)(clifespan/lifespan*(GETR(finalcolor)-GETR(initcolor)+GETR(initcolor))),
+		(DWORD)(clifespan/lifespan*(GETG(finalcolor)-GETG(initcolor)+GETG(initcolor))),
+		(DWORD)(clifespan/lifespan*(GETB(finalcolor)-GETB(initcolor)+GETB(initcolor))));
+	//set up the quad
+}
+smParticleSystem::smParticleSystem(){particles.clear();posGenerator=NULL;}
+smParticleSystem::~smParticleSystem()
+{for(int i=0;i<particles.size();++i)delete particles[i];particles.clear();}
+void smParticleSystem::setParticleSystemInfo(smParticleSystemInfo _psinfo)
+{psinfo=_psinfo;}
+void smParticleSystem::setPos(smvec3d _pos){pos=_pos;}
+void smParticleSystem::setPSEmissionPosGen(smPSEmissionPositionGenerator *_gen)
+{posGenerator=_gen;}
+void smParticleSystem::startPS()
+{}
+void smParticleSystem::stopPS()
+{}
+void smParticleSystem::updatePS()
+{}
+void smParticleSystem::renderPS()
+{}
