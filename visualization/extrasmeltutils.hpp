@@ -3,6 +3,7 @@
 #include <vector>
 #include <smelt.hpp>
 #include <smmath.hpp>
+#include <smrandom.hpp>
 class smEntity3D
 {
 	friend class smEntity3DBuffer;
@@ -59,6 +60,7 @@ class smParticle
 		double initsize,finalsize,size;
 		DWORD color,initcolor,finalcolor;
 		smQuad q;
+		bool dead;
 	public:
 		smParticle();
 		~smParticle();
@@ -68,10 +70,14 @@ class smParticle
 class smParticleSystem
 {
 	private:
+		static SMELT* sm;
 		std::vector<smParticle*> particles;
 		smParticleSystemInfo psinfo;
 		smvec3d pos;
+		smRandomEngine re;
 		smPSEmissionPositionGenerator* posGenerator;
+		bool active;
+		double cemdelay,nemdelay;
 	public:
 		smParticleSystem();
 		~smParticleSystem();
