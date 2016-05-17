@@ -1,6 +1,7 @@
+#include <cstdio>
 #include <cstdarg>
-#include <ctime>
 #include <algorithm>
+#include <smcolor.hpp>
 #include "extrasmeltutils.hpp"
 SMELT* smEntity3DBuffer::sm=NULL;
 SMELT* smParticle::sm=NULL;
@@ -64,7 +65,7 @@ void smEntity3DBuffer::drawBatch()
 	vertices.clear();indices.clear();
 }
 smParticle::smParticle()
-{sm=smGetInterface(SMELT_APILEVEL);dead=false;lifespan=0;}
+{sm=smGetInterface(SMELT_APILEVEL);dead=false;clifespan=0;}
 smParticle::~smParticle(){sm->smRelease();}
 void smParticle::render()
 {sm->smRenderQuad(&q);}
@@ -73,19 +74,22 @@ void smParticle::update()
 	clifespan+=sm->smGetDelta();if(clifespan>lifespan){dead=true;return;}
 	vel=vel+accel;pos=pos+vel;rotv=rotv+rota;rot=rot+rotv;
 	size=clifespan/lifespan*(finalsize-initsize)+initsize;
-	color=ARGB(
-		(DWORD)(clifespan/lifespan*(GETA(finalcolor)-GETA(initcolor)+GETA(initcolor))),
-		(DWORD)(clifespan/lifespan*(GETR(finalcolor)-GETR(initcolor)+GETR(initcolor))),
-		(DWORD)(clifespan/lifespan*(GETG(finalcolor)-GETG(initcolor)+GETG(initcolor))),
-		(DWORD)(clifespan/lifespan*(GETB(finalcolor)-GETB(initcolor)+GETB(initcolor))));
+	smColorRGBA fc(finalcolor),ic(initcolor),cc;
+	cc.a=clifespan/lifespan*(fc.a-ic.a)+ic.a;
+	cc.r=clifespan/lifespan*(fc.r-ic.r)+ic.r;
+	cc.g=clifespan/lifespan*(fc.g-ic.g)+ic.g;
+	cc.b=clifespan/lifespan*(fc.b-ic.b)+ic.b;
+	color=cc.getHWColor();
 	for(int i=0;i<4;++i)q.v[i].col=color;
-	smMatrix m;m.loadIdentity();m.rotate(rot.x,1,0,0);m.rotate(rot.y,0,1,0);m.rotate(rot.z,0,0,1);
+	smMatrix m;m.loadIdentity();
+	if(lookat)m.lookat(pos,lookatpos,smvec3d(0,0,1));else
+	{m.rotate(rot.x,1,0,0);m.rotate(rot.y,0,1,0);m.rotate(rot.z,0,0,1);}
 	smvec3d v0=m*smvec3d(-size,-size,0),v1=m*smvec3d(size,-size,0);
 	smvec3d v2=m*smvec3d(size,size,0),v3=m*smvec3d(-size,size,0);
-	q.v[0].x=v0.x;q.v[0].y=v0.y;q.v[0].z=v0.z;
-	q.v[1].x=v1.x;q.v[1].y=v1.y;q.v[1].z=v1.z;
-	q.v[2].x=v2.x;q.v[2].y=v2.y;q.v[2].z=v2.z;
-	q.v[3].x=v3.x;q.v[3].y=v3.y;q.v[3].z=v3.z;
+	q.v[0].x=v0.x+pos.x;q.v[0].y=v0.y+pos.y;q.v[0].z=v0.z+pos.z;
+	q.v[1].x=v1.x+pos.x;q.v[1].y=v1.y+pos.y;q.v[1].z=v1.z+pos.z;
+	q.v[2].x=v2.x+pos.x;q.v[2].y=v2.y+pos.y;q.v[2].z=v2.z+pos.z;
+	q.v[3].x=v3.x+pos.x;q.v[3].y=v3.y+pos.y;q.v[3].z=v3.z+pos.z;
 }
 smParticleSystem::smParticleSystem()
 {sm=smGetInterface(SMELT_APILEVEL);particles.clear();posGenerator=NULL;}
@@ -96,6 +100,8 @@ void smParticleSystem::setParticleSystemInfo(smParticleSystemInfo _psinfo)
 void smParticleSystem::setPos(smvec3d _pos){pos=_pos;}
 void smParticleSystem::setPSEmissionPosGen(smPSEmissionPositionGenerator *_gen)
 {posGenerator=_gen;}
+void smParticleSystem::setPSLookAt(smvec3d at){lookat=true;lookatpos=at;}
+void smParticleSystem::unsetPSLookAt(){lookat=false;}
 void smParticleSystem::startPS()
 {active=true;nemdelay=0;re.setSeed(time(NULL));}
 void smParticleSystem::stopPS()
@@ -103,14 +109,30 @@ void smParticleSystem::stopPS()
 void smParticleSystem::updatePS()
 {
 	cemdelay+=sm->smGetDelta();
-	if(cemdelay>nemdelay)
+	if(cemdelay>nemdelay&&(int)particles.size()<psinfo.maxcount)
 	{
 		int ec=re.nextInt(psinfo.emissioncount-psinfo.ecvar,psinfo.emissioncount+psinfo.ecvar);
 		for(int i=0;i<ec;++i)
 		{
 			smParticle *p=new smParticle();
 			p->pos=pos+(posGenerator?posGenerator->genPos():smvec3d(0,0,0));
-			p->rot=smvec3d(0,0,0);
+			p->vel=smvec3d(
+				re.nextDouble(psinfo.vel.x-psinfo.velvar.x,psinfo.vel.x+psinfo.velvar.x),
+				re.nextDouble(psinfo.vel.y-psinfo.velvar.y,psinfo.vel.y+psinfo.velvar.y),
+				re.nextDouble(psinfo.vel.z-psinfo.velvar.z,psinfo.vel.z+psinfo.velvar.z));
+			p->accel=smvec3d(
+				re.nextDouble(psinfo.acc.x-psinfo.accvar.x,psinfo.acc.x+psinfo.accvar.x),
+				re.nextDouble(psinfo.acc.y-psinfo.accvar.y,psinfo.acc.y+psinfo.accvar.y),
+				re.nextDouble(psinfo.acc.z-psinfo.accvar.z,psinfo.acc.z+psinfo.accvar.z));
+			p->rotv=smvec3d(
+				re.nextDouble(psinfo.rotv.x-psinfo.rotvvar.x,psinfo.rotv.x+psinfo.rotvvar.x),
+				re.nextDouble(psinfo.rotv.y-psinfo.rotvvar.y,psinfo.rotv.y+psinfo.rotvvar.y),
+				re.nextDouble(psinfo.rotv.z-psinfo.rotvvar.z,psinfo.rotv.z+psinfo.rotvvar.z));
+			p->rota=smvec3d(
+				re.nextDouble(psinfo.rota.x-psinfo.rotavar.x,psinfo.rota.x+psinfo.rotavar.x),
+				re.nextDouble(psinfo.rota.y-psinfo.rotavar.y,psinfo.rota.y+psinfo.rotavar.y),
+				re.nextDouble(psinfo.rota.z-psinfo.rotavar.z,psinfo.rota.z+psinfo.rotavar.z));
+			p->rot=smvec3d(0,0,0);if(lookat)p->lookat=true,p->lookatpos=lookatpos;else p->lookat=false;
 			p->lifespan=re.nextDouble(psinfo.lifespan-psinfo.lifespanvar,psinfo.lifespan+psinfo.lifespanvar);
 			p->initsize=re.nextDouble(psinfo.initsize-psinfo.initsizevar,psinfo.initsize+psinfo.initsizevar);
 			p->finalsize=re.nextDouble(psinfo.finalsize-psinfo.finalsizevar,psinfo.finalsize+psinfo.finalsizevar);

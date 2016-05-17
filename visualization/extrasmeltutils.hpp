@@ -1,5 +1,6 @@
 #ifndef EXTRASMELTUTILS_H
 #define EXTRASMELTUTILS_H
+#include <ctime>
 #include <vector>
 #include <smelt.hpp>
 #include <smmath.hpp>
@@ -33,7 +34,16 @@ class smEntity3DBuffer
 class smPSEmissionPositionGenerator
 {
 	public:
-		virtual smvec3d genPos();
+		virtual smvec3d genPos(){return smvec3d(0,0,0);}
+};
+class smXLinePSGenerator:public smPSEmissionPositionGenerator
+{
+	private:
+		smRandomEngine re;
+		double var;
+	public:
+		smXLinePSGenerator(double _var){re.setSeed(time(NULL));var=_var;}
+		smvec3d genPos(){return smvec3d(re.nextDouble(-var,var),0,0);}
 };
 class smParticleSystemInfo
 {
@@ -54,13 +64,13 @@ class smParticle
 	friend class smParticleSystem;
 	private:
 		static SMELT* sm;
-		smvec3d pos,rot;
+		smvec3d pos,rot,lookatpos;
 		smvec3d vel,accel,rotv,rota;
 		double lifespan,clifespan;
 		double initsize,finalsize,size;
 		DWORD color,initcolor,finalcolor;
 		smQuad q;
-		bool dead;
+		bool dead,lookat;
 	public:
 		smParticle();
 		~smParticle();
@@ -73,10 +83,10 @@ class smParticleSystem
 		static SMELT* sm;
 		std::vector<smParticle*> particles;
 		smParticleSystemInfo psinfo;
-		smvec3d pos;
+		smvec3d pos,lookatpos;
 		smRandomEngine re;
 		smPSEmissionPositionGenerator* posGenerator;
-		bool active;
+		bool active,lookat;
 		double cemdelay,nemdelay;
 	public:
 		smParticleSystem();
@@ -84,6 +94,8 @@ class smParticleSystem
 		void setParticleSystemInfo(smParticleSystemInfo _psinfo);
 		void setPos(smvec3d _pos);
 		void setPSEmissionPosGen(smPSEmissionPositionGenerator* _gen);
+		void setPSLookAt(smvec3d at);
+		void unsetPSLookAt();
 		void startPS();
 		void stopPS();
 		void updatePS();

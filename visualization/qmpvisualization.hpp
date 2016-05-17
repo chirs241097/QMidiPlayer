@@ -47,11 +47,13 @@ class qmpVisualization:public qmpPluginIntf
 		smHandler *h,*closeh;
 		std::stack<uint32_t> pendingt[16][128],pendingv[16][128];
 		SMELT *sm;
-		SMTRG tdscn;
-		SMTEX chequer,bgtex;
+		SMTRG tdscn,tdparticles;
+		SMTEX chequer,bgtex,particletex;
 		smTTFont font,font2,fonthdpi;
 		qmpVirtualPiano3D* p3d[16];
 		smEntity3DBuffer* nebuf;
+		smParticleSystem* test;
+		smPSEmissionPositionGenerator* psepg;
 		float pos[3],rot[3],lastx,lasty;
 		uint32_t ctc,ctk,fintk,elb;
 		double etps;

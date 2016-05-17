@@ -73,11 +73,24 @@ void qmpVisualization::showThread()
 	sm->smTextureOpt(TPOT_POT,TFLT_LINEAR);
 	chequer=sm->smTextureLoad("chequerboard.png");if(!chequer)
 	chequer=sm->smTextureLoad("/usr/share/qmidiplayer/img/chequerboard.png");
+	particletex=sm->smTextureLoad("particle.png");
 	bgtex=sm->smTextureLoad(api->getOptionString("Visualization/background").c_str());
+	smParticleSystemInfo psinfo;
+	psinfo.acc=smvec3d(0,0,-0.05);psinfo.accvar=smvec3d(0,0,0.005);
+	psinfo.vel=smvec3d(0,0,0.5);psinfo.velvar=smvec3d(0.1,0.1,0.2);
+	psinfo.rotv=psinfo.rota=psinfo.rotavar=smvec3d(0,0,0);psinfo.rotvvar=smvec3d(0.04,0.04,0.04);
+	psinfo.lifespan=1;psinfo.lifespanvar=0.5;psinfo.maxcount=1000;psinfo.emissioncount=5;psinfo.ecvar=2;
+	psinfo.emissiondelay=0.1;psinfo.edvar=0;psinfo.initsize=0.8;psinfo.initsizevar=0.1;
+	psinfo.finalsize=0.1;psinfo.finalsizevar=0.05;psinfo.initcolor=0xFFFFFFFF;psinfo.finalcolor=0x00FFFFFF;
+	psinfo.initcolorvar=psinfo.finalcolorvar=0;psinfo.texture=particletex;psinfo.blend=BLEND_ALPHAADD;
+	test=new smParticleSystem();test->setPos(smvec3d(0,0,16));
+	psepg=new smXLinePSGenerator(.75);test->setParticleSystemInfo(psinfo);
+	test->setPSEmissionPosGen(psepg);test->startPS();
 	if(showpiano)for(int i=0;i<16;++i)p3d[i]=new qmpVirtualPiano3D();
 	memset(traveld,0,sizeof(traveld));
 	if(noteappearance==1)nebuf=new smEntity3DBuffer();else nebuf=NULL;
 	tdscn=sm->smTargetCreate(wwidth*wsupersample,wheight*wsupersample,wmultisample);
+	tdparticles=sm->smTargetCreate(wwidth*wsupersample,wheight*wsupersample,wmultisample);
 	if(!font.loadTTF("/usr/share/fonts/truetype/freefont/FreeMono.ttf",16))
 	if(!font.loadTTF("/usr/share/fonts/gnu-free-fonts/FreeMono.otf",16))
 	printf("W: Font load failed.\n");
@@ -115,6 +128,7 @@ void qmpVisualization::close()
 	}else return;
 
 	if(showpiano)for(int i=0;i<16;++i)delete p3d[i];
+	delete test;
 	if(noteappearance==1)delete nebuf;
 	sm->smFinale();
 	if(savevp)
@@ -130,8 +144,10 @@ void qmpVisualization::close()
 	font2.releaseTTF();
 	fonthdpi.releaseTTF();
 	sm->smTextureFree(chequer);
+	sm->smTextureFree(particletex);
 	if(bgtex)sm->smTextureFree(bgtex);
 	sm->smTargetFree(tdscn);
+	sm->smTargetFree(tdparticles);
 	sm->smRelease();
 }
 void qmpVisualization::reset()
@@ -157,7 +173,7 @@ bool qmpVisualization::update()
 	q.v[0].y=q.v[1].y=-120;q.v[2].y=q.v[3].y=120;
 	q.v[0].tx=q.v[3].tx=0;q.v[1].tx=q.v[2].tx=30;
 	q.v[0].ty=q.v[1].ty=0;q.v[2].ty=q.v[3].ty=30;
-	sm->smRenderBegin3D(fov,tdscn);
+	sm->smRenderBegin3D(fov,true,tdscn);
 	sm->sm3DCamera6f2v(pos,rot);
 	sm->smClrscr(0,1,1);
 	sm->smRenderQuad(&q);
@@ -233,6 +249,13 @@ bool qmpVisualization::update()
 	if(playing)ctk+=(int)(1e6/(api->getRawTempo()/api->getDivision())*sm->smGetDelta());
 	while(pool.size()&&elb<pool.size()&&((double)ctk-pool[elb]->tce)*lpt>viewdist*2)++elb;
 	sm->smRenderEnd();
+	sm->smRenderBegin3D(fov,false,tdparticles);
+	sm->sm3DCamera6f2v(pos,rot);
+	sm->smClrscr(0,1,1);
+	test->setPSLookAt(smvec3d(pos[0],pos[1],pos[2]));
+	//!!Test only.
+	//test->updatePS();test->renderPS();
+	sm->smRenderEnd();
 	sm->smRenderBegin2D();
 	sm->smClrscr(0xFF666666);q.blend=BLEND_ALPHABLEND;
 	for(int i=0;i<4;++i){q.v[i].col=0xFFFFFFFF;q.v[i].z=0;}
@@ -250,6 +273,8 @@ bool qmpVisualization::update()
 	q.v[0].ty=q.v[1].ty=0;q.v[2].ty=q.v[3].ty=1;
 	q.v[0].x=q.v[1].x=0;q.v[2].x=q.v[3].x=wwidth;
 	q.v[0].y=q.v[3].y=0;q.v[1].y=q.v[2].y=wheight;
+	sm->smRenderQuad(&q);
+	q.tex=sm->smTargetTexture(tdparticles);
 	sm->smRenderQuad(&q);
 	wchar_t ws[1024];memset(ws,0,sizeof(ws));
 	mbstowcs(ws,api->getTitle().c_str(),1024);
