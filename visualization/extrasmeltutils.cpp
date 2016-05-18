@@ -92,7 +92,7 @@ void smParticle::update()
 	q.v[3].x=v3.x+pos.x;q.v[3].y=v3.y+pos.y;q.v[3].z=v3.z+pos.z;
 }
 smParticleSystem::smParticleSystem()
-{sm=smGetInterface(SMELT_APILEVEL);particles.clear();posGenerator=NULL;}
+{sm=smGetInterface(SMELT_APILEVEL);particles.clear();posGenerator=NULL;active=false;}
 smParticleSystem::~smParticleSystem()
 {for(unsigned i=0;i<particles.size();++i)delete particles[i];particles.clear();}
 void smParticleSystem::setParticleSystemInfo(smParticleSystemInfo _psinfo)
@@ -109,7 +109,7 @@ void smParticleSystem::stopPS()
 void smParticleSystem::updatePS()
 {
 	cemdelay+=sm->smGetDelta();
-	if(cemdelay>nemdelay&&(int)particles.size()<psinfo.maxcount)
+	if(active&&cemdelay>nemdelay&&(int)particles.size()<psinfo.maxcount)
 	{
 		int ec=re.nextInt(psinfo.emissioncount-psinfo.ecvar,psinfo.emissioncount+psinfo.ecvar);
 		for(int i=0;i<ec;++i)

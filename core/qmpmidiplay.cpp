@@ -311,6 +311,7 @@ void CMidiPlayer::playerPanic(bool reset)
 			fluid_synth_cc(synth,i,32,0);
 		}
 		fluid_synth_cc(synth,i,64,0);
+		fluid_synth_pitch_wheel_sens(synth,i,2);
 		fluid_synth_pitch_bend(synth,i,8192);
 		//all sounds off causes the minus polyphone bug...
 		fluid_synth_all_notes_off(synth,i);

@@ -27,7 +27,51 @@
 		<img src="../img/visualizationss.png"><br>
 		The default visualization comes as a plugin of QMidiPlayer. So before using it you
 		have to enable it first in the plugin manager.<br>
-		To use the visualization, click the Visualization button in the main window.
+		To use the visualization, click the Visualization button in the main window.<br>
+		The visualization plugin adds two new option tabs.
+		<h3>Controls</h3>
+		<pre>
+   forward
+      |              ↱Press and hold left mouse button:
+   up |  down       ┌──┬──┐ Adjust camera direction.
+   ↓  ↓  ↓          │  │  │
+   Q  W  E          ├──┴──┤
+   A  S  D          │     │
+   ↑  ↑  ↑          │     │
+left  |  right      │     │
+      |             └─────┘
+   backward
+		</pre>
+		<h3>Options</h3>
+		<ul>
+			<li>
+				Visualization-Appearance
+				<ul>
+					<li>Show Piano: Whether to show the virtual piano in the visualization scene.</li>
+					<li>3D Notes: 2D notes are used when this is unchecked. Using 2D notes is less resource-hungry.</li>
+					<li>Arrange channels on a stair: If checked, virtual pianos will be arranged on a stair-like shape. This option has no effect if virtual piano is not shown.</li>
+					<li>Show channel labels: If checked, channel preset will be shown on the left side.</li>
+					<li>Show particles: Whether to draw particles. Very resource-intensive!</li>
+					<li>View distance: This option affects the maximum number of notes rendered on the screen.</li>
+					<li>Note stretch: The length multiplier of notes.</li>
+					<li>Minimum note length: Avoid notes that are too short to be visible by adjusting this value.</li>
+					<li>Chequer board tint: change the color of the chequer board background.</li>
+					<li>Background Image: Use a background image instead of the default dull grey color.</li>
+				</ul>
+			</li>
+			<li>
+				Visualization-Video
+				<ul>
+					<li>Enable VSync: Enable vertical synchronization.</li>
+					<li>Save Viewport: Restore last camera configuration when the visualization is started.</li>
+					<li>Window Width/Height: Change the window size. If the size equals to your screen size, the visualization will start in fullscreen mode.</li>
+					<li>FPS: FPS limit of the visualization.</li>
+					<li>Supersampling: Supersample anti-aliasing. 1 means no SSAA.</li>
+					<li>Multisampling: Multisample anti-aliasing. 0 means no MSAA.</li>
+					<li>FOV: Field of view.</li>
+				</ul>
+			</li>
+		</ul>
 	</div>
 </body>
 </html>

@@ -113,6 +113,8 @@ bool qmpPluginAPI::getChannelMask(int ch)
 {return qmw&&qmw->getPlayer()?qmw->getPlayer()->getChannelMask(ch):false;}
 std::string qmpPluginAPI::getTitle()
 {return qmw?qmw->getTitle():"";}
+std::wstring qmpPluginAPI::getWTitle()
+{return qmw?qmw->getWTitle():L"";}
 std::string qmpPluginAPI::getChannelPresetString(int ch)
 {
 	int b,p;char nm[25],ret[33];ret[0]=0;

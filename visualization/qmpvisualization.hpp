@@ -52,7 +52,7 @@ class qmpVisualization:public qmpPluginIntf
 		smTTFont font,font2,fonthdpi;
 		qmpVirtualPiano3D* p3d[16];
 		smEntity3DBuffer* nebuf;
-		smParticleSystem* test;
+		smParticleSystem* pss[16][128];
 		smPSEmissionPositionGenerator* psepg;
 		float pos[3],rot[3],lastx,lasty;
 		uint32_t ctc,ctk,fintk,elb;

@@ -1,3 +1,8 @@
+2016-05-18 0.8.1 alpha
+Finally finish the particle system integration.
+Add std::wstring version APIs to avoid wrong encoding.
+Update documentation.
+
 2016-05-17 0.8.1 alpha
 Fix bugs in the particle system.
 Add particle look at option.
@@ -33,7 +38,7 @@ Add channel label display. However it's still buggy so it's
 currently disabled.
 
 2016-05-09 0.8.1 alpha
-Add visualization documentaion stub.
+Add visualization documentation stub.
 
 2016-05-07 0.8.1 alpha
 Added two new options.
@@ -83,7 +88,7 @@ Plugins can be disabled now.
 Show file name in window title.
 Handle pitch bend in visualization.
 Handle mute and solo in the default visualization.
-A little plugin sdk documentaion...
+A little plugin sdk documentation...
 Remove stupid things.
 
 2016-04-26 0.7.8 beta
@@ -135,7 +140,7 @@ Add panic action.
 Minor changes on the panic function.
 
 2016-04-17 0.7.2 beta
-A little more documentaion work...
+A little more documentation work...
 
 2016-04-16 0.7.2 beta
 Don't do full initialization before pharsing arguments.
@@ -217,7 +222,7 @@ Initial MIDI mapper stub.
 2016-01-30 0.7.0 beta
 Add support for a single, persistent fluidsynth instance.
 (Experimental, may also break the original mode...)
-A little documentaion work...
+A little documentation work...
 
 2016-01-26 0.6.2 beta
 Maintaince release.

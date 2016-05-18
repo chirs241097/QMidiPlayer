@@ -63,6 +63,7 @@ class qmpMainWindow:public QMainWindow
 		bool isFinalizing(){return fin;}
 		QString getFileName();
 		std::string getTitle();
+		std::wstring getWTitle();
 		int pharseArgs();
 		int registerVisualizationIntf(qmpVisualizationIntf* intf);
 		void unregisterVisualizationIntf(int handle);

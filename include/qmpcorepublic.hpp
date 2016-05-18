@@ -64,6 +64,7 @@ class qmpPluginAPI
 		virtual double getPitchBend(int ch);
 		virtual bool getChannelMask(int ch);
 		virtual std::string getTitle();
+		virtual std::wstring getWTitle();
 		virtual std::string getChannelPresetString(int ch);
 
 		virtual int registerVisualizationIntf(qmpVisualizationIntf* intf);

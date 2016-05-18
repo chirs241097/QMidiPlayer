@@ -9,7 +9,7 @@ int viewdist=100;
 int notestretch=100;//length of quarter note
 int minnotelength=100;
 int noteappearance=1,showpiano=1,stairpiano=1,savevp=1,showlabel=1;
-int wwidth=800,wheight=600,wsupersample=1,wmultisample=1;
+int wwidth=800,wheight=600,wsupersample=1,wmultisample=1,showparticle=1;
 int fov=60,vsync=1,tfps=60;
 DWORD chkrtint=0xFF999999;
 DWORD iccolors[]={0XFFFF0000,0XFFFF8000,0XFFFFBF00,0XFFFFFF00,
@@ -56,6 +56,7 @@ void qmpVisualization::showThread()
 	showpiano=api->getOptionBool("Visualization/showpiano");
 	stairpiano=api->getOptionBool("Visualization/stairpiano");
 	showlabel=api->getOptionBool("Visualization/showlabel");
+	showparticle=api->getOptionBool("Visualization/showparticle");
 	savevp=api->getOptionBool("Visualization/savevp");
 	vsync=api->getOptionBool("Visualization/vsync");
 	tfps=api->getOptionInt("Visualization/tfps");
@@ -75,17 +76,26 @@ void qmpVisualization::showThread()
 	chequer=sm->smTextureLoad("/usr/share/qmidiplayer/img/chequerboard.png");
 	particletex=sm->smTextureLoad("particle.png");
 	bgtex=sm->smTextureLoad(api->getOptionString("Visualization/background").c_str());
-	smParticleSystemInfo psinfo;
-	psinfo.acc=smvec3d(0,0,-0.05);psinfo.accvar=smvec3d(0,0,0.005);
-	psinfo.vel=smvec3d(0,0,0.5);psinfo.velvar=smvec3d(0.1,0.1,0.2);
-	psinfo.rotv=psinfo.rota=psinfo.rotavar=smvec3d(0,0,0);psinfo.rotvvar=smvec3d(0.04,0.04,0.04);
-	psinfo.lifespan=1;psinfo.lifespanvar=0.5;psinfo.maxcount=1000;psinfo.emissioncount=5;psinfo.ecvar=2;
-	psinfo.emissiondelay=0.1;psinfo.edvar=0;psinfo.initsize=0.8;psinfo.initsizevar=0.1;
-	psinfo.finalsize=0.1;psinfo.finalsizevar=0.05;psinfo.initcolor=0xFFFFFFFF;psinfo.finalcolor=0x00FFFFFF;
-	psinfo.initcolorvar=psinfo.finalcolorvar=0;psinfo.texture=particletex;psinfo.blend=BLEND_ALPHAADD;
-	test=new smParticleSystem();test->setPos(smvec3d(0,0,16));
-	psepg=new smXLinePSGenerator(.75);test->setParticleSystemInfo(psinfo);
-	test->setPSEmissionPosGen(psepg);test->startPS();
+	if(showparticle)
+	{
+		smParticleSystemInfo psinfo;
+		psinfo.acc=smvec3d(0,0,-0.05);psinfo.accvar=smvec3d(0,0,0.005);
+		psinfo.vel=smvec3d(0,0,0.5);psinfo.velvar=smvec3d(0.1,0.1,0.2);
+		psinfo.rotv=psinfo.rota=psinfo.rotavar=smvec3d(0,0,0);psinfo.rotvvar=smvec3d(0.04,0.04,0.04);
+		psinfo.lifespan=1;psinfo.lifespanvar=0.5;psinfo.maxcount=1000;psinfo.emissioncount=5;psinfo.ecvar=2;
+		psinfo.emissiondelay=0.1;psinfo.edvar=0;psinfo.initsize=0.8;psinfo.initsizevar=0.1;
+		psinfo.finalsize=0.1;psinfo.finalsizevar=0.05;psinfo.initcolor=0xFFFFFFFF;psinfo.finalcolor=0x00FFFFFF;
+		psinfo.initcolorvar=psinfo.finalcolorvar=0;psinfo.texture=particletex;psinfo.blend=BLEND_ALPHAADD;
+		psepg=new smXLinePSGenerator(.6);
+		for(int i=0;i<16;++i)for(int j=0;j<128;++j)
+		{
+			pss[i][j]=new smParticleSystem();
+			pss[i][j]->setPSEmissionPosGen(psepg);
+			psinfo.initcolor=accolors[i];psinfo.finalcolor=SETA(accolors[i],0);
+			pss[i][j]->setParticleSystemInfo(psinfo);
+			pss[i][j]->setPos(smvec3d(0.756*((double)j-64)+.48,(stairpiano?(56-i*7.):(64-i*8.)),stairpiano*i*2+0.1));
+		}
+	}else memset(pss,0,sizeof(pss));
 	if(showpiano)for(int i=0;i<16;++i)p3d[i]=new qmpVirtualPiano3D();
 	memset(traveld,0,sizeof(traveld));
 	if(noteappearance==1)nebuf=new smEntity3DBuffer();else nebuf=NULL;
@@ -128,7 +138,7 @@ void qmpVisualization::close()
 	}else return;
 
 	if(showpiano)for(int i=0;i<16;++i)delete p3d[i];
-	delete test;
+	if(showparticle)for(int i=0;i>16;++i)for(int j=0;j<128;++j)delete pss[i][j];
 	if(noteappearance==1)delete nebuf;
 	sm->smFinale();
 	if(savevp)
@@ -156,6 +166,7 @@ void qmpVisualization::reset()
 	pool.clear();elb=ctk=0;
 	for(int i=0;i<16;++i)for(int j=0;j<128;++j)
 	{
+		if(showparticle&&pss[i][j])pss[i][j]->stopPS();
 		while(!pendingt[i][j].empty())pendingt[i][j].pop();
 		while(!pendingv[i][j].empty())pendingv[i][j].pop();
 	}
@@ -220,6 +231,15 @@ bool qmpVisualization::update()
 			a.x=0.63*((double)pool[i]->key-64+api->getPitchBend(pool[i]->ch))+.1,
 			b.x=0.63*((double)pool[i]->key-64+api->getPitchBend(pool[i]->ch))+.7;
 			notestatus[pool[i]->ch][pool[i]->key]|=isnoteon;a.x*=1.2;b.x*=1.2;
+			if(showparticle)
+			{
+				if(notestatus[pool[i]->ch][pool[i]->key])
+				{
+					pss[pool[i]->ch][pool[i]->key]->startPS();
+					pss[pool[i]->ch][pool[i]->key]->setPos(smvec3d(0.756*((double)pool[i]->key-64)+.48,(stairpiano?(56-pool[i]->ch*7.):(64-pool[i]->ch*8.)),stairpiano*pool[i]->ch*2+0.1));
+				}
+				else pss[pool[i]->ch][pool[i]->key]->stopPS();
+			}
 			if(((double)pool[i]->tce-pool[i]->tcs)*lpt<minnotelength/100.)a.z=((double)pool[i]->tcs-ctk)*lpt-minnotelength/100.+stairpiano*pool[i]->ch*2;
 			drawCube(a,b,SETA(isnoteon?accolors[pool[i]->ch]:iccolors[pool[i]->ch],int(pool[i]->vel*(isnoteon?2.0:1.6))),0);
 		}
@@ -249,13 +269,18 @@ bool qmpVisualization::update()
 	if(playing)ctk+=(int)(1e6/(api->getRawTempo()/api->getDivision())*sm->smGetDelta());
 	while(pool.size()&&elb<pool.size()&&((double)ctk-pool[elb]->tce)*lpt>viewdist*2)++elb;
 	sm->smRenderEnd();
-	sm->smRenderBegin3D(fov,false,tdparticles);
-	sm->sm3DCamera6f2v(pos,rot);
-	sm->smClrscr(0,1,1);
-	test->setPSLookAt(smvec3d(pos[0],pos[1],pos[2]));
-	//!!Test only.
-	//test->updatePS();test->renderPS();
-	sm->smRenderEnd();
+	if(showparticle)
+	{
+		sm->smRenderBegin3D(fov,false,tdparticles);
+		sm->sm3DCamera6f2v(pos,rot);
+		sm->smClrscr(0,1,1);
+		for(int i=0;i<16;++i)for(int j=0;j<128;++j)
+		{
+			pss[i][j]->setPSLookAt(smvec3d(pos[0],pos[1],pos[2]));
+			pss[i][j]->updatePS();pss[i][j]->renderPS();
+		}
+		sm->smRenderEnd();
+	}
 	sm->smRenderBegin2D();
 	sm->smClrscr(0xFF666666);q.blend=BLEND_ALPHABLEND;
 	for(int i=0;i<4;++i){q.v[i].col=0xFFFFFFFF;q.v[i].z=0;}
@@ -274,11 +299,12 @@ bool qmpVisualization::update()
 	q.v[0].x=q.v[1].x=0;q.v[2].x=q.v[3].x=wwidth;
 	q.v[0].y=q.v[3].y=0;q.v[1].y=q.v[2].y=wheight;
 	sm->smRenderQuad(&q);
-	q.tex=sm->smTargetTexture(tdparticles);
-	sm->smRenderQuad(&q);
-	wchar_t ws[1024];memset(ws,0,sizeof(ws));
-	mbstowcs(ws,api->getTitle().c_str(),1024);
-	font2.updateString(L"Title: %ls",ws);
+	if(showparticle)
+	{
+		q.tex=sm->smTargetTexture(tdparticles);
+		sm->smRenderQuad(&q);
+	}
+	font2.updateString(L"Title: %ls",api->getWTitle().c_str());
 	font2.render(1,wheight-64,0.5,0xFFFFFFFF,ALIGN_LEFT);
 	font2.render(0,wheight-65,0.5,0xFF000000,ALIGN_LEFT);
 	font.updateString(L"Tempo: %.2f",api->getRealTempo());
@@ -330,6 +356,7 @@ void qmpVisualization::init()
 	api->registerOptionBool("Visualization-Appearance","3D Notes","Visualization/3dnotes",true);
 	api->registerOptionBool("Visualization-Appearance","Arrange channels on a stair","Visualization/stairpiano",true);
 	api->registerOptionBool("Visualization-Appearance","Show channel labels","Visualization/showlabel",true);
+	api->registerOptionBool("Visualization-Appearance","Show Particles","Visualization/showparticle",true);
 	api->registerOptionBool("Visualization-Video","Enable VSync","Visualization/vsync",true);
 	api->registerOptionBool("Visualization-Video","Save Viewport","Visualization/savevp",true);
 	api->registerOptionInt("Visualization-Video","Window Width","Visualization/wwidth",320,3200,800);
@@ -358,6 +385,7 @@ void qmpVisualization::init()
 	showpiano=api->getOptionBool("Visualization/showpiano");
 	stairpiano=api->getOptionBool("Visualization/stairpiano");
 	showlabel=api->getOptionBool("Visualization/showlabel");
+	showparticle=api->getOptionBool("Visualization/showparticle");
 	savevp=api->getOptionBool("Visualization/savevp");
 	vsync=api->getOptionBool("Visualization/vsync");
 	tfps=api->getOptionInt("Visualization/tfps");

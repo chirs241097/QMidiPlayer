@@ -31,7 +31,7 @@ unix {
 	QMAKE_LFLAGS_RELEASE -= -O1
 	QMAKE_LFLAGS_RELEASE += -O3
 	res.path = $$DATADIR/qmidiplayer/img
-	res.files += ../img/chequerboard.png
+	res.files += ../img/chequerboard.png ../img/particle.png
 }
 #well...
 INCLUDEPATH += /home/chrisoft/devel/BulletLabRemixIII/include/ /usr/include/freetype2

@@ -306,6 +306,14 @@ std::string qmpMainWindow::getTitle()
 				toString().toStdString().c_str())->
 			toUnicode(player->getTitle()).toStdString();
 }
+std::wstring qmpMainWindow::getWTitle()
+{
+	if(!qmpSettingsWindow::getSettingsIntf())return L"";
+	return QTextCodec::codecForName(
+				qmpSettingsWindow::getSettingsIntf()->value("Midi/TextEncoding","").
+				toString().toStdString().c_str())->
+			toUnicode(player->getTitle()).toStdWString();
+}
 
 void qmpMainWindow::playerSetup()
 {
