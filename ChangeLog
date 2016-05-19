@@ -1,3 +1,7 @@
+2016-05-19 0.8.1 alpha
+Added a sample plugin as a template.
+Implemented scanPlugin for Windows.
+
 2016-05-18 0.8.1 alpha
 Finally finish the particle system integration.
 Add std::wstring version APIs to avoid wrong encoding.

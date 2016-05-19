@@ -10,3 +10,6 @@ android {
 SUBDIRS = \
 	qmidiplayer-lite
 }
+
+SUBDIRS += \
+    sample-plugin

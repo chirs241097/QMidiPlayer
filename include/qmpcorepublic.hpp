@@ -1,6 +1,7 @@
 #ifndef QMPCOREPUBLIC_H
 #define QMPCOREPUBLIC_H
 #include <cstdint>
+#include <vector>
 #include <string>
 //This struct is used by event reader callbacks and event handler callbacks
 //as caller data struct

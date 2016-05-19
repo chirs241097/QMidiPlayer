@@ -18,6 +18,25 @@ void qmpPluginManager::scanPlugins()
 	HANDLE dir;
 	std::vector<std::string> cpluginpaths;
 	//FindFirstFile, FindNextFile, FindClose
+	LPWIN32_FIND_DATA file;
+	dir=FindFirstFileA(L".\\plugins\\*.dll",file);
+	if(dir!=INVALID_HANDLE_VALUE)
+	{
+		cpluginpaths.push_back(std::string(file->cFileName));
+		while(FindNextFile(dir,file))
+			cpluginpaths.push_back(std::string(file->cFileName));
+	}
+	FindClose(dir);
+	for(unsigned i=0;i<cpluginpaths.size();++i)
+	{
+		HMODULE hso=LoadLibraryA(cpluginpaths[i].c_str());
+		if(!hso){fprintf(stderr,"Error while loading library: %d\n",GetLastError());continue;}
+		FARPROC hndi=GetProcAddress(hso,"qmpPluginGetInterface");
+		if(!hndi){fprintf(stderr,"file %s doesn't seem to be a qmidiplayer plugin.\n",cpluginpaths[i].c_str());continue;}
+		qmpPluginEntry e=(qmpPluginEntry)hndi;
+		qmpPluginIntf* intf=e(pluginAPI);
+		plugins.push_back(qmpPlugin(std::string(intf->pluginGetName()),std::string(intf->pluginGetVersion()),std::string(cpluginpaths[i]),intf));
+	}
 }
 #else
 void qmpPluginManager::scanPlugins()
@@ -46,7 +65,7 @@ void qmpPluginManager::scanPlugins()
 		void* hso=dlopen(cpluginpaths[i].c_str(),RTLD_LAZY);
 		if(!hso){fprintf(stderr,"%s\n",dlerror());continue;}
 		void* hndi=dlsym(hso,"qmpPluginGetInterface");
-		if(!hndi)continue;
+		if(!hndi){fprintf(stderr,"file %s doesn't seem to be a qmidiplayer plugin.\n",cpluginpaths[i].c_str());continue;}
 		qmpPluginEntry e=(qmpPluginEntry)hndi;
 		qmpPluginIntf* intf=e(pluginAPI);
 		plugins.push_back(qmpPlugin(std::string(intf->pluginGetName()),std::string(intf->pluginGetVersion()),std::string(cpluginpaths[i]),intf));
@@ -63,7 +82,7 @@ qmpPluginManager::~qmpPluginManager()
 {
 	for(unsigned i=0;i<plugins.size();++i)
 	{
-		if(plugins[i].enabled)plugins[i].interface->deinit();
+		if(plugins[i].initialized)plugins[i].interface->deinit();
 		delete plugins[i].interface;
 	}
 	qmw=NULL;qsw=NULL;delete pluginAPI;
@@ -78,13 +97,16 @@ void qmpPluginManager::initPlugins()
 	{
 		if(!plugins[i].enabled)continue;
 		printf("Loaded plugin: %s\n",plugins[i].path.c_str());
-		plugins[i].interface->init();
+		plugins[i].interface->init();plugins[i].initialized=true;
 	}
 }
 void qmpPluginManager::deinitPlugins()
 {
 	for(unsigned i=0;i<plugins.size();++i)
-	{plugins[i].interface->deinit();plugins[i].enabled=false;}
+	{
+		if(plugins[i].initialized)plugins[i].interface->deinit();
+		plugins[i].enabled=plugins[i].initialized=false;
+	}
 }
 
 qmpPluginAPI::~qmpPluginAPI(){}
