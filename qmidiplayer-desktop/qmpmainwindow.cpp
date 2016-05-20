@@ -52,7 +52,9 @@ qmpMainWindow::qmpMainWindow(QWidget *parent) :
 {
 	ui->setupUi(this);
 	ui->lnPolyphone->display("00000-00000");
-	ui->lbFileName->setText("");ref=this;
+	ui->lbFileName->setText("");ref=this;ui->verticalLayout->setAlignment(ui->pushButton,Qt::AlignRight);
+	int w=size().width(),h=size().height();w=w*(logicalDpiX()/96.);h=h*(logicalDpiY()/96.);
+	setMaximumWidth(w);setMaximumHeight(h);setMinimumWidth(w);setMinimumHeight(h);
 	playing=false;stopped=true;dragging=false;memset(VIs,0,sizeof(VIs));
 	settingsw=new qmpSettingsWindow(this);pmgr=new qmpPluginManager();
 	plistw=new qmpPlistWindow(this);player=NULL;timer=NULL;

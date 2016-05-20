@@ -19,6 +19,8 @@ qmpSettingsWindow::qmpSettingsWindow(QWidget *parent) :
 	ui(new Ui::qmpSettingsWindow)
 {
 	ui->setupUi(this);customOptions.clear();customOptPages.clear();
+	int w=size().width(),h=size().height();w=w*(logicalDpiX()/96.);h=h*(logicalDpiY()/96.);
+	setMaximumWidth(w);setMaximumHeight(h);setMinimumWidth(w);setMinimumHeight(h);
 	connect(this,SIGNAL(dialogClosing()),parent,SLOT(dialogClosed()));
 	settings=new QSettings(QDir::homePath()+QString("/.config/qmprc"),QSettings::IniFormat);
 	settingsInit();outwidget=ui->cbOutputDevice;

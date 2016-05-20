@@ -15,6 +15,8 @@ qmpPlistWindow::qmpPlistWindow(QWidget *parent) :
 	ui(new Ui::qmpPlistWindow)
 {
 	ui->setupUi(this);
+	int w=size().width(),h=size().height();w=w*(logicalDpiX()/96.);h=h*(logicalDpiY()/96.);
+	setMaximumWidth(w);setMaximumHeight(h);setMinimumWidth(w);setMinimumHeight(h);
 	connect(this,SIGNAL(dialogClosing()),parent,SLOT(dialogClosed()));
 	connect(this,SIGNAL(selectionChanging()),parent,SLOT(selectionChanged()));
 	repeat=0;shuffle=0;

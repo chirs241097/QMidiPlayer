@@ -7,10 +7,10 @@
 struct qmpPlugin
 {
 	std::string name,version,path;
-	qmpPluginIntf* interface;
+	qmpPluginIntf* pinterface;
 	bool enabled,initialized;
 	qmpPlugin(std::string _n,std::string _v,std::string _p,qmpPluginIntf* _i)
-	{name=_n;version=_v;path=_p;interface=_i;enabled=initialized=false;}
+	{name=_n;version=_v;path=_p;pinterface=_i;enabled=initialized=false;}
 };
 class qmpPluginManager
 {

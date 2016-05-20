@@ -7,6 +7,8 @@ qmpHelpWindow::qmpHelpWindow(QWidget *parent) :
 	ui(new Ui::qmpHelpWindow)
 {
 	ui->setupUi(this);
+	int w=size().width(),h=size().height();w=w*(logicalDpiX()/96.);h=h*(logicalDpiY()/96.);
+	setMaximumWidth(w);setMaximumHeight(h);setMinimumWidth(w);setMinimumHeight(h);
 	ui->textBrowser->setSearchPaths(QStringList(QString(":/doc"))+QStringList(QString(":/img")));
 	ui->textBrowser->setSource(QUrl("qrc:///doc/index_internal.html"));
 }

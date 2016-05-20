@@ -211,7 +211,7 @@ void CMidiPlayer::playEvents()
 		if(resumed)resumed=false;
 		else
 		if(sendtime.count()<(midiFile->getEvent(tceptr)->time-ct)*dpt)
-#if 0
+#if _WIN32
 		w32usleep((midiFile->getEvent(tceptr)->time-ct)*(dpt/1000));
 #else
 		std::this_thread::sleep_for(std::chrono::nanoseconds((midiFile->getEvent(tceptr)->time-ct)*dpt-sendtime.count()));

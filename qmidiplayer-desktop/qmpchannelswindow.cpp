@@ -11,6 +11,8 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent) :
 	ui(new Ui::qmpChannelsWindow)
 {
 	ui->setupUi(this);
+	int w=size().width(),h=size().height();w=w*(logicalDpiX()/96.);h=h*(logicalDpiY()/96.);
+	setMaximumWidth(w);setMaximumHeight(h);setMinimumWidth(w);setMinimumHeight(h);
 	pselectw=new qmpPresetSelector(this);
 	ceditw=new qmpChannelEditor(this);
 	connect(this,SIGNAL(dialogClosing()),parent,SLOT(dialogClosed()));

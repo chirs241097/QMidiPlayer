@@ -17,7 +17,7 @@ class qmpSamplePlugin:public qmpPluginIntf
 };
 
 extern "C"{
-	qmpPluginIntf* qmpPluginGetInterface(qmpPluginAPI* api)
+	EXPORTSYM qmpPluginIntf* qmpPluginGetInterface(qmpPluginAPI* api)
 	{return new qmpSamplePlugin(api);}
 }
 

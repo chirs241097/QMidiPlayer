@@ -1,3 +1,7 @@
+2016-05-20 0.8.1 alpha
+Scale GUI correctly on a high DPI device.
+Fix building for Windows. RC-bugs still exist.
+
 2016-05-19 0.8.1 alpha
 Added a sample plugin as a template.
 Implemented scanPlugin for Windows.

@@ -5,6 +5,11 @@
 #include <string>
 //This struct is used by event reader callbacks and event handler callbacks
 //as caller data struct
+#ifdef _WIN32
+#define EXPORTSYM __declspec(dllexport)
+#else
+#define EXPORTSYM __attribute__ ((visibility ("default")))
+#endif
 struct SEventCallBackData
 {
 	uint32_t time,type,p1,p2;
@@ -19,7 +24,7 @@ class IMidiCallBack
 		virtual void callBack(void* callerdata,void* userdata)=0;
 		virtual ~IMidiCallBack(){}
 };
-//Main plugin interface.
+//Main plugin pinterface.
 class qmpPluginIntf
 {
 	public:
@@ -30,8 +35,8 @@ class qmpPluginIntf
 		virtual const char* pluginGetName(){return "";}
 		virtual const char* pluginGetVersion(){return "";}
 };
-//Visualization plugin interface. If your plugin implements a visualization,
-//you should implement this interface.
+//Visualization plugin pinterface. If your plugin implements a visualization,
+//you should implement this pinterface.
 class qmpVisualizationIntf
 {
 	public:
@@ -103,6 +108,6 @@ class qmpPluginAPI
 //qmpPluginIntf* qmpPluginGetInterface(qmpPluginAPI* api)
 //as its entry point. A pointer to the core API is also passed to the plugin
 //through the parameter. This function should return a pointer to a class
-//that implementes the plugin interface (qmpPluginIntf).
+//that implementes the plugin pinterface (qmpPluginIntf).
 typedef qmpPluginIntf*(*qmpPluginEntry)(qmpPluginAPI*);
 #endif // QMPCOREPUBLIC_H

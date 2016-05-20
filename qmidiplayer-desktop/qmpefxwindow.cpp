@@ -12,6 +12,8 @@ qmpEfxWindow::qmpEfxWindow(QWidget *parent) :
 	QList<QDial*> dials=findChildren<QDial*>();
 	for(int i=0;i<dials.count();++i)
 		dials.at(i)->setStyle(styl);
+	int w=size().width(),h=size().height();w=w*(logicalDpiX()/96.);h=h*(logicalDpiY()/96.);
+	setMaximumWidth(w);setMaximumHeight(h);setMinimumWidth(w);setMinimumHeight(h);
 	connect(this,SIGNAL(dialogClosing()),parent,SLOT(dialogClosed()));
 	//stub. read these from settings after the setting module is implemented
 	QSettings *settings=qmpSettingsWindow::getSettingsIntf();
