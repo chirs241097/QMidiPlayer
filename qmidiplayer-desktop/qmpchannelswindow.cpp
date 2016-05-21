@@ -67,12 +67,12 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent) :
 		((QDCLabel*)ui->twChannels->cellWidget(i,5))->setID(i);
 		connect(ui->twChannels->cellWidget(i,5),SIGNAL(onClick(int)),this,SLOT(showChannelEditorWindow(int)));
 	}
-	ui->twChannels->setColumnWidth(0,24);
-	ui->twChannels->setColumnWidth(1,24);
-	ui->twChannels->setColumnWidth(2,24);
-	ui->twChannels->setColumnWidth(3,192);
-	ui->twChannels->setColumnWidth(4,208);
-	ui->twChannels->setColumnWidth(5,32);
+	ui->twChannels->setColumnWidth(0,24*(logicalDpiX()/96.));
+	ui->twChannels->setColumnWidth(1,24*(logicalDpiX()/96.));
+	ui->twChannels->setColumnWidth(2,24*(logicalDpiX()/96.));
+	ui->twChannels->setColumnWidth(3,192*(logicalDpiX()/96.));
+	ui->twChannels->setColumnWidth(4,208*(logicalDpiX()/96.));
+	ui->twChannels->setColumnWidth(5,32*(logicalDpiX()/96.));
 }
 
 void qmpChannelsWindow::showEvent(QShowEvent *event)

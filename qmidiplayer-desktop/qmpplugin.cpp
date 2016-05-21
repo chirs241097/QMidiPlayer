@@ -2,10 +2,10 @@
 #include <windows.h>
 #else
 #include <dlfcn.h>
-#include <dirent.h>
 #endif
 #include <cstdio>
 #include <cstring>
+#include <QDirIterator>
 #include "qmpplugin.hpp"
 #include "qmpmainwindow.hpp"
 #include "qmpsettingswindow.hpp"
@@ -15,52 +15,50 @@ qmpSettingsWindow* qsw;
 #ifdef _WIN32
 void qmpPluginManager::scanPlugins()
 {
-	HANDLE dir;
+	QDirIterator *dir;
 	std::vector<std::string> cpluginpaths;
-	//FindFirstFile, FindNextFile, FindClose
-	LPWIN32_FIND_DATAA file;
-	dir=FindFirstFileA(".\\plugins\\*.dll",file);
-	if(dir!=INVALID_HANDLE_VALUE)
+	dir=new QDirIterator(".\\plugins\\");
+	while(dir->hasNext())
 	{
-		cpluginpaths.push_back(std::string(file->cFileName));
-		while(FindNextFileA(dir,file))
-			cpluginpaths.push_back(std::string(file->cFileName));
+		dir->next();
+		if(dir->fileInfo().suffix()=="dll")
+			cpluginpaths.push_back(std::string(".\\plugins\\")+dir->fileName().toStdString());
 	}
-	FindClose(dir);
+	delete dir;
 	for(unsigned i=0;i<cpluginpaths.size();++i)
 	{
-		HMODULE hso=LoadLibraryA((std::string(".\\plugins\\")+cpluginpaths[i]).c_str());
+		HMODULE hso=LoadLibraryA(cpluginpaths[i].c_str());
 		if(!hso){fprintf(stderr,"Error while loading library: %d\n",GetLastError());continue;}
 		FARPROC hndi=GetProcAddress(hso,"qmpPluginGetInterface");
 		if(!hndi){fprintf(stderr,"file %s doesn't seem to be a qmidiplayer plugin.\n",cpluginpaths[i].c_str());continue;}
 		qmpPluginEntry e=(qmpPluginEntry)hndi;
 		qmpPluginIntf* intf=e(pluginAPI);
-		//!!FIXME: Windows version crashes if intf->pluginGetVersion is called. Reason is still unknown.
 		plugins.push_back(qmpPlugin(std::string(intf->pluginGetName()),std::string(intf->pluginGetVersion()),std::string(cpluginpaths[i]),intf));
 	}
 }
 #else
 void qmpPluginManager::scanPlugins()
 {
-	DIR *dir;
-	struct dirent *file;
+	QDirIterator *dir;
 	std::vector<std::string> cpluginpaths;
 #ifdef QMP_BUILD_UNIX_PACKAGE
-	if((dir=opendir("/usr/lib/qmidiplayer/")))
+	dir=new QDirIterator("/usr/lib/qmidiplayer/");
+	while(dir->hasNext())
 	{
-		while((file=readdir(dir)))
-		if(strcmp(file->d_name+strlen(file->d_name)-3,".so")==0)
-			cpluginpaths.push_back(std::string("/usr/lib/qmidiplayer/")+std::string(file->d_name));
-		closedir(dir);
+		dir->next();
+		if(dir->fileInfo().suffix()=="so")
+			cpluginpaths.push_back(std::string("/usr/lib/qmidiplayer/")+dir->fileName().toStdString());
 	}
+	delete dir;
 #endif
-	if((dir=opendir("./")))
+	dir=new QDirIterator("./");
+	while(dir->hasNext())
 	{
-		while((file=readdir(dir)))
-		if(strcmp(file->d_name+strlen(file->d_name)-3,".so")==0)
-			cpluginpaths.push_back(std::string("./")+std::string(file->d_name));
-		closedir(dir);
+		dir->next();
+		if(dir->fileInfo().suffix()=="so")
+			cpluginpaths.push_back(std::string("./")+dir->fileName().toStdString());
 	}
+	delete dir;
 	for(unsigned i=0;i<cpluginpaths.size();++i)
 	{
 		void* hso=dlopen(cpluginpaths[i].c_str(),RTLD_LAZY);

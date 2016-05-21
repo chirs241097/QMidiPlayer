@@ -1,3 +1,7 @@
+2016-05-21 0.8.1 alpha
+Use QDirIterator instead, fixing plugin loading problems in Windows.
+Also scale UI elements.
+
 2016-05-20 0.8.1 alpha
 Scale GUI correctly on a high DPI device.
 Fix building for Windows. RC-bugs still exist.

@@ -11,6 +11,7 @@
 #include "qmpmainwindow.hpp"
 #include "ui_qmpmainwindow.h"
 #include "../core/qmpmidiplay.hpp"
+#define setButtonHeight(x,h) {x->setMaximumHeight(h*(logicalDpiY()/96.));x->setMinimumHeight(h*(logicalDpiY()/96.));}
 #ifdef _WIN32
 #include <Windows.h>
 char* wcsto8bit(const wchar_t* s)
@@ -55,6 +56,10 @@ qmpMainWindow::qmpMainWindow(QWidget *parent) :
 	ui->lbFileName->setText("");ref=this;ui->verticalLayout->setAlignment(ui->pushButton,Qt::AlignRight);
 	int w=size().width(),h=size().height();w=w*(logicalDpiX()/96.);h=h*(logicalDpiY()/96.);
 	setMaximumWidth(w);setMaximumHeight(h);setMinimumWidth(w);setMinimumHeight(h);
+	setButtonHeight(ui->pbNext,34);setButtonHeight(ui->pbPlayPause,34);
+	setButtonHeight(ui->pbPrev,34);setButtonHeight(ui->pbSettings,34);setButtonHeight(ui->pbStop,34);
+	setButtonHeight(ui->pbChannels,36);setButtonHeight(ui->pbPList,36);
+	setButtonHeight(ui->pbEfx,36);setButtonHeight(ui->pbVisualization,36);
 	playing=false;stopped=true;dragging=false;memset(VIs,0,sizeof(VIs));
 	settingsw=new qmpSettingsWindow(this);pmgr=new qmpPluginManager();
 	plistw=new qmpPlistWindow(this);player=NULL;timer=NULL;

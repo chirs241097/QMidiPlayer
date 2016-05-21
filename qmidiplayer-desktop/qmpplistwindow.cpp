@@ -9,6 +9,7 @@
 #include "qmpplistwindow.hpp"
 #include "ui_qmpplistwindow.h"
 #include "qmpmainwindow.hpp"
+#define setButtonHeight(x,h) {x->setMaximumHeight(h*(logicalDpiY()/96.));x->setMinimumHeight(h*(logicalDpiY()/96.));}
 
 qmpPlistWindow::qmpPlistWindow(QWidget *parent) :
 	QDialog(parent),
@@ -17,6 +18,10 @@ qmpPlistWindow::qmpPlistWindow(QWidget *parent) :
 	ui->setupUi(this);
 	int w=size().width(),h=size().height();w=w*(logicalDpiX()/96.);h=h*(logicalDpiY()/96.);
 	setMaximumWidth(w);setMaximumHeight(h);setMinimumWidth(w);setMinimumHeight(h);
+	setButtonHeight(ui->pbAdd,36);setButtonHeight(ui->pbAddFolder,36);
+	setButtonHeight(ui->pbClear,36);setButtonHeight(ui->pbLoad,36);
+	setButtonHeight(ui->pbRemove,36);setButtonHeight(ui->pbRepeat,36);
+	setButtonHeight(ui->pbSave,36);setButtonHeight(ui->pbShuffle,36);
 	connect(this,SIGNAL(dialogClosing()),parent,SLOT(dialogClosed()));
 	connect(this,SIGNAL(selectionChanging()),parent,SLOT(selectionChanged()));
 	repeat=0;shuffle=0;
