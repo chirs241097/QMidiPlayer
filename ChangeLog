@@ -1,3 +1,7 @@
+2016-05-23 0.8.1 alpha
+Add horizontal visualization mode.
+Add build date in version page.
+
 2016-05-21 0.8.1 alpha
 Use QDirIterator instead, fixing plugin loading problems in Windows.
 Also scale UI elements.

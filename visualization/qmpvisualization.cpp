@@ -10,6 +10,7 @@ int notestretch=100;//length of quarter note
 int minnotelength=100;
 int noteappearance=1,showpiano=1,stairpiano=1,savevp=1,showlabel=1;
 int wwidth=800,wheight=600,wsupersample=1,wmultisample=1,showparticle=1;
+int horizontal=1;
 int fov=60,vsync=1,tfps=60;
 DWORD chkrtint=0xFF999999;
 DWORD iccolors[]={0XFFFF0000,0XFFFF8000,0XFFFFBF00,0XFFFFFF00,
@@ -57,6 +58,7 @@ void qmpVisualization::showThread()
 	stairpiano=api->getOptionBool("Visualization/stairpiano");
 	showlabel=api->getOptionBool("Visualization/showlabel");
 	showparticle=api->getOptionBool("Visualization/showparticle");
+	horizontal=api->getOptionBool("Visualization/horizontal");
 	savevp=api->getOptionBool("Visualization/savevp");
 	vsync=api->getOptionBool("Visualization/vsync");
 	tfps=api->getOptionInt("Visualization/tfps");
@@ -76,7 +78,7 @@ void qmpVisualization::showThread()
 	chequer=sm->smTextureLoad("/usr/share/qmidiplayer/img/chequerboard.png");
 	particletex=sm->smTextureLoad("particle.png");
 	bgtex=sm->smTextureLoad(api->getOptionString("Visualization/background").c_str());
-	if(showparticle)
+	if(showparticle&&!horizontal)
 	{
 		smParticleSystemInfo psinfo;
 		psinfo.acc=smvec3d(0,0,-0.05);psinfo.accvar=smvec3d(0,0,0.005);
@@ -96,7 +98,7 @@ void qmpVisualization::showThread()
 			pss[i][j]->setPos(smvec3d(0.756*((double)j-64)+.48,(stairpiano?(56-i*7.):(64-i*8.)),stairpiano*i*2+0.1));
 		}
 	}else memset(pss,0,sizeof(pss));
-	if(showpiano)for(int i=0;i<16;++i)p3d[i]=new qmpVirtualPiano3D();
+	if(showpiano&&!horizontal)for(int i=0;i<16;++i)p3d[i]=new qmpVirtualPiano3D();
 	memset(traveld,0,sizeof(traveld));
 	if(noteappearance==1)nebuf=new smEntity3DBuffer();else nebuf=NULL;
 	tdscn=sm->smTargetCreate(wwidth*wsupersample,wheight*wsupersample,wmultisample);
@@ -110,8 +112,17 @@ void qmpVisualization::showThread()
 	if(!font2.loadTTF("/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",16))
 	if(!font2.loadTTF("/usr/share/fonts/wenquanyi/wqy-microhei/wqy-microhei.ttc",16))
 	printf("W: Font load failed.\n");
-	pos[0]=0;pos[1]=120;pos[2]=70;
-	rot[0]=0;rot[1]=75;rot[2]=90;ctk=0;
+	if(horizontal)
+	{
+		pos[0]=-20;pos[1]=45;pos[2]=0;
+		rot[0]=0;rot[1]=90;rot[2]=90;
+	}
+	else
+	{
+		pos[0]=0;pos[1]=120;pos[2]=70;
+		rot[0]=0;rot[1]=75;rot[2]=90;
+	}
+	ctk=0;
 	if(savevp)
 	{
 		pos[0]=api->getOptionDouble("Visualization/px");
@@ -137,8 +148,8 @@ void qmpVisualization::close()
 		rendererTh=NULL;
 	}else return;
 
-	if(showpiano)for(int i=0;i<16;++i)delete p3d[i];
-	if(showparticle)for(int i=0;i>16;++i)for(int j=0;j<128;++j)delete pss[i][j];
+	if(showpiano&&!horizontal)for(int i=0;i<16;++i)delete p3d[i];
+	if(showparticle&&!horizontal)for(int i=0;i>16;++i)for(int j=0;j<128;++j)delete pss[i][j];
 	if(noteappearance==1)delete nebuf;
 	sm->smFinale();
 	if(savevp)
@@ -166,7 +177,7 @@ void qmpVisualization::reset()
 	pool.clear();elb=ctk=0;
 	for(int i=0;i<16;++i)for(int j=0;j<128;++j)
 	{
-		if(showparticle&&pss[i][j])pss[i][j]->stopPS();
+		if(showparticle&&!horizontal&&pss[i][j])pss[i][j]->stopPS();
 		while(!pendingt[i][j].empty())pendingt[i][j].pop();
 		while(!pendingv[i][j].empty())pendingv[i][j].pop();
 	}
@@ -178,10 +189,16 @@ bool qmpVisualization::update()
 {
 	smQuad q;
 	for(int i=0;i<4;++i)
-	{q.v[i].col=chkrtint;q.v[i].z=showpiano?-5:0;}
+	{q.v[i].col=chkrtint;q.v[i].z=(showpiano&&!horizontal)?-5:0;}
 	q.tex=chequer;q.blend=BLEND_ALPHABLEND;
 	q.v[0].x=q.v[3].x=-120;q.v[1].x=q.v[2].x=120;
 	q.v[0].y=q.v[1].y=-120;q.v[2].y=q.v[3].y=120;
+	if(horizontal)
+	{
+		for(int i=0;i<4;++i)q.v[i].x=-20;
+		q.v[0].y=q.v[3].y=-120;q.v[1].y=q.v[2].y=120;
+		q.v[0].z=q.v[1].z=-120;q.v[2].z=q.v[3].z=120;
+	}
 	q.v[0].tx=q.v[3].tx=0;q.v[1].tx=q.v[2].tx=30;
 	q.v[0].ty=q.v[1].ty=0;q.v[2].ty=q.v[3].ty=30;
 	sm->smRenderBegin3D(fov,true,tdscn);
@@ -194,6 +211,19 @@ bool qmpVisualization::update()
 	if(sm->smGetKeyState(SMK_W))pos[0]-=cos(smMath::deg2rad(rot[2])),pos[1]-=sin(smMath::deg2rad(rot[2]));
 	if(sm->smGetKeyState(SMK_Q))pos[2]+=1;
 	if(sm->smGetKeyState(SMK_E))pos[2]-=1;
+	if(sm->smGetKeyState(SMK_R))
+	{
+		if(horizontal)
+		{
+			pos[0]=-20;pos[1]=45;pos[2]=0;
+			rot[0]=0;rot[1]=90;rot[2]=90;
+		}
+		else
+		{
+			pos[0]=0;pos[1]=120;pos[2]=70;
+			rot[0]=0;rot[1]=75;rot[2]=90;
+		}
+	}
 	if(sm->smGetKeyState(SMK_LBUTTON)==SMKST_HIT)
 	sm->smSetMouseGrab(true),sm->smGetMouse2f(&lastx,&lasty);
 	if(sm->smGetKeyState(SMK_LBUTTON)==SMKST_KEEP)
@@ -217,7 +247,7 @@ bool qmpVisualization::update()
 	if(sm->smGetKeyState(SMK_O))rot[2]-=1;
 	//printf("pos: %f %f %f\n",pos[0],pos[1],pos[2]);
 	//printf("rot: %f %f %f\n",rot[0],rot[1],rot[2]);
-	double lpt=(double)notestretch/api->getDivision()/10.;
+	double lpt=(double)notestretch/api->getDivision()/10.*(horizontal?0.25:1);
 	memset(notestatus,0,sizeof(notestatus));
 	for(uint32_t i=elb;i<pool.size();++i)
 	{
@@ -225,13 +255,21 @@ bool qmpVisualization::update()
 		if(fabs((double)pool[i]->tcs-ctk)*lpt<viewdist*2||fabs((double)pool[i]->tce-ctk)*lpt<viewdist*2)
 		{
 			if(api->getChannelMask(pool[i]->ch))continue;
-			smvec3d a(0.63*((double)pool[i]->key-64)+.1,(stairpiano?(56-pool[i]->ch*7.):(64-pool[i]->ch*8.)),((double)pool[i]->tce-ctk)*lpt+(stairpiano&&showpiano)*pool[i]->ch*2.);
-			smvec3d b(0.63*((double)pool[i]->key-64)+.7,(stairpiano?(56-pool[i]->ch*7.):(64-pool[i]->ch*8.))+.4,((double)pool[i]->tcs-ctk)*lpt+(stairpiano&&showpiano)*pool[i]->ch*2.);
+			smvec3d a(0.63*((double)pool[i]->key-64)+.1,(stairpiano?(56-pool[i]->ch*7.):(64-pool[i]->ch*8.)),((double)pool[i]->tce-ctk)*lpt+(stairpiano&&showpiano&&!horizontal)*pool[i]->ch*2.);
+			smvec3d b(0.63*((double)pool[i]->key-64)+.7,(stairpiano?(56-pool[i]->ch*7.):(64-pool[i]->ch*8.))+.4,((double)pool[i]->tcs-ctk)*lpt+(stairpiano&&showpiano&&!horizontal)*pool[i]->ch*2.);
 			bool isnoteon=pool[i]->tcs<=ctk&&pool[i]->tce>=ctk;if(isnoteon)
 			a.x=0.63*((double)pool[i]->key-64+api->getPitchBend(pool[i]->ch))+.1,
 			b.x=0.63*((double)pool[i]->key-64+api->getPitchBend(pool[i]->ch))+.7;
 			notestatus[pool[i]->ch][pool[i]->key]|=isnoteon;a.x*=1.2;b.x*=1.2;
-			if(showparticle)
+			if(horizontal)
+			{
+				a=smvec3d(((double)pool[i]->tcs-ctk)*lpt-20,(16-pool[i]->ch*2.),0.63*((double)pool[i]->key-64)+.1);
+				b=smvec3d(((double)pool[i]->tce-ctk)*lpt-20,(16-pool[i]->ch*2.)+.4,0.63*((double)pool[i]->key-64)+.7);
+				if(isnoteon)
+					a.z=0.63*((double)pool[i]->key-64+api->getPitchBend(pool[i]->ch))+.1,
+					b.z=0.63*((double)pool[i]->key-64+api->getPitchBend(pool[i]->ch))+.7;
+			}
+			if(showparticle&&!horizontal)
 			{
 				if(notestatus[pool[i]->ch][pool[i]->key])
 				{
@@ -240,12 +278,14 @@ bool qmpVisualization::update()
 				}
 				else pss[pool[i]->ch][pool[i]->key]->stopPS();
 			}
-			if(((double)pool[i]->tce-pool[i]->tcs)*lpt<minnotelength/100.)a.z=((double)pool[i]->tcs-ctk)*lpt-minnotelength/100.+stairpiano*pool[i]->ch*2;
-			drawCube(a,b,SETA(isnoteon?accolors[pool[i]->ch]:iccolors[pool[i]->ch],int(pool[i]->vel*(isnoteon?2.0:1.6))),0);
+			if(((double)pool[i]->tce-pool[i]->tcs)*lpt<minnotelength*(horizontal?0.0025:0.01))
+			{if(horizontal)a.x=((double)pool[i]->tcs-ctk)*lpt-minnotelength/100.-20;
+			else a.z=((double)pool[i]->tcs-ctk)*lpt-minnotelength/100.+stairpiano*pool[i]->ch*2;}
+			drawCube(a,b,SETA(isnoteon?accolors[pool[i]->ch]:iccolors[pool[i]->ch],int(pool[i]->vel*1.6+(isnoteon?52:32))),0);
 		}
 	}
 	if(noteappearance)nebuf->drawBatch();
-	if(showpiano)
+	if(showpiano&&!horizontal)
 	for(int i=0;i<16;++i)
 	{
 		for(int j=0;j<128;++j)
@@ -269,7 +309,7 @@ bool qmpVisualization::update()
 	if(playing)ctk+=(int)(1e6/(api->getRawTempo()/api->getDivision())*sm->smGetDelta());
 	while(pool.size()&&elb<pool.size()&&((double)ctk-pool[elb]->tce)*lpt>viewdist*2)++elb;
 	sm->smRenderEnd();
-	if(showparticle)
+	if(showparticle&&!horizontal)
 	{
 		sm->smRenderBegin3D(fov,false,tdparticles);
 		sm->sm3DCamera6f2v(pos,rot);
@@ -299,7 +339,7 @@ bool qmpVisualization::update()
 	q.v[0].x=q.v[1].x=0;q.v[2].x=q.v[3].x=wwidth;
 	q.v[0].y=q.v[3].y=0;q.v[1].y=q.v[2].y=wheight;
 	sm->smRenderQuad(&q);
-	if(showparticle)
+	if(showparticle&&!horizontal)
 	{
 		q.tex=sm->smTargetTexture(tdparticles);
 		sm->smRenderQuad(&q);
@@ -357,6 +397,7 @@ void qmpVisualization::init()
 	api->registerOptionBool("Visualization-Appearance","Arrange channels on a stair","Visualization/stairpiano",true);
 	api->registerOptionBool("Visualization-Appearance","Show channel labels","Visualization/showlabel",true);
 	api->registerOptionBool("Visualization-Appearance","Show Particles","Visualization/showparticle",true);
+	api->registerOptionBool("Visualization-Appearance","Horizontal Visualization","Visualization/horizontal",false);
 	api->registerOptionBool("Visualization-Video","Enable VSync","Visualization/vsync",true);
 	api->registerOptionBool("Visualization-Video","Save Viewport","Visualization/savevp",true);
 	api->registerOptionInt("Visualization-Video","Window Width","Visualization/wwidth",320,3200,800);
@@ -368,7 +409,7 @@ void qmpVisualization::init()
 	api->registerOptionInt("Visualization-Appearance","View distance","Visualization/viewdist",20,1000,100);
 	api->registerOptionInt("Visualization-Appearance","Note stretch","Visualization/notestretch",20,500,100);
 	api->registerOptionInt("Visualization-Appearance","Minimum note length","Visualization/minnotelen",20,500,100);
-	api->registerOptionUint("Visualization-Appearance","Chequer board tint","Visualization/chkrtint",0,0xFFFFFFFF,0xFF999999);
+	api->registerOptionUint("Visualization-Appearance","Chequer board tint (AARRGGBB)","Visualization/chkrtint",0,0xFFFFFFFF,0xFF999999);
 	api->registerOptionString("Visualization-Appearance","Background Image","Visualization/background","");
 	api->registerOptionDouble("","","Visualization/px",-999999999,999999999,0);
 	api->registerOptionDouble("","","Visualization/py",-999999999,999999999,120);
@@ -386,6 +427,7 @@ void qmpVisualization::init()
 	stairpiano=api->getOptionBool("Visualization/stairpiano");
 	showlabel=api->getOptionBool("Visualization/showlabel");
 	showparticle=api->getOptionBool("Visualization/showparticle");
+	horizontal=api->getOptionBool("Visualization/horizontal");
 	savevp=api->getOptionBool("Visualization/savevp");
 	vsync=api->getOptionBool("Visualization/vsync");
 	tfps=api->getOptionInt("Visualization/tfps");
