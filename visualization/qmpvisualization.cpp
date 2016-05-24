@@ -247,6 +247,10 @@ bool qmpVisualization::update()
 	if(sm->smGetKeyState(SMK_O))rot[2]-=1;
 	//printf("pos: %f %f %f\n",pos[0],pos[1],pos[2]);
 	//printf("rot: %f %f %f\n",rot[0],rot[1],rot[2]);
+	if(sm->smGetKeyState(SMK_RIGHT)==SMKST_HIT)
+		api->playerSeek(api->getCurrentPlaybackPercentage()+(sm->smGetKeyState(SMK_SHIFT)?5:1));
+	if(sm->smGetKeyState(SMK_LEFT)==SMKST_HIT)
+		api->playerSeek(api->getCurrentPlaybackPercentage()-(sm->smGetKeyState(SMK_SHIFT)?5:1));
 	double lpt=(double)notestretch/api->getDivision()/10.*(horizontal?0.25:1);
 	memset(notestatus,0,sizeof(notestatus));
 	for(uint32_t i=elb;i<pool.size();++i)

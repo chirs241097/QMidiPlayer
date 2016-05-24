@@ -64,6 +64,8 @@ class qmpMainWindow:public QMainWindow
 		QString getFileName();
 		std::string getTitle();
 		std::wstring getWTitle();
+		uint32_t getPlaybackPercentage();
+		void playerSeek(uint32_t percentage);
 		int pharseArgs();
 		int registerVisualizationIntf(qmpVisualizationIntf* intf);
 		void unregisterVisualizationIntf(int handle);

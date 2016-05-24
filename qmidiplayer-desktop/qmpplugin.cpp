@@ -128,6 +128,10 @@ uint32_t qmpPluginAPI::getMaxPolyphone()
 {return qmw&&qmw->getPlayer()?qmw->getPlayer()->getMaxPolyphone():0;}
 uint32_t qmpPluginAPI::getCurrentTimeStamp()
 {return qmw&&qmw->getPlayer()?qmw->getPlayer()->getTick():0;}
+uint32_t qmpPluginAPI::getCurrentPlaybackPercentage()
+{return qmw?qmw->getPlaybackPercentage():0;}
+void qmpPluginAPI::playerSeek(uint32_t percentage)
+{if(qmw)qmw->playerSeek(percentage);}
 double qmpPluginAPI::getPitchBend(int ch)
 {return qmw&&qmw->getPlayer()?qmw->getPlayer()->getPitchBend(ch):0;}
 bool qmpPluginAPI::getChannelMask(int ch)

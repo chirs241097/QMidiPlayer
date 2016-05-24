@@ -425,9 +425,33 @@ void qmpMainWindow::on_hsTimer_sliderReleased()
 	}
 	else
 	{
-		if(stopped){ui->hsTimer->setValue(0);}return;
+		if(stopped){ui->hsTimer->setValue(0);return;}
 		player->setTCeptr(player->getStamp(ui->hsTimer->value()),ui->hsTimer->value());
 		offset=ui->hsTimer->value()/100.*player->getFtime();
+		char ts[100];
+		sprintf(ts,"%02d:%02d",(int)(offset)/60,(int)(offset)%60);
+		ui->lbCurTime->setText(ts);
+	}
+}
+
+uint32_t qmpMainWindow::getPlaybackPercentage(){return ui->hsTimer->value();}
+void qmpMainWindow::playerSeek(uint32_t percentage)
+{
+	if(percentage>100)percentage=100;
+	if(percentage<0)percentage=0;
+	if(playing)
+	{
+		if(percentage==100){on_pbNext_clicked();return;}
+		player->setTCeptr(player->getStamp(percentage),percentage);
+		player->playerPanic();ui->hsTimer->setValue(percentage);
+		offset=percentage/100.*player->getFtime();
+		st=std::chrono::steady_clock::now();
+	}
+	else
+	{
+		if(stopped){ui->hsTimer->setValue(0);return;}
+		player->setTCeptr(player->getStamp(percentage),percentage);
+		offset=percentage/100.*player->getFtime();ui->hsTimer->setValue(percentage);
 		char ts[100];
 		sprintf(ts,"%02d:%02d",(int)(offset)/60,(int)(offset)%60);
 		ui->lbCurTime->setText(ts);

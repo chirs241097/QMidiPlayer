@@ -4,12 +4,13 @@ TEMPLATE = subdirs
 SUBDIRS = \
 	qmidiplayer-desktop \
 	qmidiplayer-lite \
-	visualization
+	sample-plugin
 }
 android {
 SUBDIRS = \
 	qmidiplayer-lite
 }
 
-SUBDIRS += \
-    sample-plugin
+!win32 {
+SUBDIRS += visualization\
+}
