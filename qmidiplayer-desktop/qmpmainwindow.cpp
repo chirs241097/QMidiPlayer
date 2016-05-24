@@ -308,6 +308,8 @@ QString qmpMainWindow::getFileName(){return ui->lbFileName->text();}
 std::string qmpMainWindow::getTitle()
 {
 	if(!qmpSettingsWindow::getSettingsIntf())return "";
+	if(qmpSettingsWindow::getSettingsIntf()->value("Midi/TextEncoding","").toString()
+		=="Unicode")return std::string(player->getTitle());
 	return QTextCodec::codecForName(
 				qmpSettingsWindow::getSettingsIntf()->value("Midi/TextEncoding","").
 				toString().toStdString().c_str())->
@@ -316,6 +318,8 @@ std::string qmpMainWindow::getTitle()
 std::wstring qmpMainWindow::getWTitle()
 {
 	if(!qmpSettingsWindow::getSettingsIntf())return L"";
+	if(qmpSettingsWindow::getSettingsIntf()->value("Midi/TextEncoding","").toString()
+		=="Unicode")return QString(player->getTitle()).toStdWString();
 	return QTextCodec::codecForName(
 				qmpSettingsWindow::getSettingsIntf()->value("Midi/TextEncoding","").
 				toString().toStdString().c_str())->

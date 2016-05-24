@@ -10,7 +10,7 @@ int notestretch=100;//length of quarter note
 int minnotelength=100;
 int noteappearance=1,showpiano=1,stairpiano=1,savevp=1,showlabel=1;
 int wwidth=800,wheight=600,wsupersample=1,wmultisample=1,showparticle=1;
-int horizontal=1;
+int horizontal=1,flat=0;
 int fov=60,vsync=1,tfps=60;
 DWORD chkrtint=0xFF999999;
 DWORD iccolors[]={0XFFFF0000,0XFFFF8000,0XFFFFBF00,0XFFFFFF00,

@@ -10,8 +10,9 @@
 #include <QMouseEvent>
 #include <QAction>
 #include <QMenu>
-#include <QApplication>
 #include <QSlider>
+#include <QPointer>
+#include <QApplication>
 #include <thread>
 #include <chrono>
 #include "../core/qmpmidiplay.hpp"
@@ -106,12 +107,12 @@ class qmpMainWindow:public QMainWindow
 		double offset;
 		CMidiPlayer *player;
 		qmpPluginManager *pmgr;
-		qmpPlistWindow *plistw;
-		qmpChannelsWindow *chnlw;
-		qmpEfxWindow *efxw;
-		qmpInfoWindow *infow;
-		qmpSettingsWindow *settingsw;
-		qmpHelpWindow *helpw;
+		QPointer<qmpPlistWindow> plistw;
+		QPointer<qmpChannelsWindow> chnlw;
+		QPointer<qmpEfxWindow> efxw;
+		QPointer<qmpInfoWindow> infow;
+		QPointer<qmpSettingsWindow> settingsw;
+		QPointer<qmpHelpWindow> helpw;
 		qmpVisualizationIntf* VIs[16];
 
 		QAction *fnA1,*fnA2,*fnA3;

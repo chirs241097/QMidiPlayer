@@ -1,5 +1,8 @@
 2016-05-24 0.8.1 alpha
 Add seeking with arrow buttons in visualization.
+Correct return result of API functions when text encoding is set to Unicode.
+Use QPointer to store pointer to dialogs to avoid crashes.
+(However crashes related to dbus are still not resolved.)
 
 2016-05-23 0.8.1 alpha
 Add horizontal visualization mode.
