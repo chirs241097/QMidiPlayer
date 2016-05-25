@@ -1,3 +1,6 @@
+2016-05-25 0.8.1 alpha
+Horizontal 2D visualization.
+
 2016-05-24 0.8.1 alpha
 Add seeking with arrow buttons in visualization.
 Correct return result of API functions when text encoding is set to Unicode.

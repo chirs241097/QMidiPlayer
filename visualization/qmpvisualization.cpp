@@ -59,6 +59,7 @@ void qmpVisualization::showThread()
 	showlabel=api->getOptionBool("Visualization/showlabel");
 	showparticle=api->getOptionBool("Visualization/showparticle");
 	horizontal=api->getOptionBool("Visualization/horizontal");
+	flat=api->getOptionBool("Visualization/flat");
 	savevp=api->getOptionBool("Visualization/savevp");
 	vsync=api->getOptionBool("Visualization/vsync");
 	tfps=api->getOptionInt("Visualization/tfps");
@@ -188,142 +189,145 @@ void qmpVisualization::pause(){playing=!playing;}
 bool qmpVisualization::update()
 {
 	smQuad q;
-	for(int i=0;i<4;++i)
-	{q.v[i].col=chkrtint;q.v[i].z=(showpiano&&!horizontal)?-5:0;}
-	q.tex=chequer;q.blend=BLEND_ALPHABLEND;
-	q.v[0].x=q.v[3].x=-120;q.v[1].x=q.v[2].x=120;
-	q.v[0].y=q.v[1].y=-120;q.v[2].y=q.v[3].y=120;
-	if(horizontal)
-	{
-		for(int i=0;i<4;++i)q.v[i].x=-20;
-		q.v[0].y=q.v[3].y=-120;q.v[1].y=q.v[2].y=120;
-		q.v[0].z=q.v[1].z=-120;q.v[2].z=q.v[3].z=120;
-	}
-	q.v[0].tx=q.v[3].tx=0;q.v[1].tx=q.v[2].tx=30;
-	q.v[0].ty=q.v[1].ty=0;q.v[2].ty=q.v[3].ty=30;
-	sm->smRenderBegin3D(fov,true,tdscn);
-	sm->sm3DCamera6f2v(pos,rot);
-	sm->smClrscr(0,1,1);
-	sm->smRenderQuad(&q);
-	if(sm->smGetKeyState(SMK_D))pos[0]+=cos(smMath::deg2rad(rot[2]-90)),pos[1]+=sin(smMath::deg2rad(rot[2]-90));
-	if(sm->smGetKeyState(SMK_A))pos[0]-=cos(smMath::deg2rad(rot[2]-90)),pos[1]-=sin(smMath::deg2rad(rot[2]-90));
-	if(sm->smGetKeyState(SMK_S))pos[0]+=cos(smMath::deg2rad(rot[2])),pos[1]+=sin(smMath::deg2rad(rot[2]));
-	if(sm->smGetKeyState(SMK_W))pos[0]-=cos(smMath::deg2rad(rot[2])),pos[1]-=sin(smMath::deg2rad(rot[2]));
-	if(sm->smGetKeyState(SMK_Q))pos[2]+=1;
-	if(sm->smGetKeyState(SMK_E))pos[2]-=1;
-	if(sm->smGetKeyState(SMK_R))
-	{
-		if(horizontal)
-		{
-			pos[0]=-20;pos[1]=45;pos[2]=0;
-			rot[0]=0;rot[1]=90;rot[2]=90;
-		}
-		else
-		{
-			pos[0]=0;pos[1]=120;pos[2]=70;
-			rot[0]=0;rot[1]=75;rot[2]=90;
-		}
-	}
-	if(sm->smGetKeyState(SMK_LBUTTON)==SMKST_HIT)
-	sm->smSetMouseGrab(true),sm->smGetMouse2f(&lastx,&lasty);
-	if(sm->smGetKeyState(SMK_LBUTTON)==SMKST_KEEP)
-	{
-		float x,y;
-		sm->smGetMouse2f(&x,&y);
-		rot[1]-=(y-lasty)*0.01;
-		rot[2]+=(x-lastx)*0.01;
-		while(rot[1]>360)rot[1]-=360;
-		while(rot[1]<0)rot[1]+=360;
-		while(rot[2]>360)rot[2]-=360;
-		while(rot[2]<0)rot[2]+=360;
-	}
-	if(sm->smGetKeyState(SMK_LBUTTON)==SMKST_RELEASE)
-	sm->smSetMouseGrab(false);
-	if(sm->smGetKeyState(SMK_I))rot[1]+=1;
-	if(sm->smGetKeyState(SMK_K))rot[1]-=1;
-	if(sm->smGetKeyState(SMK_L))rot[0]+=1;
-	if(sm->smGetKeyState(SMK_J))rot[0]-=1;
-	if(sm->smGetKeyState(SMK_U))rot[2]+=1;
-	if(sm->smGetKeyState(SMK_O))rot[2]-=1;
-	//printf("pos: %f %f %f\n",pos[0],pos[1],pos[2]);
-	//printf("rot: %f %f %f\n",rot[0],rot[1],rot[2]);
 	if(sm->smGetKeyState(SMK_RIGHT)==SMKST_HIT)
 		api->playerSeek(api->getCurrentPlaybackPercentage()+(sm->smGetKeyState(SMK_SHIFT)?5:1));
 	if(sm->smGetKeyState(SMK_LEFT)==SMKST_HIT)
 		api->playerSeek(api->getCurrentPlaybackPercentage()-(sm->smGetKeyState(SMK_SHIFT)?5:1));
-	double lpt=(double)notestretch/api->getDivision()/10.*(horizontal?0.25:1);
-	memset(notestatus,0,sizeof(notestatus));
-	for(uint32_t i=elb;i<pool.size();++i)
+	if(!flat)
 	{
-		if(((double)pool[i]->tcs-ctk)*lpt>viewdist*2)break;
-		if(fabs((double)pool[i]->tcs-ctk)*lpt<viewdist*2||fabs((double)pool[i]->tce-ctk)*lpt<viewdist*2)
+		for(int i=0;i<4;++i)
+		{q.v[i].col=chkrtint;q.v[i].z=(showpiano&&!horizontal)?-5:0;}
+		q.tex=chequer;q.blend=BLEND_ALPHABLEND;
+		q.v[0].x=q.v[3].x=-120;q.v[1].x=q.v[2].x=120;
+		q.v[0].y=q.v[1].y=-120;q.v[2].y=q.v[3].y=120;
+		if(horizontal)
 		{
-			if(api->getChannelMask(pool[i]->ch))continue;
-			smvec3d a(0.63*((double)pool[i]->key-64)+.1,(stairpiano?(56-pool[i]->ch*7.):(64-pool[i]->ch*8.)),((double)pool[i]->tce-ctk)*lpt+(stairpiano&&showpiano&&!horizontal)*pool[i]->ch*2.);
-			smvec3d b(0.63*((double)pool[i]->key-64)+.7,(stairpiano?(56-pool[i]->ch*7.):(64-pool[i]->ch*8.))+.4,((double)pool[i]->tcs-ctk)*lpt+(stairpiano&&showpiano&&!horizontal)*pool[i]->ch*2.);
-			bool isnoteon=pool[i]->tcs<=ctk&&pool[i]->tce>=ctk;if(isnoteon)
-			a.x=0.63*((double)pool[i]->key-64+api->getPitchBend(pool[i]->ch))+.1,
-			b.x=0.63*((double)pool[i]->key-64+api->getPitchBend(pool[i]->ch))+.7;
-			notestatus[pool[i]->ch][pool[i]->key]|=isnoteon;a.x*=1.2;b.x*=1.2;
-			if(horizontal)
-			{
-				a=smvec3d(((double)pool[i]->tcs-ctk)*lpt-20,(16-pool[i]->ch*2.),0.63*((double)pool[i]->key-64)+.1);
-				b=smvec3d(((double)pool[i]->tce-ctk)*lpt-20,(16-pool[i]->ch*2.)+.4,0.63*((double)pool[i]->key-64)+.7);
-				if(isnoteon)
-					a.z=0.63*((double)pool[i]->key-64+api->getPitchBend(pool[i]->ch))+.1,
-					b.z=0.63*((double)pool[i]->key-64+api->getPitchBend(pool[i]->ch))+.7;
-			}
-			if(showparticle&&!horizontal)
-			{
-				if(notestatus[pool[i]->ch][pool[i]->key])
-				{
-					pss[pool[i]->ch][pool[i]->key]->startPS();
-					pss[pool[i]->ch][pool[i]->key]->setPos(smvec3d(0.756*((double)pool[i]->key-64)+.48,(stairpiano?(56-pool[i]->ch*7.):(64-pool[i]->ch*8.)),stairpiano*pool[i]->ch*2+0.1));
-				}
-				else pss[pool[i]->ch][pool[i]->key]->stopPS();
-			}
-			if(((double)pool[i]->tce-pool[i]->tcs)*lpt<minnotelength*(horizontal?0.0025:0.01))
-			{if(horizontal)a.x=((double)pool[i]->tcs-ctk)*lpt-minnotelength/100.-20;
-			else a.z=((double)pool[i]->tcs-ctk)*lpt-minnotelength/100.+stairpiano*pool[i]->ch*2;}
-			drawCube(a,b,SETA(isnoteon?accolors[pool[i]->ch]:iccolors[pool[i]->ch],int(pool[i]->vel*1.6+(isnoteon?52:32))),0);
+			for(int i=0;i<4;++i)q.v[i].x=-20;
+			q.v[0].y=q.v[3].y=-120;q.v[1].y=q.v[2].y=120;
+			q.v[0].z=q.v[1].z=-120;q.v[2].z=q.v[3].z=120;
 		}
-	}
-	if(noteappearance)nebuf->drawBatch();
-	if(showpiano&&!horizontal)
-	for(int i=0;i<16;++i)
-	{
-		for(int j=0;j<128;++j)
-		{
-			if(notestatus[i][j])
-			if(traveld[i][j]<10)traveld[i][j]+=2;else traveld[i][j]=10;
-			else
-			if(traveld[i][j]>0)traveld[i][j]-=2;else traveld[i][j]=0;
-			p3d[i]->setKeyTravelDist(j,traveld[i][j]/10.);
-		}
-		p3d[i]->render(smvec3d(0.756*api->getPitchBend(i),stairpiano?55-i*7:62-i*8,stairpiano*i*2));
-		if(showlabel)
-		{
-			std::string s=api->getChannelPresetString(i);
-			wchar_t ws[1024];mbstowcs(ws,s.c_str(),1024);
-			fonthdpi.updateString(ws);
-			fonthdpi.render(-49,stairpiano?56-i*7:63-i*8,stairpiano*i*2+0.1,0xFFFFFFFF,ALIGN_RIGHT,.008,0.01);
-			fonthdpi.render(-49.05,stairpiano?56.05-i*7:63.05-i*8,stairpiano*i*2+0.2,0xFF000000,ALIGN_RIGHT,.008,0.01);
-		}
-	}
-	if(playing)ctk+=(int)(1e6/(api->getRawTempo()/api->getDivision())*sm->smGetDelta());
-	while(pool.size()&&elb<pool.size()&&((double)ctk-pool[elb]->tce)*lpt>viewdist*2)++elb;
-	sm->smRenderEnd();
-	if(showparticle&&!horizontal)
-	{
-		sm->smRenderBegin3D(fov,false,tdparticles);
+		q.v[0].tx=q.v[3].tx=0;q.v[1].tx=q.v[2].tx=30;
+		q.v[0].ty=q.v[1].ty=0;q.v[2].ty=q.v[3].ty=30;
+		sm->smRenderBegin3D(fov,true,tdscn);
 		sm->sm3DCamera6f2v(pos,rot);
 		sm->smClrscr(0,1,1);
-		for(int i=0;i<16;++i)for(int j=0;j<128;++j)
+		sm->smRenderQuad(&q);
+		if(sm->smGetKeyState(SMK_D))pos[0]+=cos(smMath::deg2rad(rot[2]-90)),pos[1]+=sin(smMath::deg2rad(rot[2]-90));
+		if(sm->smGetKeyState(SMK_A))pos[0]-=cos(smMath::deg2rad(rot[2]-90)),pos[1]-=sin(smMath::deg2rad(rot[2]-90));
+		if(sm->smGetKeyState(SMK_S))pos[0]+=cos(smMath::deg2rad(rot[2])),pos[1]+=sin(smMath::deg2rad(rot[2]));
+		if(sm->smGetKeyState(SMK_W))pos[0]-=cos(smMath::deg2rad(rot[2])),pos[1]-=sin(smMath::deg2rad(rot[2]));
+		if(sm->smGetKeyState(SMK_Q))pos[2]+=1;
+		if(sm->smGetKeyState(SMK_E))pos[2]-=1;
+		if(sm->smGetKeyState(SMK_R))
 		{
-			pss[i][j]->setPSLookAt(smvec3d(pos[0],pos[1],pos[2]));
-			pss[i][j]->updatePS();pss[i][j]->renderPS();
+			if(horizontal)
+			{
+				pos[0]=-20;pos[1]=45;pos[2]=0;
+				rot[0]=0;rot[1]=90;rot[2]=90;
+			}
+			else
+			{
+				pos[0]=0;pos[1]=120;pos[2]=70;
+				rot[0]=0;rot[1]=75;rot[2]=90;
+			}
 		}
+		if(sm->smGetKeyState(SMK_LBUTTON)==SMKST_HIT)
+		sm->smSetMouseGrab(true),sm->smGetMouse2f(&lastx,&lasty);
+		if(sm->smGetKeyState(SMK_LBUTTON)==SMKST_KEEP)
+		{
+			float x,y;
+			sm->smGetMouse2f(&x,&y);
+			rot[1]-=(y-lasty)*0.01;
+			rot[2]+=(x-lastx)*0.01;
+			while(rot[1]>360)rot[1]-=360;
+			while(rot[1]<0)rot[1]+=360;
+			while(rot[2]>360)rot[2]-=360;
+			while(rot[2]<0)rot[2]+=360;
+		}
+		if(sm->smGetKeyState(SMK_LBUTTON)==SMKST_RELEASE)
+		sm->smSetMouseGrab(false);
+		if(sm->smGetKeyState(SMK_I))rot[1]+=1;
+		if(sm->smGetKeyState(SMK_K))rot[1]-=1;
+		if(sm->smGetKeyState(SMK_L))rot[0]+=1;
+		if(sm->smGetKeyState(SMK_J))rot[0]-=1;
+		if(sm->smGetKeyState(SMK_U))rot[2]+=1;
+		if(sm->smGetKeyState(SMK_O))rot[2]-=1;
+		//printf("pos: %f %f %f\n",pos[0],pos[1],pos[2]);
+		//printf("rot: %f %f %f\n",rot[0],rot[1],rot[2]);
+		double lpt=(double)notestretch/api->getDivision()/10.*(horizontal?0.25:1);
+		memset(notestatus,0,sizeof(notestatus));
+		for(uint32_t i=elb;i<pool.size();++i)
+		{
+			if(((double)pool[i]->tcs-ctk)*lpt>viewdist*2)break;
+			if(fabs((double)pool[i]->tcs-ctk)*lpt<viewdist*2||fabs((double)pool[i]->tce-ctk)*lpt<viewdist*2)
+			{
+				if(api->getChannelMask(pool[i]->ch))continue;
+				smvec3d a(0.63*((double)pool[i]->key-64)+.1,(stairpiano?(56-pool[i]->ch*7.):(64-pool[i]->ch*8.)),((double)pool[i]->tce-ctk)*lpt+(stairpiano&&showpiano&&!horizontal)*pool[i]->ch*2.);
+				smvec3d b(0.63*((double)pool[i]->key-64)+.7,(stairpiano?(56-pool[i]->ch*7.):(64-pool[i]->ch*8.))+.4,((double)pool[i]->tcs-ctk)*lpt+(stairpiano&&showpiano&&!horizontal)*pool[i]->ch*2.);
+				bool isnoteon=pool[i]->tcs<=ctk&&pool[i]->tce>=ctk;if(isnoteon)
+				a.x=0.63*((double)pool[i]->key-64+api->getPitchBend(pool[i]->ch))+.1,
+				b.x=0.63*((double)pool[i]->key-64+api->getPitchBend(pool[i]->ch))+.7;
+				notestatus[pool[i]->ch][pool[i]->key]|=isnoteon;a.x*=1.2;b.x*=1.2;
+				if(horizontal)
+				{
+					a=smvec3d(((double)pool[i]->tcs-ctk)*lpt-20,(16-pool[i]->ch*2.),0.63*((double)pool[i]->key-64)+.1);
+					b=smvec3d(((double)pool[i]->tce-ctk)*lpt-20,(16-pool[i]->ch*2.)+.4,0.63*((double)pool[i]->key-64)+.7);
+					if(isnoteon)
+						a.z=0.63*((double)pool[i]->key-64+api->getPitchBend(pool[i]->ch))+.1,
+						b.z=0.63*((double)pool[i]->key-64+api->getPitchBend(pool[i]->ch))+.7;
+				}
+				if(showparticle&&!horizontal)
+				{
+					if(notestatus[pool[i]->ch][pool[i]->key])
+					{
+						pss[pool[i]->ch][pool[i]->key]->startPS();
+						pss[pool[i]->ch][pool[i]->key]->setPos(smvec3d(0.756*((double)pool[i]->key-64)+.48,(stairpiano?(56-pool[i]->ch*7.):(64-pool[i]->ch*8.)),stairpiano*pool[i]->ch*2+0.1));
+					}
+					else pss[pool[i]->ch][pool[i]->key]->stopPS();
+				}
+				if(((double)pool[i]->tce-pool[i]->tcs)*lpt<minnotelength*(horizontal?0.0025:0.01))
+				{if(horizontal)a.x=((double)pool[i]->tcs-ctk)*lpt-minnotelength/100.-20;
+				else a.z=((double)pool[i]->tcs-ctk)*lpt-minnotelength/100.+stairpiano*pool[i]->ch*2;}
+				drawCube(a,b,SETA(isnoteon?accolors[pool[i]->ch]:iccolors[pool[i]->ch],int(pool[i]->vel*1.6+(isnoteon?52:32))),0);
+			}
+		}
+		if(noteappearance)nebuf->drawBatch();
+		if(showpiano&&!horizontal)
+		for(int i=0;i<16;++i)
+		{
+			for(int j=0;j<128;++j)
+			{
+				if(notestatus[i][j])
+				if(traveld[i][j]<10)traveld[i][j]+=2;else traveld[i][j]=10;
+				else
+				if(traveld[i][j]>0)traveld[i][j]-=2;else traveld[i][j]=0;
+				p3d[i]->setKeyTravelDist(j,traveld[i][j]/10.);
+			}
+			p3d[i]->render(smvec3d(0.756*api->getPitchBend(i),stairpiano?55-i*7:62-i*8,stairpiano*i*2));
+			if(showlabel)
+			{
+				std::string s=api->getChannelPresetString(i);
+				wchar_t ws[1024];mbstowcs(ws,s.c_str(),1024);
+				fonthdpi.updateString(ws);
+				fonthdpi.render(-49,stairpiano?56-i*7:63-i*8,stairpiano*i*2+0.1,0xFFFFFFFF,ALIGN_RIGHT,.008,0.01);
+				fonthdpi.render(-49.05,stairpiano?56.05-i*7:63.05-i*8,stairpiano*i*2+0.2,0xFF000000,ALIGN_RIGHT,.008,0.01);
+			}
+		}
+		if(playing)ctk+=(int)(1e6/(api->getRawTempo()/api->getDivision())*sm->smGetDelta());
+		while(pool.size()&&elb<pool.size()&&((double)ctk-pool[elb]->tce)*lpt>viewdist*2)++elb;
 		sm->smRenderEnd();
+		if(showparticle&&!horizontal)
+		{
+			sm->smRenderBegin3D(fov,false,tdparticles);
+			sm->sm3DCamera6f2v(pos,rot);
+			sm->smClrscr(0,1,1);
+			for(int i=0;i<16;++i)for(int j=0;j<128;++j)
+			{
+				pss[i][j]->setPSLookAt(smvec3d(pos[0],pos[1],pos[2]));
+				pss[i][j]->updatePS();pss[i][j]->renderPS();
+			}
+			sm->smRenderEnd();
+		}
 	}
 	sm->smRenderBegin2D();
 	sm->smClrscr(0xFF666666);q.blend=BLEND_ALPHABLEND;
@@ -337,16 +341,80 @@ bool qmpVisualization::update()
 		q.v[0].ty=q.v[1].ty=0;q.v[2].ty=q.v[3].ty=1;
 		sm->smRenderQuad(&q);
 	}
-	q.tex=sm->smTargetTexture(tdscn);
-	q.v[0].tx=q.v[3].tx=0;q.v[1].tx=q.v[2].tx=1;
-	q.v[0].ty=q.v[1].ty=0;q.v[2].ty=q.v[3].ty=1;
-	q.v[0].x=q.v[1].x=0;q.v[2].x=q.v[3].x=wwidth;
-	q.v[0].y=q.v[3].y=0;q.v[1].y=q.v[2].y=wheight;
-	sm->smRenderQuad(&q);
-	if(showparticle&&!horizontal)
+	if(flat)
 	{
-		q.tex=sm->smTargetTexture(tdparticles);
+		double lpt=-(double)notestretch/api->getDivision()/2.;
+		memset(notestatus,0,sizeof(notestatus));
+		if(!horizontal)
+		{
+			double notew=wwidth/128;
+			smQuad nq;nq.blend=BLEND_ALPHABLEND;nq.tex=0;
+			for(int i=0;i<4;++i)nq.v[i].z=0,nq.v[i].tx=nq.v[i].ty=0;
+			for(uint32_t i=elb;i<pool.size();++i)
+			{
+				if(((double)pool[i]->tcs-ctk)*lpt+wheight-64<0)break;
+				if(fabs((double)pool[i]->tcs-ctk)*lpt+wheight-64>0||fabs((double)pool[i]->tce-ctk)*lpt+wheight-64<wheight)
+				{
+					if(api->getChannelMask(pool[i]->ch))continue;
+					smvec2d a(notew*(double)pool[i]->key,((double)pool[i]->tce-ctk)*lpt+wheight-64);
+					smvec2d b(notew*(double)pool[i]->key+notew*0.9,((double)pool[i]->tcs-ctk)*lpt+wheight-64);
+					bool isnoteon=pool[i]->tcs<=ctk&&pool[i]->tce>=ctk;if(isnoteon)
+					a.x=notew*((double)pool[i]->key+api->getPitchBend(pool[i]->ch)),
+					b.x=notew*((double)pool[i]->key+api->getPitchBend(pool[i]->ch))+notew*0.9;
+					notestatus[pool[i]->ch][pool[i]->key]|=isnoteon;
+					if(((double)pool[i]->tcs-pool[i]->tce)*lpt<minnotelength*0.04)
+					a.y=((double)pool[i]->tcs-ctk)*lpt+wheight-64-minnotelength*0.04;
+					nq.v[0].x=nq.v[3].x=a.x;nq.v[0].y=nq.v[1].y=a.y;
+					nq.v[1].x=nq.v[2].x=b.x;nq.v[2].y=nq.v[3].y=b.y;for(int j=0;j<4;++j)
+					nq.v[j].col=SETA(isnoteon?accolors[pool[i]->ch]:iccolors[pool[i]->ch],int(pool[i]->vel*1.6+(isnoteon?52:32)));
+					sm->smRenderQuad(&nq);
+				}
+			}
+			while(pool.size()&&elb<pool.size()&&fabs((double)pool[elb]->tce-ctk)*lpt+wheight-64>wheight)++elb;
+		}
+		else
+		{
+			double notew=wheight/128;lpt=-lpt;
+			smQuad nq;nq.blend=BLEND_ALPHABLEND;nq.tex=0;
+			for(int i=0;i<4;++i)nq.v[i].z=0,nq.v[i].tx=nq.v[i].ty=0;
+			for(uint32_t i=elb;i<pool.size();++i)
+			{
+				if(((double)pool[i]->tcs-ctk)*lpt+64>wwidth)break;
+				if(fabs((double)pool[i]->tcs-ctk)*lpt+64<wwidth||fabs((double)pool[i]->tce-ctk)*lpt+64>0)
+				{
+					if(api->getChannelMask(pool[i]->ch))continue;
+					smvec2d a(((double)pool[i]->tce-ctk)*lpt+64,notew*(double)pool[i]->key);
+					smvec2d b(((double)pool[i]->tcs-ctk)*lpt+64,notew*(double)pool[i]->key+notew*0.9);
+					bool isnoteon=pool[i]->tcs<=ctk&&pool[i]->tce>=ctk;if(isnoteon)
+					a.y=notew*((double)pool[i]->key+api->getPitchBend(pool[i]->ch)),
+					b.y=notew*((double)pool[i]->key+api->getPitchBend(pool[i]->ch))+notew*0.9;
+					a.y=wheight-a.y;b.y=wheight-b.y;
+					notestatus[pool[i]->ch][pool[i]->key]|=isnoteon;
+					if(((double)pool[i]->tce-pool[i]->tcs)*lpt<minnotelength*0.04)
+					a.y=((double)pool[i]->tcs-ctk)*lpt+64-minnotelength*0.04;
+					nq.v[0].x=nq.v[3].x=a.x;nq.v[0].y=nq.v[1].y=a.y;
+					nq.v[1].x=nq.v[2].x=b.x;nq.v[2].y=nq.v[3].y=b.y;for(int j=0;j<4;++j)
+					nq.v[j].col=SETA(isnoteon?accolors[pool[i]->ch]:iccolors[pool[i]->ch],int(pool[i]->vel*1.6+(isnoteon?52:32)));
+					sm->smRenderQuad(&nq);
+				}
+			}
+			while(pool.size()&&elb<pool.size()&&fabs((double)pool[elb]->tce-ctk)*lpt+64<0)++elb;
+		}
+		if(playing)ctk+=(int)(1e6/(api->getRawTempo()/api->getDivision())*sm->smGetDelta());
+	}
+	else
+	{
+		q.tex=sm->smTargetTexture(tdscn);
+		q.v[0].tx=q.v[3].tx=0;q.v[1].tx=q.v[2].tx=1;
+		q.v[0].ty=q.v[1].ty=0;q.v[2].ty=q.v[3].ty=1;
+		q.v[0].x=q.v[1].x=0;q.v[2].x=q.v[3].x=wwidth;
+		q.v[0].y=q.v[3].y=0;q.v[1].y=q.v[2].y=wheight;
 		sm->smRenderQuad(&q);
+		if(showparticle&&!horizontal)
+		{
+			q.tex=sm->smTargetTexture(tdparticles);
+			sm->smRenderQuad(&q);
+		}
 	}
 	font2.updateString(L"Title: %ls",api->getWTitle().c_str());
 	font2.render(1,wheight-64,0.5,0xFFFFFFFF,ALIGN_LEFT);
@@ -402,6 +470,7 @@ void qmpVisualization::init()
 	api->registerOptionBool("Visualization-Appearance","Show channel labels","Visualization/showlabel",true);
 	api->registerOptionBool("Visualization-Appearance","Show Particles","Visualization/showparticle",true);
 	api->registerOptionBool("Visualization-Appearance","Horizontal Visualization","Visualization/horizontal",false);
+	api->registerOptionBool("Visualization-Appearance","2D Visualization","Visualization/flat",false);
 	api->registerOptionBool("Visualization-Video","Enable VSync","Visualization/vsync",true);
 	api->registerOptionBool("Visualization-Video","Save Viewport","Visualization/savevp",true);
 	api->registerOptionInt("Visualization-Video","Window Width","Visualization/wwidth",320,3200,800);
@@ -432,6 +501,7 @@ void qmpVisualization::init()
 	showlabel=api->getOptionBool("Visualization/showlabel");
 	showparticle=api->getOptionBool("Visualization/showparticle");
 	horizontal=api->getOptionBool("Visualization/horizontal");
+	flat=api->getOptionBool("Visualization/flat");
 	savevp=api->getOptionBool("Visualization/savevp");
 	vsync=api->getOptionBool("Visualization/vsync");
 	tfps=api->getOptionInt("Visualization/tfps");
