@@ -13,6 +13,8 @@ int wwidth=800,wheight=600,wsupersample=1,wmultisample=1,showparticle=1;
 int horizontal=1,flat=0;
 int fov=60,vsync=1,tfps=60;
 DWORD chkrtint=0xFF999999;
+double fpoffsets[]={0,18,28,50,55,82,98,109,130,137,161,164,191};
+double froffsets[]={0,18,33,50,65,82,98,113,130,145,161,176,191};
 DWORD iccolors[]={0XFFFF0000,0XFFFF8000,0XFFFFBF00,0XFFFFFF00,
 				  0XFFBFFF00,0XFF80FF00,0XFF00FF00,0XFF00FFBF,
 				  0XFF00FFFF,0XFF333333,0XFF00BFFF,0XFF007FFF,
@@ -77,6 +79,7 @@ void qmpVisualization::showThread()
 	sm->smTextureOpt(TPOT_POT,TFLT_LINEAR);
 	chequer=sm->smTextureLoad("chequerboard.png");if(!chequer)
 	chequer=sm->smTextureLoad("/usr/share/qmidiplayer/img/chequerboard.png");
+	pianotex=sm->smTextureLoad("kb_128.png");
 	particletex=sm->smTextureLoad("particle.png");
 	bgtex=sm->smTextureLoad(api->getOptionString("Visualization/background").c_str());
 	if(showparticle&&!horizontal)
@@ -166,6 +169,7 @@ void qmpVisualization::close()
 	font2.releaseTTF();
 	fonthdpi.releaseTTF();
 	sm->smTextureFree(chequer);
+	sm->smTextureFree(pianotex);
 	sm->smTextureFree(particletex);
 	if(bgtex)sm->smTextureFree(bgtex);
 	sm->smTargetFree(tdscn);
@@ -347,58 +351,177 @@ bool qmpVisualization::update()
 		memset(notestatus,0,sizeof(notestatus));
 		if(!horizontal)
 		{
-			double notew=wwidth/128;
+			double notew=wwidth/128,nh=showpiano?wwidth/2048.*172.:0;
 			smQuad nq;nq.blend=BLEND_ALPHABLEND;nq.tex=0;
 			for(int i=0;i<4;++i)nq.v[i].z=0,nq.v[i].tx=nq.v[i].ty=0;
 			for(uint32_t i=elb;i<pool.size();++i)
 			{
-				if(((double)pool[i]->tcs-ctk)*lpt+wheight-64<0)break;
-				if(fabs((double)pool[i]->tcs-ctk)*lpt+wheight-64>0||fabs((double)pool[i]->tce-ctk)*lpt+wheight-64<wheight)
+				if(((double)pool[i]->tcs-ctk)*lpt+wheight-nh<0)break;
+				if(fabs((double)pool[i]->tcs-ctk)*lpt+wheight-nh>0||fabs((double)pool[i]->tce-ctk)*lpt+wheight-nh<wheight)
 				{
 					if(api->getChannelMask(pool[i]->ch))continue;
-					smvec2d a(notew*(double)pool[i]->key,((double)pool[i]->tce-ctk)*lpt+wheight-64);
-					smvec2d b(notew*(double)pool[i]->key+notew*0.9,((double)pool[i]->tcs-ctk)*lpt+wheight-64);
+					smvec2d a((froffsets[12]*(pool[i]->key/12)+froffsets[pool[i]->key%12])*wwidth/2048.,((double)pool[i]->tce-ctk)*lpt+wheight-nh);
+					smvec2d b(a.x+notew*0.9,((double)pool[i]->tcs-ctk)*lpt+wheight-nh);
 					bool isnoteon=pool[i]->tcs<=ctk&&pool[i]->tce>=ctk;if(isnoteon)
-					a.x=notew*((double)pool[i]->key+api->getPitchBend(pool[i]->ch)),
-					b.x=notew*((double)pool[i]->key+api->getPitchBend(pool[i]->ch))+notew*0.9;
+					a.x+=notew*api->getPitchBend(pool[i]->ch),
+					b.x+=notew*api->getPitchBend(pool[i]->ch);
 					notestatus[pool[i]->ch][pool[i]->key]|=isnoteon;
 					if(((double)pool[i]->tcs-pool[i]->tce)*lpt<minnotelength*0.04)
-					a.y=((double)pool[i]->tcs-ctk)*lpt+wheight-64-minnotelength*0.04;
+					a.y=((double)pool[i]->tcs-ctk)*lpt+wheight-nh-minnotelength*0.04;
 					nq.v[0].x=nq.v[3].x=a.x;nq.v[0].y=nq.v[1].y=a.y;
 					nq.v[1].x=nq.v[2].x=b.x;nq.v[2].y=nq.v[3].y=b.y;for(int j=0;j<4;++j)
 					nq.v[j].col=SETA(isnoteon?accolors[pool[i]->ch]:iccolors[pool[i]->ch],int(pool[i]->vel*1.6+(isnoteon?52:32)));
 					sm->smRenderQuad(&nq);
 				}
 			}
-			while(pool.size()&&elb<pool.size()&&fabs((double)pool[elb]->tce-ctk)*lpt+wheight-64>wheight)++elb;
+			while(pool.size()&&elb<pool.size()&&fabs((double)pool[elb]->tce-ctk)*lpt+wheight-nh>wheight)++elb;
+			q.tex=pianotex;
+			q.v[0].ty=q.v[3].ty=0;q.v[1].ty=q.v[2].ty=172./256.;
+			q.v[0].tx=q.v[1].tx=0;q.v[2].tx=q.v[3].tx=1.;
+			q.v[0].x=q.v[1].x=0;q.v[2].x=q.v[3].x=wwidth;
+			q.v[0].y=q.v[3].y=wheight-nh;q.v[1].y=q.v[2].y=wheight;
+			sm->smRenderQuad(&q);
+			for(int i=0,j;i<128;++i)
+			{
+				DWORD c=0;for(j=0;j<16;++j)if(notestatus[j][i]){c=SETA(iccolors[j],0xFF);break;}
+				q.v[0].x=q.v[1].x=(fpoffsets[12]*(i/12)+fpoffsets[i%12])*wwidth/2048.;
+				q.v[2].x=q.v[3].x=q.v[0].x;
+				q.v[0].y=q.v[3].y=wheight-nh;q.v[1].y=q.v[2].y=wheight;
+				if(!c)continue;for(int j=0;j<4;++j)q.v[j].col=c;
+				switch(i%12)
+				{
+					case 1:case 3:case 6:case 8:case 10:
+						q.v[1].y=q.v[2].y=wheight-nh+115*wwidth/2048.;
+						q.v[2].x+=15.*wwidth/2048;q.v[3].x+=15.*wwidth/2048;
+						q.v[0].ty=q.v[1].ty=1.;q.v[2].ty=q.v[3].ty=1.-15/256.;
+						q.v[0].tx=q.v[3].tx=1344/2048.;q.v[1].tx=q.v[2].tx=1459/2048.;
+					break;
+					case 0:
+						q.v[2].x+=27.*wwidth/2048;q.v[3].x+=27.*wwidth/2048;
+						q.v[0].ty=q.v[1].ty=1.;q.v[2].ty=q.v[3].ty=1.-27/256.;
+						q.v[0].tx=q.v[3].tx=0/2048.;q.v[1].tx=q.v[2].tx=172/2048.;
+					break;
+					case 2:
+						q.v[2].x+=29.*wwidth/2048;q.v[3].x+=29.*wwidth/2048;
+						q.v[0].ty=q.v[1].ty=1.;q.v[2].ty=q.v[3].ty=1.-29/256.;
+						q.v[0].tx=q.v[3].tx=192/2048.;q.v[1].tx=q.v[2].tx=364/2048.;
+					break;
+					case 4:
+						q.v[2].x+=28.*wwidth/2048;q.v[3].x+=28.*wwidth/2048;
+						q.v[0].ty=q.v[1].ty=1.;q.v[2].ty=q.v[3].ty=1.-28/256.;
+						q.v[0].tx=q.v[3].tx=384/2048.;q.v[1].tx=q.v[2].tx=556/2048.;
+					break;
+					case 5:
+						q.v[2].x+=28.*wwidth/2048;q.v[3].x+=28.*wwidth/2048;
+						q.v[0].ty=q.v[1].ty=1.;q.v[2].ty=q.v[3].ty=1.-28/256.;
+						q.v[0].tx=q.v[3].tx=576/2048.;q.v[1].tx=q.v[2].tx=748/2048.;
+					break;
+					case 7:
+						q.v[2].x+=29.*wwidth/2048;q.v[3].x+=29.*wwidth/2048;
+						q.v[0].ty=q.v[1].ty=1.;q.v[2].ty=q.v[3].ty=1.-29/256.;
+						q.v[0].tx=q.v[3].tx=768/2048.;q.v[1].tx=q.v[2].tx=940/2048.;
+					break;
+					case 9:
+						q.v[2].x+=28.*wwidth/2048;q.v[3].x+=28.*wwidth/2048;
+						q.v[0].ty=q.v[1].ty=1.;q.v[2].ty=q.v[3].ty=1.-28/256.;
+						q.v[0].tx=q.v[3].tx=960/2048.;q.v[1].tx=q.v[2].tx=1132/2048.;
+					break;
+					case 11:
+						q.v[2].x+=28.*wwidth/2048;q.v[3].x+=28.*wwidth/2048;
+						q.v[0].ty=q.v[1].ty=1.;q.v[2].ty=q.v[3].ty=1.-28/256.;
+						q.v[0].tx=q.v[3].tx=1152/2048.;q.v[1].tx=q.v[2].tx=1324/2048.;
+					break;
+				}
+				sm->smRenderQuad(&q);
+			}
 		}
 		else
 		{
-			double notew=wheight/128;lpt=-lpt;
+			double notew=wheight/128,nh=showpiano?wheight/2048.*172.:0;lpt=-lpt;
 			smQuad nq;nq.blend=BLEND_ALPHABLEND;nq.tex=0;
 			for(int i=0;i<4;++i)nq.v[i].z=0,nq.v[i].tx=nq.v[i].ty=0;
 			for(uint32_t i=elb;i<pool.size();++i)
 			{
-				if(((double)pool[i]->tcs-ctk)*lpt+64>wwidth)break;
-				if(fabs((double)pool[i]->tcs-ctk)*lpt+64<wwidth||fabs((double)pool[i]->tce-ctk)*lpt+64>0)
+				if(((double)pool[i]->tcs-ctk)*lpt+nh>wwidth)break;
+				if(fabs((double)pool[i]->tcs-ctk)*lpt+nh<wwidth||fabs((double)pool[i]->tce-ctk)*lpt+nh>0)
 				{
 					if(api->getChannelMask(pool[i]->ch))continue;
-					smvec2d a(((double)pool[i]->tce-ctk)*lpt+64,notew*(double)pool[i]->key);
-					smvec2d b(((double)pool[i]->tcs-ctk)*lpt+64,notew*(double)pool[i]->key+notew*0.9);
+					smvec2d a(((double)pool[i]->tce-ctk)*lpt+nh,(froffsets[12]*(pool[i]->key/12)+froffsets[pool[i]->key%12])*wheight/2048.);
+					smvec2d b(((double)pool[i]->tcs-ctk)*lpt+nh,a.y+notew*0.9);
 					bool isnoteon=pool[i]->tcs<=ctk&&pool[i]->tce>=ctk;if(isnoteon)
-					a.y=notew*((double)pool[i]->key+api->getPitchBend(pool[i]->ch)),
-					b.y=notew*((double)pool[i]->key+api->getPitchBend(pool[i]->ch))+notew*0.9;
+					a.y+=notew*api->getPitchBend(pool[i]->ch),
+					b.y+=notew*api->getPitchBend(pool[i]->ch);
 					a.y=wheight-a.y;b.y=wheight-b.y;
 					notestatus[pool[i]->ch][pool[i]->key]|=isnoteon;
 					if(((double)pool[i]->tce-pool[i]->tcs)*lpt<minnotelength*0.04)
-					a.y=((double)pool[i]->tcs-ctk)*lpt+64-minnotelength*0.04;
+					a.x=((double)pool[i]->tcs-ctk)*lpt+nh-minnotelength*0.04;
 					nq.v[0].x=nq.v[3].x=a.x;nq.v[0].y=nq.v[1].y=a.y;
 					nq.v[1].x=nq.v[2].x=b.x;nq.v[2].y=nq.v[3].y=b.y;for(int j=0;j<4;++j)
 					nq.v[j].col=SETA(isnoteon?accolors[pool[i]->ch]:iccolors[pool[i]->ch],int(pool[i]->vel*1.6+(isnoteon?52:32)));
 					sm->smRenderQuad(&nq);
 				}
 			}
-			while(pool.size()&&elb<pool.size()&&fabs((double)pool[elb]->tce-ctk)*lpt+64<0)++elb;
+			while(pool.size()&&elb<pool.size()&&fabs((double)pool[elb]->tce-ctk)*lpt+nh<0)++elb;
+			q.tex=pianotex;
+			q.v[0].tx=q.v[3].tx=0;q.v[1].tx=q.v[2].tx=1;
+			q.v[0].ty=q.v[1].ty=0;q.v[2].ty=q.v[3].ty=172./256.;
+			q.v[0].x=q.v[1].x=nh;q.v[2].x=q.v[3].x=0;
+			q.v[0].y=q.v[3].y=wheight;q.v[1].y=q.v[2].y=0;
+			sm->smRenderQuad(&q);
+			for(int i=0,j;i<128;++i)
+			{
+				DWORD c=0;for(j=0;j<16;++j)if(notestatus[j][i]){c=SETA(iccolors[j],0xFF);break;}
+				q.v[0].y=q.v[1].y=(fpoffsets[12]*(i/12)+fpoffsets[i%12])*wheight/2048.;
+				q.v[2].y=q.v[3].y=q.v[0].y;
+				q.v[0].x=q.v[3].x=nh;q.v[1].x=q.v[2].x=0;
+				if(!c)continue;for(int j=0;j<4;++j)q.v[j].col=c;
+				switch(i%12)
+				{
+					case 1:case 3:case 6:case 8:case 10:
+						q.v[1].x=q.v[2].x=nh-115*wheight/2048.;
+						q.v[2].y+=15.*wheight/2048;q.v[3].y+=15.*wheight/2048;
+						q.v[0].ty=q.v[1].ty=1.;q.v[2].ty=q.v[3].ty=1.-15/256.;
+						q.v[0].tx=q.v[3].tx=1344/2048.;q.v[1].tx=q.v[2].tx=1459/2048.;
+					break;
+					case 0:
+						q.v[2].y+=27.*wheight/2048;q.v[3].y+=27.*wheight/2048;
+						q.v[0].ty=q.v[1].ty=1.;q.v[2].ty=q.v[3].ty=1.-27/256.;
+						q.v[0].tx=q.v[3].tx=0/2048.;q.v[1].tx=q.v[2].tx=172/2048.;
+					break;
+					case 2:
+						q.v[2].y+=29.*wheight/2048;q.v[3].y+=29.*wheight/2048;
+						q.v[0].ty=q.v[1].ty=1.;q.v[2].ty=q.v[3].ty=1.-29/256.;
+						q.v[0].tx=q.v[3].tx=192/2048.;q.v[1].tx=q.v[2].tx=364/2048.;
+					break;
+					case 4:
+						q.v[2].y+=28.*wheight/2048;q.v[3].y+=28.*wheight/2048;
+						q.v[0].ty=q.v[1].ty=1.;q.v[2].ty=q.v[3].ty=1.-28/256.;
+						q.v[0].tx=q.v[3].tx=384/2048.;q.v[1].tx=q.v[2].tx=556/2048.;
+					break;
+					case 5:
+						q.v[2].y+=28.*wheight/2048;q.v[3].y+=28.*wheight/2048;
+						q.v[0].ty=q.v[1].ty=1.;q.v[2].ty=q.v[3].ty=1.-28/256.;
+						q.v[0].tx=q.v[3].tx=576/2048.;q.v[1].tx=q.v[2].tx=748/2048.;
+					break;
+					case 7:
+						q.v[2].y+=29.*wheight/2048;q.v[3].y+=29.*wheight/2048;
+						q.v[0].ty=q.v[1].ty=1.;q.v[2].ty=q.v[3].ty=1.-29/256.;
+						q.v[0].tx=q.v[3].tx=768/2048.;q.v[1].tx=q.v[2].tx=940/2048.;
+					break;
+					case 9:
+						q.v[2].y+=28.*wheight/2048;q.v[3].y+=28.*wheight/2048;
+						q.v[0].ty=q.v[1].ty=1.;q.v[2].ty=q.v[3].ty=1.-28/256.;
+						q.v[0].tx=q.v[3].tx=960/2048.;q.v[1].tx=q.v[2].tx=1132/2048.;
+					break;
+					case 11:
+						q.v[2].y+=28.*wheight/2048;q.v[3].y+=28.*wheight/2048;
+						q.v[0].ty=q.v[1].ty=1.;q.v[2].ty=q.v[3].ty=1.-28/256.;
+						q.v[0].tx=q.v[3].tx=1152/2048.;q.v[1].tx=q.v[2].tx=1324/2048.;
+					break;
+				}
+				for(int j=0;j<4;++j)q.v[j].y=wheight-q.v[j].y;
+				sm->smRenderQuad(&q);
+			}
 		}
 		if(playing)ctk+=(int)(1e6/(api->getRawTempo()/api->getDivision())*sm->smGetDelta());
 	}
