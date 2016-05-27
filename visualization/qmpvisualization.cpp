@@ -9,11 +9,11 @@ int viewdist=100;
 int notestretch=100;//length of quarter note
 int minnotelength=100;
 int noteappearance=1,showpiano=1,stairpiano=1,savevp=1,showlabel=1;
-int wwidth=800,wheight=600,wsupersample=1,wmultisample=1,showparticle=1;
+int wwidth=800,wheight=600,wsupersample=1,wmultisample=0,showparticle=1;
 int horizontal=1,flat=0;
 int fov=60,vsync=1,tfps=60;
 DWORD chkrtint=0xFF999999;
-double fpoffsets[]={0,18,28,50,55,82,98,109,130,137,161,164,191};
+double fpoffsets[]={1,18,28,50,55,82,98,109,130,137,161,164,191};
 double froffsets[]={0,18,33,50,65,82,98,113,130,145,161,176,191};
 DWORD iccolors[]={0XFFFF0000,0XFFFF8000,0XFFFFBF00,0XFFFFFF00,
 				  0XFFBFFF00,0XFF80FF00,0XFF00FF00,0XFF00FFBF,
@@ -79,8 +79,10 @@ void qmpVisualization::showThread()
 	sm->smTextureOpt(TPOT_POT,TFLT_LINEAR);
 	chequer=sm->smTextureLoad("chequerboard.png");if(!chequer)
 	chequer=sm->smTextureLoad("/usr/share/qmidiplayer/img/chequerboard.png");
-	pianotex=sm->smTextureLoad("kb_128.png");
-	particletex=sm->smTextureLoad("particle.png");
+	pianotex=sm->smTextureLoad("kb_128.png");if(!pianotex)
+	pianotex=sm->smTextureLoad("/usr/share/qmidiplayer/img/kb_128.png");
+	particletex=sm->smTextureLoad("particle.png");if(!particletex)
+	particletex=sm->smTextureLoad("/usr/share/qmidiplayer/img/particle.png");
 	bgtex=sm->smTextureLoad(api->getOptionString("Visualization/background").c_str());
 	if(showparticle&&!horizontal)
 	{
@@ -363,8 +365,12 @@ bool qmpVisualization::update()
 					smvec2d a((froffsets[12]*(pool[i]->key/12)+froffsets[pool[i]->key%12])*wwidth/2048.,((double)pool[i]->tce-ctk)*lpt+wheight-nh);
 					smvec2d b(a.x+notew*0.9,((double)pool[i]->tcs-ctk)*lpt+wheight-nh);
 					bool isnoteon=pool[i]->tcs<=ctk&&pool[i]->tce>=ctk;if(isnoteon)
-					a.x+=notew*api->getPitchBend(pool[i]->ch),
-					b.x+=notew*api->getPitchBend(pool[i]->ch);
+					{
+						uint32_t newkey=pool[i]->key+(int)floor(api->getPitchBend(pool[i]->ch));
+						double fpb=api->getPitchBend(pool[i]->ch)-floor(api->getPitchBend(pool[i]->ch));
+						a.x=(froffsets[12]*(newkey/12)+froffsets[newkey%12])*wwidth/2048.+notew*fpb;
+						b.x=a.x+notew*0.9;
+					}
 					notestatus[pool[i]->ch][pool[i]->key]|=isnoteon;
 					if(((double)pool[i]->tcs-pool[i]->tce)*lpt<minnotelength*0.04)
 					a.y=((double)pool[i]->tcs-ctk)*lpt+wheight-nh-minnotelength*0.04;
@@ -449,8 +455,12 @@ bool qmpVisualization::update()
 					smvec2d a(((double)pool[i]->tce-ctk)*lpt+nh,(froffsets[12]*(pool[i]->key/12)+froffsets[pool[i]->key%12])*wheight/2048.);
 					smvec2d b(((double)pool[i]->tcs-ctk)*lpt+nh,a.y+notew*0.9);
 					bool isnoteon=pool[i]->tcs<=ctk&&pool[i]->tce>=ctk;if(isnoteon)
-					a.y+=notew*api->getPitchBend(pool[i]->ch),
-					b.y+=notew*api->getPitchBend(pool[i]->ch);
+					{
+						uint32_t newkey=pool[i]->key+(int)floor(api->getPitchBend(pool[i]->ch));
+						double fpb=api->getPitchBend(pool[i]->ch)-floor(api->getPitchBend(pool[i]->ch));
+						a.y=(froffsets[12]*(newkey/12)+froffsets[newkey%12])*wheight/2048.+notew*fpb;
+						b.y=a.y+notew*0.9;
+					}
 					a.y=wheight-a.y;b.y=wheight-b.y;
 					notestatus[pool[i]->ch][pool[i]->key]|=isnoteon;
 					if(((double)pool[i]->tce-pool[i]->tcs)*lpt<minnotelength*0.04)
