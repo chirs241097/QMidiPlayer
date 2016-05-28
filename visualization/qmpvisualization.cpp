@@ -10,9 +10,11 @@ int notestretch=100;//length of quarter note
 int minnotelength=100;
 int noteappearance=1,showpiano=1,stairpiano=1,savevp=1,showlabel=1;
 int wwidth=800,wheight=600,wsupersample=1,wmultisample=0,showparticle=1;
-int horizontal=1,flat=0;
+int horizontal=1,flat=0,osdpos;
 int fov=60,vsync=1,tfps=60;
 DWORD chkrtint=0xFF999999;
+const char* minors="abebbbf c g d a e b f#c#g#d#a#";
+const char* majors="CbGbDbAbEbBbF C G D A E B F#C#";
 double fpoffsets[]={1,18,28,50,55,82,98,109,130,137,161,164,191};
 double froffsets[]={0,18,33,50,65,82,98,113,130,145,161,176,191};
 DWORD iccolors[]={0XFFFF0000,0XFFFF8000,0XFFFFBF00,0XFFFFFF00,
@@ -65,6 +67,7 @@ void qmpVisualization::showThread()
 	savevp=api->getOptionBool("Visualization/savevp");
 	vsync=api->getOptionBool("Visualization/vsync");
 	tfps=api->getOptionInt("Visualization/tfps");
+	osdpos=api->getOptionEnumInt("Visualization/osdpos");
 	viewdist=api->getOptionInt("Visualization/viewdist");
 	notestretch=api->getOptionInt("Visualization/notestretch");
 	minnotelength=api->getOptionInt("Visualization/minnotelen");
@@ -549,18 +552,28 @@ bool qmpVisualization::update()
 			sm->smRenderQuad(&q);
 		}
 	}
+	if(osdpos==4){sm->smRenderEnd();return shouldclose;}
+	int t,r;t=api->getKeySig();r=(int8_t)((t>>8)&0xFF)+7;t&=0xFF;
+	std::string ts(t?minors:majors);ts=ts.substr(2*r,2);
+	int step=20,xp=(osdpos&1)?wwidth-20:1,yp=osdpos<2?wheight-step*5-4:step+4,align=osdpos&1?ALIGN_RIGHT:ALIGN_LEFT;
 	font2.updateString(L"Title: %ls",api->getWTitle().c_str());
-	font2.render(1,wheight-64,0.5,0xFFFFFFFF,ALIGN_LEFT);
-	font2.render(0,wheight-65,0.5,0xFF000000,ALIGN_LEFT);
+	font2.render(xp,yp,0.5,0xFFFFFFFF,align);
+	font2.render(xp-1,yp-1,0.5,0xFF000000,align);
+	font.updateString(L"Time Sig: %d/%d",api->getTimeSig()>>8,1<<(api->getTimeSig()&0xFF));
+	font.render(xp,yp+=step,0.5,0xFFFFFFFF,align);
+	font.render(xp-1,yp-1,0.5,0xFF000000,align);
+	font.updateString(L"Key Sig: %s",ts.c_str());
+	font.render(xp,yp+=step,0.5,0xFFFFFFFF,align);
+	font.render(xp-1,yp-1,0.5,0xFF000000,align);
 	font.updateString(L"Tempo: %.2f",api->getRealTempo());
-	font.render(1,wheight-44,0.5,0xFFFFFFFF,ALIGN_LEFT);
-	font.render(0,wheight-45,0.5,0xFF000000,ALIGN_LEFT);
+	font.render(xp,yp+=step,0.5,0xFFFFFFFF,align);
+	font.render(xp-1,yp-1,0.5,0xFF000000,align);
 	font.updateString(L"Current tick: %d",ctk);
-	font.render(1,wheight-24,0.5,0xFFFFFFFF,ALIGN_LEFT);
-	font.render(0,wheight-25,0.5,0xFF000000,ALIGN_LEFT);
+	font.render(xp,yp+=step,0.5,0xFFFFFFFF,align);
+	font.render(xp-1,yp-1,0.5,0xFF000000,align);
 	font.updateString(L"FPS: %.2f",sm->smGetFPS());
-	font.render(1,wheight-4,0.5,0xFFFFFFFF,ALIGN_LEFT);
-	font.render(0,wheight-5,0.5,0xFF000000,ALIGN_LEFT);
+	font.render(xp,yp+=step,0.5,0xFFFFFFFF,align);
+	font.render(xp-1,yp-1,0.5,0xFF000000,align);
 	sm->smRenderEnd();
 	return shouldclose;
 }
@@ -612,6 +625,8 @@ void qmpVisualization::init()
 	api->registerOptionInt("Visualization-Video","Supersampling","Visualization/supersampling",1,16,0);
 	api->registerOptionInt("Visualization-Video","Multisampling","Visualization/multisampling",0,16,0);
 	api->registerOptionInt("Visualization-Video","FOV","Visualization/fov",30,180,60);
+	std::vector<std::string> tv;tv.push_back("Bottom left");tv.push_back("Bottom right");tv.push_back("Top left");tv.push_back("Top right");tv.push_back("Hidden");
+	api->registerOptionEnumInt("Visualization-Video","OSD Position","Visualization/osdpos",tv,0);
 	api->registerOptionInt("Visualization-Appearance","View distance","Visualization/viewdist",20,1000,100);
 	api->registerOptionInt("Visualization-Appearance","Note stretch","Visualization/notestretch",20,500,100);
 	api->registerOptionInt("Visualization-Appearance","Minimum note length","Visualization/minnotelen",20,500,100);
@@ -638,6 +653,7 @@ void qmpVisualization::init()
 	savevp=api->getOptionBool("Visualization/savevp");
 	vsync=api->getOptionBool("Visualization/vsync");
 	tfps=api->getOptionInt("Visualization/tfps");
+	osdpos=api->getOptionEnumInt("Visualization/osdpos");
 	viewdist=api->getOptionInt("Visualization/viewdist");
 	notestretch=api->getOptionInt("Visualization/notestretch");
 	minnotelength=api->getOptionInt("Visualization/minnotelen");

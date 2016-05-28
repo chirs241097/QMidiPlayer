@@ -1,3 +1,8 @@
+2016-05-28 0.8.2 alpha
+Add option to tweak the OSD. More info shown in the OSD.
+Bump version. We have stayed at 0.8.1 for a long time
+and the visualization plugin is almost fully functional now.
+
 2016-05-27 0.8.1 alpha
 Compute coordinates of pitch-bent notes more precisely.
 Also load resources from system-wide folder.
