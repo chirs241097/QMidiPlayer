@@ -1,4 +1,7 @@
 2016-05-28 0.8.2 alpha
+Allow disabling soundfonts in the soundfont setting tab.
+
+2016-05-28 0.8.2 alpha
 Add option to tweak the OSD. More info shown in the OSD.
 Bump version. We have stayed at 0.8.1 for a long time
 and the visualization plugin is almost fully functional now.

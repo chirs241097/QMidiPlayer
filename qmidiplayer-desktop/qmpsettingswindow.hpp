@@ -7,7 +7,7 @@
 #include <QDialog>
 #include <QCloseEvent>
 #include <QSettings>
-#include <QListWidget>
+#include <QTableWidget>
 #include <QComboBox>
 #include <QSpinBox>
 #include <QFormLayout>
@@ -68,7 +68,7 @@ class qmpSettingsWindow:public QDialog
 		~qmpSettingsWindow();
 		void closeEvent(QCloseEvent *event);
 		void settingsInit();
-		QListWidget* getSFWidget();
+		QTableWidget *getSFWidget();
 		void updatePluginList(qmpPluginManager *pmgr);
 		void registerOptionInt(std::string tab,std::string desc,std::string key,int min,int max,int defaultval);
 		int getOptionInt(std::string key);

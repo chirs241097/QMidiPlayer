@@ -8,6 +8,7 @@
 #include <QDirIterator>
 #include <QDesktopWidget>
 #include <QMessageBox>
+#include <QCheckBox>
 #include "qmpmainwindow.hpp"
 #include "ui_qmpmainwindow.h"
 #include "../core/qmpmidiplay.hpp"
@@ -23,7 +24,7 @@ char* wcsto8bit(const wchar_t* s)
 }
 #define LOAD_SOUNDFONT \
 	{\
-		char* c=wcsto8bit(settingsw->getSFWidget()->item(i)->text().toStdWString().c_str());\
+		char* c=wcsto8bit(settingsw->getSFWidget()->item(i,1)->text().toStdWString().c_str());\
 		player->pushSoundFont(c);\
 		free(c);\
 	}
@@ -36,7 +37,7 @@ char* wcsto8bit(const wchar_t* s)
 	}
 #else
 #define LOAD_SOUNDFONT \
-	player->pushSoundFont(settingsw->getSFWidget()->item(i)->text().toStdString().c_str())
+	player->pushSoundFont(settingsw->getSFWidget()->item(i,1)->text().toStdString().c_str())
 #define LOAD_FILE \
 	{\
 		for(int i=0;i<16;++i)if(VIs[i])VIs[i]->reset();\
@@ -96,8 +97,9 @@ void qmpMainWindow::init()
 	ui->lbFileName->addAction(fnA3);
 	pmgr->scanPlugins();settingsw->updatePluginList(pmgr);pmgr->initPlugins();
 	if(singleFS){player->fluidPreInitialize();playerSetup();player->fluidInitialize();
-		for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
-			LOAD_SOUNDFONT;}
+		for(int i=settingsw->getSFWidget()->rowCount()-1;i>=0;--i){if(!((QCheckBox*)settingsw->getSFWidget()->cellWidget(i,0))->isChecked())continue;
+			LOAD_SOUNDFONT;
+		}}
 	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus",0).toInt())
 	{
 		QRect g=geometry();
@@ -257,8 +259,9 @@ void qmpMainWindow::updateWidgets()
 			sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
 			ui->lbFinTime->setText(ts);
 			player->playerInit();if(!singleFS){playerSetup();player->fluidInitialize();
-			for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
-				LOAD_SOUNDFONT;}
+				for(int i=settingsw->getSFWidget()->rowCount()-1;i>=0;--i){if(!((QCheckBox*)settingsw->getSFWidget()->cellWidget(i,0))->isChecked())continue;
+					LOAD_SOUNDFONT;
+				}}
 			for(int i=0;i<16;++i)if(VIs[i])VIs[i]->start();
 			player->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
 			player->setWaitVoice(qmpSettingsWindow::getSettingsIntf()->value("Midi/WaitVoice",1).toInt());
@@ -283,8 +286,9 @@ void qmpMainWindow::updateWidgets()
 				player->fluidPreInitialize();
 				playerSetup();
 				player->fluidInitialize();
-				for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
-				LOAD_SOUNDFONT;
+				for(int i=settingsw->getSFWidget()->rowCount()-1;i>=0;--i){if(!((QCheckBox*)settingsw->getSFWidget()->cellWidget(i,0))->isChecked())continue;
+					LOAD_SOUNDFONT;
+				}
 			}
 		}
 	}
@@ -380,8 +384,10 @@ void qmpMainWindow::on_pbPlayPause_clicked()
 		sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
 		ui->lbFinTime->setText(ts);
 		player->playerInit();if(!singleFS){playerSetup();player->fluidInitialize();
-		for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
-			LOAD_SOUNDFONT;}
+		for(int i=settingsw->getSFWidget()->rowCount()-1;i>=0;--i){if(!((QCheckBox*)settingsw->getSFWidget()->cellWidget(i,0))->isChecked())continue;
+			LOAD_SOUNDFONT;
+		}
+		}
 		for(int i=0;i<16;++i)if(VIs[i])VIs[i]->start();
 		player->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
 		player->setWaitVoice(qmpSettingsWindow::getSettingsIntf()->value("Midi/WaitVoice",1).toInt());
@@ -535,8 +541,9 @@ void qmpMainWindow::on_pbPrev_clicked()
 	sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
 	ui->lbFinTime->setText(ts);
 	player->playerInit();if(!singleFS){playerSetup();player->fluidInitialize();
-	for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
-		LOAD_SOUNDFONT;}
+		for(int i=settingsw->getSFWidget()->rowCount()-1;i>=0;--i){if(!((QCheckBox*)settingsw->getSFWidget()->cellWidget(i,0))->isChecked())continue;
+			LOAD_SOUNDFONT;
+		}}
 	for(int i=0;i<16;++i)if(VIs[i])VIs[i]->start();
 	player->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
 	player->setWaitVoice(qmpSettingsWindow::getSettingsIntf()->value("Midi/WaitVoice",1).toInt());
@@ -564,8 +571,9 @@ void qmpMainWindow::on_pbNext_clicked()
 	sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
 	ui->lbFinTime->setText(ts);
 	player->playerInit();if(!singleFS){playerSetup();player->fluidInitialize();
-	for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
-		LOAD_SOUNDFONT;}
+		for(int i=settingsw->getSFWidget()->rowCount()-1;i>=0;--i){if(!((QCheckBox*)settingsw->getSFWidget()->cellWidget(i,0))->isChecked())continue;
+			LOAD_SOUNDFONT;
+		}}
 	for(int i=0;i<16;++i)if(VIs[i])VIs[i]->start();
 	player->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
 	player->setWaitVoice(qmpSettingsWindow::getSettingsIntf()->value("Midi/WaitVoice",1).toInt());
@@ -596,8 +604,9 @@ void qmpMainWindow::selectionChanged()
 	sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
 	ui->lbFinTime->setText(ts);
 	player->playerInit();if(!singleFS){playerSetup();player->fluidInitialize();
-	for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
-		LOAD_SOUNDFONT;}
+		for(int i=settingsw->getSFWidget()->rowCount()-1;i>=0;--i){if(!((QCheckBox*)settingsw->getSFWidget()->cellWidget(i,0))->isChecked())continue;
+			LOAD_SOUNDFONT;
+		}}
 	for(int i=0;i<16;++i)if(VIs[i])VIs[i]->start();
 	player->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
 	player->setWaitVoice(qmpSettingsWindow::getSettingsIntf()->value("Midi/WaitVoice",1).toInt());
@@ -676,8 +685,9 @@ void qmpMainWindow::onfnA2()
 	playerSetup();player->rendererInit(plistw->getSelectedItem().toStdString().c_str());
 #endif
 	ui->centralWidget->setEnabled(false);
-	for(int i=settingsw->getSFWidget()->count()-1;i>=0;--i)
+	for(int i=settingsw->getSFWidget()->rowCount()-1;i>=0;--i){if(!((QCheckBox*)settingsw->getSFWidget()->cellWidget(i,0))->isChecked())continue;
 		LOAD_SOUNDFONT;
+	}
 	player->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();timer->start(UPDATE_INTERVAL);
 	renderTh=new std::thread(&CMidiPlayer::rendererThread,player);
 }
