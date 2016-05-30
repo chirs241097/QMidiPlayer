@@ -10,7 +10,7 @@ int notestretch=100;//length of quarter note
 int minnotelength=100;
 int noteappearance=1,showpiano=1,stairpiano=1,savevp=1,showlabel=1;
 int wwidth=800,wheight=600,wsupersample=1,wmultisample=0,showparticle=1;
-int horizontal=1,flat=0,osdpos;
+int horizontal=1,flat=0,osdpos=0,fontsize=16;
 int fov=60,vsync=1,tfps=60;
 DWORD chkrtint=0xFF999999;
 const char* minors="abebbbf c g d a e b f#c#g#d#a#";
@@ -68,6 +68,7 @@ void qmpVisualization::showThread()
 	vsync=api->getOptionBool("Visualization/vsync");
 	tfps=api->getOptionInt("Visualization/tfps");
 	osdpos=api->getOptionEnumInt("Visualization/osdpos");
+	fontsize=api->getOptionInt("Visualization/fontsize");
 	viewdist=api->getOptionInt("Visualization/viewdist");
 	notestretch=api->getOptionInt("Visualization/notestretch");
 	minnotelength=api->getOptionInt("Visualization/minnotelen");
@@ -112,14 +113,14 @@ void qmpVisualization::showThread()
 	if(noteappearance==1)nebuf=new smEntity3DBuffer();else nebuf=NULL;
 	tdscn=sm->smTargetCreate(wwidth*wsupersample,wheight*wsupersample,wmultisample);
 	tdparticles=sm->smTargetCreate(wwidth*wsupersample,wheight*wsupersample,wmultisample);
-	if(!font.loadTTF("/usr/share/fonts/truetype/freefont/FreeMono.ttf",16))
-	if(!font.loadTTF("/usr/share/fonts/gnu-free-fonts/FreeMono.otf",16))
+	if(!font.loadTTF("/usr/share/fonts/truetype/freefont/FreeMono.ttf",fontsize))
+	if(!font.loadTTF("/usr/share/fonts/gnu-free-fonts/FreeMono.otf",fontsize))
 	printf("W: Font load failed.\n");
 	if(!fonthdpi.loadTTF("/usr/share/fonts/truetype/freefont/FreeMono.ttf",180))
 	if(!fonthdpi.loadTTF("/usr/share/fonts/gnu-free-fonts/FreeMono.otf",180))
 	printf("W: Font load failed.\n");
-	if(!font2.loadTTF("/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",16))
-	if(!font2.loadTTF("/usr/share/fonts/wenquanyi/wqy-microhei/wqy-microhei.ttc",16))
+	if(!font2.loadTTF("/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",fontsize))
+	if(!font2.loadTTF("/usr/share/fonts/wenquanyi/wqy-microhei/wqy-microhei.ttc",fontsize))
 	printf("W: Font load failed.\n");
 	if(horizontal)
 	{
@@ -555,7 +556,7 @@ bool qmpVisualization::update()
 	if(osdpos==4){sm->smRenderEnd();return shouldclose;}
 	int t,r;t=api->getKeySig();r=(int8_t)((t>>8)&0xFF)+7;t&=0xFF;
 	std::string ts(t?minors:majors);ts=ts.substr(2*r,2);
-	int step=20,xp=(osdpos&1)?wwidth-20:1,yp=osdpos<2?wheight-step*5-4:step+4,align=osdpos&1?ALIGN_RIGHT:ALIGN_LEFT;
+	int step=int(1.25*fontsize),xp=(osdpos&1)?wwidth-step-1:1,yp=osdpos<2?wheight-step*5-4:step+4,align=osdpos&1?ALIGN_RIGHT:ALIGN_LEFT;
 	font2.updateString(L"Title: %ls",api->getWTitle().c_str());
 	font2.render(xp,yp,0.5,0xFFFFFFFF,align);
 	font2.render(xp-1,yp-1,0.5,0xFF000000,align);
@@ -627,6 +628,7 @@ void qmpVisualization::init()
 	api->registerOptionInt("Visualization-Video","FOV","Visualization/fov",30,180,60);
 	std::vector<std::string> tv;tv.push_back("Bottom left");tv.push_back("Bottom right");tv.push_back("Top left");tv.push_back("Top right");tv.push_back("Hidden");
 	api->registerOptionEnumInt("Visualization-Video","OSD Position","Visualization/osdpos",tv,0);
+	api->registerOptionInt("Visualization-Video","Font Size","Visualization/fontsize",6,180,16);
 	api->registerOptionInt("Visualization-Appearance","View distance","Visualization/viewdist",20,1000,100);
 	api->registerOptionInt("Visualization-Appearance","Note stretch","Visualization/notestretch",20,500,100);
 	api->registerOptionInt("Visualization-Appearance","Minimum note length","Visualization/minnotelen",20,500,100);
@@ -654,6 +656,7 @@ void qmpVisualization::init()
 	vsync=api->getOptionBool("Visualization/vsync");
 	tfps=api->getOptionInt("Visualization/tfps");
 	osdpos=api->getOptionEnumInt("Visualization/osdpos");
+	fontsize=api->getOptionInt("Visualization/fontsize");
 	viewdist=api->getOptionInt("Visualization/viewdist");
 	notestretch=api->getOptionInt("Visualization/notestretch");
 	minnotelength=api->getOptionInt("Visualization/minnotelen");
