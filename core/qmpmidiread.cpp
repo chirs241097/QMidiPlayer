@@ -50,7 +50,7 @@ int CMidiFile::eventReader()//returns 0 if End of Track encountered
 {
 	uint32_t delta=readVL();curt+=delta;
 	char type=fgetc(f);++byteread;uint32_t p1,p2;
-	static char lasttype;
+	static char lasttype;eventdiscarded=0;
 	if(!(type&0x80)){fseek(f,-1,SEEK_CUR);--byteread;type=lasttype;}
 	switch(type&0xF0)
 	{
@@ -257,3 +257,16 @@ uint32_t CMidiFile::getStandard(){return std;}
 bool CMidiFile::isValid(){return valid;}
 const char* CMidiFile::getTitle(){return title;}
 const char* CMidiFile::getCopyright(){return copyright;}
+
+void CMidiFile::discardLastEvent()
+{
+	if(eventdiscarded)return;eventdiscarded=1;
+	delete eventList[eventList.size()-1];eventList.pop_back();
+}
+void CMidiFile::commitEventChange(SEventCallBackData d)
+{
+	eventList[eventList.size()-1]->time=d.time;
+	eventList[eventList.size()-1]->type=d.type;
+	eventList[eventList.size()-1]->p1=d.p1;
+	eventList[eventList.size()-1]->p2=d.p2;
+}

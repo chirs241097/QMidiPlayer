@@ -29,7 +29,7 @@ class CMidiFile
 		uint32_t std;//standard 0=? 1=GM 2=GM2 3=GS 4=XG
 		uint32_t fmt,trk,divs;
 		FILE *f;
-		int byteread,valid;
+		int byteread,valid,eventdiscarded;
 		uint32_t notes,curt,curid;
 		IMidiCallBack* eventReaderCB[16];
 		void* eventReaderCBuserdata[16];
@@ -54,6 +54,8 @@ class CMidiFile
 		const char* getTitle();
 		const char* getCopyright();
 		bool isValid();
+		void discardLastEvent();
+		void commitEventChange(SEventCallBackData d);
 };
 class CMidiPlayer
 {
@@ -161,5 +163,8 @@ class CMidiPlayer
 		void unsetEventHandlerCB(int id);
 		int setEventReaderCB(IMidiCallBack *cb,void *userdata);
 		void unsetEventReaderCB(int id);
+
+		void discardLastEvent();
+		void commitEventChange(SEventCallBackData d);
 };
 #endif

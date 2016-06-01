@@ -3,15 +3,16 @@
 #include <cstdint>
 #include <vector>
 #include <string>
-//This struct is used by event reader callbacks and event handler callbacks
-//as caller data struct
 #ifdef _WIN32
 #define EXPORTSYM __declspec(dllexport)
 #else
 #define EXPORTSYM __attribute__ ((visibility ("default")))
 #endif
-struct SEventCallBackData
+//This struct is used by event reader callbacks and event handler callbacks
+//as caller data struct
+class SEventCallBackData
 {
+public:
 	uint32_t time,type,p1,p2;
 	SEventCallBackData(uint32_t _t,uint32_t _p1,uint32_t _p2,uint32_t _tm){type=_t;p1=_p1;p2=_p2;time=_tm;}
 };
@@ -24,7 +25,7 @@ class IMidiCallBack
 		virtual void callBack(void* callerdata,void* userdata)=0;
 		virtual ~IMidiCallBack(){}
 };
-//Main plugin pinterface.
+//Main plugin interface.
 class qmpPluginIntf
 {
 	public:
@@ -74,6 +75,15 @@ class qmpPluginAPI
 		virtual std::string getTitle();
 		virtual std::wstring getWTitle();
 		virtual std::string getChannelPresetString(int ch);
+
+		//WARNING!!: This function should be called from event reader callbacks only and
+		//it is somehow dangerous -- other plugins might be unaware of the removal of the
+		//event. The design might be modified afterward.
+		virtual void discardLastEvent();
+		//WARNING!!: This function should be called from event reader callbacks only and
+		//it is somehow dangerous -- other plugins might be unaware of the event change.
+		//The design might be modified afterward.
+		virtual void commitEventChange(SEventCallBackData d);
 
 		virtual int registerVisualizationIntf(qmpVisualizationIntf* intf);
 		virtual void unregisterVisualizationIntf(int intfhandle);

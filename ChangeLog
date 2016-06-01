@@ -1,10 +1,13 @@
-2016-05-29 0.8.2 alpha
+2016-06-01 0.8.2 alpha
+Initial event modifier and event filter stub.
+
+2016-05-31 0.8.2 alpha
 Update documentation.
 
-2016-05-29 0.8.2 alpha
+2016-05-30 0.8.2 alpha
 Added an option to change font size used by the visualization.
 
-2016-05-28 0.8.2 alpha
+2016-05-29 0.8.2 alpha
 Allow disabling soundfonts in the soundfont setting tab.
 
 2016-05-28 0.8.2 alpha

@@ -574,3 +574,5 @@ int CMidiPlayer::setEventReaderCB(IMidiCallBack *cb,void *userdata)
 }
 void CMidiPlayer::unsetEventReaderCB(int id)
 {eventReaderCB[id]=NULL;eventReaderCBuserdata[id]=NULL;}
+void CMidiPlayer::discardLastEvent(){midiFile?midiFile->discardLastEvent():(void)0;}
+void CMidiPlayer::commitEventChange(SEventCallBackData d){midiFile?midiFile->commitEventChange(d):(void)0;}

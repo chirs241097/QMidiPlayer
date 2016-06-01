@@ -151,6 +151,9 @@ std::string qmpPluginAPI::getChannelPresetString(int ch)
 	return std::string(ret);
 }
 
+void qmpPluginAPI::discardLastEvent(){}
+void qmpPluginAPI::commitEventChange(SEventCallBackData){}
+
 int qmpPluginAPI::registerEventHandlerIntf(IMidiCallBack *cb,void *userdata)
 {return qmw->getPlayer()->setEventHandlerCB(cb,userdata);}
 void qmpPluginAPI::unregisterEventHandlerIntf(int intfhandle)
