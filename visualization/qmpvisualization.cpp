@@ -73,6 +73,11 @@ void qmpVisualization::showThread()
 	notestretch=api->getOptionInt("Visualization/notestretch");
 	minnotelength=api->getOptionInt("Visualization/minnotelen");
 	chkrtint=api->getOptionUint("Visualization/chkrtint");
+	for(int i=0;i<16;++i)
+	{
+		accolors[i]=api->getOptionUint("Visualization/chActiveColor"+std::to_string(i));
+		iccolors[i]=api->getOptionUint("Visualization/chInactiveColor"+std::to_string(i));
+	}
 	sm=smGetInterface(SMELT_APILEVEL);
 	sm->smVidMode(wwidth,wheight,true);
 	sm->smUpdateFunc(h);sm->smQuitFunc(closeh);
@@ -640,6 +645,11 @@ void qmpVisualization::init()
 	api->registerOptionDouble("","","Visualization/rx",-999999999,999999999,0);
 	api->registerOptionDouble("","","Visualization/ry",-999999999,999999999,75);
 	api->registerOptionDouble("","","Visualization/rz",-999999999,999999999,90);
+	for(int i=0;i<16;++i)
+	{
+		api->registerOptionUint("","","Visualization/chActiveColor"+std::to_string(i),0,0xFFFFFFFF,accolors[i]);
+		api->registerOptionUint("","","Visualization/chInactiveColor"+std::to_string(i),0,0xFFFFFFFF,iccolors[i]);
+	}
 	wwidth=api->getOptionInt("Visualization/wwidth");
 	wheight=api->getOptionInt("Visualization/wheight");
 	wsupersample=api->getOptionInt("Visualization/supersampling");
@@ -661,6 +671,11 @@ void qmpVisualization::init()
 	notestretch=api->getOptionInt("Visualization/notestretch");
 	minnotelength=api->getOptionInt("Visualization/minnotelen");
 	chkrtint=api->getOptionUint("Visualization/chkrtint");
+	for(int i=0;i<16;++i)
+	{
+		accolors[i]=api->getOptionUint("Visualization/chActiveColor"+std::to_string(i));
+		iccolors[i]=api->getOptionUint("Visualization/chInactiveColor"+std::to_string(i));
+	}
 }
 void qmpVisualization::deinit()
 {
