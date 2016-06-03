@@ -88,6 +88,7 @@ class qmpMainWindow:public QMainWindow
 		void onfnA1();
 		void onfnA2();
 		void onfnA3();
+		void onfnA4();
 
 		void on_pushButton_clicked();
 
@@ -115,7 +116,7 @@ class qmpMainWindow:public QMainWindow
 		QPointer<qmpHelpWindow> helpw;
 		qmpVisualizationIntf* VIs[16];
 
-		QAction *fnA1,*fnA2,*fnA3;
+		QAction *fnA1,*fnA2,*fnA3,*fnA4;
 		void onfnChanged();
 		void playerSetup();
 

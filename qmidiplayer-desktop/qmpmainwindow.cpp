@@ -92,9 +92,11 @@ void qmpMainWindow::init()
 	fnA1=new QAction(tr("File Information"),ui->lbFileName);
 	fnA2=new QAction(tr("Render to Wave"),ui->lbFileName);
 	fnA3=new QAction(tr("Panic"),ui->lbFileName);
+	fnA4=new QAction(tr("Restart fluidsynth"),ui->lbFileName);
 	ui->lbFileName->addAction(fnA1);
 	ui->lbFileName->addAction(fnA2);
 	ui->lbFileName->addAction(fnA3);
+	ui->lbFileName->addAction(fnA4);
 	pmgr->scanPlugins();settingsw->updatePluginList(pmgr);pmgr->initPlugins();
 	if(singleFS){player->fluidPreInitialize();playerSetup();player->fluidInitialize();
 		for(int i=settingsw->getSFWidget()->rowCount()-1;i>=0;--i){if(!((QCheckBox*)settingsw->getSFWidget()->cellWidget(i,0))->isChecked())continue;
@@ -119,6 +121,7 @@ void qmpMainWindow::init()
 	connect(fnA1,SIGNAL(triggered()),this,SLOT(onfnA1()));
 	connect(fnA2,SIGNAL(triggered()),this,SLOT(onfnA2()));
 	connect(fnA3,SIGNAL(triggered()),this,SLOT(onfnA3()));
+	connect(fnA4,SIGNAL(triggered()),this,SLOT(onfnA4()));
 	connect(timer,SIGNAL(timeout()),this,SLOT(updateWidgets()));
 	connect(timer,SIGNAL(timeout()),chnlw,SLOT(channelWindowsUpdate()));
 	connect(timer,SIGNAL(timeout()),infow,SLOT(updateInfo()));
@@ -227,13 +230,15 @@ void qmpMainWindow::dragEnterEvent(QDragEnterEvent *event)
 void qmpMainWindow::updateWidgets()
 {
 	fnA2->setEnabled(stopped);
+	fnA4->setEnabled(stopped);
 	if(player->isFinished()&&playerTh)
 	{
 		if(!plistw->getRepeat())
 		{
 			timer->stop();stopped=true;playing=false;
 			for(int i=0;i<16;++i)if(VIs[i])VIs[i]->stop();
-			fnA2->setEnabled(stopped);chnlw->resetAcitivity();
+			fnA2->setEnabled(stopped);
+			fnA4->setEnabled(stopped);chnlw->resetAcitivity();
 			player->playerDeinit();playerTh->join();
 			delete playerTh;playerTh=NULL;
 			if(singleFS)player->playerPanic(true);
@@ -480,7 +485,7 @@ void qmpMainWindow::on_pbStop_clicked()
 	{
 		timer->stop();stopped=true;playing=false;
 		for(int i=0;i<16;++i)if(VIs[i])VIs[i]->stop();
-		player->playerDeinit();fnA2->setEnabled(stopped);
+		player->playerDeinit();fnA2->setEnabled(stopped);fnA4->setEnabled(stopped);
 		if(singleFS)player->playerPanic(true);chnlw->resetAcitivity();
 		if(playerTh){playerTh->join();delete playerTh;playerTh=NULL;}
 		chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
@@ -695,6 +700,14 @@ void qmpMainWindow::onfnA2()
 void qmpMainWindow::onfnA3()
 {
 	player->playerPanic();
+}
+
+void qmpMainWindow::onfnA4()
+{
+	player->fluidDeinitialize();player->fluidPreInitialize();playerSetup();player->fluidInitialize();
+	for(int i=settingsw->getSFWidget()->rowCount()-1;i>=0;--i){if(!((QCheckBox*)settingsw->getSFWidget()->cellWidget(i,0))->isChecked())continue;
+		LOAD_SOUNDFONT;
+	}
 }
 
 void qmpMainWindow::on_pbSettings_clicked()
