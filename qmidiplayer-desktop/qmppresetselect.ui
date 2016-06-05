@@ -25,9 +25,6 @@
   <property name="windowTitle">
    <string>Preset Selection</string>
   </property>
-  <property name="modal">
-   <bool>true</bool>
-  </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -118,9 +115,6 @@
     </layout>
    </item>
   </layout>
-  <zorder>horizontalLayoutWidget</zorder>
-  <zorder>horizontalLayoutWidget_2</zorder>
-  <zorder>verticalLayoutWidget</zorder>
  </widget>
  <resources/>
  <connections/>

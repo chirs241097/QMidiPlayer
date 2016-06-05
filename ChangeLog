@@ -1,3 +1,6 @@
+2016-06-05 0.8.2 alpha
+Make preset selection dialog non-modal.
+
 2016-06-03 0.8.2 alpha
 Add the "restart fluidsynth" action.
 
