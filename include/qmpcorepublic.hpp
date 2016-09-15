@@ -69,6 +69,8 @@ class qmpPluginAPI
 		virtual uint32_t getMaxPolyphone();
 		virtual uint32_t getCurrentTimeStamp();
 		virtual uint32_t getCurrentPlaybackPercentage();
+		virtual int getChannelCC(int ch,int cc);
+		virtual int getChannelPreset(int ch);
 		virtual void playerSeek(uint32_t percentage);
 		virtual double getPitchBend(int ch);
 		virtual bool getChannelMask(int ch);

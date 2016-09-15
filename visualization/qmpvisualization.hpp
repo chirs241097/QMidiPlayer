@@ -59,7 +59,8 @@ class qmpVisualization:public qmpPluginIntf
 		double etps;
 		bool shouldclose,playing;
 		int hvif,herif,hehif;
-		int traveld[16][128];bool notestatus[16][128];
+		int traveld[16][128];bool notestatus[16][128],lastnotestatus[16][128];
+		int spectra[16][128],spectrar[16][128];
 		void drawCube(smvec3d a,smvec3d b,DWORD col,SMTEX tex);
 		void showThread();
 	public:

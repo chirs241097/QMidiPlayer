@@ -130,6 +130,18 @@ uint32_t qmpPluginAPI::getCurrentTimeStamp()
 {return qmw&&qmw->getPlayer()?qmw->getPlayer()->getTick():0;}
 uint32_t qmpPluginAPI::getCurrentPlaybackPercentage()
 {return qmw?qmw->getPlaybackPercentage():0;}
+int qmpPluginAPI::getChannelCC(int ch,int cc)
+{return qmw&&qmw->getPlayer()?qmw->getPlayer()->getCC(ch,cc):0;}
+int qmpPluginAPI::getChannelPreset(int ch)
+{
+	int b,p;char nm[25],ret[33];ret[0]=0;
+	if(qmw&&qmw->getPlayer())
+	{
+		qmw->getPlayer()->getChannelPreset(ch,&b,&p,nm);
+		return p;
+	}
+	return 0;
+}
 void qmpPluginAPI::playerSeek(uint32_t percentage)
 {if(qmw)qmw->playerSeek(percentage);}
 double qmpPluginAPI::getPitchBend(int ch)

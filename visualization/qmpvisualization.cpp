@@ -3,6 +3,7 @@
 #include <cstring>
 #include <cmath>
 #include <algorithm>
+#include <set>
 #include "qmpvisualization.hpp"
 
 int viewdist=100;
@@ -11,7 +12,7 @@ int minnotelength=100;
 int noteappearance=1,showpiano=1,stairpiano=1,savevp=1,showlabel=1;
 int wwidth=800,wheight=600,wsupersample=1,wmultisample=0,showparticle=1;
 int horizontal=1,flat=0,osdpos=0,fontsize=16;
-int fov=60,vsync=1,tfps=60;
+int fov=60,vsync=1,tfps=60,usespectrum=0;
 DWORD chkrtint=0xFF999999;
 const char* minors="abebbbf c g d a e b f#c#g#d#a#";
 const char* majors="CbGbDbAbEbBbF C G D A E B F#C#";
@@ -25,6 +26,15 @@ DWORD accolors[]={0XFFFF9999,0XFFFFCC99,0XFFFFEE99,0XFFFFFF99,
 				  0XFFEEFF99,0XFFCCFF99,0XFF99FF99,0XFF99FFCC,
 				  0XFF99FFFF,0XFF999999,0XFF99EEFF,0XFF99CCFF,
 				  0XFF9999FF,0XFFCC99FF,0XFFEE99FF,0XFFFF99EE};
+
+std::set<BYTE> sustaininst={16,17,18,19,20,21,22,23,
+							40,41,42,43,44,45,48,49,
+							50,51,52,53,54,56,57,58,
+							59,60,61,62,63,64,65,66,
+							67,68,69,70,71,72,73,74,
+							75,76,77,78,79,80,81,82,
+							83,84,85,86,87,89,90,91,
+							92,93,94,95,97,101,109,110,111};
 
 bool cmp(MidiVisualEvent* a,MidiVisualEvent* b)
 {
@@ -73,6 +83,7 @@ void qmpVisualization::showThread()
 	notestretch=api->getOptionInt("Visualization/notestretch");
 	minnotelength=api->getOptionInt("Visualization/minnotelen");
 	chkrtint=api->getOptionUint("Visualization/chkrtint");
+	usespectrum=api->getOptionBool("Visualization/usespectrum");
 	for(int i=0;i<16;++i)
 	{
 		accolors[i]=api->getOptionUint("Visualization/chActiveColor"+std::to_string(i));
@@ -270,6 +281,7 @@ bool qmpVisualization::update()
 		//printf("pos: %f %f %f\n",pos[0],pos[1],pos[2]);
 		//printf("rot: %f %f %f\n",rot[0],rot[1],rot[2]);
 		double lpt=(double)notestretch/api->getDivision()/10.*(horizontal?0.25:1);
+		memcpy(lastnotestatus,notestatus,sizeof(notestatus));
 		memset(notestatus,0,sizeof(notestatus));
 		for(uint32_t i=elb;i<pool.size();++i)
 		{
@@ -293,7 +305,7 @@ bool qmpVisualization::update()
 				}
 				if(showparticle&&!horizontal)
 				{
-					if(notestatus[pool[i]->ch][pool[i]->key])
+					if(notestatus[pool[i]->ch][pool[i]->key]&&!lastnotestatus[pool[i]->ch][pool[i]->key])
 					{
 						pss[pool[i]->ch][pool[i]->key]->startPS();
 						pss[pool[i]->ch][pool[i]->key]->setPos(smvec3d(0.756*((double)pool[i]->key-64)+.48,(stairpiano?(56-pool[i]->ch*7.):(64-pool[i]->ch*8.)),stairpiano*pool[i]->ch*2+0.1));
@@ -303,7 +315,34 @@ bool qmpVisualization::update()
 				if(((double)pool[i]->tce-pool[i]->tcs)*lpt<minnotelength*(horizontal?0.0025:0.01))
 				{if(horizontal)a.x=((double)pool[i]->tcs-ctk)*lpt-minnotelength/100.-20;
 				else a.z=((double)pool[i]->tcs-ctk)*lpt-minnotelength/100.+stairpiano*pool[i]->ch*2;}
+				if(usespectrum)
+				{
+					if(notestatus[pool[i]->ch][pool[i]->key]&&!lastnotestatus[pool[i]->ch][pool[i]->key])
+						spectra[pool[i]->ch][pool[i]->key]=pool[i]->vel*(api->getChannelCC(pool[i]->ch,7)/127.);
+				}
+				else
 				drawCube(a,b,SETA(isnoteon?accolors[pool[i]->ch]:iccolors[pool[i]->ch],int(pool[i]->vel*1.6+(isnoteon?52:32))),0);
+			}
+		}
+		if(usespectrum&&playing)
+		for(int i=0;i<16;++i)for(int j=0;j<128;++j)
+		{
+			if(sustaininst.find(api->getChannelPreset(i))!=sustaininst.end())
+			{
+				if(!notestatus[i][j]&&spectra[i][j])
+					spectra[i][j]=.95*spectra[i][j];
+			}else if(spectra[i][j])spectra[i][j]=.95*spectra[i][j];
+			if(spectrar[i][j]<spectra[i][j]*0.9)spectrar[i][j]+=spectra[i][j]*0.2;
+			else spectrar[i][j]=spectra[i][j];
+			if(spectrar[i][j])
+			{
+				smvec3d a(0.63*((double)j-64+api->getPitchBend(i))+.1,
+						  (stairpiano?(56-i*7.):(64-i*8.)),
+						  spectrar[i][j]*1.2*(1+0.02*sin(sm->smGetTime()*32))+(stairpiano&&showpiano&&!horizontal)*i*2.);
+				smvec3d b(0.63*((double)j-64+api->getPitchBend(i))+.7,
+						  (stairpiano?(56-i*7.):(64-i*8.))+.4,
+						  (stairpiano&&showpiano&&!horizontal)*i*2.);
+				drawCube(a,b,SETA(iccolors[i],204),0);
 			}
 		}
 		if(noteappearance)nebuf->drawBatch();
@@ -386,7 +425,12 @@ bool qmpVisualization::update()
 					nq.v[0].x=nq.v[3].x=a.x;nq.v[0].y=nq.v[1].y=a.y;
 					nq.v[1].x=nq.v[2].x=b.x;nq.v[2].y=nq.v[3].y=b.y;for(int j=0;j<4;++j)
 					nq.v[j].col=SETA(isnoteon?accolors[pool[i]->ch]:iccolors[pool[i]->ch],int(pool[i]->vel*1.6+(isnoteon?52:32)));
-					sm->smRenderQuad(&nq);
+					if(usespectrum)
+					{
+						if(notestatus[pool[i]->ch][pool[i]->key]&&!lastnotestatus[pool[i]->ch][pool[i]->key])
+							spectra[pool[i]->ch][pool[i]->key]=pool[i]->vel*(api->getChannelCC(pool[i]->ch,7)/127.);
+					}
+					else sm->smRenderQuad(&nq);
 				}
 			}
 			while(pool.size()&&elb<pool.size()&&fabs((double)pool[elb]->tce-ctk)*lpt+wheight-nh>wheight)++elb;
@@ -449,6 +493,30 @@ bool qmpVisualization::update()
 				}
 				sm->smRenderQuad(&q);
 			}
+			if(usespectrum&&playing)
+			for(int i=0;i<16;++i)for(int j=0;j<128;++j)
+			{
+				if(sustaininst.find(api->getChannelPreset(i))!=sustaininst.end())
+				{
+					if(!notestatus[i][j]&&spectra[i][j])
+						spectra[i][j]=.95*spectra[i][j];
+				}else if(spectra[i][j])spectra[i][j]=.95*spectra[i][j];
+				if(spectrar[i][j]<spectra[i][j]*0.9)spectrar[i][j]+=spectra[i][j]*0.2;
+				else spectrar[i][j]=spectra[i][j];
+				if(spectrar[i][j])
+				{
+					smvec2d a((froffsets[12]*(j/12)+froffsets[j%12])*wwidth/2048.,spectrar[i][j]/-128.*(wheight-nh)*(1+0.02*sin(sm->smGetTime()*32))+wheight-nh);
+					smvec2d b(a.x+notew*0.9,lpt+wheight-nh);
+					uint32_t newkey=j+(int)floor(api->getPitchBend(i));
+					double fpb=api->getPitchBend(i)-floor(api->getPitchBend(i));
+					a.x=(froffsets[12]*(newkey/12)+froffsets[newkey%12])*wwidth/2048.+notew*fpb;
+					b.x=a.x+notew*0.9;
+					nq.v[0].x=nq.v[3].x=a.x;nq.v[0].y=nq.v[1].y=a.y;
+					nq.v[1].x=nq.v[2].x=b.x;nq.v[2].y=nq.v[3].y=b.y;for(int j=0;j<4;++j)
+					nq.v[j].col=SETA(iccolors[i],204);
+					sm->smRenderQuad(&nq);
+				}
+			}
 		}
 		else
 		{
@@ -477,7 +545,11 @@ bool qmpVisualization::update()
 					nq.v[0].x=nq.v[3].x=a.x;nq.v[0].y=nq.v[1].y=a.y;
 					nq.v[1].x=nq.v[2].x=b.x;nq.v[2].y=nq.v[3].y=b.y;for(int j=0;j<4;++j)
 					nq.v[j].col=SETA(isnoteon?accolors[pool[i]->ch]:iccolors[pool[i]->ch],int(pool[i]->vel*1.6+(isnoteon?52:32)));
-					sm->smRenderQuad(&nq);
+					if(usespectrum)
+					{
+						if(notestatus[pool[i]->ch][pool[i]->key]&&!lastnotestatus[pool[i]->ch][pool[i]->key])
+							spectra[pool[i]->ch][pool[i]->key]=pool[i]->vel*(api->getChannelCC(pool[i]->ch,7)/127.);
+					}else sm->smRenderQuad(&nq);
 				}
 			}
 			while(pool.size()&&elb<pool.size()&&fabs((double)pool[elb]->tce-ctk)*lpt+nh<0)++elb;
@@ -540,6 +612,31 @@ bool qmpVisualization::update()
 				}
 				for(int j=0;j<4;++j)q.v[j].y=wheight-q.v[j].y;
 				sm->smRenderQuad(&q);
+			}
+			if(usespectrum&&playing)
+			for(int i=0;i<16;++i)for(int j=0;j<128;++j)
+			{
+				if(sustaininst.find(api->getChannelPreset(i))!=sustaininst.end())
+				{
+					if(!notestatus[i][j]&&spectra[i][j])
+						spectra[i][j]=.95*spectra[i][j];
+				}else if(spectra[i][j])spectra[i][j]=.95*spectra[i][j];
+				if(spectrar[i][j]<spectra[i][j]*0.9)spectrar[i][j]+=spectra[i][j]*0.2;
+				else spectrar[i][j]=spectra[i][j];
+				if(spectrar[i][j])
+				{
+					smvec2d a(spectrar[i][j]/128.*(wwidth-nh)*(1+0.02*sin(sm->smGetTime()*32))+nh,(froffsets[12]*(j/12)+froffsets[j%12])*wheight/2048.);
+					smvec2d b(nh,a.y+notew*0.9);
+					uint32_t newkey=j+(int)floor(api->getPitchBend(i));
+					double fpb=api->getPitchBend(pool[i]->ch)-floor(api->getPitchBend(pool[i]->ch));
+					a.y=(froffsets[12]*(newkey/12)+froffsets[newkey%12])*wheight/2048.+notew*fpb;
+					b.y=a.y+notew*0.9;
+					a.y=wheight-a.y;b.y=wheight-b.y;
+					nq.v[0].x=nq.v[3].x=a.x;nq.v[0].y=nq.v[1].y=a.y;
+					nq.v[1].x=nq.v[2].x=b.x;nq.v[2].y=nq.v[3].y=b.y;for(int j=0;j<4;++j)
+					nq.v[j].col=SETA(iccolors[i],204);
+					sm->smRenderQuad(&nq);
+				}
 			}
 		}
 		if(playing)ctk+=(int)(1e6/(api->getRawTempo()/api->getDivision())*sm->smGetDelta());
@@ -612,7 +709,9 @@ void qmpVisualization::init()
 	vi=new CDemoVisualization(this);
 	h=new CMidiVisualHandler(this);
 	closeh=new CloseHandler(this);
-	rendererTh=NULL;
+	rendererTh=NULL;playing=false;
+	memset(spectra,0,sizeof(spectra));
+	memset(spectrar,0,sizeof(spectrar));
 	hvif=api->registerVisualizationIntf(vi);
 	herif=api->registerEventReaderIntf(cb,NULL);
 	hehif=api->registerEventHandlerIntf(hcb,NULL);
@@ -623,6 +722,7 @@ void qmpVisualization::init()
 	api->registerOptionBool("Visualization-Appearance","Show Particles","Visualization/showparticle",true);
 	api->registerOptionBool("Visualization-Appearance","Horizontal Visualization","Visualization/horizontal",false);
 	api->registerOptionBool("Visualization-Appearance","2D Visualization","Visualization/flat",false);
+	api->registerOptionBool("Visualization-Appearance","Use spectrum instead of piano roll","Visualization/usespectrum",false);
 	api->registerOptionBool("Visualization-Video","Enable VSync","Visualization/vsync",true);
 	api->registerOptionBool("Visualization-Video","Save Viewport","Visualization/savevp",true);
 	api->registerOptionInt("Visualization-Video","Window Width","Visualization/wwidth",320,3200,800);
