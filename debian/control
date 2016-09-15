@@ -5,6 +5,7 @@ Priority: optional
 Standards-Version: 3.9.2
 Build-Depends: debhelper (>= 9),
 	qtbase5-dev,
+	qtdeclarative5-dev,
 	qt5-qmake,
 	libfluidsynth-dev, 
 	qml-module-qtquick-controls,
