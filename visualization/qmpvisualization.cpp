@@ -336,10 +336,10 @@ bool qmpVisualization::update()
 			else spectrar[i][j]=spectra[i][j];
 			if(spectrar[i][j])
 			{
-				smvec3d a(0.63*((double)j-64+api->getPitchBend(i))+.1,
+				smvec3d a(0.756*((double)j-64+api->getPitchBend(i))+.12,
 						  (stairpiano?(56-i*7.):(64-i*8.)),
 						  spectrar[i][j]*1.2*(1+0.02*sin(sm->smGetTime()*32))+(stairpiano&&showpiano&&!horizontal)*i*2.);
-				smvec3d b(0.63*((double)j-64+api->getPitchBend(i))+.7,
+				smvec3d b(0.756*((double)j-64+api->getPitchBend(i))+.84,
 						  (stairpiano?(56-i*7.):(64-i*8.))+.4,
 						  (stairpiano&&showpiano&&!horizontal)*i*2.);
 				drawCube(a,b,SETA(iccolors[i],204),0);
@@ -790,7 +790,7 @@ void qmpVisualization::deinit()
 const char* qmpVisualization::pluginGetName()
 {return "QMidiPlayer Default Visualization Plugin";}
 const char* qmpVisualization::pluginGetVersion()
-{return "0.8.1";}
+{return "0.8.3";}
 
 void qmpVisualization::pushNoteOn(uint32_t tc,uint32_t ch,uint32_t key,uint32_t vel)
 {

@@ -44,12 +44,12 @@
 	<img src="../img/options2.png"><br>
 	<ul>
 		<li>Audio Driver**: specify the audio backend used by the internal synthesizer.</li>
-		<li>Audio Buffer Size**: Size per buffer used by the fluidsynth engine.</li>
-		<li>Audio Buffer Count**: Number of buffers used by the fluidsynth engine.</li>
+		<li>Audio Buffer Size**: Size per buffer used by the fluidsynth engine. Increase if experiencing audio interruption, decrease if audio is laggy or messed up.</li>
+		<li>Audio Buffer Count**: Number of buffers used by the fluidsynth engine. Increase if experiencing audio interruption or messy audio, decrease if audio is laggy.</li>
 		<li>Audio Format**: audio output format of the fluidsynth engine.</li>
 		<li>Audio Frequency**: audio output sampling frequency of the fluidsynth engine.</li>
-		<li>Max Polyphony**: maximum simultaniously played voices of synthesizer.</li>
-		<li>CPU Cores**: threads used by the internal synthesizer.</li>
+		<li>Max Polyphony**: maximum simultaniously played voices of synthesizer. High polyphony limit may cause lags. </li>
+		<li>CPU Cores**: threads used by the internal synthesizer. Too many threads may result in instability.</li>
 		<li>Auto bank select mode:<br>
 		If checked, the player will choose the appropriate bank selecting mode
 		according to the file standard. If the file doesn't specify the standard

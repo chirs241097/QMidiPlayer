@@ -42,19 +42,26 @@ left  |  right        ←  →          │     │
       |          Seek left/right    └─────┘
    backward   (Hold shift to seek 5% instead of 1%)
 </pre>
+		<h3>Known problems</h3>
+		<p>
+		In some systems closing and reopening the visualization results in a crash. This is
+		due to a dbus-related conflict in SDL and Qt.
+		</p>
 		<h3>Options</h3>
+		The options listed here are applied after closing and reopening the visualization.
 		<ul>
 			<li>
 				Visualization-Appearance
 				<ul>
-					<li>Show Piano: Whether to show the virtual piano in the visualization scene.</li>
+					<li>Show Piano: Whether to show the virtual piano in the visualization scene. Currently drawing the piano is very expensive, so it is not recommended to enable this unless you have a beefy computer.</li>
 					<li>3D Notes: 2D notes are used when this is unchecked. Using 2D notes is less resource-hungry.</li>
 					<li>Arrange channels on a stair: If checked, virtual pianos will be arranged on a stair-like shape. This option has no effect if virtual piano is not shown.</li>
 					<li>Show channel labels: If checked, channel preset will be shown on the left side.</li>
 					<li>Show particles: Whether to draw particles. Very resource-intensive!</li>
 					<li>Horizontal Visualization: Uses a horizontal visualization style. Overrides everything above except 3D Notes.</li>
 					<li>2D Visualization: Tick this to use a simple 2D visualization instead. Much less resource-demanding.</li>
-					<li>View distance: This option affects the maximum number of notes rendered on the screen. Only applies to 3D visualization.</li>
+					<li>Use spectrum instead of piano roll: Draw spectrum-like bars over the piano.</li>
+					<li>View distance: This option affects the maximum number of notes rendered on the screen. Only applies to the 3D visualization.</li>
 					<li>Note stretch: The length multiplier of notes.</li>
 					<li>Minimum note length: Avoid notes that are too short to be visible by adjusting this value.</li>
 					<li>Chequer board tint (AARRGGBB): change the color of the chequer board background.</li>
@@ -71,7 +78,7 @@ left  |  right        ←  →          │     │
 					<li>Supersampling: Supersample anti-aliasing. 1 means no SSAA.</li>
 					<li>Multisampling: Multisample anti-aliasing. 0 means no MSAA.</li>
 					<li>FOV: Field of view.</li>
-					<li>OSD Position: Change position of the on screen display, or just disable it.</li>
+					<li>OSD Position: Change position of the on screen display, or simply disable it.</li>
 					<li>Font size: Change font size used by the visualization. Useful for HiDPI screens.</li>
 				</ul>
 			</li>
