@@ -24,6 +24,10 @@ qmpSettingsWindow::qmpSettingsWindow(QWidget *parent) :
 	connect(this,SIGNAL(dialogClosing()),parent,SLOT(dialogClosed()));
 	settings=new QSettings(QDir::homePath()+QString("/.config/qmprc"),QSettings::IniFormat);
 	settingsInit();outwidget=ui->cbOutputDevice;
+	ui->pbAdd->setIcon(QIcon(getThemedIcon(":/img/add.png")));
+	ui->pbRemove->setIcon(QIcon(getThemedIcon(":/img/remove.png")));
+	ui->pbDown->setIcon(QIcon(getThemedIcon(":/img/down.png")));
+	ui->pbUp->setIcon(QIcon(getThemedIcon(":/img/up.png")));
 }
 
 qmpSettingsWindow::~qmpSettingsWindow()
@@ -181,6 +185,9 @@ void qmpSettingsWindow::settingsInit()
 	settings->setValue("Behavior/SingleInstance",settings->value("Behavior/SingleInstance",0));
 	ui->cbPersistentfs->setChecked(settings->value("Behavior/SingleInstance",0).toInt());
 
+	settings->setValue("Behavior/IconTheme",settings->value("Behavior/IconTheme",0));
+	ui->cbIconTheme->setCurrentIndex(settings->value("Behavior/IconTheme",0).toInt());
+
 	settings->sync();
 	delete_fluid_settings(fsettings);
 }
@@ -216,6 +223,7 @@ void qmpSettingsWindow::settingsUpdate()
 	settings->setValue("Audio/BankSelect",ui->cbBSMode->currentText());
 
 	settings->setValue("SoundFonts/SFCount",ui->twSoundfont->rowCount());
+
 	for(int i=0;i<ui->twSoundfont->rowCount();++i)
 	{
 		settings->setValue("SoundFonts/SF"+QString::number(i+1),ui->twSoundfont->item(i,1)->text());
@@ -227,6 +235,11 @@ void qmpSettingsWindow::settingsUpdate()
 	settings->setValue("Behavior/LoadFolder",ui->cbLoadFolder->isChecked()?1:0);
 
 	settings->setValue("Behavior/DialogStatus",ui->cbDialogStatus->isChecked()?1:0);
+
+	settings->setValue("Behavior/SingleInstance",ui->cbPersistentfs->isChecked()?1:0);
+
+	settings->setValue("Behavior/IconTheme",ui->cbIconTheme->currentIndex());
+
 	if(!ui->cbDialogStatus->isChecked())
 	{
 		settings->remove("DialogStatus/MainW");
@@ -255,8 +268,6 @@ void qmpSettingsWindow::settingsUpdate()
 		settings->remove("Effects/ChorusDepth");
 		settings->remove("Effects/ChorusType");
 	}
-
-	settings->setValue("Behavior/SingleInstance",ui->cbPersistentfs->isChecked()?1:0);
 
 	for(int i=0;i<ui->twPluginList->rowCount();++i)
 		settings->setValue(

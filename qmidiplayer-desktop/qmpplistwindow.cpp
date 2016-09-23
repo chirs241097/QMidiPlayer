@@ -37,32 +37,38 @@ qmpPlistWindow::qmpPlistWindow(QWidget *parent) :
 		switch(shuffle)
 		{
 			case 1:
-				ui->pbShuffle->setIcon(QIcon(":/img/shuffle.png"));
+				ui->pbShuffle->setIcon(QIcon(getThemedIcon(":/img/shuffle.png")));
 				ui->pbShuffle->setText("Shuffle On");
 			break;
 			case 0:
 			default:
-				ui->pbShuffle->setIcon(QIcon(":/img/shuffle-off.png"));
+				ui->pbShuffle->setIcon(QIcon(getThemedIcon(":/img/shuffle-off.png")));
 				ui->pbShuffle->setText("Shuffle Off");
 			break;
 		}
 		switch(repeat)
 		{
 			case 0:
-				ui->pbRepeat->setIcon(QIcon(":/img/repeat-non.png"));
+				ui->pbRepeat->setIcon(QIcon(getThemedIcon(":/img/repeat-non.png")));
 				ui->pbRepeat->setText("Repeat Off");
 			break;
 			case 1:
-				ui->pbRepeat->setIcon(QIcon(":/img/repeat-one.png"));
+				ui->pbRepeat->setIcon(QIcon(getThemedIcon(":/img/repeat-one.png")));
 				ui->pbRepeat->setText("Repeat One");
 			break;
 			case 2:
-				ui->pbRepeat->setIcon(QIcon(":/img/repeat-all.png"));
+				ui->pbRepeat->setIcon(QIcon(getThemedIcon(":/img/repeat-all.png")));
 				ui->pbRepeat->setText("Repeat All");
 			break;
 		}
 		delete plist;
 	}
+	ui->pbAdd->setIcon(QIcon(getThemedIcon(":/img/add.png")));
+	ui->pbRemove->setIcon(QIcon(getThemedIcon(":/img/remove.png")));
+	ui->pbClear->setIcon(QIcon(getThemedIcon(":/img/clear.png")));
+	ui->pbAddFolder->setIcon(QIcon(getThemedIcon(":/img/addfolder.png")));
+	ui->pbSave->setIcon(QIcon(getThemedIcon(":/img/save.png")));
+	ui->pbLoad->setIcon(QIcon(getThemedIcon(":/img/load.png")));
 }
 
 qmpPlistWindow::~qmpPlistWindow()

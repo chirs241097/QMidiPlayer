@@ -126,6 +126,15 @@ void qmpMainWindow::init()
 	connect(timer,SIGNAL(timeout()),chnlw,SLOT(channelWindowsUpdate()));
 	connect(timer,SIGNAL(timeout()),infow,SLOT(updateInfo()));
 	if(havemidi)on_pbPlayPause_clicked();
+	ui->pbNext->setIcon(QIcon(getThemedIcon(":/img/next.png")));
+	ui->pbPrev->setIcon(QIcon(getThemedIcon(":/img/prev.png")));
+	ui->pbPlayPause->setIcon(QIcon(getThemedIcon(":/img/play.png")));
+	ui->pbStop->setIcon(QIcon(getThemedIcon(":/img/stop.png")));
+	ui->pbChannels->setIcon(QIcon(getThemedIcon(":/img/channel.png")));
+	ui->pbEfx->setIcon(QIcon(getThemedIcon(":/img/effects.png")));
+	ui->pbPList->setIcon(QIcon(getThemedIcon(":/img/list.png")));
+	ui->pbVisualization->setIcon(QIcon(getThemedIcon(":/img/visualization.png")));
+	ui->pbSettings->setIcon(QIcon(getThemedIcon(":/img/settings.png")));
 }
 
 int qmpMainWindow::pharseArgs()
@@ -243,7 +252,7 @@ void qmpMainWindow::updateWidgets()
 			delete playerTh;playerTh=NULL;
 			if(singleFS)player->playerPanic(true);
 			chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
-			ui->pbPlayPause->setIcon(QIcon(":/img/play.png"));
+			ui->pbPlayPause->setIcon(QIcon(getThemedIcon(":/img/play.png")));
 			ui->hsTimer->setValue(0);
 			ui->lnPolyphone->display("00000-00000");
 			ui->lbCurTime->setText("00:00");
@@ -419,7 +428,7 @@ void qmpMainWindow::on_pbPlayPause_clicked()
 		player->setTCpaused(!playing);
 		for(int i=0;i<16;++i)if(VIs[i])VIs[i]->pause();
 	}
-	ui->pbPlayPause->setIcon(QIcon(playing?":/img/pause.png":":/img/play.png"));
+	ui->pbPlayPause->setIcon(QIcon(getThemedIcon(playing?":/img/pause.png":":/img/play.png")));
 }
 
 void qmpMainWindow::on_hsTimer_sliderPressed()
@@ -489,7 +498,7 @@ void qmpMainWindow::on_pbStop_clicked()
 		if(singleFS)player->playerPanic(true);chnlw->resetAcitivity();
 		if(playerTh){playerTh->join();delete playerTh;playerTh=NULL;}
 		chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
-		ui->pbPlayPause->setIcon(QIcon(":/img/play.png"));
+		ui->pbPlayPause->setIcon(QIcon(getThemedIcon(":/img/play.png")));
 		ui->hsTimer->setValue(0);
 		ui->lnPolyphone->display("00000-00000");
 		ui->lbCurTime->setText("00:00");
@@ -584,7 +593,7 @@ void qmpMainWindow::on_pbNext_clicked()
 	player->setWaitVoice(qmpSettingsWindow::getSettingsIntf()->value("Midi/WaitVoice",1).toInt());
 	playerTh=new std::thread(&CMidiPlayer::playerThread,player);
 #ifdef _WIN32
-			SetThreadPriority(playerTh->native_handle(),THREAD_PRIORITY_TIME_CRITICAL);
+	SetThreadPriority(playerTh->native_handle(),THREAD_PRIORITY_TIME_CRITICAL);
 #endif
 	st=std::chrono::steady_clock::now();offset=0;
 	timer->start(UPDATE_INTERVAL);
@@ -593,7 +602,7 @@ void qmpMainWindow::on_pbNext_clicked()
 void qmpMainWindow::selectionChanged()
 {
 	stopped=false;playing=true;
-	ui->pbPlayPause->setIcon(QIcon(":/img/pause.png"));
+	ui->pbPlayPause->setIcon(QIcon(getThemedIcon(":/img/pause.png")));
 	timer->stop();player->playerDeinit();
 	for(int i=0;i<16;++i)if(VIs[i])VIs[i]->stop();
 	if(playerTh){playerTh->join();delete playerTh;playerTh=NULL;}
@@ -669,6 +678,15 @@ int qmpMainWindow::registerVisualizationIntf(qmpVisualizationIntf* intf)
 void qmpMainWindow::unregisterVisualizationIntf(int handle)
 {
 	VIs[handle]=NULL;
+}
+
+bool qmpMainWindow::isDarkTheme()
+{
+	if(!qmpSettingsWindow::getSettingsIntf()->value("Behavior/IconTheme",0).toInt())
+	{
+		return ui->centralWidget->palette().color(QPalette::Background).lightness()<128;
+	}
+	else return 2-qmpSettingsWindow::getSettingsIntf()->value("Behavior/IconTheme",0).toInt();
 }
 
 void qmpMainWindow::onfnA1()

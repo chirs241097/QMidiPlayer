@@ -24,6 +24,8 @@
 #include "qmpsettingswindow.hpp"
 #include "qmphelpwindow.hpp"
 
+#define getThemedIcon(x) (qmpMainWindow::getInstance()->isDarkTheme()?QString(x).insert(QString(x).lastIndexOf('.'),"_i"):QString(x))
+
 namespace Ui {
 	class qmpMainWindow;
 }
@@ -70,6 +72,7 @@ class qmpMainWindow:public QMainWindow
 		int pharseArgs();
 		int registerVisualizationIntf(qmpVisualizationIntf* intf);
 		void unregisterVisualizationIntf(int handle);
+		bool isDarkTheme();
 
 	private slots:
 		void on_pbPlayPause_clicked();
@@ -94,7 +97,7 @@ class qmpMainWindow:public QMainWindow
 
 		void on_pbVisualization_clicked();
 
-		public slots:
+	public slots:
 		void dialogClosed();
 		void selectionChanged();
 
