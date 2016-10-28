@@ -35,6 +35,6 @@ unix {
 }
 #well...
 INCLUDEPATH += /home/chrisoft/devel/BulletLabRemixIII/include/ /usr/include/freetype2
-LIBS += -L/home/chrisoft/devel/BulletLabRemixIII/smelt/sdl/
+LIBS += -L/home/chrisoft/devel/BulletLabRemixIII/smelt/glfw/
 LIBS += -L/home/chrisoft/devel/BulletLabRemixIII/extensions/
-LIBS += -lstdc++ -lfreetype -lz -lsmeltext -lsmelt-dumb -lCxImage -ljpeg -lpng -lSDL2
+LIBS += -lstdc++ -lfreetype -lz -lsmeltext -lsmelt-dumb -lCxImage -ljpeg -lpng -lglfw -lGLEW -lGL
