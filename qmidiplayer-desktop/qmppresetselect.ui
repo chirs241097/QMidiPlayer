@@ -72,6 +72,52 @@
     </layout>
    </item>
    <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QLabel" name="lbCustomMSB">
+       <property name="text">
+        <string>Bank MSB</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QSpinBox" name="spCustomMSB">
+       <property name="maximum">
+        <number>127</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="lbCustomLSB">
+       <property name="text">
+        <string>Bank LSB</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QSpinBox" name="spCustomLSB">
+       <property name="maximum">
+        <number>127</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="lbCustomPC">
+       <property name="text">
+        <string>Patch</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QSpinBox" name="spCustomPC">
+       <property name="maximum">
+        <number>127</number>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <spacer name="horizontalSpacer">
@@ -87,28 +133,9 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="pbCancel">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>Cancel</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="pbOk">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>OK</string>
+      <widget class="QDialogButtonBox" name="buttonBox">
+       <property name="standardButtons">
+        <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
        </property>
       </widget>
      </item>

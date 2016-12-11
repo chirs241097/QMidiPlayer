@@ -34,7 +34,7 @@ unix {
 	res.files += ../img/chequerboard.png ../img/particle.png ../img/kb_128.png
 }
 #well...
-INCLUDEPATH += /home/chrisoft/devel/BulletLabRemixIII/include/ /usr/include/freetype2
-LIBS += -L/home/chrisoft/devel/BulletLabRemixIII/smelt/glfw/
-LIBS += -L/home/chrisoft/devel/BulletLabRemixIII/extensions/
+INCLUDEPATH += /home/chrisoft/devel/SMELT/include/ /usr/include/freetype2
+LIBS += -L/home/chrisoft/devel/SMELT/smelt/glfw/
+LIBS += -L/home/chrisoft/devel/SMELT/extensions/
 LIBS += -lstdc++ -lfreetype -lz -lsmeltext -lsmelt-dumb -lCxImage -ljpeg -lpng -lglfw -lGLEW -lGL

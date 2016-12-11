@@ -157,6 +157,7 @@ class CMidiPlayer
 		fluid_sfont_t* getSFPtr(int sfid);
 
 		qmpMidiMapperRtMidi* getMidiMapper();
+		int getChannelOutput(int ch);
 		void setChannelOutput(int ch,int devid);
 		uint8_t* getChstates();
 		int setEventHandlerCB(IMidiCallBack *cb,void *userdata);

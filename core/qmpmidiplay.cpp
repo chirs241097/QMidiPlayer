@@ -302,19 +302,20 @@ void CMidiPlayer::playerPanic(bool reset)
 {
 	for(int i=0;i<16;++i)
 	{
-		if(reset)
-		{
-			fluid_synth_cc(synth,i,0,0);
-			fluid_synth_cc(synth,i,7,100);
-			fluid_synth_cc(synth,i,10,64);
-			fluid_synth_cc(synth,i,11,127);
-			fluid_synth_cc(synth,i,32,0);
+		if(synth){
+			if(reset){
+				fluid_synth_cc(synth,i,0,0);
+				fluid_synth_cc(synth,i,7,100);
+				fluid_synth_cc(synth,i,10,64);
+				fluid_synth_cc(synth,i,11,127);
+				fluid_synth_cc(synth,i,32,0);
+			}
+			fluid_synth_cc(synth,i,64,0);
+			fluid_synth_pitch_wheel_sens(synth,i,2);
+			fluid_synth_pitch_bend(synth,i,8192);
+			//all sounds off causes the minus polyphone bug...
+			fluid_synth_all_notes_off(synth,i);
 		}
-		fluid_synth_cc(synth,i,64,0);
-		fluid_synth_pitch_wheel_sens(synth,i,2);
-		fluid_synth_pitch_bend(synth,i,8192);
-		//all sounds off causes the minus polyphone bug...
-		fluid_synth_all_notes_off(synth,i);
 		if(deviceusage[i])for(int j=0;j<16;++j)
 		reset?mapper->reset(i,j):mapper->panic(i,j);
 	}
@@ -441,17 +442,18 @@ void CMidiPlayer::getChannelPreset(int ch,int *b,int *p,char *name)
 void CMidiPlayer::setChannelPreset(int ch,int b,int p)
 {
 	if(!synth)return;
-	chstatus[ch][0]=b;//!!FIXME: This is not correct...
 	chstatus[ch][128]=p;
 	if(mappedoutput[ch])
 	{
 		//external device mode?
-		mapper->ctrlChange(mappedoutput[ch]-1,ch,0,b);
-		mapper->ctrlChange(mappedoutput[ch]-1,ch,32,b);
+		chstatus[ch][0]=b>>7;chstatus[ch][32]=b&0x7F;
+		mapper->ctrlChange(mappedoutput[ch]-1,ch,0,b>>7);
+		mapper->ctrlChange(mappedoutput[ch]-1,ch,32,b&0x7F);
 		mapper->progChange(mappedoutput[ch]-1,ch,p);
 	}
 	else
 	{
+		chstatus[ch][0]=b;//!!FIXME: This is not correct...
 		fluid_synth_bank_select(synth,ch,b);
 		fluid_synth_program_change(synth,ch,p);
 	}
@@ -519,6 +521,10 @@ fluid_sfont_t* CMidiPlayer::getSFPtr(int sfid)
 {return synth&&sfid<getSFCount()?fluid_synth_get_sfont(synth,sfid):NULL;}
 
 qmpMidiMapperRtMidi* CMidiPlayer::getMidiMapper(){return mapper;}
+int CMidiPlayer::getChannelOutput(int ch)
+{
+	return mappedoutput[ch];
+}
 void CMidiPlayer::setChannelOutput(int ch,int devid)
 {
 	int origoutput=mappedoutput[ch];
@@ -541,7 +547,7 @@ void CMidiPlayer::setChannelOutput(int ch,int devid)
 	{
 		--deviceusage[origoutput-1];mapper->panic(origoutput-1,ch);
 		if(!deviceusage[origoutput-1])mapper->deviceDeinit(origoutput-1);
-	}else fluid_synth_all_notes_off(synth,ch);
+	}else if(synth)fluid_synth_all_notes_off(synth,ch);
 }
 uint8_t* CMidiPlayer::getChstates(){return chstate;}
 int CMidiPlayer::setEventHandlerCB(IMidiCallBack *cb,void *userdata)

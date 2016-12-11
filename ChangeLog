@@ -1,5 +1,10 @@
-2016-10-28 0.8.3 alpha
-Fixed the dbus bug by switching to the GLFW backend for SMELT.
+2016-09-23 0.8.3 alpha
+Update the preset selection dialog to improve support
+for external MIDI devices.
+
+2016-09-23 0.8.3 alpha
+Add a set of icons for dark themes and a option to
+change the icon theme.
 
 2016-09-16 0.8.3 alpha
 Minor bug fix. Update documentation.
