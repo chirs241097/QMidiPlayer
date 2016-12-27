@@ -3,6 +3,11 @@
 
 #include <QDialog>
 #define APP_VERSION "0.8.3"
+#ifndef BUILD_MACHINE
+#define BUILD_MACHINE UNKNOWN
+#endif
+#define ss(s) #s
+#define sss(s) ss(s)
 
 namespace Ui {
 	class qmpHelpWindow;

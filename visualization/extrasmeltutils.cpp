@@ -61,6 +61,7 @@ void smEntity3DBuffer::addTransformedEntity(smEntity3D *entity,smMatrix t,smvec3
 }
 void smEntity3DBuffer::drawBatch()
 {
+	if(!vertices.size())return;
 	sm->smDrawCustomIndexedVertices(&vertices[0],&indices[0],vertices.size(),indices.size(),BLEND_ALPHABLEND,0);
 	vertices.clear();indices.clear();
 }

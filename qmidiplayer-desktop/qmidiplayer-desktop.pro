@@ -55,6 +55,7 @@ FORMS    += qmpmainwindow.ui \
 	qmphelpwindow.ui
 
 TRANSLATIONS += translations/qmp_zh_CN.ts
+DEFINES += BUILD_MACHINE=$${QMAKE_HOST.name}
 
 unix{
 	isEmpty(PREFIX) {

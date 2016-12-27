@@ -14,8 +14,8 @@ int wwidth=800,wheight=600,wsupersample=1,wmultisample=0,showparticle=1;
 int horizontal=1,flat=0,osdpos=0,fontsize=16;
 int fov=60,vsync=1,tfps=60,usespectrum=0;
 DWORD chkrtint=0xFF999999;
-const char* minors="abebbbf c g d a e b f#c#g#d#a#";
-const char* majors="CbGbDbAbEbBbF C G D A E B F#C#";
+const wchar_t* minors=L"abebbbf c g d a e b f#c#g#d#a#";
+const wchar_t* majors=L"CbGbDbAbEbBbF C G D A E B F#C#";
 double fpoffsets[]={1,18,28,50,55,82,98,109,130,137,161,164,191};
 double froffsets[]={0,18,33,50,65,82,98,113,130,145,161,176,191};
 DWORD iccolors[]={0XFFFF0000,0XFFFF8000,0XFFFFBF00,0XFFFFFF00,
@@ -131,12 +131,15 @@ void qmpVisualization::showThread()
 	tdparticles=sm->smTargetCreate(wwidth*wsupersample,wheight*wsupersample,wmultisample);
 	if(!font.loadTTF("/usr/share/fonts/truetype/freefont/FreeMono.ttf",fontsize))
 	if(!font.loadTTF("/usr/share/fonts/gnu-free-fonts/FreeMono.otf",fontsize))
+	if(!font.loadTTF("C:/Windows/Fonts/cour.ttf",fontsize))
 	printf("W: Font load failed.\n");
 	if(!fonthdpi.loadTTF("/usr/share/fonts/truetype/freefont/FreeMono.ttf",180))
 	if(!fonthdpi.loadTTF("/usr/share/fonts/gnu-free-fonts/FreeMono.otf",180))
+	if(!fonthdpi.loadTTF("C:/Windows/Fonts/cour.ttf",180))
 	printf("W: Font load failed.\n");
 	if(!font2.loadTTF("/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",fontsize))
 	if(!font2.loadTTF("/usr/share/fonts/wenquanyi/wqy-microhei/wqy-microhei.ttc",fontsize))
+	if(!font2.loadTTF("C:/Windows/Fonts/segoeui.ttf",fontsize))
 	printf("W: Font load failed.\n");
 	if(horizontal)
 	{
@@ -175,7 +178,7 @@ void qmpVisualization::close()
 	}else return;
 
 	if(showpiano&&!horizontal)for(int i=0;i<16;++i)delete p3d[i];
-	if(showparticle&&!horizontal)for(int i=0;i>16;++i)for(int j=0;j<128;++j)delete pss[i][j];
+	if(showparticle&&!horizontal)for(int i=0;i>16;++i)for(int j=0;j<128;++j){delete pss[i][j];pss[i][j]=0;}
 	if(noteappearance==1)delete nebuf;
 	sm->smFinale();
 	if(savevp)
@@ -657,7 +660,7 @@ bool qmpVisualization::update()
 	}
 	if(osdpos==4){sm->smRenderEnd();return shouldclose;}
 	int t,r;t=api->getKeySig();r=(int8_t)((t>>8)&0xFF)+7;t&=0xFF;
-	std::string ts(t?minors:majors);ts=ts.substr(2*r,2);
+	std::wstring ts(t?minors:majors);ts=ts.substr(2*r,2);
 	int step=int(1.25*fontsize),xp=(osdpos&1)?wwidth-step-1:1,yp=osdpos<2?wheight-step*5-4:step+4,align=osdpos&1?ALIGN_RIGHT:ALIGN_LEFT;
 	font2.updateString(L"Title: %ls",api->getWTitle().c_str());
 	font2.render(xp,yp,0.5,0xFFFFFFFF,align);
@@ -665,7 +668,7 @@ bool qmpVisualization::update()
 	font.updateString(L"Time Sig: %d/%d",api->getTimeSig()>>8,1<<(api->getTimeSig()&0xFF));
 	font.render(xp,yp+=step,0.5,0xFFFFFFFF,align);
 	font.render(xp-1,yp-1,0.5,0xFF000000,align);
-	font.updateString(L"Key Sig: %s",ts.c_str());
+	font.updateString(L"Key Sig: %ls",ts.c_str());
 	font.render(xp,yp+=step,0.5,0xFFFFFFFF,align);
 	font.render(xp-1,yp-1,0.5,0xFF000000,align);
 	font.updateString(L"Tempo: %.2f",api->getRealTempo());
@@ -776,6 +779,7 @@ void qmpVisualization::init()
 		accolors[i]=api->getOptionUint("Visualization/chActiveColor"+std::to_string(i));
 		iccolors[i]=api->getOptionUint("Visualization/chInactiveColor"+std::to_string(i));
 	}
+	memset(pss,0,sizeof(pss));
 }
 void qmpVisualization::deinit()
 {

@@ -12,7 +12,11 @@ Build-Depends: debhelper (>= 9),
 	qml-module-qtquick-window2,
 	qml-module-qtquick2,
 	libqt5qml5,
-	librtmidi-dev
+	librtmidi-dev,
+	libglfw3-dev,
+	libglew-dev,
+	libfreetype6-dev,
+	zlib1g-dev
 
 Package: qmidiplayer
 Architecture: any
