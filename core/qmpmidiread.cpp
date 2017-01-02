@@ -229,11 +229,11 @@ void CMidiFile::dumpEvents()
 		printf("type %x #%d @%d p1 %d p2 %d\n",eventList[i]->type,
 		eventList[i]->iid,eventList[i]->time,eventList[i]->p1,eventList[i]->p2);
 }
-CMidiFile::CMidiFile(const char* fn,IMidiCallBack **ercb,void **ercbdata)
+CMidiFile::CMidiFile(const char* fn,CMidiPlayer* par)
 {
 	title=copyright=NULL;notes=0;std=0;valid=1;
-	memcpy(eventReaderCB,ercb,sizeof(eventReaderCB));
-	memcpy(eventReaderCBuserdata,ercbdata,sizeof(eventReaderCBuserdata));
+	memcpy(eventReaderCB,par->eventReaderCB,sizeof(eventReaderCB));
+	memcpy(eventReaderCBuserdata,par->eventReaderCBuserdata,sizeof(eventReaderCBuserdata));
 	try
 	{
 		if(!(f=fopen(fn,"rb")))throw (fprintf(stderr,"E: file %s doesn't exist!\n",fn),2);
@@ -241,6 +241,7 @@ CMidiFile::CMidiFile(const char* fn,IMidiCallBack **ercb,void **ercbdata)
 		for(uint32_t i=0;i<trk;i+=chunkReader(0));
 		fclose(f);
 		std::sort(eventList.begin(),eventList.end(),cmp);
+		par->maxtk=eventList[eventList.size()-1]->time;
 	}
 	catch(int){fprintf(stderr,"E: %s is not a supported file.\n",fn);valid=0;}
 }

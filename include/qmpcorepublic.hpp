@@ -65,6 +65,7 @@ class qmpPluginAPI
 		virtual uint32_t getTimeSig();
 		virtual int getKeySig();
 		virtual uint32_t getNoteCount();
+		virtual uint32_t getMaxTick();
 		virtual uint32_t getCurrentPolyphone();
 		virtual uint32_t getMaxPolyphone();
 		virtual uint32_t getCurrentTimeStamp();
@@ -93,6 +94,8 @@ class qmpPluginAPI
 		virtual void unregisterEventReaderIntf(int intfhandle);
 		virtual int registerEventHandlerIntf(IMidiCallBack* cb,void* userdata);
 		virtual void unregisterEventHandlerIntf(int intfhandle);
+		virtual int registerFileReadFinishedHandlerIntf(IMidiCallBack* cb,void* userdata);
+		virtual void unregisterFileReadFinishedHandlerIntf(int intfhandle);
 
 		//if desc=="", the option won't be visible in the settings form.
 		//it will only show up in the configuration file.

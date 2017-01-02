@@ -1,9 +1,10 @@
 #ifndef QMPVISUALIZATION_H
 #define QMPVISUALIZATION_H
 
-#include <vector>
 #include <stack>
 #include <thread>
+#include <utility>
+#include <vector>
 #include <smelt.hpp>
 #include <smmath.hpp>
 #include <smttfont.hpp>
@@ -19,12 +20,20 @@ class CReaderCallBack:public IMidiCallBack
 		CReaderCallBack(qmpVisualization *_par){par=_par;}
 		void callBack(void *callerdata,void *userdata);
 };
-class CHandlerCallBack:public IMidiCallBack
+class CEventHandlerCallBack:public IMidiCallBack
 {
 	private:
 		qmpVisualization *par;
 	public:
-		CHandlerCallBack(qmpVisualization *_par){par=_par;}
+		CEventHandlerCallBack(qmpVisualization *_par){par=_par;}
+		void callBack(void*,void*);
+};
+class CFRFinishedCallBack:public IMidiCallBack
+{
+	private:
+		qmpVisualization *par;
+	public:
+		CFRFinishedCallBack(qmpVisualization *_par){par=_par;}
 		void callBack(void*,void*);
 };
 struct MidiVisualEvent
@@ -35,13 +44,16 @@ struct MidiVisualEvent
 };
 class qmpVisualization:public qmpPluginIntf
 {
-	friend class CHandlerCallBack;
+	friend class CEventHandlerCallBack;
+	friend class CReaderCallBack;
 	friend class CloseHandler;
+	friend class CFRFinishedCallBack;
 	private:
 		qmpPluginAPI* api;
 		CReaderCallBack* cb;
-		CHandlerCallBack* hcb;
+		CEventHandlerCallBack* hcb;
 		qmpVisualizationIntf* vi;
+		CFRFinishedCallBack* frcb;
 		std::thread* rendererTh;
 		std::vector<MidiVisualEvent*>pool;
 		smHandler *h,*closeh;
@@ -58,16 +70,17 @@ class qmpVisualization:public qmpPluginIntf
 		uint32_t ctc,ctk,fintk,elb;
 		double etps;
 		bool shouldclose,playing;
-		int hvif,herif,hehif;
+		int hvif,herif,hehif,hfrf;
+		std::vector<std::pair<uint32_t,uint32_t>>tspool;
 		int traveld[16][128];bool notestatus[16][128],lastnotestatus[16][128];
 		int spectra[16][128],spectrar[16][128];
 		void drawCube(smvec3d a,smvec3d b,DWORD col,SMTEX tex);
 		void showThread();
+		void pushNoteOn(uint32_t tc,uint32_t ch,uint32_t key,uint32_t vel);
+		void pushNoteOff(uint32_t tc,uint32_t ch,uint32_t key);
 	public:
 		qmpVisualization(qmpPluginAPI* _api);
 		~qmpVisualization();
-		void pushNoteOn(uint32_t tc,uint32_t ch,uint32_t key,uint32_t vel);
-		void pushNoteOff(uint32_t tc,uint32_t ch,uint32_t key);
 		bool update();
 		void start();
 		void stop();

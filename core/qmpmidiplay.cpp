@@ -322,9 +322,11 @@ void CMidiPlayer::playerPanic(bool reset)
 }
 bool CMidiPlayer::playerLoadFile(const char* fn)
 {
-	midiFile=new CMidiFile(fn,this->eventReaderCB,this->eventReaderCBuserdata);
+	midiFile=new CMidiFile(fn,this);
 	if(!midiFile->isValid())return false;
 	divs=midiFile->getDivision();
+	for(int i=0;i<16;++i)if(fileReadFinishCB[i])
+		fileReadFinishCB[i]->callBack(NULL,fileReadFinishCBuserdata[i]);
 	fileTimer1Pass();
 	fileTimer2Pass();
 	return true;
@@ -411,6 +413,7 @@ double CMidiPlayer::getTempo(){return 60./(ctempo/1e6);}
 uint32_t CMidiPlayer::getTick(){return ct;}
 uint32_t CMidiPlayer::getRawTempo(){return ctempo;}
 uint32_t CMidiPlayer::getDivision(){return divs;}
+uint32_t CMidiPlayer::getMaxTick(){return maxtk;}
 double CMidiPlayer::getPitchBend(int ch){return((int)pbv[ch]-8192)/8192.*pbr[ch];}
 uint32_t CMidiPlayer::getTCpaused(){return tcpaused;}
 void CMidiPlayer::setTCpaused(uint32_t ps){tcpaused=ps;}
@@ -580,5 +583,20 @@ int CMidiPlayer::setEventReaderCB(IMidiCallBack *cb,void *userdata)
 }
 void CMidiPlayer::unsetEventReaderCB(int id)
 {eventReaderCB[id]=NULL;eventReaderCBuserdata[id]=NULL;}
+int CMidiPlayer::setFileReadFinishedCB(IMidiCallBack *cb,void *userdata)
+{
+	for(int i=0;i<16;++i)
+	{
+		if(fileReadFinishCB[i]==cb)return i;
+		if(fileReadFinishCB[i]==NULL)
+		{
+			fileReadFinishCB[i]=cb;fileReadFinishCBuserdata[i]=userdata;
+			return i;
+		}
+	}
+	return -1;
+}
+void CMidiPlayer::unsetFileReadFinishedCB(int id)
+{fileReadFinishCB[id]=NULL;fileReadFinishCBuserdata[id]=NULL;}
 void CMidiPlayer::discardLastEvent(){midiFile?midiFile->discardLastEvent():(void)0;}
 void CMidiPlayer::commitEventChange(SEventCallBackData d){midiFile?midiFile->commitEventChange(d):(void)0;}

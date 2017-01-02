@@ -21,6 +21,7 @@ struct SEvent
 		if(s){str=new char[strlen(s)+2];strcpy(str,s);}else str=NULL;
 	}
 };
+class CMidiPlayer;
 class CMidiFile
 {
 	private:
@@ -44,7 +45,7 @@ class CMidiFile
 		int chunkReader(int hdrXp);
 		void dumpEvents();
 	public:
-		CMidiFile(const char* fn,IMidiCallBack** ercb,void** ercbdata);
+		CMidiFile(const char* fn,CMidiPlayer* par);
 		~CMidiFile();
 		const SEvent* getEvent(uint32_t id);
 		uint32_t getEventCount();
@@ -59,9 +60,10 @@ class CMidiFile
 };
 class CMidiPlayer
 {
+	friend class CMidiFile;
 	private:
 		CMidiFile *midiFile;
-		uint32_t stamps[101];
+		uint32_t stamps[101],maxtk;
 		uint32_t ccstamps[101][16][135],ccc[16][135];
 		//0..127:cc 128:pc 129:cp 130:pb 131:tempo 132:ts 133:ks 134:pbr
 		int32_t rpnid[16],rpnval[16];
@@ -83,8 +85,10 @@ class CMidiPlayer
 		uint8_t chstate[16],chstatus[16][130];//0..127: cc 128: pc
 		IMidiCallBack* eventHandlerCB[16];
 		IMidiCallBack* eventReaderCB[16];
+		IMidiCallBack* fileReadFinishCB[16];
 		void* eventHandlerCBuserdata[16];
 		void* eventReaderCBuserdata[16];
+		void* fileReadFinishCBuserdata[16];
 
 		void setBit(uint16_t &n,uint16_t bn,uint16_t b);
 		void processEvent(const SEvent *e);
@@ -129,6 +133,7 @@ class CMidiPlayer
 		uint32_t getTick();
 		uint32_t getRawTempo();
 		uint32_t getDivision();
+		uint32_t getMaxTick();
 		double getPitchBend(int ch);
 		const char* getTitle();
 		const char* getCopyright();
@@ -164,6 +169,8 @@ class CMidiPlayer
 		void unsetEventHandlerCB(int id);
 		int setEventReaderCB(IMidiCallBack *cb,void *userdata);
 		void unsetEventReaderCB(int id);
+		int setFileReadFinishedCB(IMidiCallBack *cb,void *userdata);
+		void unsetFileReadFinishedCB(int id);
 
 		void discardLastEvent();
 		void commitEventChange(SEventCallBackData d);

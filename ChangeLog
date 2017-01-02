@@ -1,3 +1,9 @@
+2017-01-02 0.8.3 alpha
+Can show measure indicators now.
+Added new options to specify custom fonts.
+Added a new handler API.
+Minor rework on handler calling.
+
 2016-12-27 0.8.3 alpha
 First official version with experimental support for
 the visualization plugin on Windows. Fixed several

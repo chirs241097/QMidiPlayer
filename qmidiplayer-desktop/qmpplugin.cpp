@@ -122,6 +122,8 @@ int qmpPluginAPI::getKeySig()
 {return qmw&&qmw->getPlayer()?qmw->getPlayer()->getCurrentKeySignature():0;}
 uint32_t qmpPluginAPI::getNoteCount()
 {return qmw&&qmw->getPlayer()?qmw->getPlayer()->getFileNoteCount():0;}
+uint32_t qmpPluginAPI::getMaxTick()
+{return qmw&&qmw->getPlayer()?qmw->getPlayer()->getMaxTick():0;}
 uint32_t qmpPluginAPI::getCurrentPolyphone()
 {return qmw&&qmw->getPlayer()?qmw->getPlayer()->getPolyphone():0;}
 uint32_t qmpPluginAPI::getMaxPolyphone()
@@ -178,6 +180,10 @@ int qmpPluginAPI::registerVisualizationIntf(qmpVisualizationIntf* intf)
 {return qmw->registerVisualizationIntf(intf);}
 void qmpPluginAPI::unregisterVisualizationIntf(int intfhandle)
 {qmw->unregisterVisualizationIntf(intfhandle);}
+int qmpPluginAPI::registerFileReadFinishedHandlerIntf(IMidiCallBack* cb,void* userdata)
+{qmw->getPlayer()->setFileReadFinishedCB(cb,userdata);}
+void qmpPluginAPI::unregisterFileReadFinishedHandlerIntf(int intfhandle)
+{qmw->getPlayer()->unsetFileReadFinishedCB(intfhandle);}
 
 void qmpPluginAPI::registerOptionInt(std::string tab,std::string desc,std::string key,int min,int max,int defaultval)
 {qsw->registerOptionInt(tab,desc,key,min,max,defaultval);}

@@ -11,7 +11,7 @@ int notestretch=100;//length of quarter note
 int minnotelength=100;
 int noteappearance=1,showpiano=1,stairpiano=1,savevp=1,showlabel=1;
 int wwidth=800,wheight=600,wsupersample=1,wmultisample=0,showparticle=1;
-int horizontal=1,flat=0,osdpos=0,fontsize=16;
+int horizontal=1,flat=0,osdpos=0,fontsize=16,showmeasure=1;
 int fov=60,vsync=1,tfps=60,usespectrum=0;
 DWORD chkrtint=0xFF999999;
 const wchar_t* minors=L"abebbbf c g d a e b f#c#g#d#a#";
@@ -52,13 +52,36 @@ void CReaderCallBack::callBack(void *callerdata,void *)
 		case 0x90:
 			par->pushNoteOn(cbd->time,cbd->type&0x0F,cbd->p1,cbd->p2);
 		break;
+		case 0xF0:
+			if(cbd->type==0xFF&&cbd->p1==0x58)
+				par->tspool.push_back(std::make_pair(cbd->time,cbd->p2));
+		break;
 	}
 }
-void CHandlerCallBack::callBack(void*,void*)
+void CEventHandlerCallBack::callBack(void*,void*)
 {
 	if(par->ctk>par->api->getCurrentTimeStamp()+par->api->getDivision()/3)
 		par->elb=0;
+	/*if(abs((int)par->ctk-(int)par->api->getCurrentTimeStamp())>par->api->getDivision()/4)
+		fprintf(stderr,"Visualization: out of sync! %u vs %u ad: %u\n",par->ctk,par->api->getCurrentTimeStamp());*/
 	par->ctk=par->api->getCurrentTimeStamp();
+}
+void CFRFinishedCallBack::callBack(void*,void*)
+{
+	std::sort(par->tspool.begin(),par->tspool.end());
+	for(int tk=0,n=4,s=0;tk<=par->api->getMaxTick();){
+		while(tk<(s>=par->tspool.size()?par->api->getMaxTick():par->tspool[s].first)){
+			par->pool.push_back(new MidiVisualEvent{tk,tk,0,0,999});
+			tk+=n*par->api->getDivision();
+		}
+		tk=(s>=par->tspool.size()?par->api->getMaxTick():par->tspool[s].first);
+		if(tk==par->api->getMaxTick()){
+			par->pool.push_back(new MidiVisualEvent{tk,tk,0,0,999});
+			++tk;break;
+		}
+		else n=par->tspool[s++].second>>24;
+	}
+	std::sort(par->pool.begin(),par->pool.end(),cmp);
 }
 void qmpVisualization::showThread()
 {
@@ -74,6 +97,7 @@ void qmpVisualization::showThread()
 	showparticle=api->getOptionBool("Visualization/showparticle");
 	horizontal=api->getOptionBool("Visualization/horizontal");
 	flat=api->getOptionBool("Visualization/flat");
+	showmeasure=api->getOptionBool("Visualization/showmeasure");
 	savevp=api->getOptionBool("Visualization/savevp");
 	vsync=api->getOptionBool("Visualization/vsync");
 	tfps=api->getOptionInt("Visualization/tfps");
@@ -129,14 +153,17 @@ void qmpVisualization::showThread()
 	if(noteappearance==1)nebuf=new smEntity3DBuffer();else nebuf=NULL;
 	tdscn=sm->smTargetCreate(wwidth*wsupersample,wheight*wsupersample,wmultisample);
 	tdparticles=sm->smTargetCreate(wwidth*wsupersample,wheight*wsupersample,wmultisample);
+	if(!api->getOptionString("Visualization/font2").length()||!font.loadTTF(api->getOptionString("Visualization/font2").c_str(),fontsize))
 	if(!font.loadTTF("/usr/share/fonts/truetype/freefont/FreeMono.ttf",fontsize))
 	if(!font.loadTTF("/usr/share/fonts/gnu-free-fonts/FreeMono.otf",fontsize))
 	if(!font.loadTTF("C:/Windows/Fonts/cour.ttf",fontsize))
 	printf("W: Font load failed.\n");
+	if(!api->getOptionString("Visualization/font2").length()||!font.loadTTF(api->getOptionString("Visualization/font2").c_str(),180))
 	if(!fonthdpi.loadTTF("/usr/share/fonts/truetype/freefont/FreeMono.ttf",180))
 	if(!fonthdpi.loadTTF("/usr/share/fonts/gnu-free-fonts/FreeMono.otf",180))
 	if(!fonthdpi.loadTTF("C:/Windows/Fonts/cour.ttf",180))
 	printf("W: Font load failed.\n");
+	if(!api->getOptionString("Visualization/font1").length()||!font.loadTTF(api->getOptionString("Visualization/font1").c_str(),fontsize))
 	if(!font2.loadTTF("/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",fontsize))
 	if(!font2.loadTTF("/usr/share/fonts/wenquanyi/wqy-microhei/wqy-microhei.ttc",fontsize))
 	if(!font2.loadTTF("C:/Windows/Fonts/segoeui.ttf",fontsize))
@@ -204,7 +231,7 @@ void qmpVisualization::close()
 void qmpVisualization::reset()
 {
 	for(unsigned i=0;i<pool.size();++i)delete pool[i];
-	pool.clear();elb=ctk=0;
+	pool.clear();elb=ctk=0;tspool.clear();
 	for(int i=0;i<16;++i)for(int j=0;j<128;++j)
 	{
 		if(showparticle&&!horizontal&&pss[i][j])pss[i][j]->stopPS();
@@ -212,7 +239,7 @@ void qmpVisualization::reset()
 		while(!pendingv[i][j].empty())pendingv[i][j].pop();
 	}
 }
-void qmpVisualization::start(){playing=true;std::sort(pool.begin(),pool.end(),cmp);}
+void qmpVisualization::start(){playing=true;}
 void qmpVisualization::stop(){playing=false;}
 void qmpVisualization::pause(){playing=!playing;}
 bool qmpVisualization::update()
@@ -291,6 +318,29 @@ bool qmpVisualization::update()
 			if(((double)pool[i]->tcs-ctk)*lpt>viewdist*2)break;
 			if(fabs((double)pool[i]->tcs-ctk)*lpt<viewdist*2||fabs((double)pool[i]->tce-ctk)*lpt<viewdist*2)
 			{
+				if(pool[i]->ch==999){
+					if(!horizontal&&stairpiano){
+						for(int ch=0;ch<16;++ch){
+							smvec3d a(0.63*(-80)+.1,(stairpiano?(56-ch*7.):(64-ch*8.))-1,((double)pool[i]->tce+1-ctk)*lpt+(stairpiano&&showpiano&&!horizontal)*ch*2.);
+							smvec3d b(0.63*80+.7,(stairpiano?(56-ch*7.):(64-ch*8.))+4,((double)pool[i]->tcs-ctk)*lpt+(stairpiano&&showpiano&&!horizontal)*ch*2.);
+							if(horizontal){
+								a=smvec3d(((double)pool[i]->tcs-ctk)*lpt-20,(16-ch*2.),0.63*(-64)+.1);
+								b=smvec3d(((double)pool[i]->tce+1-ctk)*lpt-20,(16-ch*2.)+.4,0.63*64+.7);
+							}
+							if(showmeasure)drawCube(a,b,0x80808080,0);
+						}
+					}
+					else{
+						smvec3d a(0.63*(-64)+.1,(stairpiano?(56-0*7.):(64-0*8.)),((double)pool[i]->tce+1-ctk)*lpt+(stairpiano&&showpiano&&!horizontal)*0*2.);
+						smvec3d b(0.63*64+.7,(stairpiano?(56-15*7.):(64-15*8.))+.4,((double)pool[i]->tcs-ctk)*lpt+(stairpiano&&showpiano&&!horizontal)*15*2.);
+						if(horizontal){
+							a=smvec3d(((double)pool[i]->tcs-ctk)*lpt-20,(16-0*2.),0.63*(-64)+.1);
+							b=smvec3d(((double)pool[i]->tce+1-ctk)*lpt-20,(16-15*2.)+.4,0.63*64+.7);
+						}
+						if(showmeasure)drawCube(a,b,0x80808080,0);
+					}
+					continue;
+				}
 				if(api->getChannelMask(pool[i]->ch))continue;
 				smvec3d a(0.63*((double)pool[i]->key-64)+.1,(stairpiano?(56-pool[i]->ch*7.):(64-pool[i]->ch*8.)),((double)pool[i]->tce-ctk)*lpt+(stairpiano&&showpiano&&!horizontal)*pool[i]->ch*2.);
 				smvec3d b(0.63*((double)pool[i]->key-64)+.7,(stairpiano?(56-pool[i]->ch*7.):(64-pool[i]->ch*8.))+.4,((double)pool[i]->tcs-ctk)*lpt+(stairpiano&&showpiano&&!horizontal)*pool[i]->ch*2.);
@@ -370,7 +420,7 @@ bool qmpVisualization::update()
 				fonthdpi.render(-49.05,stairpiano?56.05-i*7:63.05-i*8,stairpiano*i*2+0.2,0xFF000000,ALIGN_RIGHT,.008,0.01);
 			}
 		}
-		if(playing)ctk+=(int)(1e6/(api->getRawTempo()/api->getDivision())*sm->smGetDelta());
+		if(playing)ctk+=(int)1e6/((double)api->getRawTempo()/api->getDivision())*sm->smGetDelta();
 		while(pool.size()&&elb<pool.size()&&((double)ctk-pool[elb]->tce)*lpt>viewdist*2)++elb;
 		sm->smRenderEnd();
 		if(showparticle&&!horizontal)
@@ -412,6 +462,15 @@ bool qmpVisualization::update()
 				if(((double)pool[i]->tcs-ctk)*lpt+wheight-nh<0)break;
 				if(fabs((double)pool[i]->tcs-ctk)*lpt+wheight-nh>0||fabs((double)pool[i]->tce-ctk)*lpt+wheight-nh<wheight)
 				{
+					if(pool[i]->ch==999){
+						smvec2d a(0,((double)pool[i]->tcs-ctk)*lpt+wheight-nh-minnotelength*0.02);
+						smvec2d b(wwidth,((double)pool[i]->tcs-ctk)*lpt+wheight-nh);
+						nq.v[0].x=nq.v[3].x=a.x;nq.v[0].y=nq.v[1].y=a.y;
+						nq.v[1].x=nq.v[2].x=b.x;nq.v[2].y=nq.v[3].y=b.y;for(int j=0;j<4;++j)
+						nq.v[j].col=0xC0000000;
+						if(showmeasure)sm->smRenderQuad(&nq);
+						continue;
+					}
 					if(api->getChannelMask(pool[i]->ch))continue;
 					smvec2d a((froffsets[12]*(pool[i]->key/12)+froffsets[pool[i]->key%12])*wwidth/2048.,((double)pool[i]->tce-ctk)*lpt+wheight-nh);
 					smvec2d b(a.x+notew*0.9,((double)pool[i]->tcs-ctk)*lpt+wheight-nh);
@@ -531,6 +590,15 @@ bool qmpVisualization::update()
 				if(((double)pool[i]->tcs-ctk)*lpt+nh>wwidth)break;
 				if(fabs((double)pool[i]->tcs-ctk)*lpt+nh<wwidth||fabs((double)pool[i]->tce-ctk)*lpt+nh>0)
 				{
+					if(pool[i]->ch==999){
+						smvec2d a(((double)pool[i]->tcs-ctk)*lpt+nh-minnotelength*0.02,0);
+						smvec2d b(((double)pool[i]->tcs-ctk)*lpt+nh,wheight);
+						nq.v[0].x=nq.v[3].x=a.x;nq.v[0].y=nq.v[1].y=a.y;
+						nq.v[1].x=nq.v[2].x=b.x;nq.v[2].y=nq.v[3].y=b.y;for(int j=0;j<4;++j)
+						nq.v[j].col=0xC0000000;
+						if(showmeasure)sm->smRenderQuad(&nq);
+						continue;
+					}
 					if(api->getChannelMask(pool[i]->ch))continue;
 					smvec2d a(((double)pool[i]->tce-ctk)*lpt+nh,(froffsets[12]*(pool[i]->key/12)+froffsets[pool[i]->key%12])*wheight/2048.);
 					smvec2d b(((double)pool[i]->tcs-ctk)*lpt+nh,a.y+notew*0.9);
@@ -642,7 +710,7 @@ bool qmpVisualization::update()
 				}
 			}
 		}
-		if(playing)ctk+=(int)(1e6/(api->getRawTempo()/api->getDivision())*sm->smGetDelta());
+		if(playing)ctk+=(int)1e6/((double)api->getRawTempo()/api->getDivision())*sm->smGetDelta();
 	}
 	else
 	{
@@ -708,9 +776,10 @@ qmpVisualization::~qmpVisualization(){api=NULL;}
 void qmpVisualization::init()
 {
 	cb=new CReaderCallBack(this);
-	hcb=new CHandlerCallBack(this);
+	hcb=new CEventHandlerCallBack(this);
 	vi=new CDemoVisualization(this);
 	h=new CMidiVisualHandler(this);
+	frcb=new CFRFinishedCallBack(this);
 	closeh=new CloseHandler(this);
 	rendererTh=NULL;playing=false;
 	memset(spectra,0,sizeof(spectra));
@@ -718,13 +787,15 @@ void qmpVisualization::init()
 	hvif=api->registerVisualizationIntf(vi);
 	herif=api->registerEventReaderIntf(cb,NULL);
 	hehif=api->registerEventHandlerIntf(hcb,NULL);
+	hfrf=api->registerFileReadFinishedHandlerIntf(frcb,NULL);
 	api->registerOptionBool("Visualization-Appearance","Show Piano","Visualization/showpiano",true);
 	api->registerOptionBool("Visualization-Appearance","3D Notes","Visualization/3dnotes",true);
 	api->registerOptionBool("Visualization-Appearance","Arrange channels on a stair","Visualization/stairpiano",true);
 	api->registerOptionBool("Visualization-Appearance","Show channel labels","Visualization/showlabel",true);
-	api->registerOptionBool("Visualization-Appearance","Show Particles","Visualization/showparticle",true);
+	api->registerOptionBool("Visualization-Appearance","Show Particles","Visualization/showparticle",false);
 	api->registerOptionBool("Visualization-Appearance","Horizontal Visualization","Visualization/horizontal",false);
 	api->registerOptionBool("Visualization-Appearance","2D Visualization","Visualization/flat",false);
+	api->registerOptionBool("Visualization-Appearance","Show Measure Indicator","Visualization/showmeasure",true);
 	api->registerOptionBool("Visualization-Appearance","Use spectrum instead of piano roll","Visualization/usespectrum",false);
 	api->registerOptionBool("Visualization-Video","Enable VSync","Visualization/vsync",true);
 	api->registerOptionBool("Visualization-Video","Save Viewport","Visualization/savevp",true);
@@ -737,6 +808,8 @@ void qmpVisualization::init()
 	std::vector<std::string> tv;tv.push_back("Bottom left");tv.push_back("Bottom right");tv.push_back("Top left");tv.push_back("Top right");tv.push_back("Hidden");
 	api->registerOptionEnumInt("Visualization-Video","OSD Position","Visualization/osdpos",tv,0);
 	api->registerOptionInt("Visualization-Video","Font Size","Visualization/fontsize",6,180,16);
+	api->registerOptionString("Visualization-Video","Custom Sans Font","Visualization/font1","");
+	api->registerOptionString("Visualization-Video","Custom Monospace Font","Visualization/font2","");
 	api->registerOptionInt("Visualization-Appearance","View distance","Visualization/viewdist",20,1000,100);
 	api->registerOptionInt("Visualization-Appearance","Note stretch","Visualization/notestretch",20,500,100);
 	api->registerOptionInt("Visualization-Appearance","Minimum note length","Visualization/minnotelen",20,500,100);
@@ -783,12 +856,13 @@ void qmpVisualization::init()
 }
 void qmpVisualization::deinit()
 {
-	if(!api)return;close();
+	if(!api)return;close();tspool.clear();
 	for(unsigned i=0;i<pool.size();++i)delete pool[i];pool.clear();
 	api->unregisterVisualizationIntf(hvif);
 	api->unregisterEventReaderIntf(herif);
 	api->unregisterEventHandlerIntf(hehif);
-	delete cb;delete hcb;delete vi;
+	api->unregisterFileReadFinishedHandlerIntf(hfrf);
+	delete cb;delete hcb;delete vi;delete frcb;
 	delete h;delete closeh;
 }
 const char* qmpVisualization::pluginGetName()
