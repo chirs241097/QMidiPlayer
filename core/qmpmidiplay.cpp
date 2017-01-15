@@ -211,11 +211,7 @@ void CMidiPlayer::playEvents()
 		if(resumed)resumed=false;
 		else
 		if(sendtime.count()<(midiFile->getEvent(tceptr)->time-ct)*dpt)
-#if _WIN32
-		w32usleep((midiFile->getEvent(tceptr)->time-ct)*(dpt/1000));
-#else
 		std::this_thread::sleep_for(std::chrono::nanoseconds((midiFile->getEvent(tceptr)->time-ct)*dpt-sendtime.count()));
-#endif
 		if(tcstop||!midiFile)break;
 		ct=midiFile->getEvent(tceptr)->time;
 	}
@@ -463,7 +459,7 @@ void CMidiPlayer::setChannelPreset(int ch,int b,int p)
 }
 //16MSB..LSB1
 void CMidiPlayer::setBit(uint16_t &n, uint16_t bn, uint16_t b)
-{n^=(-b^n)&(1<<bn);}
+{n^=(((~b)+1)^n)&(1<<bn);}
 void CMidiPlayer::setMute(int ch,bool m)
 {setBit(mute,ch,m?1:0);}
 void CMidiPlayer::setSolo(int ch,bool s)

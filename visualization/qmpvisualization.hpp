@@ -78,6 +78,8 @@ class qmpVisualization:public qmpPluginIntf
 		void showThread();
 		void pushNoteOn(uint32_t tc,uint32_t ch,uint32_t key,uint32_t vel);
 		void pushNoteOff(uint32_t tc,uint32_t ch,uint32_t key);
+		void updateVisualization3D();
+		void updateVisualization2D();
 	public:
 		qmpVisualization(qmpPluginAPI* _api);
 		~qmpVisualization();

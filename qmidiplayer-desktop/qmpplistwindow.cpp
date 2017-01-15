@@ -285,7 +285,7 @@ void qmpPlistWindow::on_pbLoad_clicked()
 	QSettings* plist=new QSettings(QFileDialog::getOpenFileName(this,tr("Load playlist"),""),
 								   QSettings::IniFormat);
 	int fc=plist->value("Playlist/FileCount",0).toInt();
-	if(!fc)return;
+	if(!fc){delete plist;return;}
 	ui->lwFiles->clear();for(int i=1;i<=fc;++i)
 	ui->lwFiles->addItem(plist->value("Playlist/File"+QString("%1").arg(i,5,10,QChar('0')),"").toString());
 	repeat=plist->value("Playlist/Repeat",0).toInt();

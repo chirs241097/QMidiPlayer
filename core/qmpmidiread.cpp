@@ -209,7 +209,7 @@ int CMidiFile::chunkReader(int hdrXp)
 	char hdr[6];
 	if(!fgets(hdr,5,f))error(1,"E: Unexpected EOF.");
 	if(hdrXp)
-		if(strncmp(hdr,"MThd",4)){error(1,"E: Wrong MIDI header.");throw;}
+		if(strncmp(hdr,"MThd",4)){error(1,"E: Wrong MIDI header.");throw 1;}
 		else return headerChunkReader(),0;
 	else
 		if(strncmp(hdr,"MTrk",4))
@@ -243,7 +243,7 @@ CMidiFile::CMidiFile(const char* fn,CMidiPlayer* par)
 		std::sort(eventList.begin(),eventList.end(),cmp);
 		par->maxtk=eventList[eventList.size()-1]->time;
 	}
-	catch(int){fprintf(stderr,"E: %s is not a supported file.\n",fn);valid=0;}
+	catch(int&){fprintf(stderr,"E: %s is not a supported file.\n",fn);valid=0;}
 }
 CMidiFile::~CMidiFile()
 {

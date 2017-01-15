@@ -30,7 +30,7 @@ int qmpMidiMapperRtMidi::deviceInit(int id)
 		ports[i]=new RtMidiOut();
 		ports[i]->openPort(id);
 	}
-	catch(RtMidiError e)
+	catch(RtMidiError &e)
 	{
 		printf("Device initialization failure: %s\n",e.what());
 		ports[i]=NULL;
