@@ -155,12 +155,12 @@ void qmpVisualization::showThread()
 	tdparticles=sm->smTargetCreate(wwidth*wsupersample,wheight*wsupersample,wmultisample);
 	if(!api->getOptionString("Visualization/font2").length()||!font.loadTTF(api->getOptionString("Visualization/font2").c_str(),fontsize))
 	if(!font.loadTTF("/usr/share/fonts/truetype/freefont/FreeMono.ttf",fontsize))
-	if(!font.loadTTF("/usr/share/fonts/gnu-free-fonts/FreeMono.otf",fontsize))
+	if(!font.loadTTF("/usr/share/fonts/gnu-free/FreeMono.otf",fontsize))
 	if(!font.loadTTF("C:/Windows/Fonts/cour.ttf",fontsize))
 	printf("W: Font load failed.\n");
 	if(!api->getOptionString("Visualization/font2").length()||!font.loadTTF(api->getOptionString("Visualization/font2").c_str(),180))
 	if(!fonthdpi.loadTTF("/usr/share/fonts/truetype/freefont/FreeMono.ttf",180))
-	if(!fonthdpi.loadTTF("/usr/share/fonts/gnu-free-fonts/FreeMono.otf",180))
+	if(!fonthdpi.loadTTF("/usr/share/fonts/gnu-free/FreeMono.otf",180))
 	if(!fonthdpi.loadTTF("C:/Windows/Fonts/cour.ttf",180))
 	printf("W: Font load failed.\n");
 	if(!api->getOptionString("Visualization/font1").length()||!font.loadTTF(api->getOptionString("Visualization/font1").c_str(),fontsize))

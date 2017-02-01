@@ -1,3 +1,9 @@
+2017-02-01 0.8.3 alpha
+Make packaging qmidiplayer less painful.
+Add mime info.
+Do not throw integers.
+Fix incorrect font paths in Arch Linux.
+
 2017-01-15 0.8.3 alpha
 A little code refactoring.
 

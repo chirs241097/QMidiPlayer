@@ -82,7 +82,7 @@ unix{
 	BINDIR = $$PREFIX/bin
 	target.path = $$BINDIR
 	DATADIR = $$PREFIX/share
-	INSTALLS += target desktop iconbmp iconsvg iconxpm doc docimg appdata menu
+	INSTALLS += target desktop iconbmp iconsvg iconxpm doc docimg appdata menu mimetype
 	desktop.path = $$DATADIR/applications
 	desktop.files += $${TARGET}.desktop
 	iconbmp.path = $$DATADIR/icons/hicolor/64x64/apps
@@ -99,6 +99,8 @@ unix{
 	appdata.files += $${TARGET}.appdata.xml
 	menu.path = $${DATADIR}/menu
 	menu.files += ./menu/$${TARGET}
+	mimetype.path = $$DATADIR/mime/packages
+	mimetype.files += $${TARGET}.mime
 	QMAKE_CXXFLAGS += -Wall
 	LIBS += -lfluidsynth -lrtmidi -ldl
 }

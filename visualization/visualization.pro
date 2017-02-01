@@ -22,7 +22,7 @@ HEADERS += qmpvisualization.hpp \
 	qmpvirtualpiano3d.hpp
 
 unix {
-	target.path = /usr/lib/qmidiplayer
+	target.path = $$PREFIX/lib/qmidiplayer
 	DATADIR = $$PREFIX/share
 	INSTALLS += target res
 	QMAKE_CXXFLAGS += -pthread -fPIC
@@ -33,10 +33,18 @@ unix {
 	res.path = $$DATADIR/qmidiplayer/img
 	res.files += ../img/chequerboard.png ../img/particle.png ../img/kb_128.png
 	#well...
-	INCLUDEPATH += /home/chrisoft/devel/SMELT/include/ /usr/include/freetype2
-	LIBS += -L/home/chrisoft/devel/SMELT/smelt/glfw/
-	LIBS += -L/home/chrisoft/devel/SMELT/extensions/
-	LIBS += -lstdc++ -lfreetype -lz -lsmeltext -lsmelt-dumb -lCxImage -ljpeg -lpng -lglfw -lGLEW -lGL
+	SMELTDIR = $$(SMELT_DIR)
+	isEmpty(SMELTDIR){
+		INCLUDEPATH += /home/chrisoft/devel/SMELT/include/ /usr/include/freetype2
+		LIBS += -L/home/chrisoft/devel/SMELT/smelt/glfw/
+		LIBS += -L/home/chrisoft/devel/SMELT/extensions/
+		LIBS += -lstdc++ -lfreetype -lz -lsmeltext -lsmelt-dumb -lCxImage -ljpeg -lpng -lglfw -lGLEW -lGL
+	}else{
+		INCLUDEPATH += $$SMELTDIR/include/ /usr/include/freetype2
+		LIBS += -L$$SMELTDIR/smelt/glfw/
+		LIBS += -L$$SMELTDIR/extensions/
+		LIBS += -lstdc++ -lfreetype -lz -lsmeltext -lsmelt-dumb -lCxImage -ljpeg -lpng -lglfw -lGLEW -lGL
+	}
 }
 win32 {
 		#Change these before producing your own build!

@@ -1,0 +1,15 @@
+.\" Manpage for qmidiplayer.
+.TH man 1 "29 Dec 2016" "0.8.3" "qmidiplayer man page"
+.SH NAME
+qmidiplayer \- Plays midi file
+.SH SYNOPSIS
+qmidiplayer [Options] [Midi Files]
+.SH DESCRIPTION
+QMidiPlayer is a cross-platform midi file player based on libfluidsynth and Qt.
+.SH OPTIONS
+Possible options are: 
+  -l, --load-all-files  Load all files from the same folder.
+  --help                Show this help and exit.
+  --version             Show this version information and exit.
+.SH AUTHOR
+Chris Xiong (chirs241097@gmail.com)

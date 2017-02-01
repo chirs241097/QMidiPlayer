@@ -18,7 +18,7 @@ void CMidiFile::error(int fatal,const char* format,...)
 	va_list ap;
 	va_start(ap,format);vfprintf(stderr,format,ap);va_end(ap);
 	fprintf(stderr," at %#lx\n",ftell(f));
-	if(fatal)throw 2;
+	if(fatal)throw std::runtime_error("fatal error");
 }
 uint32_t CMidiFile::readSW()
 {
@@ -209,7 +209,7 @@ int CMidiFile::chunkReader(int hdrXp)
 	char hdr[6];
 	if(!fgets(hdr,5,f))error(1,"E: Unexpected EOF.");
 	if(hdrXp)
-		if(strncmp(hdr,"MThd",4)){error(1,"E: Wrong MIDI header.");throw 1;}
+		if(strncmp(hdr,"MThd",4)){error(1,"E: Wrong MIDI header.");throw std::runtime_error("Wrong MIDI header");}
 		else return headerChunkReader(),0;
 	else
 		if(strncmp(hdr,"MTrk",4))
@@ -236,14 +236,14 @@ CMidiFile::CMidiFile(const char* fn,CMidiPlayer* par)
 	memcpy(eventReaderCBuserdata,par->eventReaderCBuserdata,sizeof(eventReaderCBuserdata));
 	try
 	{
-		if(!(f=fopen(fn,"rb")))throw (fprintf(stderr,"E: file %s doesn't exist!\n",fn),2);
+		if(!(f=fopen(fn,"rb")))throw (fprintf(stderr,"E: file %s doesn't exist!\n",fn),std::runtime_error("File doesn't exist"));
 		chunkReader(1);
 		for(uint32_t i=0;i<trk;i+=chunkReader(0));
 		fclose(f);
 		std::sort(eventList.begin(),eventList.end(),cmp);
 		par->maxtk=eventList[eventList.size()-1]->time;
 	}
-	catch(int&){fprintf(stderr,"E: %s is not a supported file.\n",fn);valid=0;}
+	catch(std::runtime_error&){fprintf(stderr,"E: %s is not a supported file.\n",fn);valid=0;}
 }
 CMidiFile::~CMidiFile()
 {
