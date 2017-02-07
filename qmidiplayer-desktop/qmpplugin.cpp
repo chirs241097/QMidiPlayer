@@ -165,7 +165,7 @@ std::string qmpPluginAPI::getChannelPresetString(int ch)
 	return std::string(ret);
 }
 
-void qmpPluginAPI::discardLastEvent(){if(qmw&&qmw->getPlayer())qmw->getPlayer()->discardLastEvent();}
+void qmpPluginAPI::discardCurrentEvent(){if(qmw&&qmw->getPlayer())qmw->getPlayer()->discardCurrentEvent();}
 void qmpPluginAPI::commitEventChange(SEventCallBackData d){if(qmw&&qmw->getPlayer())qmw->getPlayer()->commitEventChange(d);}
 
 int qmpPluginAPI::registerEventHandlerIntf(IMidiCallBack *cb,void *userdata)
@@ -184,6 +184,10 @@ int qmpPluginAPI::registerFileReadFinishedHandlerIntf(IMidiCallBack* cb,void* us
 {qmw->getPlayer()->setFileReadFinishedCB(cb,userdata);}
 void qmpPluginAPI::unregisterFileReadFinishedHandlerIntf(int intfhandle)
 {qmw->getPlayer()->unsetFileReadFinishedCB(intfhandle);}
+void qmpPluginAPI::registerFileReader(IMidiFileReader* reader,std::string name)
+{qmw->getPlayer()->registerReader(reader,name);}
+void qmpPluginAPI::unregisterFileReader(std::string name)
+{qmw->getPlayer()->unregisterReader(name);}
 
 void qmpPluginAPI::registerOptionInt(std::string tab,std::string desc,std::string key,int min,int max,int defaultval)
 {qsw->registerOptionInt(tab,desc,key,min,max,defaultval);}

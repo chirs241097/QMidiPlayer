@@ -1,5 +1,6 @@
 #ifndef QMPCOREPUBLIC_H
 #define QMPCOREPUBLIC_H
+#include <cstring>
 #include <cstdint>
 #include <vector>
 #include <string>
@@ -8,6 +9,20 @@
 #else
 #define EXPORTSYM __attribute__ ((visibility ("default")))
 #endif
+//MIDI Event structure
+struct SEvent
+{
+	uint32_t iid,time,p1,p2;
+	uint8_t type;
+	std::string str;
+	SEvent(){time=p1=p2=0;type=0;str="";}
+	SEvent(uint32_t _iid,uint32_t _t,char _tp,uint32_t _p1,uint32_t _p2,const char* s=NULL)
+	{
+		iid=_iid;time=_t;type=_tp;
+		p1=_p1;p2=_p2;
+		if(s)str=std::string(s);else str="";
+	}
+};
 //This struct is used by event reader callbacks and event handler callbacks
 //as caller data struct
 class SEventCallBackData
@@ -15,6 +30,14 @@ class SEventCallBackData
 public:
 	uint32_t time,type,p1,p2;
 	SEventCallBackData(uint32_t _t,uint32_t _p1,uint32_t _p2,uint32_t _tm){type=_t;p1=_p1;p2=_p2;time=_tm;}
+};
+//MIDI File class
+class CMidiFile{
+	public:
+		bool valid;
+		char *title,*copyright;
+		std::vector<SEvent> eventList;
+		uint32_t std,divs;
 };
 //Generic callback function that can be used for hooking the core.
 //"userdata" is set when you register the callback function.
@@ -24,6 +47,16 @@ class IMidiCallBack
 		IMidiCallBack(){}
 		virtual void callBack(void* callerdata,void* userdata)=0;
 		virtual ~IMidiCallBack(){}
+};
+//MIDI file reader interface. Use this to implement your file importer.
+class IMidiFileReader
+{
+	public:
+		IMidiFileReader(){}
+		virtual ~IMidiFileReader(){}
+		virtual CMidiFile* readFile(const char* fn)=0;
+		virtual void discardCurrentEvent()=0;
+		virtual void commitEventChange(SEventCallBackData d)=0;
 };
 //Main plugin interface.
 class qmpPluginIntf
@@ -82,7 +115,7 @@ class qmpPluginAPI
 		//WARNING!!: This function should be called from event reader callbacks only and
 		//it is somehow dangerous -- other plugins might be unaware of the removal of the
 		//event. The design might be modified afterward.
-		virtual void discardLastEvent();
+		virtual void discardCurrentEvent();
 		//WARNING!!: This function should be called from event reader callbacks only and
 		//it is somehow dangerous -- other plugins might be unaware of the event change.
 		//The design might be modified afterward.
@@ -96,6 +129,8 @@ class qmpPluginAPI
 		virtual void unregisterEventHandlerIntf(int intfhandle);
 		virtual int registerFileReadFinishedHandlerIntf(IMidiCallBack* cb,void* userdata);
 		virtual void unregisterFileReadFinishedHandlerIntf(int intfhandle);
+		virtual void registerFileReader(IMidiFileReader* reader,std::string name);
+		virtual void unregisterFileReader(std::string name);
 
 		//if desc=="", the option won't be visible in the settings form.
 		//it will only show up in the configuration file.

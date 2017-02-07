@@ -1,3 +1,8 @@
+2017-02-07 0.8.5 indev
+First steps for the file reader API.
+API additions and changes.
+Fixed wrong button shown when started from file.
+
 2017-02-07 0.8.3 alpha
 Fixed 2D visualization broken by commit 8a0d671.
 

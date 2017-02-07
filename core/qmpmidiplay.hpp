@@ -3,37 +3,20 @@
 #define QMPMIDIPLAY_H
 #include <cstring>
 #include <cstdlib>
+#include <utility>
 #include <vector>
 #include <fluidsynth.h>
 #include "../include/qmpcorepublic.hpp"
 #include "qmpmidimappers.hpp"
-struct SEvent
-{
-	uint32_t iid,time,p1,p2;
-	uint8_t type;
-	char *str;
-	SEvent(){time=p1=p2=0;type=0;str=NULL;}
-	~SEvent(){if(str){delete[] str;str=NULL;}}
-	SEvent(uint32_t _iid,uint32_t _t,char _tp,uint32_t _p1,uint32_t _p2,const char* s=NULL)
-	{
-		iid=_iid;time=_t;type=_tp;
-		p1=_p1;p2=_p2;
-		if(s){str=new char[strlen(s)+2];strcpy(str,s);}else str=NULL;
-	}
-};
 class CMidiPlayer;
-class CMidiFile
+class CSMFReader:public IMidiFileReader
 {
 	private:
-		std::vector<SEvent*>eventList;
-		char *title,*copyright;
-		uint32_t std;//standard 0=? 1=GM 2=GM2 3=GS 4=XG
-		uint32_t fmt,trk,divs;
+		CMidiFile* ret;
+		uint32_t fmt,trk;
 		FILE *f;
 		int byteread,valid,eventdiscarded;
-		uint32_t notes,curt,curid;
-		IMidiCallBack* eventReaderCB[16];
-		void* eventReaderCBuserdata[16];
+		uint32_t curt,curid;
 
 		void error(int fatal,const char* format,...);
 		uint32_t readSW();
@@ -43,27 +26,41 @@ class CMidiFile
 		void trackChunkReader();
 		void headerChunkReader();
 		int chunkReader(int hdrXp);
-		void dumpEvents();
 	public:
-		CMidiFile(const char* fn,CMidiPlayer* par);
-		~CMidiFile();
-		const SEvent* getEvent(uint32_t id);
-		uint32_t getEventCount();
-		uint32_t getDivision();
-		uint32_t getNoteCount();
-		uint32_t getStandard();
-		const char* getTitle();
-		const char* getCopyright();
-		bool isValid();
-		void discardLastEvent();
+		CSMFReader();
+		~CSMFReader();
+		CMidiFile* readFile(const char* fn);
+		void discardCurrentEvent();
 		void commitEventChange(SEventCallBackData d);
+};
+class CMidiFileReaderCollection{
+	std::vector<std::pair<IMidiFileReader*,std::string>> readers;
+	CMidiFile* file;
+	uint32_t maxtk;
+	void destructFile(CMidiFile*& f);
+	IMidiFileReader* currentReader;
+public:
+	CMidiFileReaderCollection();
+	~CMidiFileReaderCollection();
+	void registerReader(IMidiFileReader* reader,std::string name);
+	void unregisterReader(std::string name);
+	void readFile(const char* fn);
+	void destructFile();
+	IMidiFileReader* getCurrentReader();
+	bool isValid();
+	const char* getTitle();
+	const char* getCopyright();
+	const SEvent* getEvent(uint32_t id);
+	uint32_t getEventCount();
+	uint32_t getDivision();
+	uint32_t getMaxTick();
+	uint32_t getStandard();
 };
 class CMidiPlayer
 {
-	friend class CMidiFile;
 	private:
-		CMidiFile *midiFile;
-		uint32_t stamps[101],maxtk;
+		CMidiFileReaderCollection *midiReaders;
+		uint32_t stamps[101],notes;
 		uint32_t ccstamps[101][16][135],ccc[16][135];
 		//0..127:cc 128:pc 129:cp 130:pb 131:tempo 132:ts 133:ks 134:pbr
 		int32_t rpnid[16],rpnval[16];
@@ -89,6 +86,7 @@ class CMidiPlayer
 		void* eventHandlerCBuserdata[16];
 		void* eventReaderCBuserdata[16];
 		void* fileReadFinishCBuserdata[16];
+		static CMidiPlayer* ref;
 
 		void setBit(uint16_t &n,uint16_t bn,uint16_t b);
 		void processEvent(const SEvent *e);
@@ -171,8 +169,13 @@ class CMidiPlayer
 		void unsetEventReaderCB(int id);
 		int setFileReadFinishedCB(IMidiCallBack *cb,void *userdata);
 		void unsetFileReadFinishedCB(int id);
+		void registerReader(IMidiFileReader* reader,std::string name);
+		void unregisterReader(std::string name);
+		void callEventReaderCB(SEventCallBackData d);
 
-		void discardLastEvent();
+		void discardCurrentEvent();
 		void commitEventChange(SEventCallBackData d);
+
+		static CMidiPlayer* getInstance();
 };
 #endif

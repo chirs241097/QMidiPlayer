@@ -125,7 +125,6 @@ void qmpMainWindow::init()
 	connect(timer,SIGNAL(timeout()),this,SLOT(updateWidgets()));
 	connect(timer,SIGNAL(timeout()),chnlw,SLOT(channelWindowsUpdate()));
 	connect(timer,SIGNAL(timeout()),infow,SLOT(updateInfo()));
-	if(havemidi)on_pbPlayPause_clicked();
 	ui->pbNext->setIcon(QIcon(getThemedIcon(":/img/next.png")));
 	ui->pbPrev->setIcon(QIcon(getThemedIcon(":/img/prev.png")));
 	ui->pbPlayPause->setIcon(QIcon(getThemedIcon(":/img/play.png")));
@@ -135,6 +134,7 @@ void qmpMainWindow::init()
 	ui->pbPList->setIcon(QIcon(getThemedIcon(":/img/list.png")));
 	ui->pbVisualization->setIcon(QIcon(getThemedIcon(":/img/visualization.png")));
 	ui->pbSettings->setIcon(QIcon(getThemedIcon(":/img/settings.png")));
+	if(havemidi)on_pbPlayPause_clicked();
 }
 
 int qmpMainWindow::pharseArgs()
