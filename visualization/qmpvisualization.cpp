@@ -441,11 +441,11 @@ void qmpVisualization::updateVisualization2D()
 	for(int i=0;i<4;++i)nq.v[i].z=0,nq.v[i].tx=nq.v[i].ty=0;
 	for(uint32_t i=elb;i<pool.size();++i)
 	{
-		bool upperbound=fabs((double)pool[i]->tcs-ctk)*lpt+wheight-nh<0;
+		bool upperbound=((double)pool[i]->tcs-ctk)*lpt+wheight-nh<0;
 		bool lowerbound=fabs((double)pool[i]->tce-ctk)*lpt+wheight-nh<wheight;
 		if(horizontal)
 		{
-			upperbound=fabs((double)pool[i]->tcs-ctk)*lpt+nh>wwidth;
+			upperbound=((double)pool[i]->tcs-ctk)*lpt+nh>wwidth;
 			lowerbound=fabs((double)pool[i]->tce-ctk)*lpt+nh>0;
 		}
 		if(upperbound)break;
@@ -460,8 +460,8 @@ void qmpVisualization::updateVisualization2D()
 					b=smvec2d(((double)pool[i]->tcs-ctk)*lpt+nh,wheight);
 				}
 				nq.v[0].x=nq.v[3].x=a.x;nq.v[0].y=nq.v[1].y=a.y;
-				nq.v[1].x=nq.v[2].x=b.x;nq.v[2].y=nq.v[3].y=b.y;for(int j=0;j<4;++j)
-				nq.v[j].col=0xC0000000;
+				nq.v[1].x=nq.v[2].x=b.x;nq.v[2].y=nq.v[3].y=b.y;
+				for(int j=0;j<4;++j)nq.v[j].col=0xC0000000;
 				if(showmeasure)sm->smRenderQuad(&nq);
 				continue;
 			}
@@ -488,7 +488,7 @@ void qmpVisualization::updateVisualization2D()
 					b.x=a.x+notew*0.9;
 				}
 			}
-			if(horizontal)a.y=wheight-a.y;b.y=wheight-b.y;
+			if(horizontal)a.y=wheight-a.y,b.y=wheight-b.y;
 			notestatus[pool[i]->ch][pool[i]->key]|=isnoteon;
 			if(horizontal)
 			{
@@ -501,7 +501,8 @@ void qmpVisualization::updateVisualization2D()
 					a.y=((double)pool[i]->tcs-ctk)*lpt+wheight-nh-minnotelength*0.04;
 			}
 			nq.v[0].x=nq.v[3].x=a.x;nq.v[0].y=nq.v[1].y=a.y;
-			nq.v[1].x=nq.v[2].x=b.x;nq.v[2].y=nq.v[3].y=b.y;for(int j=0;j<4;++j)
+			nq.v[1].x=nq.v[2].x=b.x;nq.v[2].y=nq.v[3].y=b.y;
+			for(int j=0;j<4;++j)
 			nq.v[j].col=SETA(isnoteon?accolors[pool[i]->ch]:iccolors[pool[i]->ch],int(pool[i]->vel*1.6+(isnoteon?52:32)));
 			if(usespectrum)
 			{
@@ -515,7 +516,8 @@ void qmpVisualization::updateVisualization2D()
 	else
 	while(pool.size()&&elb<pool.size()&&fabs((double)pool[elb]->tce-ctk)*lpt+wheight-nh>wheight)++elb;
 	smQuad q;
-	q.tex=pianotex;
+	q.tex=pianotex;q.blend=BLEND_ALPHABLEND;
+	for(int i=0;i<4;++i)q.v[i].col=0xFFFFFFFF,q.v[i].z=0;
 	q.v[0].ty=q.v[3].ty=0;q.v[1].ty=q.v[2].ty=172./256.;
 	q.v[0].tx=q.v[1].tx=0;q.v[2].tx=q.v[3].tx=1.;
 	q.v[0].x=q.v[1].x=0;q.v[2].x=q.v[3].x=wwidth;
@@ -531,9 +533,18 @@ void qmpVisualization::updateVisualization2D()
 	for(int i=0,j;i<128;++i)
 	{
 		DWORD c=0;for(j=0;j<16;++j)if(notestatus[j][i]){c=SETA(iccolors[j],0xFF);break;}
-		q.v[0].x=q.v[1].x=(fpoffsets[12]*(i/12)+fpoffsets[i%12])*wwidth/2048.;
-		q.v[2].x=q.v[3].x=q.v[0].x;
-		q.v[0].y=q.v[3].y=wheight-nh;q.v[1].y=q.v[2].y=wheight;
+		if(horizontal)
+		{
+			q.v[0].y=q.v[1].y=(fpoffsets[12]*(i/12)+fpoffsets[i%12])*wheight/2048.;
+			q.v[2].y=q.v[3].y=q.v[0].y;
+			q.v[0].x=q.v[3].x=nh;q.v[1].x=q.v[2].x=0;
+		}
+		else
+		{
+			q.v[0].x=q.v[1].x=(fpoffsets[12]*(i/12)+fpoffsets[i%12])*wwidth/2048.;
+			q.v[2].x=q.v[3].x=q.v[0].x;
+			q.v[0].y=q.v[3].y=wheight-nh;q.v[1].y=q.v[2].y=wheight;
+		}
 		if(!c)continue;for(int j=0;j<4;++j)q.v[j].col=c;
 		switch(i%12)
 		{
