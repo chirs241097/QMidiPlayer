@@ -3,6 +3,7 @@
 #define QMP_MAIN
 #include <string>
 #include <vector>
+#define QMP_MAIN
 #include "../include/qmpcorepublic.hpp"
 struct qmpPlugin
 {

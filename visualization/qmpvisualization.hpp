@@ -133,6 +133,8 @@ class CDemoVisualization:public qmpVisualizationIntf
 extern "C"{
 	EXPORTSYM qmpPluginIntf* qmpPluginGetInterface(qmpPluginAPI* api)
 	{return new qmpVisualization(api);}
+	EXPORTSYM const char* qmpPluginGetAPIRev()
+	{return QMP_PLUGIN_API_REV;}
 }
 
 #endif // QMPVISUALIZATION_H

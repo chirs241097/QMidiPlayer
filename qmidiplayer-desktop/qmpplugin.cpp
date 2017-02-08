@@ -31,6 +31,11 @@ void qmpPluginManager::scanPlugins()
 		if(!hso){fprintf(stderr,"Error while loading library: %d\n",GetLastError());continue;}
 		FARPROC hndi=GetProcAddress(hso,"qmpPluginGetInterface");
 		if(!hndi){fprintf(stderr,"file %s doesn't seem to be a qmidiplayer plugin.\n",cpluginpaths[i].c_str());continue;}
+		FARPROC hndiv=GetProcAddress(hso,"qmpPluginGetAPIRev");
+		if(!hndiv){fprintf(stderr,"file %s is incompatible with this version of qmidiplayer.\n",cpluginpaths[i].c_str());continue;}
+		qmpPluginAPIRevEntry getv=(qmpPluginAPIRevEntry)hndiv;
+		if(strcmp(getv(),QMP_PLUGIN_API_REV))
+		{fprintf(stderr,"file %s is incompatible with this version of qmidiplayer.\n",cpluginpaths[i].c_str());continue;}
 		qmpPluginEntry e=(qmpPluginEntry)hndi;
 		qmpPluginIntf* intf=e(pluginAPI);
 		plugins.push_back(qmpPlugin(std::string(intf->pluginGetName()),std::string(intf->pluginGetVersion()),std::string(cpluginpaths[i]),intf));
@@ -65,6 +70,11 @@ void qmpPluginManager::scanPlugins()
 		if(!hso){fprintf(stderr,"%s\n",dlerror());continue;}
 		void* hndi=dlsym(hso,"qmpPluginGetInterface");
 		if(!hndi){fprintf(stderr,"file %s doesn't seem to be a qmidiplayer plugin.\n",cpluginpaths[i].c_str());continue;}
+		void* hndiv=dlsym(hso,"qmpPluginGetAPIRev");
+		if(!hndiv){fprintf(stderr,"file %s is incompatible with this version of qmidiplayer.\n",cpluginpaths[i].c_str());continue;}
+		qmpPluginAPIRevEntry getv=(qmpPluginAPIRevEntry)hndiv;
+		if(strcmp(getv(),QMP_PLUGIN_API_REV))
+		{fprintf(stderr,"file %s is incompatible with this version of qmidiplayer.\n",cpluginpaths[i].c_str());continue;}
 		qmpPluginEntry e=(qmpPluginEntry)hndi;
 		qmpPluginIntf* intf=e(pluginAPI);
 		plugins.push_back(qmpPlugin(std::string(intf->pluginGetName()),std::string(intf->pluginGetVersion()),std::string(cpluginpaths[i]),intf));

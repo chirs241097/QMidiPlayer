@@ -203,10 +203,21 @@ void CSMFReader::headerChunkReader()
 int CSMFReader::chunkReader(int hdrXp)
 {
 	char hdr[6];
-	if(!fgets(hdr,5,f))error(1,"E: Unexpected EOF.");
+	fread(hdr,1,4,f);
+	if(feof(f))error(1,"E: Unexpected EOF.");
 	if(hdrXp)
+	{
+		if(!strncmp(hdr,"RIFF",4))
+		{
+			fseek(f,4,SEEK_CUR);
+			fread(hdr,1,4,f);
+			if(strncmp(hdr,"RMID",4)){error(1,"E: Wrong file type in RIFF container.");throw std::runtime_error("Wrong file type in RIFF container");}
+			fseek(f,8,SEEK_CUR);
+			fread(hdr,1,4,f);
+		}
 		if(strncmp(hdr,"MThd",4)){error(1,"E: Wrong MIDI header.");throw std::runtime_error("Wrong MIDI header");}
 		else return headerChunkReader(),0;
+	}
 	else
 		if(strncmp(hdr,"MTrk",4))
 		{

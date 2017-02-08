@@ -149,7 +149,7 @@ void qmpPlistWindow::on_pbAdd_clicked()
 	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
 		sl=QFileDialog::getOpenFileNames(this,"Add File",qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/FileDialogPath","").toString(),"Midi files (*.mid *.midi)");
 	else
-		sl=QFileDialog::getOpenFileNames(this,"Add File","","Midi files (*.mid *.midi)");
+		sl=QFileDialog::getOpenFileNames(this,"Add File","","Midi files (*.mid *.midi *.rmi)");
 	if(sl.empty())return;
 	for(int i=0;i<sl.size();++i)
 	{
@@ -166,7 +166,7 @@ void qmpPlistWindow::on_pbAddFolder_clicked()
 	while(di.hasNext())
 	{
 		QString c=di.next();
-		if((c.endsWith(".mid")||c.endsWith(".midi"))&&fluid_is_midifile(c.toStdString().c_str()))
+		if((c.endsWith(".mid")||c.endsWith(".midi")||c.endsWith(".rmi"))&&fluid_is_midifile(c.toStdString().c_str()))
 		ui->lwFiles->addItem(new QListWidgetItem(c));
 	}
 }

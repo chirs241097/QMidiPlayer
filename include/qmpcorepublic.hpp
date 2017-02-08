@@ -1,6 +1,5 @@
-#ifndef QMPCOREPUBLIC_H
-#define QMPCOREPUBLIC_H
-#include <cstring>
+#ifndef QMPCOREPUBLIC_HPP
+#define QMPCOREPUBLIC_HPP
 #include <cstdint>
 #include <vector>
 #include <string>
@@ -9,6 +8,7 @@
 #else
 #define EXPORTSYM __attribute__ ((visibility ("default")))
 #endif
+#define QMP_PLUGIN_API_REV "1+indev"
 //MIDI Event structure
 struct SEvent
 {
@@ -162,4 +162,6 @@ class qmpPluginAPI
 //through the parameter. This function should return a pointer to a class
 //that implementes the plugin pinterface (qmpPluginIntf).
 typedef qmpPluginIntf*(*qmpPluginEntry)(qmpPluginAPI*);
-#endif // QMPCOREPUBLIC_H
+//The following symbol only presents in plugins. Its purpose is to help the core reject incompatible plugins.
+typedef const char*(*qmpPluginAPIRevEntry)();
+#endif // QMPCOREPUBLIC_HPP

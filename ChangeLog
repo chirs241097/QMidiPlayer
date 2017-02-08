@@ -1,3 +1,9 @@
+2017-02-08 0.8.5 indev
+Add API version verification. This breaks compatibility
+with old versions of plugins.
+Documentation.
+Add RIFF MIDI support to the SMF reader.
+
 2017-02-07 0.8.5 indev
 First steps for the file reader API.
 API additions and changes.

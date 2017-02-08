@@ -6,6 +6,7 @@
 #include <utility>
 #include <vector>
 #include <fluidsynth.h>
+#define QMP_MAIN
 #include "../include/qmpcorepublic.hpp"
 #include "qmpmidimappers.hpp"
 class CMidiPlayer;
