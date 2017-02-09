@@ -65,6 +65,7 @@ class qmpMainWindow:public QMainWindow
 		QTimer* getTimer(){return timer;}
 		bool isFinalizing(){return fin;}
 		QString getFileName();
+		void switchTrack(QString s);
 		std::string getTitle();
 		std::wstring getWTitle();
 		uint32_t getPlaybackPercentage();

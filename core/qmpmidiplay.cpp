@@ -212,7 +212,11 @@ void CMidiPlayer::playEvents()
 		if(resumed)resumed=false;
 		else
 		if(sendtime.count()<(midiReaders->getEvent(tceptr)->time-ct)*dpt)
+#ifdef _WIN32
+		w32usleep(((midiReaders->getEvent(tceptr)->time-ct)*dpt-sendtime.count())/1000);
+#else
 		std::this_thread::sleep_for(std::chrono::nanoseconds((midiReaders->getEvent(tceptr)->time-ct)*dpt-sendtime.count()));
+#endif
 		if(tcstop||!midiReaders)break;
 		ct=midiReaders->getEvent(tceptr)->time;
 	}
@@ -278,6 +282,8 @@ CMidiPlayer::CMidiPlayer(bool singleInst)
 	memset(eventHandlerCBuserdata,0,sizeof(eventHandlerCBuserdata));
 	memset(eventReaderCB,0,sizeof(eventReaderCB));
 	memset(eventReaderCBuserdata,0,sizeof(eventReaderCBuserdata));
+	memset(fileReadFinishCB,0,sizeof(fileReadFinishCB));
+	memset(fileReadFinishCBuserdata,0,sizeof(fileReadFinishCBuserdata));
 	memset(mappedoutput,0,sizeof(mappedoutput));
 	memset(deviceusage,0,sizeof(deviceusage));
 	mapper=new qmpMidiMapperRtMidi();

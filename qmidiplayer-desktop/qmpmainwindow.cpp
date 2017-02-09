@@ -229,6 +229,7 @@ void qmpMainWindow::dropEvent(QDropEvent *event)
 	for(int i=0;i<l.size();++i)
 		sl.push_back(l.at(i).toLocalFile());
 	plistw->insertItems(sl);
+	switchTrack(plistw->getLastItem());
 }
 void qmpMainWindow::dragEnterEvent(QDragEnterEvent *event)
 {
@@ -259,32 +260,7 @@ void qmpMainWindow::updateWidgets()
 		}
 		else
 		{
-			timer->stop();player->playerDeinit();playerTh->join();
-			delete playerTh;playerTh=NULL;
-			ui->hsTimer->setValue(0);
-			for(int i=0;i<16;++i)if(VIs[i])VIs[i]->stop();
-			if(singleFS)player->playerPanic(true);
-			chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
-			QString fns=plistw->getNextItem();setWindowTitle(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.'))+" - QMidiPlayer");
-			ui->lbFileName->setText(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.')));
-			onfnChanged();
-			LOAD_FILE;
-			char ts[100];
-			sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
-			ui->lbFinTime->setText(ts);
-			player->playerInit();if(!singleFS){playerSetup();player->fluidInitialize();
-				for(int i=settingsw->getSFWidget()->rowCount()-1;i>=0;--i){if(!((QCheckBox*)settingsw->getSFWidget()->cellWidget(i,0))->isChecked())continue;
-					LOAD_SOUNDFONT;
-				}}
-			for(int i=0;i<16;++i)if(VIs[i])VIs[i]->start();
-			player->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
-			player->setWaitVoice(qmpSettingsWindow::getSettingsIntf()->value("Midi/WaitVoice",1).toInt());
-			playerTh=new std::thread(&CMidiPlayer::playerThread,player);
-#ifdef _WIN32
-			SetThreadPriority(playerTh->native_handle(),THREAD_PRIORITY_TIME_CRITICAL);
-#endif
-			st=std::chrono::steady_clock::now();offset=0;
-			timer->start(UPDATE_INTERVAL);
+
 		}
 	}
 	if(renderTh)
@@ -323,6 +299,35 @@ void qmpMainWindow::updateWidgets()
 }
 
 QString qmpMainWindow::getFileName(){return ui->lbFileName->text();}
+void qmpMainWindow::switchTrack(QString s)
+{
+	timer->stop();player->playerDeinit();playerTh->join();
+	delete playerTh;playerTh=NULL;
+	ui->hsTimer->setValue(0);
+	for(int i=0;i<16;++i)if(VIs[i])VIs[i]->stop();
+	if(singleFS)player->playerPanic(true);
+	chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
+	QString fns=s;setWindowTitle(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.'))+" - QMidiPlayer");
+	ui->lbFileName->setText(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.')));
+	onfnChanged();
+	LOAD_FILE;
+	char ts[100];
+	sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
+	ui->lbFinTime->setText(ts);
+	player->playerInit();if(!singleFS){playerSetup();player->fluidInitialize();
+		for(int i=settingsw->getSFWidget()->rowCount()-1;i>=0;--i){if(!((QCheckBox*)settingsw->getSFWidget()->cellWidget(i,0))->isChecked())continue;
+			LOAD_SOUNDFONT;
+		}}
+	for(int i=0;i<16;++i)if(VIs[i])VIs[i]->start();
+	player->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
+	player->setWaitVoice(qmpSettingsWindow::getSettingsIntf()->value("Midi/WaitVoice",1).toInt());
+	playerTh=new std::thread(&CMidiPlayer::playerThread,player);
+#ifdef _WIN32
+	SetThreadPriority(playerTh->native_handle(),THREAD_PRIORITY_TIME_CRITICAL);
+#endif
+	st=std::chrono::steady_clock::now();offset=0;
+	timer->start(UPDATE_INTERVAL);
+}
 std::string qmpMainWindow::getTitle()
 {
 	if(!qmpSettingsWindow::getSettingsIntf())return "";
@@ -541,62 +546,12 @@ void qmpMainWindow::on_pbChannels_clicked()
 
 void qmpMainWindow::on_pbPrev_clicked()
 {
-	timer->stop();player->playerDeinit();
-	if(playerTh){playerTh->join();delete playerTh;playerTh=NULL;}
-	if(singleFS)player->playerPanic(true);
-	for(int i=0;i<16;++i)if(VIs[i])VIs[i]->stop();
-	ui->hsTimer->setValue(0);chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
-	QString fns=plistw->getPrevItem();if(fns.length()==0)return on_pbStop_clicked();
-	setWindowTitle(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.'))+" - QMidiPlayer");
-	ui->lbFileName->setText(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.')));
-	onfnChanged();
-	LOAD_FILE;
-	char ts[100];
-	sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
-	ui->lbFinTime->setText(ts);
-	player->playerInit();if(!singleFS){playerSetup();player->fluidInitialize();
-		for(int i=settingsw->getSFWidget()->rowCount()-1;i>=0;--i){if(!((QCheckBox*)settingsw->getSFWidget()->cellWidget(i,0))->isChecked())continue;
-			LOAD_SOUNDFONT;
-		}}
-	for(int i=0;i<16;++i)if(VIs[i])VIs[i]->start();
-	player->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
-	player->setWaitVoice(qmpSettingsWindow::getSettingsIntf()->value("Midi/WaitVoice",1).toInt());
-	playerTh=new std::thread(&CMidiPlayer::playerThread,player);
-#ifdef _WIN32
-			SetThreadPriority(playerTh->native_handle(),THREAD_PRIORITY_TIME_CRITICAL);
-#endif
-	st=std::chrono::steady_clock::now();offset=0;
-	timer->start(UPDATE_INTERVAL);
+	switchTrack(plistw->getPrevItem());
 }
 
 void qmpMainWindow::on_pbNext_clicked()
 {
-	timer->stop();player->playerDeinit();
-	if(playerTh){playerTh->join();delete playerTh;playerTh=NULL;}
-	if(singleFS)player->playerPanic(true);
-	for(int i=0;i<16;++i)if(VIs[i])VIs[i]->stop();
-	ui->hsTimer->setValue(0);chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
-	QString fns=plistw->getNextItem();if(fns.length()==0)return on_pbStop_clicked();
-	ui->lbFileName->setText(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.')));
-	setWindowTitle(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.'))+" - QMidiPlayer");
-	onfnChanged();
-	LOAD_FILE;
-	char ts[100];
-	sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
-	ui->lbFinTime->setText(ts);
-	player->playerInit();if(!singleFS){playerSetup();player->fluidInitialize();
-		for(int i=settingsw->getSFWidget()->rowCount()-1;i>=0;--i){if(!((QCheckBox*)settingsw->getSFWidget()->cellWidget(i,0))->isChecked())continue;
-			LOAD_SOUNDFONT;
-		}}
-	for(int i=0;i<16;++i)if(VIs[i])VIs[i]->start();
-	player->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
-	player->setWaitVoice(qmpSettingsWindow::getSettingsIntf()->value("Midi/WaitVoice",1).toInt());
-	playerTh=new std::thread(&CMidiPlayer::playerThread,player);
-#ifdef _WIN32
-	SetThreadPriority(playerTh->native_handle(),THREAD_PRIORITY_TIME_CRITICAL);
-#endif
-	st=std::chrono::steady_clock::now();offset=0;
-	timer->start(UPDATE_INTERVAL);
+	switchTrack(plistw->getNextItem());
 }
 
 void qmpMainWindow::selectionChanged()

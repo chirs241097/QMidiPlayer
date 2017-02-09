@@ -228,11 +228,19 @@ void qmpPlistWindow::on_pbShuffle_clicked()
 	}
 }
 
-QString qmpPlistWindow::getFirstItem()
+QString qmpPlistWindow::getFirstItem(bool a)
 {
 	if(ui->lwFiles->count()==0)return QString();
 	int id=0;
-	if(shuffle)id=rand()%ui->lwFiles->count();
+	if(shuffle&&!a)id=rand()%ui->lwFiles->count();
+	ui->lwFiles->setCurrentRow(id);
+	return ui->lwFiles->item(id)->text();
+}
+QString qmpPlistWindow::getLastItem(bool a)
+{
+	if(ui->lwFiles->count()==0)return QString();
+	int id=ui->lwFiles->count()-1;
+	if(shuffle&&!a)id=rand()%ui->lwFiles->count();
 	ui->lwFiles->setCurrentRow(id);
 	return ui->lwFiles->item(id)->text();
 }

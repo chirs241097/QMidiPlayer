@@ -26,7 +26,8 @@ class qmpPlistWindow : public QDialog
 		void dropEvent(QDropEvent *event);
 		void dragEnterEvent(QDragEnterEvent *event);
 		int getRepeat();
-		QString getFirstItem();
+		QString getFirstItem(bool a=false);
+		QString getLastItem(bool a=false);
 		QString getNextItem();
 		QString getPrevItem();
 		QString getSelectedItem();

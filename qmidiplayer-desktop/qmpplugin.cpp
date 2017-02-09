@@ -192,7 +192,7 @@ int qmpPluginAPI::registerVisualizationIntf(qmpVisualizationIntf* intf)
 void qmpPluginAPI::unregisterVisualizationIntf(int intfhandle)
 {qmw->unregisterVisualizationIntf(intfhandle);}
 int qmpPluginAPI::registerFileReadFinishedHandlerIntf(IMidiCallBack* cb,void* userdata)
-{qmw->getPlayer()->setFileReadFinishedCB(cb,userdata);}
+{return qmw->getPlayer()->setFileReadFinishedCB(cb,userdata);}
 void qmpPluginAPI::unregisterFileReadFinishedHandlerIntf(int intfhandle)
 {qmw->getPlayer()->unsetFileReadFinishedCB(intfhandle);}
 void qmpPluginAPI::registerFileReader(IMidiFileReader* reader,std::string name)

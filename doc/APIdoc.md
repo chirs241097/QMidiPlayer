@@ -19,7 +19,7 @@ First of all, you should make your library distinct from other libraries that ar
 it by exporting the symbols `qmpPluginGetInterface` and `qmpPluginGetAPIRev`. Specifically, what you should do is to add
 the following snipplet to somewhere of your code:
 
-```
+```C++
 extern "C"{
 	EXPORTSYM qmpPluginIntf* qmpPluginGetInterface(qmpPluginAPI* api)
 	//semicolon or implementation here.

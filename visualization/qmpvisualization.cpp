@@ -69,7 +69,7 @@ void CEventHandlerCallBack::callBack(void*,void*)
 void CFRFinishedCallBack::callBack(void*,void*)
 {
 	std::sort(par->tspool.begin(),par->tspool.end());
-	for(int tk=0,n=4,s=0;tk<=par->api->getMaxTick();){
+	for(uint32_t tk=0,n=4,s=0;tk<=par->api->getMaxTick();){
 		while(tk<(s>=par->tspool.size()?par->api->getMaxTick():par->tspool[s].first)){
 			par->pool.push_back(new MidiVisualEvent{tk,tk,0,0,999});
 			tk+=n*par->api->getDivision();
