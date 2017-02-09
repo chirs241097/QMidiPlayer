@@ -38,8 +38,9 @@ class CMidiFileReaderCollection{
 	std::vector<std::pair<IMidiFileReader*,std::string>> readers;
 	CMidiFile* file;
 	uint32_t maxtk;
-	void destructFile(CMidiFile*& f);
 	IMidiFileReader* currentReader;
+	void destructFile(CMidiFile*& f);
+	void dumpFile();
 public:
 	CMidiFileReaderCollection();
 	~CMidiFileReaderCollection();
@@ -59,6 +60,7 @@ public:
 };
 class CMidiPlayer
 {
+	friend class CMidiFileReaderCollection;
 	private:
 		CMidiFileReaderCollection *midiReaders;
 		uint32_t stamps[101],notes;

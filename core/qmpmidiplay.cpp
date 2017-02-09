@@ -321,7 +321,7 @@ void CMidiPlayer::playerPanic(bool reset)
 }
 bool CMidiPlayer::playerLoadFile(const char* fn)
 {
-	midiReaders->readFile(fn);notes=0;
+	notes=0;midiReaders->readFile(fn);
 	if(!midiReaders->isValid())return false;
 	divs=midiReaders->getDivision();
 	for(int i=0;i<16;++i)if(fileReadFinishCB[i])

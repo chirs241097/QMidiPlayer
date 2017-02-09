@@ -177,6 +177,7 @@ std::string qmpPluginAPI::getChannelPresetString(int ch)
 
 void qmpPluginAPI::discardCurrentEvent(){if(qmw&&qmw->getPlayer())qmw->getPlayer()->discardCurrentEvent();}
 void qmpPluginAPI::commitEventChange(SEventCallBackData d){if(qmw&&qmw->getPlayer())qmw->getPlayer()->commitEventChange(d);}
+void qmpPluginAPI::callEventReaderCB(SEventCallBackData d){if(qmw&&qmw->getPlayer())qmw->getPlayer()->callEventReaderCB(d);}
 
 int qmpPluginAPI::registerEventHandlerIntf(IMidiCallBack *cb,void *userdata)
 {return qmw->getPlayer()->setEventHandlerCB(cb,userdata);}

@@ -12,7 +12,6 @@ const char* GM1SysX={"\xF0\x7E\x7F\x09\x01\xF7"};
 const char* GM2SysX={"\xF0\x7E\x7F\x09\x03\xF7"};
 const char* GSSysEx={"\xF0\x41\x10\x42\x12\x40\x00\x7F\x00\x41\xF7"};
 const char* XGSysEx={"\xF0\x43\x10\x4C\x00\x00\x7E\x00\xF7"};
-bool cmp(SEvent a,SEvent b){return a.time-b.time?a.time<b.time:a.iid<b.iid;}
 void CSMFReader::error(int fatal,const char* format,...)
 {
 	va_list ap;
@@ -240,7 +239,7 @@ CMidiFile* CSMFReader::readFile(const char* fn)
 		chunkReader(1);
 		for(uint32_t i=0;i<trk;i+=chunkReader(0));
 		fclose(f);f=NULL;
-		std::sort(ret->eventList.begin(),ret->eventList.end(),cmp);
+		std::sort(ret->eventList.begin(),ret->eventList.end());
 	}
 	catch(std::runtime_error&){fprintf(stderr,"E: %s is not a supported file.\n",fn);ret->valid=0;fclose(f);f=NULL;}
 	return ret;
@@ -269,6 +268,18 @@ void CMidiFileReaderCollection::destructFile(CMidiFile*& f)
 	if(f->title)delete[] f->title;
 	delete f;
 	f=NULL;
+}
+void CMidiFileReaderCollection::dumpFile()
+{
+	if(!file)return;
+	std::vector<SEvent> &eventList=file->eventList;
+	for(uint32_t i=0;i<eventList.size();++i)
+		if(eventList[i].str.length())
+			printf("type %x #%d @%d p1 %d p2 %d str %s\n",eventList[i].type,
+			eventList[i].iid,eventList[i].time,eventList[i].p1,eventList[i].p2,eventList[i].str.c_str());
+		else
+			printf("type %x #%d @%d p1 %d p2 %d\n",eventList[i].type,
+			eventList[i].iid,eventList[i].time,eventList[i].p1,eventList[i].p2);
 }
 CMidiFileReaderCollection::CMidiFileReaderCollection()
 {
@@ -301,6 +312,7 @@ void CMidiFileReaderCollection::readFile(const char* fn)
 	for(unsigned i=0;i<readers.size();++i)
 	{
 		currentReader=readers[i].first;
+		CMidiPlayer::getInstance()->notes=0;
 		CMidiFile* t=readers[i].first->readFile(fn);
 		if(t->valid){file=t;break;}
 		else destructFile(t);

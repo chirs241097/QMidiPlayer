@@ -22,6 +22,7 @@ struct SEvent
 		p1=_p1;p2=_p2;
 		if(s)str=std::string(s);else str="";
 	}
+	friend bool operator <(const SEvent& a,const SEvent& b){return a.time-b.time?a.time<b.time:a.iid<b.iid;}
 };
 //This struct is used by event reader callbacks and event handler callbacks
 //as caller data struct
@@ -120,6 +121,8 @@ class qmpPluginAPI
 		//it is somehow dangerous -- other plugins might be unaware of the event change.
 		//The design might be modified afterward.
 		virtual void commitEventChange(SEventCallBackData d);
+		//This function should be called from a file reader when it has read a new event
+		virtual void callEventReaderCB(SEventCallBackData d);
 
 		virtual int registerVisualizationIntf(qmpVisualizationIntf* intf);
 		virtual void unregisterVisualizationIntf(int intfhandle);

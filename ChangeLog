@@ -1,3 +1,7 @@
+2017-02-09 0.8.5 indev
+Add extra midi formats support via the file reader API.
+Fix note counting.
+
 2017-02-08 0.8.5 indev
 Add API version verification. This breaks compatibility
 with old versions of plugins.

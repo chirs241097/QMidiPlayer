@@ -11,3 +11,6 @@ android {
 SUBDIRS = \
     qmidiplayer-lite
 }
+
+SUBDIRS += \
+    midifmt-plugin
