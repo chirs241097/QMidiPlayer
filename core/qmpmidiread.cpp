@@ -82,7 +82,7 @@ int CSMFReader::eventReader()//returns 0 if End of Track encountered
 		break;
 		case 0xE0://Pitch wheel
 			p1=fgetc(f);p2=fgetc(f);byteread+=2;
-			ret->eventList.push_back(SEvent(curid,curt,type,(p1|(p2<<7))&0x3FFF,0));
+			ret->eventList.push_back(SEvent(curid,curt,type,p1,p2));
 		break;
 		case 0xF0:
 			if((type&0x0F)==0x0F)//Meta Event

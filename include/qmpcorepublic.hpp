@@ -8,7 +8,7 @@
 #else
 #define EXPORTSYM __attribute__ ((visibility ("default")))
 #endif
-#define QMP_PLUGIN_API_REV "1+indev"
+#define QMP_PLUGIN_API_REV "1+indev2"
 //MIDI Event structure
 struct SEvent
 {

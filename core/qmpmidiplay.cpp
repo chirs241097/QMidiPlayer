@@ -75,8 +75,11 @@ void CMidiPlayer::processEvent(const SEvent *e)
 			if(e->p1==6)rpnval[e->type&0x0F]=e->p2;
 			if(~rpnid[e->type&0x0F]&&~rpnval[e->type&0x0F])
 			{
-				if(rpnid[e->type&0x0F]==0)fluid_synth_pitch_wheel_sens(synth,e->type&0x0F,rpnval[e->type&0x0F]);
-				pbr[e->type&0x0F]=rpnval[e->type&0x0F];
+				if(rpnid[e->type&0x0F]==0)
+				{
+					fluid_synth_pitch_wheel_sens(synth,e->type&0x0F,rpnval[e->type&0x0F]);
+					pbr[e->type&0x0F]=rpnval[e->type&0x0F];
+				}
 				rpnid[e->type&0x0F]=rpnval[e->type&0x0F]=-1;
 			}
 			chstatus[e->type&0x0F][e->p1]=e->p2;
@@ -93,11 +96,11 @@ void CMidiPlayer::processEvent(const SEvent *e)
 				fluid_synth_program_change(synth,e->type&0x0F,e->p1);
 		break;
 		case 0xE0://PW
-			pbv[e->type&0x0F]=e->p1;
+			pbv[e->type&0x0F]=(e->p1|(e->p2<<7))&0x3FFF;;
 			if(mappedoutput[e->type&0x0F])
-				mapper->pitchBend(mappedoutput[e->type&0x0F]-1,e->type&0x0F,e->p1);
+				mapper->pitchBend(mappedoutput[e->type&0x0F]-1,e->type&0x0F,(e->p1|(e->p2<<7))&0x3FFF);
 			else
-				fluid_synth_pitch_bend(synth,e->type&0x0F,e->p1);
+				fluid_synth_pitch_bend(synth,e->type&0x0F,(e->p1|(e->p2<<7))&0x3FFF);
 		break;
 		case 0xF0://Meta/SysEx
 			if((e->type&0x0F)==0x0F)
@@ -154,7 +157,7 @@ void CMidiPlayer::processEventStub(const SEvent *e)
 			ccc[e->type&0x0F][129]=e->p1;
 		break;
 		case 0xE0://PW
-			ccc[e->type&0x0F][130]=e->p1;
+			ccc[e->type&0x0F][130]=(e->p1|(e->p2<<7))&0x3FFF;
 		break;
 		case 0xF0://Meta/SysEx
 			if((e->type&0x0F)==0x0F)

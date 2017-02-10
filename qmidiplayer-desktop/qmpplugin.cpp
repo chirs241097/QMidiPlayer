@@ -146,7 +146,7 @@ int qmpPluginAPI::getChannelCC(int ch,int cc)
 {return qmw&&qmw->getPlayer()?qmw->getPlayer()->getCC(ch,cc):0;}
 int qmpPluginAPI::getChannelPreset(int ch)
 {
-	int b,p;char nm[25],ret[33];ret[0]=0;
+	int b,p;char nm[25];
 	if(qmw&&qmw->getPlayer())
 	{
 		qmw->getPlayer()->getChannelPreset(ch,&b,&p,nm);

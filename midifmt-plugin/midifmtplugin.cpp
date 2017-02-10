@@ -32,7 +32,7 @@ bool CMidiStreamReader::midsBodyReader()
 	readDWLE();//size
 	uint32_t cblocks=readDWLE();
 	uint32_t curid=0,cts=0;
-	for(int i=0;i<cblocks;++i)
+	for(uint32_t i=0;i<cblocks;++i)
 	{
 		readDWLE();
 		uint32_t blocksz=readDWLE(),cpos=ftell(f);
@@ -50,8 +50,6 @@ bool CMidiStreamReader::midsBodyReader()
 			//fprintf(stderr,"ev: @ %x t %x p1 %x p2 %x\n",ev.time,ev.type,ev.p1,ev.p2);
 			if((ev.type&0xF0)==0x90&&ev.p2==0)//Note on with zero velo
 			ev.type=(ev.type&0x0F)|0x80;
-			if((ev.type&0xF0)==0xE0)//pitch wheel
-			{ev.p1=(ev.p1|(ev.p2<<7))&0x3FFF;ev.p2=0;}
 			ret->eventList.push_back(ev);eventdiscarded=0;
 			qmpMidiFmtPlugin::api->callEventReaderCB(SEventCallBackData(ev.type,ev.p1,ev.p2,ev.time));
 			if(eventdiscarded)ret->eventList.pop_back();

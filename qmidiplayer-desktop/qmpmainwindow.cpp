@@ -259,9 +259,7 @@ void qmpMainWindow::updateWidgets()
 			ui->lbCurTime->setText("00:00");
 		}
 		else
-		{
-
-		}
+			switchTrack(plistw->getNextItem());
 	}
 	if(renderTh)
 	{
