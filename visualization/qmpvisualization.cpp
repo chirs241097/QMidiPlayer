@@ -754,7 +754,7 @@ void qmpVisualization::init()
 	rendererTh=NULL;playing=false;
 	memset(spectra,0,sizeof(spectra));
 	memset(spectrar,0,sizeof(spectrar));
-	hvif=api->registerVisualizationIntf(vi);
+	api->registerVisualizationIntf(vi,"Visualization","Visualization",api->isDarkTheme()?":/img/visualization_i.png":":/img/visualization.png",0);
 	herif=api->registerEventReaderIntf(cb,NULL);
 	hehif=api->registerEventHandlerIntf(hcb,NULL);
 	hfrf=api->registerFileReadFinishedHandlerIntf(frcb,NULL);
@@ -828,7 +828,7 @@ void qmpVisualization::deinit()
 {
 	if(!api)return;close();tspool.clear();
 	for(unsigned i=0;i<pool.size();++i)delete pool[i];pool.clear();
-	api->unregisterVisualizationIntf(hvif);
+	api->unregisterVisualizationIntf("Visualization");
 	api->unregisterEventReaderIntf(herif);
 	api->unregisterEventHandlerIntf(hehif);
 	api->unregisterFileReadFinishedHandlerIntf(hfrf);

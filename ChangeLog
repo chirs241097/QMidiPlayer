@@ -1,3 +1,9 @@
+2017-02-12 0.8.5 indev
+New functionality API. Port built-in features to the
+new API.
+Start the revamp of the main Window. Credit of the
+new design goes to @BLumia.
+
 2017-02-10 0.8.5 indev
 Road to standardize: use two parameters for pitchbend.
 Documentation.

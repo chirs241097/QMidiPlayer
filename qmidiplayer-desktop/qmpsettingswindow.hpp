@@ -12,6 +12,7 @@
 #include <QSpinBox>
 #include <QFormLayout>
 #include "qmpplugin.hpp"
+#include "qmpcustomizewindow.hpp"
 
 namespace Ui {
 	class qmpSettingsWindow;
@@ -105,12 +106,17 @@ class qmpSettingsWindow:public QDialog
 
 		void on_cbAutoBS_stateChanged();
 
+		void on_pbCustomizeTb_clicked();
+
+		void on_pbCustomizeAct_clicked();
+
 	private:
 		Ui::qmpSettingsWindow *ui;
 		void settingsUpdate();
 		std::map<std::string,qmpCustomOption> customOptions;
 		std::map<std::string,QGridLayout*> customOptPages;
 		void updateCustomOptions();
+		qmpCustomizeWindow *cw;
 		static QSettings *settings;
 		static QComboBox* outwidget;
 	public:

@@ -22,7 +22,6 @@ qmpPlistWindow::qmpPlistWindow(QWidget *parent) :
 	setButtonHeight(ui->pbClear,36);setButtonHeight(ui->pbLoad,36);
 	setButtonHeight(ui->pbRemove,36);setButtonHeight(ui->pbRepeat,36);
 	setButtonHeight(ui->pbSave,36);setButtonHeight(ui->pbShuffle,36);
-	connect(this,SIGNAL(dialogClosing()),parent,SLOT(dialogClosed()));
 	connect(this,SIGNAL(selectionChanging()),parent,SLOT(selectionChanged()));
 	repeat=0;shuffle=0;
 	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/RestorePlaylist","").toInt())
@@ -69,10 +68,24 @@ qmpPlistWindow::qmpPlistWindow(QWidget *parent) :
 	ui->pbAddFolder->setIcon(QIcon(getThemedIcon(":/img/addfolder.png")));
 	ui->pbSave->setIcon(QIcon(getThemedIcon(":/img/save.png")));
 	ui->pbLoad->setIcon(QIcon(getThemedIcon(":/img/load.png")));
+	qmpMainWindow::getInstance()->registerFunctionality(
+		plistf=new qmpPlistFunc(this),
+		std::string("Playlist"),
+		tr("Playlist").toStdString(),
+		getThemedIconc(":/img/list.png"),
+		0,
+		true
+	);
+	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/PListW",QByteArray()).toByteArray().length())
+		restoreGeometry(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/PListW",QRect(-999,-999,-999,-999)).toByteArray());
+	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/PListWShown",0).toInt())
+	{show();qmpMainWindow::getInstance()->setFuncState("Playlist",true);}
 }
 
 qmpPlistWindow::~qmpPlistWindow()
 {
+	qmpMainWindow::getInstance()->unregisterFunctionality("Playlist");
+	delete plistf;
 	delete ui;
 }
 
@@ -82,6 +95,8 @@ void qmpPlistWindow::showEvent(QShowEvent *event)
 	{
 		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/PListWShown",1);
 	}
+	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/PListW",QByteArray()).toByteArray().length())
+		restoreGeometry(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/PListW",QRect(-999,-999,-999,-999)).toByteArray());
 	event->accept();
 }
 
@@ -104,7 +119,7 @@ void qmpPlistWindow::closeEvent(QCloseEvent *event)
 		plist->sync();
 		delete plist;
 	}
-	emit dialogClosing();
+	qmpMainWindow::getInstance()->setFuncState("Playlist",false);
 	event->accept();
 }
 
@@ -112,8 +127,9 @@ void qmpPlistWindow::moveEvent(QMoveEvent *event)
 {
 	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
 	{
-		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/PListW",event->pos());
+		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/PListW",saveGeometry());
 	}
+	event->accept();
 }
 
 void qmpPlistWindow::dropEvent(QDropEvent *event)
@@ -326,4 +342,14 @@ void qmpPlistWindow::on_pbLoad_clicked()
 		break;
 	}
 	delete plist;
+}
+qmpPlistFunc::qmpPlistFunc(qmpPlistWindow *par)
+{p=par;}
+void qmpPlistFunc::show()
+{
+	p->show();
+}
+void qmpPlistFunc::close()
+{
+	p->close();
 }

@@ -8,7 +8,7 @@
 #else
 #define EXPORTSYM __attribute__ ((visibility ("default")))
 #endif
-#define QMP_PLUGIN_API_REV "1+indev2"
+#define QMP_PLUGIN_API_REV "1+indev3"
 //MIDI Event structure
 struct SEvent
 {
@@ -70,9 +70,17 @@ class qmpPluginIntf
 		virtual const char* pluginGetName(){return "";}
 		virtual const char* pluginGetVersion(){return "";}
 };
+class qmpFuncBaseIntf
+{
+	public:
+		qmpFuncBaseIntf(){}
+		virtual void show()=0;
+		virtual void close()=0;
+		virtual ~qmpFuncBaseIntf(){}
+};
 //Visualization plugin pinterface. If your plugin implements a visualization,
 //you should implement this pinterface.
-class qmpVisualizationIntf
+class qmpVisualizationIntf:public qmpFuncBaseIntf
 {
 	public:
 		qmpVisualizationIntf(){}
@@ -112,6 +120,7 @@ class qmpPluginAPI
 		virtual std::string getTitle();
 		virtual std::wstring getWTitle();
 		virtual std::string getChannelPresetString(int ch);
+		virtual bool isDarkTheme();
 
 		//WARNING!!: This function should be called from event reader callbacks only and
 		//it is somehow dangerous -- other plugins might be unaware of the removal of the
@@ -124,8 +133,8 @@ class qmpPluginAPI
 		//This function should be called from a file reader when it has read a new event
 		virtual void callEventReaderCB(SEventCallBackData d);
 
-		virtual int registerVisualizationIntf(qmpVisualizationIntf* intf);
-		virtual void unregisterVisualizationIntf(int intfhandle);
+		virtual void registerVisualizationIntf(qmpVisualizationIntf* intf,std::string name,std::string desc,const char* icon,int iconlen);
+		virtual void unregisterVisualizationIntf(std::string name);
 		virtual int registerEventReaderIntf(IMidiCallBack* cb,void* userdata);
 		virtual void unregisterEventReaderIntf(int intfhandle);
 		virtual int registerEventHandlerIntf(IMidiCallBack* cb,void* userdata);

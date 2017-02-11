@@ -69,6 +69,18 @@ class qmpCWNoteOnCB:public QObject,public IMidiCallBack
 		void onNoteOn();
 };
 
+class qmpChannelsWindow;
+
+class qmpChannelFunc:public qmpFuncBaseIntf
+{
+	private:
+		qmpChannelsWindow *p;
+	public:
+		qmpChannelFunc(qmpChannelsWindow *par);
+		void show();
+		void close();
+};
+
 class qmpChannelsWindow:public QDialog
 {
 	Q_OBJECT
@@ -80,8 +92,6 @@ class qmpChannelsWindow:public QDialog
 		void closeEvent(QCloseEvent *event);
 		void moveEvent(QMoveEvent *event);
 		void resetAcitivity();
-	signals:
-		void dialogClosing();
 	public slots:
 		void channelWindowsUpdate();
 		void updateChannelActivity();
@@ -99,6 +109,7 @@ class qmpChannelsWindow:public QDialog
 		qmpMidiMapperRtMidi *mapper;
 		QPixmap *cha,*chi;
 		qmpCWNoteOnCB *cb;
+		qmpChannelFunc *chnlf;
 		//callback fuse... (avoid black midi blocking the main thread)
 		int callbacksc,cbcnt,fused;
 };

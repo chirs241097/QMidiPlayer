@@ -8,10 +8,23 @@
 #include <QDropEvent>
 #include <QDragEnterEvent>
 #include <QListWidgetItem>
+#include "../include/qmpcorepublic.hpp"
 
 namespace Ui {
 	class qmpPlistWindow;
 }
+
+class qmpPlistWindow;
+
+class qmpPlistFunc:public qmpFuncBaseIntf
+{
+	private:
+		qmpPlistWindow* p;
+	public:
+		qmpPlistFunc(qmpPlistWindow *par);
+		void show();
+		void close();
+};
 
 class qmpPlistWindow : public QDialog
 {
@@ -35,7 +48,6 @@ class qmpPlistWindow : public QDialog
 		void insertItem(QString i);
 		void insertItems(QStringList il);
 	signals:
-		void dialogClosing();
 		void selectionChanging();
 
 	public slots:
@@ -51,6 +63,7 @@ class qmpPlistWindow : public QDialog
 		void on_pbLoad_clicked();
 
 	private:
+		qmpPlistFunc* plistf;
 		Ui::qmpPlistWindow *ui;
 		int shuffle,repeat;//rep 0=off 1=one 2=all
 };

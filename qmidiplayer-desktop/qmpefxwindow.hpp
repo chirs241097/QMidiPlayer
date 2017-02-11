@@ -7,10 +7,23 @@
 #include <QMoveEvent>
 
 #include "qdialskulpturestyle.hpp"
+#include "../include/qmpcorepublic.hpp"
 
 namespace Ui {
 	class qmpEfxWindow;
 }
+
+class qmpEfxWindow;
+
+class qmpEfxFunc:public qmpFuncBaseIntf
+{
+	private:
+		qmpEfxWindow *p;
+	public:
+		qmpEfxFunc(qmpEfxWindow *par);
+		void show();
+		void close();
+};
 
 class qmpEfxWindow : public QDialog
 {
@@ -23,9 +36,6 @@ class qmpEfxWindow : public QDialog
 		void showEvent(QShowEvent *event);
 		void moveEvent(QMoveEvent *event);
 		void sendEfxChange();
-
-	signals:
-		void dialogClosing();
 
 	private slots:
 		void on_dRoom_valueChanged();
@@ -57,6 +67,7 @@ class qmpEfxWindow : public QDialog
 		int cfb,ct,initialized;
 		double cl,cr,cd;
 		QCommonStyle* styl;
+		qmpEfxFunc *efxf;
 };
 
 #endif // QMPEFXWINDOW_HPP

@@ -23,7 +23,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>3</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -634,6 +634,42 @@
              <string>Light</string>
             </property>
            </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <widget class="QLabel" name="lbCustomizeTb">
+           <property name="text">
+            <string>Customize toolbar</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pbCustomizeTb">
+           <property name="text">
+            <string>Customize</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <item>
+          <widget class="QLabel" name="lbCustomizeAct">
+           <property name="text">
+            <string>Customize actions</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pbCustomizeAct">
+           <property name="text">
+            <string>Customize</string>
+           </property>
           </widget>
          </item>
         </layout>

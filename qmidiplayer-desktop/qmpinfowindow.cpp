@@ -15,11 +15,28 @@ qmpInfoWindow::qmpInfoWindow(QWidget *parent) :
 	ui->setupUi(this);
 	int w=size().width(),h=size().height();w=w*(logicalDpiX()/96.);h=h*(logicalDpiY()/96.);
 	setMinimumWidth(w);setMinimumHeight(h);
+	qmpMainWindow::getInstance()->registerFunctionality(
+		infof=new qmpInfoFunc(this),
+		std::string("FileInfo"),
+		tr("File Information").toStdString(),
+		NULL,
+		0,
+		true
+	);
 }
 
 qmpInfoWindow::~qmpInfoWindow()
 {
+	qmpMainWindow::getInstance()->unregisterFunctionality("FileInfo");
+	delete infof;
 	delete ui;
+}
+
+void qmpInfoWindow::closeEvent(QCloseEvent *e)
+{
+	setVisible(false);
+	qmpMainWindow::getInstance()->setFuncState("FileInfo",false);
+	e->accept();
 }
 
 void qmpInfoWindow::updateInfo()
@@ -57,3 +74,10 @@ void qmpInfoWindow::updateInfo()
 	strncpy(str,standards+player->getFileStandard()*3,3);str[3]='\0';
 	ui->lbFileStandard->setText(QString("File standard: ")+str);
 }
+
+qmpInfoFunc::qmpInfoFunc(qmpInfoWindow *par)
+{p=par;}
+void qmpInfoFunc::show()
+{p->show();}
+void qmpInfoFunc::close()
+{p->close();}

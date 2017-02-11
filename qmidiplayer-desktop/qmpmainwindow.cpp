@@ -13,6 +13,7 @@
 #include "ui_qmpmainwindow.h"
 #include "../core/qmpmidiplay.hpp"
 #define setButtonHeight(x,h) {x->setMaximumHeight(h*(logicalDpiY()/96.));x->setMinimumHeight(h*(logicalDpiY()/96.));}
+#define setButtonWidth(x,h) {x->setMaximumWidth(h*(logicalDpiY()/96.));x->setMinimumWidth(h*(logicalDpiY()/96.));}
 #ifdef _WIN32
 #include <Windows.h>
 char* wcsto8bit(const wchar_t* s)
@@ -30,7 +31,7 @@ char* wcsto8bit(const wchar_t* s)
 	}
 #define LOAD_FILE \
 	{\
-		for(int i=0;i<16;++i)if(VIs[i])VIs[i]->reset();\
+		for(auto i=mfunc.begin();i!=mfunc.end();++i)if(i->second.isVisualization())((qmpVisualizationIntf*)(i->second.i()))->reset();\
 		char* c=wcsto8bit(fns.toStdWString().c_str());\
 		if(!player->playerLoadFile(c)){free(c);QMessageBox::critical(this,tr("Error"),tr("%1 is not a valid midi file.").arg(fns));return;}\
 		free(c);\
@@ -40,7 +41,7 @@ char* wcsto8bit(const wchar_t* s)
 	player->pushSoundFont(settingsw->getSFWidget()->item(i,1)->text().toStdString().c_str())
 #define LOAD_FILE \
 	{\
-		for(int i=0;i<16;++i)if(VIs[i])VIs[i]->reset();\
+		for(auto i=mfunc.begin();i!=mfunc.end();++i)if(i->second.isVisualization())((qmpVisualizationIntf*)(i->second.i()))->reset();\
 		if(!player->playerLoadFile(fns.toStdString().c_str())){QMessageBox::critical(this,tr("Error"),tr("%1 is not a valid midi file.").arg(fns));return;}\
 	}
 #endif
@@ -57,11 +58,11 @@ qmpMainWindow::qmpMainWindow(QWidget *parent) :
 	ui->lbFileName->setText("");ref=this;ui->verticalLayout->setAlignment(ui->pushButton,Qt::AlignRight);
 	int w=size().width(),h=size().height();w=w*(logicalDpiX()/96.);h=h*(logicalDpiY()/96.);
 	setMaximumWidth(w);setMaximumHeight(h);setMinimumWidth(w);setMinimumHeight(h);
-	setButtonHeight(ui->pbNext,34);setButtonHeight(ui->pbPlayPause,34);
-	setButtonHeight(ui->pbPrev,34);setButtonHeight(ui->pbSettings,34);setButtonHeight(ui->pbStop,34);
-	setButtonHeight(ui->pbChannels,36);setButtonHeight(ui->pbPList,36);
-	setButtonHeight(ui->pbEfx,36);setButtonHeight(ui->pbVisualization,36);
-	playing=false;stopped=true;dragging=false;memset(VIs,0,sizeof(VIs));
+	setButtonHeight(ui->pbNext,36);setButtonHeight(ui->pbPlayPause,36);
+	setButtonHeight(ui->pbPrev,36);setButtonHeight(ui->pbSettings,36);setButtonHeight(ui->pbStop,36);
+	//setButtonHeight(ui->pbChannels,36);setButtonHeight(ui->pbPList,36);
+	//setButtonHeight(ui->pbEfx,36);setButtonHeight(ui->pbVisualization,36);
+	playing=false;stopped=true;dragging=false;
 	settingsw=new qmpSettingsWindow(this);pmgr=new qmpPluginManager();
 	plistw=new qmpPlistWindow(this);player=NULL;timer=NULL;
 	singleFS=qmpSettingsWindow::getSettingsIntf()->value("Behavior/SingleInstance",0).toInt();
@@ -89,14 +90,12 @@ void qmpMainWindow::init()
 	infow=new qmpInfoWindow(this);
 	helpw=new qmpHelpWindow(this);
 	timer=new QTimer(this);
-	fnA1=new QAction(tr("File Information"),ui->lbFileName);
-	fnA2=new QAction(tr("Render to Wave"),ui->lbFileName);
-	fnA3=new QAction(tr("Panic"),ui->lbFileName);
-	fnA4=new QAction(tr("Restart fluidsynth"),ui->lbFileName);
-	ui->lbFileName->addAction(fnA1);
-	ui->lbFileName->addAction(fnA2);
-	ui->lbFileName->addAction(fnA3);
-	ui->lbFileName->addAction(fnA4);
+	renderf=new qmpRenderFunc(this);
+	panicf=new qmpPanicFunc(this);
+	reloadsynf=new qmpReloadSynthFunc(this);
+	registerFunctionality(renderf,"Render",tr("Render to wave").toStdString(),NULL,0,false);
+	registerFunctionality(panicf,"Panic",tr("Panic").toStdString(),NULL,0,false);
+	registerFunctionality(reloadsynf,"ReloadSynth",tr("Restart fluidsynth").toStdString(),NULL,0,false);
 	pmgr->scanPlugins();settingsw->updatePluginList(pmgr);pmgr->initPlugins();
 	if(singleFS){player->fluidPreInitialize();playerSetup();player->fluidInitialize();
 		for(int i=settingsw->getSFWidget()->rowCount()-1;i>=0;--i){if(!((QCheckBox*)settingsw->getSFWidget()->cellWidget(i,0))->isChecked())continue;
@@ -111,17 +110,7 @@ void qmpMainWindow::init()
 							 Qt::LeftToRight,Qt::AlignCenter,size(),
 							 qApp->desktop()->availableGeometry()));
 	}show();
-	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/PListWShown",0).toInt())
-	{ui->pbPList->setChecked(true);on_pbPList_clicked();}
-	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/ChnlWShown",0).toInt())
-	{ui->pbChannels->setChecked(true);on_pbChannels_clicked();}
-	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/EfxWShown",0).toInt())
-	{ui->pbEfx->setChecked(true);on_pbEfx_clicked();}
 	ui->vsMasterVol->setValue(qmpSettingsWindow::getSettingsIntf()->value("Audio/Gain",50).toInt());
-	connect(fnA1,SIGNAL(triggered()),this,SLOT(onfnA1()));
-	connect(fnA2,SIGNAL(triggered()),this,SLOT(onfnA2()));
-	connect(fnA3,SIGNAL(triggered()),this,SLOT(onfnA3()));
-	connect(fnA4,SIGNAL(triggered()),this,SLOT(onfnA4()));
 	connect(timer,SIGNAL(timeout()),this,SLOT(updateWidgets()));
 	connect(timer,SIGNAL(timeout()),chnlw,SLOT(channelWindowsUpdate()));
 	connect(timer,SIGNAL(timeout()),infow,SLOT(updateInfo()));
@@ -129,12 +118,13 @@ void qmpMainWindow::init()
 	ui->pbPrev->setIcon(QIcon(getThemedIcon(":/img/prev.png")));
 	ui->pbPlayPause->setIcon(QIcon(getThemedIcon(":/img/play.png")));
 	ui->pbStop->setIcon(QIcon(getThemedIcon(":/img/stop.png")));
-	ui->pbChannels->setIcon(QIcon(getThemedIcon(":/img/channel.png")));
-	ui->pbEfx->setIcon(QIcon(getThemedIcon(":/img/effects.png")));
-	ui->pbPList->setIcon(QIcon(getThemedIcon(":/img/list.png")));
-	ui->pbVisualization->setIcon(QIcon(getThemedIcon(":/img/visualization.png")));
+	//ui->pbChannels->setIcon(QIcon(getThemedIcon(":/img/channel.png")));
+	//ui->pbEfx->setIcon(QIcon(getThemedIcon(":/img/effects.png")));
+	//ui->pbPList->setIcon(QIcon(getThemedIcon(":/img/list.png")));
+	//ui->pbVisualization->setIcon(QIcon(getThemedIcon(":/img/visualization.png")));
 	ui->pbSettings->setIcon(QIcon(getThemedIcon(":/img/settings.png")));
 	if(havemidi)on_pbPlayPause_clicked();
+	setupWidget();
 }
 
 int qmpMainWindow::pharseArgs()
@@ -209,6 +199,9 @@ int qmpMainWindow::pharseArgs()
 void qmpMainWindow::closeEvent(QCloseEvent *event)
 {
 	on_pbStop_clicked();fin=true;
+	for(auto i=mfunc.begin();i!=mfunc.end();++i)
+	i->second.setAssignedControl((QReflectiveAction*)NULL),
+	i->second.setAssignedControl((QReflectivePushButton*)NULL);
 	efxw->close();chnlw->close();
 	plistw->close();infow->close();
 	settingsw->close();
@@ -221,6 +214,7 @@ void qmpMainWindow::moveEvent(QMoveEvent *event)
 	{
 		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/MainW",event->pos());
 	}
+	event->accept();
 }
 void qmpMainWindow::dropEvent(QDropEvent *event)
 {
@@ -239,16 +233,15 @@ void qmpMainWindow::dragEnterEvent(QDragEnterEvent *event)
 
 void qmpMainWindow::updateWidgets()
 {
-	fnA2->setEnabled(stopped);
-	fnA4->setEnabled(stopped);
+	setFuncEnabled("Render",stopped);setFuncEnabled("ReloadSynth",stopped);
 	if(player->isFinished()&&playerTh)
 	{
 		if(!plistw->getRepeat())
 		{
 			timer->stop();stopped=true;playing=false;
-			for(int i=0;i<16;++i)if(VIs[i])VIs[i]->stop();
-			fnA2->setEnabled(stopped);
-			fnA4->setEnabled(stopped);chnlw->resetAcitivity();
+			for(auto i=mfunc.begin();i!=mfunc.end();++i)if(i->second.isVisualization())((qmpVisualizationIntf*)(i->second.i()))->stop();
+			setFuncEnabled("Render",stopped);setFuncEnabled("ReloadSynth",stopped);
+			chnlw->resetAcitivity();
 			player->playerDeinit();playerTh->join();
 			delete playerTh;playerTh=NULL;
 			if(singleFS)player->playerPanic(true);
@@ -302,7 +295,7 @@ void qmpMainWindow::switchTrack(QString s)
 	timer->stop();player->playerDeinit();playerTh->join();
 	delete playerTh;playerTh=NULL;
 	ui->hsTimer->setValue(0);
-	for(int i=0;i<16;++i)if(VIs[i])VIs[i]->stop();
+	for(auto i=mfunc.begin();i!=mfunc.end();++i)if(i->second.isVisualization())((qmpVisualizationIntf*)(i->second.i()))->stop();
 	if(singleFS)player->playerPanic(true);
 	chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 	QString fns=s;setWindowTitle(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.'))+" - QMidiPlayer");
@@ -316,7 +309,7 @@ void qmpMainWindow::switchTrack(QString s)
 		for(int i=settingsw->getSFWidget()->rowCount()-1;i>=0;--i){if(!((QCheckBox*)settingsw->getSFWidget()->cellWidget(i,0))->isChecked())continue;
 			LOAD_SOUNDFONT;
 		}}
-	for(int i=0;i<16;++i)if(VIs[i])VIs[i]->start();
+	for(auto i=mfunc.begin();i!=mfunc.end();++i)if(i->second.isVisualization())((qmpVisualizationIntf*)(i->second.i()))->start();
 	player->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
 	player->setWaitVoice(qmpSettingsWindow::getSettingsIntf()->value("Midi/WaitVoice",1).toInt());
 	playerTh=new std::thread(&CMidiPlayer::playerThread,player);
@@ -405,7 +398,7 @@ void qmpMainWindow::on_pbPlayPause_clicked()
 			LOAD_SOUNDFONT;
 		}
 		}
-		for(int i=0;i<16;++i)if(VIs[i])VIs[i]->start();
+		for(auto i=mfunc.begin();i!=mfunc.end();++i)if(i->second.isVisualization())((qmpVisualizationIntf*)(i->second.i()))->start();
 		player->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
 		player->setWaitVoice(qmpSettingsWindow::getSettingsIntf()->value("Midi/WaitVoice",1).toInt());
 		playerTh=new std::thread(&CMidiPlayer::playerThread,player);
@@ -429,7 +422,7 @@ void qmpMainWindow::on_pbPlayPause_clicked()
 			player->setResumed();
 		}
 		player->setTCpaused(!playing);
-		for(int i=0;i<16;++i)if(VIs[i])VIs[i]->pause();
+		for(auto i=mfunc.begin();i!=mfunc.end();++i)if(i->second.isVisualization())((qmpVisualizationIntf*)(i->second.i()))->pause();
 	}
 	ui->pbPlayPause->setIcon(QIcon(getThemedIcon(playing?":/img/pause.png":":/img/play.png")));
 }
@@ -496,8 +489,9 @@ void qmpMainWindow::on_pbStop_clicked()
 	if(!stopped)
 	{
 		timer->stop();stopped=true;playing=false;
-		for(int i=0;i<16;++i)if(VIs[i])VIs[i]->stop();
-		player->playerDeinit();fnA2->setEnabled(stopped);fnA4->setEnabled(stopped);
+		for(auto i=mfunc.begin();i!=mfunc.end();++i)if(i->second.isVisualization())((qmpVisualizationIntf*)(i->second.i()))->stop();
+		player->playerDeinit();
+		setFuncEnabled("Render",stopped);setFuncEnabled("ReloadSynth",stopped);
 		if(singleFS)player->playerPanic(true);chnlw->resetAcitivity();
 		if(playerTh){playerTh->join();delete playerTh;playerTh=NULL;}
 		chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
@@ -510,36 +504,7 @@ void qmpMainWindow::on_pbStop_clicked()
 
 void qmpMainWindow::dialogClosed()
 {
-	if(!plistw->isVisible())ui->pbPList->setChecked(false);
-	if(!chnlw->isVisible())ui->pbChannels->setChecked(false);
-	if(!efxw->isVisible())ui->pbEfx->setChecked(false);
 	if(!settingsw->isVisible())ui->pbSettings->setChecked(false);
-}
-
-void qmpMainWindow::on_pbPList_clicked()
-{
-	if(ui->pbPList->isChecked())
-	{
-		QRect g=plistw->geometry();
-		g.setTopLeft(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/PListW",QPoint(-999,-999)).toPoint());
-		if(g.topLeft()==QPoint(-999,-999))
-			g.setTopLeft(window()->mapToGlobal(window()->rect().center())-plistw->rect().center());
-		plistw->setGeometry(g);
-		plistw->show();
-	}else plistw->close();
-}
-
-void qmpMainWindow::on_pbChannels_clicked()
-{
-	if(ui->pbChannels->isChecked())
-	{
-		QRect g=chnlw->geometry();
-		g.setTopLeft(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/ChnlW",QPoint(-999,-999)).toPoint());
-		if(g.topLeft()==QPoint(-999,-999))
-			g.setTopLeft(window()->mapToGlobal(window()->rect().center())-chnlw->rect().center());
-		chnlw->setGeometry(g);
-		chnlw->show();
-	}else chnlw->close();
 }
 
 void qmpMainWindow::on_pbPrev_clicked()
@@ -557,7 +522,7 @@ void qmpMainWindow::selectionChanged()
 	stopped=false;playing=true;
 	ui->pbPlayPause->setIcon(QIcon(getThemedIcon(":/img/pause.png")));
 	timer->stop();player->playerDeinit();
-	for(int i=0;i<16;++i)if(VIs[i])VIs[i]->stop();
+	for(auto i=mfunc.begin();i!=mfunc.end();++i)if(i->second.isVisualization())((qmpVisualizationIntf*)(i->second.i()))->stop();
 	if(playerTh){playerTh->join();delete playerTh;playerTh=NULL;}
 	if(singleFS)player->playerPanic(true);
 	ui->hsTimer->setValue(0);
@@ -574,7 +539,7 @@ void qmpMainWindow::selectionChanged()
 		for(int i=settingsw->getSFWidget()->rowCount()-1;i>=0;--i){if(!((QCheckBox*)settingsw->getSFWidget()->cellWidget(i,0))->isChecked())continue;
 			LOAD_SOUNDFONT;
 		}}
-	for(int i=0;i<16;++i)if(VIs[i])VIs[i]->start();
+	for(auto i=mfunc.begin();i!=mfunc.end();++i)if(i->second.isVisualization())((qmpVisualizationIntf*)(i->second.i()))->start();
 	player->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
 	player->setWaitVoice(qmpSettingsWindow::getSettingsIntf()->value("Midi/WaitVoice",1).toInt());
 	playerTh=new std::thread(&CMidiPlayer::playerThread,player);
@@ -583,20 +548,6 @@ void qmpMainWindow::selectionChanged()
 #endif
 	st=std::chrono::steady_clock::now();offset=0;
 	timer->start(UPDATE_INTERVAL);
-}
-
-void qmpMainWindow::on_pbEfx_clicked()
-{
-	if(ui->pbEfx->isChecked())
-	{
-		QRect g=efxw->geometry();
-		g.setTopLeft(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/EfxW",QPoint(-999,-999)).toPoint());
-		if(g.topLeft()==QPoint(-999,-999))
-			g.setTopLeft(window()->mapToGlobal(window()->rect().center())-efxw->rect().center());
-		efxw->setGeometry(g);
-		efxw->show();
-	}
-	else efxw->close();
 }
 
 void qmpMainWindow::on_lbFileName_customContextMenuRequested(const QPoint &pos)
@@ -619,19 +570,35 @@ void qmpMainWindow::onfnChanged()
 	ui->lbFileName->setFont(f);
 }
 
-int qmpMainWindow::registerVisualizationIntf(qmpVisualizationIntf* intf)
+void qmpMainWindow::registerVisualizationIntf(qmpVisualizationIntf* intf,std::string name,std::string desc,const char* icon,int iconlen)
 {
-	for(int i=0;i<16;++i)
-	{
-		if(VIs[i]==intf)return i;
-		if(VIs[i]==NULL){VIs[i]=intf;return i;}
-	}
-	return -1;
+	registerFunctionality(intf,name,desc,icon,iconlen,true,true);
 }
-void qmpMainWindow::unregisterVisualizationIntf(int handle)
+void qmpMainWindow::unregisterVisualizationIntf(std::string name)
 {
-	VIs[handle]=NULL;
+	unregisterFunctionality(name);
 }
+
+void qmpMainWindow::registerFunctionality(qmpFuncBaseIntf *i,std::string name,std::string desc,const char *icon,int iconlen,bool checkable,bool isv)
+{
+	if(mfunc.find(name)!=mfunc.end())return;
+	mfunc[name]=qmpFuncPrivate(i,desc,icon,iconlen,checkable,isv);
+}
+
+void qmpMainWindow::unregisterFunctionality(std::string name)
+{
+	mfunc.erase(name);
+	for(auto i=enabled_actions.begin();i!=enabled_actions.end();++i)
+	if(*i==name){enabled_actions.erase(i);break;}
+	for(auto i=enabled_buttons.begin();i!=enabled_buttons.end();++i)
+	if(*i==name){enabled_buttons.erase(i);break;}
+	setupWidget();
+}
+
+void qmpMainWindow::setFuncState(std::string name,bool state)
+{mfunc[name].setChecked(state);}
+void qmpMainWindow::setFuncEnabled(std::string name,bool enable)
+{mfunc[name].setEnabled(enable);}
 
 bool qmpMainWindow::isDarkTheme()
 {
@@ -642,12 +609,7 @@ bool qmpMainWindow::isDarkTheme()
 	else return 2-qmpSettingsWindow::getSettingsIntf()->value("Behavior/IconTheme",0).toInt();
 }
 
-void qmpMainWindow::onfnA1()
-{
-	infow->show();
-}
-
-void qmpMainWindow::onfnA2()
+void qmpMainWindow::startRender()
 {
 	if(singleFS)player->fluidDeinitialize();
 #ifdef _WIN32
@@ -668,12 +630,7 @@ void qmpMainWindow::onfnA2()
 	renderTh=new std::thread(&CMidiPlayer::rendererThread,player);
 }
 
-void qmpMainWindow::onfnA3()
-{
-	player->playerPanic();
-}
-
-void qmpMainWindow::onfnA4()
+void qmpMainWindow::reloadSynth()
 {
 	player->fluidDeinitialize();player->fluidPreInitialize();playerSetup();player->fluidInitialize();
 	for(int i=settingsw->getSFWidget()->rowCount()-1;i>=0;--i){if(!((QCheckBox*)settingsw->getSFWidget()->cellWidget(i,0))->isChecked())continue;
@@ -681,9 +638,65 @@ void qmpMainWindow::onfnA4()
 	}
 }
 
+std::vector<std::string>& qmpMainWindow::getWidgets(int w)
+{return w?enabled_actions:enabled_buttons;}
+std::map<std::string,qmpFuncPrivate>& qmpMainWindow::getFunc()
+{return mfunc;}
+
+void qmpMainWindow::setupWidget()
+{
+	QList<QWidget*>w=ui->buttonwidget->findChildren<QWidget*>("",Qt::FindDirectChildrenOnly);
+	for(unsigned i=0;i<w.size();++i)
+	delete w[i];
+	QList<QAction*>a=ui->lbFileName->actions();
+	for(unsigned i=0;i<a.size();++i)
+	{
+		ui->lbFileName->removeAction(a[i]);
+		delete a[i];
+	}
+	for(unsigned i=0;i<enabled_buttons.size();++i)
+	{
+		QReflectivePushButton *pb=new QReflectivePushButton(
+			mfunc[enabled_buttons[i]].icon(),
+			tr(mfunc[enabled_buttons[i]].desc().c_str()),
+			enabled_buttons[i]
+		);
+		setButtonHeight(pb,32);
+		setButtonWidth(pb,32);
+		ui->buttonwidget->layout()->addWidget(pb);
+		mfunc[enabled_buttons[i]].setAssignedControl(pb);
+		connect(pb,SIGNAL(onClick(std::string)),this,SLOT(funcReflector(std::string)));
+	}
+	for(unsigned i=0;i<enabled_actions.size();++i)
+	{
+		QReflectiveAction *a=new QReflectiveAction(
+			mfunc[enabled_actions[i]].icon(),
+			tr(mfunc[enabled_actions[i]].desc().c_str()),
+			enabled_actions[i]
+		);
+		ui->lbFileName->addAction(a);
+		mfunc[enabled_actions[i]].setAssignedControl(a);
+		connect(a,SIGNAL(onClick(std::string)),this,SLOT(funcReflector(std::string)));
+	}
+	ui->buttonwidget->layout()->setAlignment(Qt::AlignLeft);
+}
+
 void qmpMainWindow::on_pbSettings_clicked()
 {
 	if(ui->pbSettings->isChecked())settingsw->show();else settingsw->close();
+}
+
+void qmpMainWindow::funcReflector(std::string reflt)
+{
+	if(mfunc[reflt].isCheckable())
+	{
+		mfunc[reflt].setChecked(!mfunc[reflt].isChecked());
+		if(mfunc[reflt].isChecked())
+			mfunc[reflt].i()->show();
+		else
+			mfunc[reflt].i()->close();
+	}
+	else mfunc[reflt].i()->show();
 }
 
 void qmpMainWindow::on_pushButton_clicked()
@@ -691,18 +704,19 @@ void qmpMainWindow::on_pushButton_clicked()
 	helpw->show();
 }
 
-void qmpMainWindow::on_pbVisualization_clicked()
+qmpFuncPrivate::qmpFuncPrivate(qmpFuncBaseIntf *i,std::string _desc,const char *icon,int iconlen,bool checkable,bool _isv):
+	_i(i),des(_desc),_checkable(checkable),visual(_isv)
 {
-	if(ui->pbVisualization->isChecked())
+	if(icon)
 	{
-		bool havevis=false;
-		for(int i=0;i<16;++i)if(VIs[i])VIs[i]->show(),havevis=true;
-		if(!havevis)
-		{
-			QMessageBox::information(this,tr("No visualization plugin enabled"),tr("No visualization plugin enabled. Please enable at least one in plugin settings."));
-			ui->pbVisualization->setChecked(false);
-		}
-	}
-	else
-	{for(int i=0;i<16;++i)if(VIs[i])VIs[i]->close();}
+		QImage img;
+		if(icon[0]==':'&&icon[1]=='/'||icon[0]=='q'&&icon[1]=='r'&&icon[2]=='c')
+			img=QImage(QString(icon));
+		else
+			img.loadFromData((uchar*)icon,iconlen);
+		QPixmap pixm;pixm.convertFromImage(img);
+		_icon=QIcon(pixm);
+	}else _icon=QIcon();
+	checked=false;
+	asgna=NULL;asgnb=NULL;
 }

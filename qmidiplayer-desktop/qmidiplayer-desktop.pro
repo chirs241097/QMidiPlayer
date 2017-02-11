@@ -27,7 +27,8 @@ SOURCES += main.cpp\
 	qmphelpwindow.cpp \
 	qdialskulpturestyle.cpp \
 	../core/qmpmidimapperrtmidi.cpp \
-	qmpplugin.cpp
+	qmpplugin.cpp \
+    qmpcustomizewindow.cpp
 
 HEADERS  += qmpmainwindow.hpp \
 	../core/qmpmidiplay.hpp \
@@ -42,7 +43,8 @@ HEADERS  += qmpmainwindow.hpp \
 	qdialskulpturestyle.hpp \
 	../core/qmpmidimappers.hpp \
 	../include/qmpcorepublic.hpp \
-	qmpplugin.hpp
+	qmpplugin.hpp \
+    qmpcustomizewindow.hpp
 
 FORMS    += qmpmainwindow.ui \
 	qmpplistwindow.ui \
@@ -52,7 +54,8 @@ FORMS    += qmpmainwindow.ui \
 	qmpefxwindow.ui \
 	qmpinfowindow.ui \
 	qmpsettingswindow.ui \
-	qmphelpwindow.ui
+	qmphelpwindow.ui \
+    qmpcustomizewindow.ui
 
 TRANSLATIONS += translations/qmp_zh_CN.ts
 DEFINES += BUILD_MACHINE=$${QMAKE_HOST.name}

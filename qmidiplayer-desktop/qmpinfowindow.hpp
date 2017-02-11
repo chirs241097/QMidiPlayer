@@ -6,6 +6,8 @@
 #include <QMouseEvent>
 #include <QApplication>
 #include <QClipboard>
+#include <QCloseEvent>
+#include "../include/qmpcorepublic.hpp"
 
 namespace Ui {
 	class qmpInfoWindow;
@@ -25,6 +27,17 @@ class QClickableLabel : public QLabel
 		}
 };
 
+class qmpInfoWindow;
+class qmpInfoFunc:public qmpFuncBaseIntf
+{
+	private:
+		qmpInfoWindow *p;
+	public:
+		qmpInfoFunc(qmpInfoWindow *par);
+		void show();
+		void close();
+};
+
 class qmpInfoWindow : public QDialog
 {
 	Q_OBJECT
@@ -32,11 +45,13 @@ class qmpInfoWindow : public QDialog
 	public:
 		explicit qmpInfoWindow(QWidget *parent = 0);
 		~qmpInfoWindow();
+		void closeEvent(QCloseEvent *e);
 	public slots:
 		void updateInfo();
 
 	private:
 		Ui::qmpInfoWindow *ui;
+		qmpInfoFunc *infof;
 };
 
 #endif // QMPINFOWINDOW_HPP

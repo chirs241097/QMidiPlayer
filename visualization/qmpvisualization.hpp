@@ -70,7 +70,7 @@ class qmpVisualization:public qmpPluginIntf
 		uint32_t ctc,ctk,fintk,elb;
 		double etps;
 		bool shouldclose,playing;
-		int hvif,herif,hehif,hfrf;
+		int herif,hehif,hfrf;
 		std::vector<std::pair<uint32_t,uint32_t>>tspool;
 		int traveld[16][128];bool notestatus[16][128],lastnotestatus[16][128];
 		int spectra[16][128],spectrar[16][128];

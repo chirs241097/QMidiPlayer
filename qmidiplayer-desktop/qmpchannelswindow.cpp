@@ -15,7 +15,6 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent) :
 	setMaximumWidth(w);setMaximumHeight(h);setMinimumWidth(w);setMinimumHeight(h);
 	pselectw=new qmpPresetSelector(this);
 	ceditw=new qmpChannelEditor(this);
-	connect(this,SIGNAL(dialogClosing()),parent,SLOT(dialogClosed()));
 	mapper=qmpMainWindow::getInstance()->getPlayer()->getMidiMapper();
 	cha=new QPixmap(":/img/ledon.png");chi=new QPixmap(":/img/ledoff.png");
 	cb=new qmpCWNoteOnCB();fused=callbacksc=cbcnt=0;
@@ -73,6 +72,18 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent) :
 	ui->twChannels->setColumnWidth(3,192*(logicalDpiX()/96.));
 	ui->twChannels->setColumnWidth(4,208*(logicalDpiX()/96.));
 	ui->twChannels->setColumnWidth(5,32*(logicalDpiX()/96.));
+	qmpMainWindow::getInstance()->registerFunctionality(
+		chnlf=new qmpChannelFunc(this),
+		std::string("Channel"),
+		tr("Channel").toStdString(),
+		getThemedIconc(":/img/channel.png"),
+		0,
+		true
+	);
+	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/ChnlW",QByteArray()).toByteArray().length())
+		restoreGeometry(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/ChnlW",QRect(-999,-999,-999,-999)).toByteArray());
+	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/ChnlWShown",0).toInt())
+	{show();qmpMainWindow::getInstance()->setFuncState("Channel",true);}
 }
 
 void qmpChannelsWindow::showEvent(QShowEvent *event)
@@ -81,6 +92,8 @@ void qmpChannelsWindow::showEvent(QShowEvent *event)
 	{
 		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/ChnlWShown",1);
 	}
+	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/ChnlW",QByteArray()).toByteArray().length())
+		restoreGeometry(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/ChnlW",QRect(-999,-999,-999,-999)).toByteArray());
 	event->accept();
 }
 
@@ -91,7 +104,7 @@ void qmpChannelsWindow::closeEvent(QCloseEvent *event)
 	{
 		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/ChnlWShown",0);
 	}
-	emit dialogClosing();
+	qmpMainWindow::getInstance()->setFuncState("Channel",false);
 	event->accept();
 }
 
@@ -99,8 +112,9 @@ void qmpChannelsWindow::moveEvent(QMoveEvent *event)
 {
 	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
 	{
-		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/ChnlW",event->pos());
+		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/ChnlW",saveGeometry());
 	}
+	event->accept();
 }
 
 void qmpChannelsWindow::resetAcitivity()
@@ -174,6 +188,8 @@ void qmpChannelsWindow::channelMSChanged()
 
 qmpChannelsWindow::~qmpChannelsWindow()
 {
+	qmpMainWindow::getInstance()->unregisterFunctionality("Channel");
+	delete chnlf;
 	delete chi;delete cha;
 	delete cb;delete ui;
 }
@@ -212,3 +228,10 @@ void qmpChannelsWindow::changeMidiMapping(int chid,int idx)
 {
 	qmpMainWindow::getInstance()->getPlayer()->setChannelOutput(chid,idx);
 }
+
+qmpChannelFunc::qmpChannelFunc(qmpChannelsWindow *par)
+{p=par;}
+void qmpChannelFunc::show()
+{p->show();}
+void qmpChannelFunc::close()
+{p->close();}

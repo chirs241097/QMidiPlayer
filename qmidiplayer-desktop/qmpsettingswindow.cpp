@@ -28,10 +28,12 @@ qmpSettingsWindow::qmpSettingsWindow(QWidget *parent) :
 	ui->pbRemove->setIcon(QIcon(getThemedIcon(":/img/remove.png")));
 	ui->pbDown->setIcon(QIcon(getThemedIcon(":/img/down.png")));
 	ui->pbUp->setIcon(QIcon(getThemedIcon(":/img/up.png")));
+	cw=new qmpCustomizeWindow(this);
 }
 
 qmpSettingsWindow::~qmpSettingsWindow()
 {
+	delete cw;
 	delete settings;settings=NULL;
 	delete ui;
 }
@@ -653,4 +655,14 @@ void qmpSettingsWindow::setOptionEnumInt(std::string key,int val)
 	settings->setValue(QString(key.c_str()),val);
 	if(customOptions[key].widget)
 	((QComboBox*)customOptions[key].widget)->setCurrentIndex(val);
+}
+
+void qmpSettingsWindow::on_pbCustomizeTb_clicked()
+{
+	cw->launch(0);
+}
+
+void qmpSettingsWindow::on_pbCustomizeAct_clicked()
+{
+	cw->launch(1);
 }

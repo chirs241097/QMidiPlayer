@@ -14,7 +14,6 @@ qmpEfxWindow::qmpEfxWindow(QWidget *parent) :
 		dials.at(i)->setStyle(styl);
 	int w=size().width(),h=size().height();w=w*(logicalDpiX()/96.);h=h*(logicalDpiY()/96.);
 	setMaximumWidth(w);setMaximumHeight(h);setMinimumWidth(w);setMinimumHeight(h);
-	connect(this,SIGNAL(dialogClosing()),parent,SLOT(dialogClosed()));
 	//stub. read these from settings after the setting module is implemented
 	QSettings *settings=qmpSettingsWindow::getSettingsIntf();
 	ui->cbEnabledC->setChecked(settings->value("Effects/ChorusEnabled",1).toInt());
@@ -29,10 +28,24 @@ qmpEfxWindow::qmpEfxWindow(QWidget *parent) :
 	cr=settings->value("Effects/ChorusRate",FLUID_CHORUS_DEFAULT_SPEED).toDouble();
 	cd=settings->value("Effects/ChorusDepth",FLUID_CHORUS_DEFAULT_DEPTH).toDouble();
 	ct=settings->value("Effects/ChorusType",FLUID_CHORUS_DEFAULT_TYPE).toInt();
+	qmpMainWindow::getInstance()->registerFunctionality(
+		efxf=new qmpEfxFunc(this),
+		std::string("Effects"),
+		tr("Effects").toStdString(),
+		getThemedIconc(":/img/effects.png"),
+		0,
+		true
+	);
+	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/EfxW",QByteArray()).toByteArray().length())
+		restoreGeometry(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/EfxW",QRect(-999,-999,-999,-999)).toByteArray());
+	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/EfxWShown",0).toInt())
+	{show();qmpMainWindow::getInstance()->setFuncState("Effects",true);}
 }
 
 qmpEfxWindow::~qmpEfxWindow()
 {
+	qmpMainWindow::getInstance()->unregisterFunctionality("Effects");
+	delete efxf;
 	delete styl;
 	delete ui;
 }
@@ -44,7 +57,7 @@ void qmpEfxWindow::closeEvent(QCloseEvent *event)
 	{
 		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/EfxWShown",0);
 	}
-	emit dialogClosing();
+	qmpMainWindow::getInstance()->setFuncState("Effects",false);
 	event->accept();
 }
 
@@ -69,6 +82,8 @@ void qmpEfxWindow::showEvent(QShowEvent *event)
 	if(ct==FLUID_CHORUS_MOD_SINE)ui->rbSine->setChecked(true),ui->rbTriangle->setChecked(false);
 	if(ct==FLUID_CHORUS_MOD_TRIANGLE)ui->rbSine->setChecked(false),ui->rbTriangle->setChecked(true);
 	initialized=true;
+	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/EfxW",QByteArray()).toByteArray().length())
+		restoreGeometry(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/EfxW",QRect(-999,-999,-999,-999)).toByteArray());
 	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
 	{
 		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/EfxWShown",1);
@@ -80,8 +95,9 @@ void qmpEfxWindow::moveEvent(QMoveEvent *event)
 {
 	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
 	{
-		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/EfxW",event->pos());
+		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/EfxW",saveGeometry());
 	}
+	event->accept();
 }
 
 void qmpEfxWindow::sendEfxChange()
@@ -198,3 +214,10 @@ void qmpEfxWindow::on_rbSine_toggled()
 
 void qmpEfxWindow::on_rbTriangle_toggled()
 {sendEfxChange();}
+
+qmpEfxFunc::qmpEfxFunc(qmpEfxWindow *par)
+{p=par;}
+void qmpEfxFunc::show()
+{p->show();}
+void qmpEfxFunc::close()
+{p->close();}
