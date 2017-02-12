@@ -1,7 +1,0 @@
-#!/bin/bash
-for i in *.svg
-do
-inkscape $i --export-png=`echo "$i" | sed 's/.\{4\}$//'`.png --export-area-page --export-dpi=90
-done
-i=qmidiplyr.svg
-inkscape $i --export-png=`echo "$i" | sed 's/.\{4\}$//'`.png --export-area-page --export-width=64

@@ -66,7 +66,7 @@
        </property>
        <property name="icon">
         <iconset resource="resources.qrc">
-         <normaloff>:/img/save.png</normaloff>:/img/save.png</iconset>
+         <normaloff>:/img/save.svg</normaloff>:/img/save.svg</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -98,7 +98,7 @@
        </property>
        <property name="icon">
         <iconset resource="resources.qrc">
-         <normaloff>:/img/add.png</normaloff>:/img/add.png</iconset>
+         <normaloff>:/img/add.svg</normaloff>:/img/add.svg</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -130,7 +130,7 @@
        </property>
        <property name="icon">
         <iconset resource="resources.qrc">
-         <normaloff>:/img/load.png</normaloff>:/img/load.png</iconset>
+         <normaloff>:/img/load.svg</normaloff>:/img/load.svg</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -162,7 +162,7 @@
        </property>
        <property name="icon">
         <iconset resource="resources.qrc">
-         <normaloff>:/img/repeat-non.png</normaloff>:/img/repeat-non.png</iconset>
+         <normaloff>:/img/repeat-non.svg</normaloff>:/img/repeat-non.svg</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -194,7 +194,7 @@
        </property>
        <property name="icon">
         <iconset resource="resources.qrc">
-         <normaloff>:/img/remove.png</normaloff>:/img/remove.png</iconset>
+         <normaloff>:/img/remove.svg</normaloff>:/img/remove.svg</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -226,7 +226,7 @@
        </property>
        <property name="icon">
         <iconset resource="resources.qrc">
-         <normaloff>:/img/addfolder.png</normaloff>:/img/addfolder.png</iconset>
+         <normaloff>:/img/addfolder.svg</normaloff>:/img/addfolder.svg</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -258,7 +258,7 @@
        </property>
        <property name="icon">
         <iconset resource="resources.qrc">
-         <normaloff>:/img/shuffle-off.png</normaloff>:/img/shuffle-off.png</iconset>
+         <normaloff>:/img/shuffle-off.svg</normaloff>:/img/shuffle-off.svg</iconset>
        </property>
        <property name="iconSize">
         <size>
@@ -290,7 +290,7 @@
        </property>
        <property name="icon">
         <iconset resource="resources.qrc">
-         <normaloff>:/img/clear.png</normaloff>:/img/clear.png</iconset>
+         <normaloff>:/img/clear.svg</normaloff>:/img/clear.svg</iconset>
        </property>
        <property name="iconSize">
         <size>

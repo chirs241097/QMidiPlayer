@@ -166,6 +166,7 @@ class qmpMainWindow:public QMainWindow
 		void on_pbSettings_clicked();
 		void funcReflector(std::string reflt);
 		void on_pushButton_clicked();
+		void on_pbAdd_clicked();
 
 	public slots:
 		void dialogClosed();

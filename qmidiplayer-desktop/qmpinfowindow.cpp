@@ -19,7 +19,7 @@ qmpInfoWindow::qmpInfoWindow(QWidget *parent) :
 		infof=new qmpInfoFunc(this),
 		std::string("FileInfo"),
 		tr("File Information").toStdString(),
-		NULL,
+		getThemedIconc(":/img/info.svg"),
 		0,
 		true
 	);

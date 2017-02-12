@@ -179,6 +179,8 @@ bool qmpPluginAPI::isDarkTheme(){return qmw?qmw->isDarkTheme():false;}
 void qmpPluginAPI::discardCurrentEvent(){if(qmw&&qmw->getPlayer())qmw->getPlayer()->discardCurrentEvent();}
 void qmpPluginAPI::commitEventChange(SEventCallBackData d){if(qmw&&qmw->getPlayer())qmw->getPlayer()->commitEventChange(d);}
 void qmpPluginAPI::callEventReaderCB(SEventCallBackData d){if(qmw&&qmw->getPlayer())qmw->getPlayer()->callEventReaderCB(d);}
+void qmpPluginAPI::setFuncState(std::string name,bool state){if(qmw)qmw->setFuncState(name,state);}
+void qmpPluginAPI::setFuncEnabled(std::string name,bool enable){if(qmw)qmw->setFuncEnabled(name,enable);}
 
 int qmpPluginAPI::registerEventHandlerIntf(IMidiCallBack *cb,void *userdata)
 {return qmw->getPlayer()->setEventHandlerCB(cb,userdata);}
@@ -192,6 +194,10 @@ void qmpPluginAPI::registerVisualizationIntf(qmpVisualizationIntf* intf,std::str
 {qmw->registerVisualizationIntf(intf,name,desc,icon,iconlen);}
 void qmpPluginAPI::unregisterVisualizationIntf(std::string name)
 {qmw->unregisterVisualizationIntf(name);}
+void qmpPluginAPI::registerFunctionality(qmpFuncBaseIntf *i,std::string name,std::string desc,const char *icon,int iconlen,bool checkable)
+{qmw->registerFunctionality(i,name,desc,icon,iconlen,checkable);}
+void qmpPluginAPI::unregisterFunctionality(std::string name)
+{qmw->unregisterFunctionality(name);}
 int qmpPluginAPI::registerFileReadFinishedHandlerIntf(IMidiCallBack* cb,void* userdata)
 {return qmw->getPlayer()->setFileReadFinishedCB(cb,userdata);}
 void qmpPluginAPI::unregisterFileReadFinishedHandlerIntf(int intfhandle)

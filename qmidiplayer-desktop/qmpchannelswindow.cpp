@@ -16,7 +16,7 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent) :
 	pselectw=new qmpPresetSelector(this);
 	ceditw=new qmpChannelEditor(this);
 	mapper=qmpMainWindow::getInstance()->getPlayer()->getMidiMapper();
-	cha=new QPixmap(":/img/ledon.png");chi=new QPixmap(":/img/ledoff.png");
+	cha=new QIcon(":/img/ledon.svg");chi=new QIcon(":/img/ledoff.svg");
 	cb=new qmpCWNoteOnCB();fused=callbacksc=cbcnt=0;
 	qmpMainWindow::getInstance()->getPlayer()->setEventHandlerCB(cb,NULL);
 	connect(cb,SIGNAL(onNoteOn()),this,SLOT(updateChannelActivity()));
@@ -76,7 +76,7 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent) :
 		chnlf=new qmpChannelFunc(this),
 		std::string("Channel"),
 		tr("Channel").toStdString(),
-		getThemedIconc(":/img/channel.png"),
+		getThemedIconc(":/img/channel.svg"),
 		0,
 		true
 	);

@@ -132,7 +132,11 @@ class qmpPluginAPI
 		virtual void commitEventChange(SEventCallBackData d);
 		//This function should be called from a file reader when it has read a new event
 		virtual void callEventReaderCB(SEventCallBackData d);
+		virtual void setFuncState(std::string name,bool state);
+		virtual void setFuncEnabled(std::string name,bool enable);
 
+		virtual void registerFunctionality(qmpFuncBaseIntf* i,std::string name,std::string desc,const char* icon,int iconlen,bool checkable);
+		virtual void unregisterFunctionality(std::string name);
 		virtual void registerVisualizationIntf(qmpVisualizationIntf* intf,std::string name,std::string desc,const char* icon,int iconlen);
 		virtual void unregisterVisualizationIntf(std::string name);
 		virtual int registerEventReaderIntf(IMidiCallBack* cb,void* userdata);

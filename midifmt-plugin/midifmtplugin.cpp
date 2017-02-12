@@ -68,7 +68,7 @@ CMidiFile* CMidiStreamReader::readFile(const char *fn)
 		if(!RIFFHeaderReader())throw std::runtime_error("Wrong RIFF header");
 		if(!midsBodyReader())throw std::runtime_error("MIDS data error");
 		std::sort(ret->eventList.begin(),ret->eventList.end());
-	}catch(std::runtime_error& e){fprintf(stderr,"MIDI Format plugin: E: %s is not a supported file. Cause: %s.\n",fn,e.what());ret->valid=0;fclose(f);f=NULL;}
+	}catch(std::runtime_error& e){fprintf(stderr,"MIDI Format plugin: E: %s is not a supported file. Cause: %s.\n",fn,e.what());ret->valid=0;if(f)fclose(f);f=NULL;}
 	return ret;
 }
 void CMidiStreamReader::discardCurrentEvent()

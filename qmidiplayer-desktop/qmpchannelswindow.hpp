@@ -107,7 +107,7 @@ class qmpChannelsWindow:public QDialog
 		qmpPresetSelector *pselectw;
 		qmpChannelEditor *ceditw;
 		qmpMidiMapperRtMidi *mapper;
-		QPixmap *cha,*chi;
+		QIcon *cha,*chi;
 		qmpCWNoteOnCB *cb;
 		qmpChannelFunc *chnlf;
 		//callback fuse... (avoid black midi blocking the main thread)

@@ -32,7 +32,7 @@ qmpEfxWindow::qmpEfxWindow(QWidget *parent) :
 		efxf=new qmpEfxFunc(this),
 		std::string("Effects"),
 		tr("Effects").toStdString(),
-		getThemedIconc(":/img/effects.png"),
+		getThemedIconc(":/img/effects.svg"),
 		0,
 		true
 	);

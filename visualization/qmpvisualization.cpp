@@ -754,7 +754,7 @@ void qmpVisualization::init()
 	rendererTh=NULL;playing=false;
 	memset(spectra,0,sizeof(spectra));
 	memset(spectrar,0,sizeof(spectrar));
-	api->registerVisualizationIntf(vi,"Visualization","Visualization",api->isDarkTheme()?":/img/visualization_i.png":":/img/visualization.png",0);
+	api->registerVisualizationIntf(vi,"Visualization","Visualization",api->isDarkTheme()?":/img/visualization_i.svg":":/img/visualization.svg",0);
 	herif=api->registerEventReaderIntf(cb,NULL);
 	hehif=api->registerEventHandlerIntf(hcb,NULL);
 	hfrf=api->registerFileReadFinishedHandlerIntf(frcb,NULL);

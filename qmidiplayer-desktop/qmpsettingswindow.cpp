@@ -8,7 +8,7 @@
 QSettings* qmpSettingsWindow::settings=NULL;
 QComboBox* qmpSettingsWindow::outwidget=NULL;
 
-void qmpFluidForEachOpt(void* data,char* /*name*/,char* option)
+void qmpFluidForEachOpt(void* data,char*,char* option)
 {
 	QComboBox *pcb=(QComboBox*)data;
 	pcb->addItem(option);
@@ -24,10 +24,10 @@ qmpSettingsWindow::qmpSettingsWindow(QWidget *parent) :
 	connect(this,SIGNAL(dialogClosing()),parent,SLOT(dialogClosed()));
 	settings=new QSettings(QDir::homePath()+QString("/.config/qmprc"),QSettings::IniFormat);
 	settingsInit();outwidget=ui->cbOutputDevice;
-	ui->pbAdd->setIcon(QIcon(getThemedIcon(":/img/add.png")));
-	ui->pbRemove->setIcon(QIcon(getThemedIcon(":/img/remove.png")));
-	ui->pbDown->setIcon(QIcon(getThemedIcon(":/img/down.png")));
-	ui->pbUp->setIcon(QIcon(getThemedIcon(":/img/up.png")));
+	ui->pbAdd->setIcon(QIcon(getThemedIcon(":/img/add.svg")));
+	ui->pbRemove->setIcon(QIcon(getThemedIcon(":/img/remove.svg")));
+	ui->pbDown->setIcon(QIcon(getThemedIcon(":/img/down.svg")));
+	ui->pbUp->setIcon(QIcon(getThemedIcon(":/img/up.svg")));
 	cw=new qmpCustomizeWindow(this);
 }
 
@@ -52,6 +52,7 @@ QComboBox* qmpSettingsWindow::getDefaultOutWidget(){return outwidget;}
 void qmpSettingsWindow::on_buttonBox_accepted()
 {
 	settingsUpdate();
+	qmpMainWindow::getInstance()->setupWidget();
 	emit dialogClosing();
 }
 
@@ -66,7 +67,6 @@ void qmpSettingsWindow::settingsInit()
 	fluid_settings_t *fsettings=new_fluid_settings();
 
 	settings->setValue("Midi/DefaultOutput",settings->value("Midi/DefaultOutput","Internal FluidSynth"));
-	//this item is still a stub...
 
 	settings->setValue("Midi/DisableMapping",settings->value("Midi/DisableMapping",0));
 	ui->cbDisableMapping->setChecked(settings->value("Midi/DisableMapping",0).toInt());
@@ -187,6 +187,9 @@ void qmpSettingsWindow::settingsInit()
 	settings->setValue("Behavior/SingleInstance",settings->value("Behavior/SingleInstance",0));
 	ui->cbPersistentfs->setChecked(settings->value("Behavior/SingleInstance",0).toInt());
 
+	settings->setValue("Behavior/ShowButtonLabel",settings->value("Behavior/ShowButtonLabel",0));
+	ui->cbShowLabel->setChecked(settings->value("Behavior/ShowButtonLabel",0).toInt());
+
 	settings->setValue("Behavior/IconTheme",settings->value("Behavior/IconTheme",0));
 	ui->cbIconTheme->setCurrentIndex(settings->value("Behavior/IconTheme",0).toInt());
 
@@ -239,6 +242,8 @@ void qmpSettingsWindow::settingsUpdate()
 	settings->setValue("Behavior/DialogStatus",ui->cbDialogStatus->isChecked()?1:0);
 
 	settings->setValue("Behavior/SingleInstance",ui->cbPersistentfs->isChecked()?1:0);
+
+	settings->setValue("Behavior/ShowButtonLabel",ui->cbShowLabel->isChecked()?1:0);
 
 	settings->setValue("Behavior/IconTheme",ui->cbIconTheme->currentIndex());
 

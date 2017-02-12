@@ -23,7 +23,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>3</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -467,7 +467,7 @@
            </property>
            <property name="icon">
             <iconset resource="resources.qrc">
-             <normaloff>:/img/add.png</normaloff>:/img/add.png</iconset>
+             <normaloff>:/img/add.svg</normaloff>:/img/add.svg</iconset>
            </property>
            <property name="iconSize">
             <size>
@@ -484,7 +484,7 @@
            </property>
            <property name="icon">
             <iconset resource="resources.qrc">
-             <normaloff>:/img/remove.png</normaloff>:/img/remove.png</iconset>
+             <normaloff>:/img/remove.svg</normaloff>:/img/remove.svg</iconset>
            </property>
            <property name="iconSize">
             <size>
@@ -501,7 +501,7 @@
            </property>
            <property name="icon">
             <iconset resource="resources.qrc">
-             <normaloff>:/img/up.png</normaloff>:/img/up.png</iconset>
+             <normaloff>:/img/up.svg</normaloff>:/img/up.svg</iconset>
            </property>
            <property name="iconSize">
             <size>
@@ -518,7 +518,7 @@
            </property>
            <property name="icon">
             <iconset resource="resources.qrc">
-             <normaloff>:/img/down.png</normaloff>:/img/down.png</iconset>
+             <normaloff>:/img/down.svg</normaloff>:/img/down.svg</iconset>
            </property>
            <property name="iconSize">
             <size>
@@ -540,7 +540,7 @@
        <item>
         <widget class="QCheckBox" name="cbRestorePlaylist">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
@@ -553,7 +553,7 @@
        <item>
         <widget class="QCheckBox" name="cbLoadFolder">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
@@ -566,7 +566,7 @@
        <item>
         <widget class="QCheckBox" name="cbDialogStatus">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
@@ -579,7 +579,7 @@
        <item>
         <widget class="QCheckBox" name="cbSaveEfxParam">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
@@ -592,13 +592,26 @@
        <item>
         <widget class="QCheckBox" name="cbPersistentfs">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
          <property name="text">
           <string>Persistent fluidsynth instance</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cbShowLabel">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Show label beside icon in toolbar buttons</string>
          </property>
         </widget>
        </item>

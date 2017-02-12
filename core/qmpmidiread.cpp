@@ -241,7 +241,7 @@ CMidiFile* CSMFReader::readFile(const char* fn)
 		fclose(f);f=NULL;
 		std::sort(ret->eventList.begin(),ret->eventList.end());
 	}
-	catch(std::runtime_error&){fprintf(stderr,"E: %s is not a supported file.\n",fn);ret->valid=0;fclose(f);f=NULL;}
+	catch(std::runtime_error&){fprintf(stderr,"E: %s is not a supported file.\n",fn);ret->valid=0;if(f)fclose(f);f=NULL;}
 	return ret;
 }
 CSMFReader::~CSMFReader()
