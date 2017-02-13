@@ -121,7 +121,7 @@ void qmpMainWindow::init()
 	ui->pbSettings->setIcon(QIcon(getThemedIcon(":/img/settings.svg")));
 	ui->pbAdd->setIcon(QIcon(getThemedIcon(":/img/open.svg")));
 	if(havemidi)on_pbPlayPause_clicked();
-	setupWidget();
+	setupWidget();settingsw->verifySF();
 }
 
 int qmpMainWindow::pharseArgs()
@@ -437,8 +437,8 @@ void qmpMainWindow::on_hsTimer_sliderReleased()
 	if(playing)
 	{
 		if(ui->hsTimer->value()==100){on_pbNext_clicked();return;}
-		player->setTCeptr(player->getStamp(ui->hsTimer->value()),ui->hsTimer->value());
 		player->playerPanic();
+		player->setTCeptr(player->getStamp(ui->hsTimer->value()),ui->hsTimer->value());
 		offset=ui->hsTimer->value()/100.*player->getFtime();
 		st=std::chrono::steady_clock::now();
 	}
@@ -461,8 +461,8 @@ void qmpMainWindow::playerSeek(uint32_t percentage)
 	if(playing)
 	{
 		if(percentage==100){on_pbNext_clicked();return;}
-		player->setTCeptr(player->getStamp(percentage),percentage);
 		player->playerPanic();ui->hsTimer->setValue(percentage);
+		player->setTCeptr(player->getStamp(percentage),percentage);
 		offset=percentage/100.*player->getFtime();
 		st=std::chrono::steady_clock::now();
 	}
@@ -630,6 +630,7 @@ void qmpMainWindow::setupWidget()
 	}
 	for(unsigned i=0;i<enabled_buttons.size();++i)
 	{
+		if(mfunc.find(enabled_buttons[i])==mfunc.end())continue;
 		QReflectivePushButton *pb=new QReflectivePushButton(
 			mfunc[enabled_buttons[i]].icon(),
 			tr(mfunc[enabled_buttons[i]].desc().c_str()),
@@ -649,6 +650,7 @@ void qmpMainWindow::setupWidget()
 	}
 	for(unsigned i=0;i<enabled_actions.size();++i)
 	{
+		if(mfunc.find(enabled_actions[i])==mfunc.end())continue;
 		QReflectiveAction *a=new QReflectiveAction(
 			mfunc[enabled_actions[i]].icon(),
 			tr(mfunc[enabled_actions[i]].desc().c_str()),

@@ -98,9 +98,9 @@ void CMidiPlayer::processEvent(const SEvent *e)
 		case 0xE0://PW
 			pbv[e->type&0x0F]=(e->p1|(e->p2<<7))&0x3FFF;;
 			if(mappedoutput[e->type&0x0F])
-				mapper->pitchBend(mappedoutput[e->type&0x0F]-1,e->type&0x0F,(e->p1|(e->p2<<7))&0x3FFF);
+				mapper->pitchBend(mappedoutput[e->type&0x0F]-1,e->type&0x0F,pbv[e->type&0x0F]);
 			else
-				fluid_synth_pitch_bend(synth,e->type&0x0F,(e->p1|(e->p2<<7))&0x3FFF);
+				fluid_synth_pitch_bend(synth,e->type&0x0F,pbv[e->type&0x0F]);
 		break;
 		case 0xF0://Meta/SysEx
 			if((e->type&0x0F)==0x0F)
@@ -249,8 +249,8 @@ void CMidiPlayer::fileTimer2Pass()
 		ccc[i][11]=127;ccc[i][71]=64;ccc[i][72]=64;
 		ccc[i][73]=64;ccc[i][74]=64;ccc[i][75]=64;
 		ccc[i][76]=64;ccc[i][77]=64;ccc[i][78]=64;
-		ccc[0][131]=dpt;ccc[0][132]=0x04021808;
-		ccc[0][133]=0;ccc[0][134]=2;
+		ccc[i][131]=dpt;ccc[i][132]=0x04021808;
+		ccc[i][133]=0;ccc[i][134]=2;
 	}if(midiReaders->getStandard()!=4)ccc[9][0]=128;
 	for(int i=0;i<16;++i)for(int j=0;j<135;++j)
 		ccstamps[0][i][j]=ccc[i][j];
@@ -317,9 +317,9 @@ void CMidiPlayer::playerPanic(bool reset)
 				fluid_synth_cc(synth,i,10,64);
 				fluid_synth_cc(synth,i,11,127);
 				fluid_synth_cc(synth,i,32,0);
+				fluid_synth_pitch_wheel_sens(synth,i,2);
 			}
 			fluid_synth_cc(synth,i,64,0);
-			fluid_synth_pitch_wheel_sens(synth,i,2);
 			fluid_synth_pitch_bend(synth,i,8192);
 			//all sounds off causes the minus polyphone bug...
 			fluid_synth_all_notes_off(synth,i);
@@ -405,6 +405,8 @@ void CMidiPlayer::setTCeptr(uint32_t ep,uint32_t st)
 		for(int j=0;j<120;++j)fluid_synth_cc(synth,i,j,ccstamps[st][i][j]);
 		fluid_synth_program_change(synth,i,ccstamps[st][i][128]);
 		//fluid_synth_pitch_bend(synth,i,ccstamps[st][i][130]);
+		fluid_synth_pitch_wheel_sens(synth,i,ccstamps[st][i][134]);
+		pbr[i]=ccstamps[st][i][134];
 		dpt=ccstamps[st][0][131];ctempo=dpt*divs/1000;
 		ctsn=ccstamps[st][0][132]>>24;ctsd=1<<((ccstamps[st][0][132]>>16)&0xFF);
 		cks=ccstamps[st][0][133];

@@ -156,17 +156,18 @@ void qmpVisualization::showThread()
 	if(!api->getOptionString("Visualization/font2").length()||!font.loadTTF(api->getOptionString("Visualization/font2").c_str(),fontsize))
 	if(!font.loadTTF("/usr/share/fonts/truetype/freefont/FreeMono.ttf",fontsize))
 	if(!font.loadTTF("/usr/share/fonts/gnu-free/FreeMono.otf",fontsize))
-	if(!font.loadTTF("C:/Windows/Fonts/cour.ttf",fontsize))
+	if(!font.loadTTF((std::string(getenv("windir"))+"/Fonts/cour.ttf").c_str(),fontsize))
 	printf("W: Font load failed.\n");
-	if(!api->getOptionString("Visualization/font2").length()||!font.loadTTF(api->getOptionString("Visualization/font2").c_str(),180))
+	if(!api->getOptionString("Visualization/font2").length()||!fonthdpi.loadTTF(api->getOptionString("Visualization/font2").c_str(),180))
 	if(!fonthdpi.loadTTF("/usr/share/fonts/truetype/freefont/FreeMono.ttf",180))
 	if(!fonthdpi.loadTTF("/usr/share/fonts/gnu-free/FreeMono.otf",180))
-	if(!fonthdpi.loadTTF("C:/Windows/Fonts/cour.ttf",180))
+	if(!fonthdpi.loadTTF((std::string(getenv("windir"))+"/Fonts/cour.ttf").c_str(),180))
 	printf("W: Font load failed.\n");
-	if(!api->getOptionString("Visualization/font1").length()||!font.loadTTF(api->getOptionString("Visualization/font1").c_str(),fontsize))
+	if(!api->getOptionString("Visualization/font1").length()||!font2.loadTTF(api->getOptionString("Visualization/font1").c_str(),fontsize))
 	if(!font2.loadTTF("/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",fontsize))
 	if(!font2.loadTTF("/usr/share/fonts/wenquanyi/wqy-microhei/wqy-microhei.ttc",fontsize))
-	if(!font2.loadTTF("C:/Windows/Fonts/segoeui.ttf",fontsize))
+	if(!font2.loadTTF((std::string(getenv("windir"))+"/Fonts/msyh.ttc").c_str(),fontsize))
+	if(!font2.loadTTF((std::string(getenv("windir"))+"/Fonts/segoeui.ttf").c_str(),fontsize))
 	printf("W: Font load failed.\n");
 	if(horizontal)
 	{
@@ -778,8 +779,8 @@ void qmpVisualization::init()
 	std::vector<std::string> tv;tv.push_back("Bottom left");tv.push_back("Bottom right");tv.push_back("Top left");tv.push_back("Top right");tv.push_back("Hidden");
 	api->registerOptionEnumInt("Visualization-Video","OSD Position","Visualization/osdpos",tv,0);
 	api->registerOptionInt("Visualization-Video","Font Size","Visualization/fontsize",6,180,16);
-	api->registerOptionString("Visualization-Video","Custom Sans Font","Visualization/font1","");
-	api->registerOptionString("Visualization-Video","Custom Monospace Font","Visualization/font2","");
+	api->registerOptionString("Visualization-Video","Custom Sans Font","Visualization/font1","",true);
+	api->registerOptionString("Visualization-Video","Custom Monospace Font","Visualization/font2","",true);
 	api->registerOptionInt("Visualization-Appearance","View distance","Visualization/viewdist",20,1000,100);
 	api->registerOptionInt("Visualization-Appearance","Note stretch","Visualization/notestretch",20,500,100);
 	api->registerOptionInt("Visualization-Appearance","Minimum note length","Visualization/minnotelen",20,500,100);

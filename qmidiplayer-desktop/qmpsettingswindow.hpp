@@ -25,8 +25,25 @@ struct qmpCustomOption
 	QVariant defaultval,minv,maxv;
 };
 
+class QLineEdit;
+class QToolButton;
+class QFileEdit:public QWidget
+{
+	Q_OBJECT
+	private:
+		QLineEdit *le;
+		QToolButton *tb;
+	private slots:
+		void chooseFile();
+	public:
+		QFileEdit(QWidget* par=NULL);
+		QString text();
+		void setText(const QString& s);
+};
+
 class QHexSpinBox:public QSpinBox
 {
+	Q_OBJECT
 	public:
 		QHexSpinBox(QWidget *parent=0):QSpinBox(parent)
 		{
@@ -83,12 +100,13 @@ class qmpSettingsWindow:public QDialog
 		void registerOptionDouble(std::string tab,std::string desc,std::string key,double min,double max,double defaultval);
 		double getOptionDouble(std::string key);
 		void setOptionDouble(std::string key,double val);
-		void registerOptionString(std::string tab,std::string desc,std::string key,std::string defaultval);
+		void registerOptionString(std::string tab,std::string desc,std::string key,std::string defaultval,bool ispath);
 		std::string getOptionString(std::string key);
 		void setOptionString(std::string key,std::string val);
 		void registerOptionEnumInt(std::string tab,std::string desc,std::string key,std::vector<std::string> options,int defaultval);
 		int getOptionEnumInt(std::string key);
 		void setOptionEnumInt(std::string key,int val);
+		void verifySF();
 	signals:
 		void dialogClosing();
 

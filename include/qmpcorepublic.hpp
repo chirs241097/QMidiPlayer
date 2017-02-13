@@ -162,7 +162,7 @@ class qmpPluginAPI
 		virtual void registerOptionDouble(std::string tab,std::string desc,std::string key,double min,double max,double defaultval);
 		virtual double getOptionDouble(std::string key);
 		virtual void setOptionDouble(std::string key,double val);
-		virtual void registerOptionString(std::string tab,std::string desc,std::string key,std::string defaultval);
+		virtual void registerOptionString(std::string tab,std::string desc,std::string key,std::string defaultval,bool ispath=false);
 		virtual std::string getOptionString(std::string key);
 		virtual void setOptionString(std::string key,std::string val);
 		virtual void registerOptionEnumInt(std::string tab,std::string desc,std::string key,std::vector<std::string> options,int defaultval);

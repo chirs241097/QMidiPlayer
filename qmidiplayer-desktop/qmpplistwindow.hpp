@@ -35,7 +35,6 @@ class qmpPlistWindow : public QDialog
 		~qmpPlistWindow();
 		void showEvent(QShowEvent *event);
 		void closeEvent(QCloseEvent *event);
-		void moveEvent(QMoveEvent *event);
 		void dropEvent(QDropEvent *event);
 		void dragEnterEvent(QDragEnterEvent *event);
 		int getRepeat();

@@ -223,8 +223,8 @@ void qmpPluginAPI::registerOptionDouble(std::string tab,std::string desc,std::st
 {qsw->registerOptionDouble(tab,desc,key,min,max,defaultval);}
 double qmpPluginAPI::getOptionDouble(std::string key){return qsw->getOptionDouble(key);}
 void qmpPluginAPI::setOptionDouble(std::string key,double val){qsw->setOptionDouble(key,val);}
-void qmpPluginAPI::registerOptionString(std::string tab,std::string desc,std::string key,std::string defaultval)
-{qsw->registerOptionString(tab,desc,key,defaultval);}
+void qmpPluginAPI::registerOptionString(std::string tab,std::string desc,std::string key,std::string defaultval,bool ispath)
+{qsw->registerOptionString(tab,desc,key,defaultval,ispath);}
 std::string qmpPluginAPI::getOptionString(std::string key){return qsw->getOptionString(key);}
 void qmpPluginAPI::setOptionString(std::string key,std::string val){return qsw->setOptionString(key,val);}
 void qmpPluginAPI::registerOptionEnumInt(std::string tab,std::string desc,std::string key,std::vector<std::string> options,int defaultval)

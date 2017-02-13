@@ -76,8 +76,8 @@ qmpPlistWindow::qmpPlistWindow(QWidget *parent) :
 		0,
 		true
 	);
-	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/PListW",QByteArray()).toByteArray().length())
-		restoreGeometry(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/PListW",QRect(-999,-999,-999,-999)).toByteArray());
+	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/PListW",QRect(-999,-999,999,999)).toRect()!=QRect(-999,-999,999,999))
+		setGeometry(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/PListW",QRect(-999,-999,999,999)).toRect());
 	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/PListWShown",0).toInt())
 	{show();qmpMainWindow::getInstance()->setFuncState("Playlist",true);}
 }
@@ -95,14 +95,19 @@ void qmpPlistWindow::showEvent(QShowEvent *event)
 	{
 		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/PListWShown",1);
 	}
-	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/PListW",QByteArray()).toByteArray().length())
-		restoreGeometry(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/PListW",QRect(-999,-999,-999,-999)).toByteArray());
+	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/PListW",QRect(-999,-999,999,999)).toRect()!=QRect(-999,-999,999,999))
+		setGeometry(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/PListW",QRect(-999,-999,999,999)).toRect());
 	event->accept();
 }
 
 void qmpPlistWindow::closeEvent(QCloseEvent *event)
 {
+	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
+	{
+		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/PListW",geometry());
+	}
 	setVisible(false);
+	if(!qmpMainWindow::getInstance()->isFinalizing())
 	while(ui->lwFiles->count()>1)delete ui->lwFiles->item(0);
 	if(!qmpMainWindow::getInstance()->isFinalizing()&&qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
 	{
@@ -121,15 +126,6 @@ void qmpPlistWindow::closeEvent(QCloseEvent *event)
 		delete plist;
 	}
 	qmpMainWindow::getInstance()->setFuncState("Playlist",false);
-	event->accept();
-}
-
-void qmpPlistWindow::moveEvent(QMoveEvent *event)
-{
-	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
-	{
-		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/PListW",saveGeometry());
-	}
 	event->accept();
 }
 

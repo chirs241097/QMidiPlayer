@@ -268,7 +268,10 @@
        </sizepolicy>
       </property>
       <property name="styleSheet">
-       <string notr="true">QSlider::handle{border:none;background:none;color:none;}</string>
+       <string notr="true">QSlider::handle{border:none;background:none;color:none;}
+QSlider::sub-page{background-color:#3daee9;color:none;}
+QSlider::groove{background-color:#cdcecf;color:none;}
+QSlider{height:10px;}</string>
       </property>
       <property name="maximum">
        <number>100</number>
@@ -285,6 +288,9 @@
      <layout class="QHBoxLayout" name="horizontalLayout_3">
       <property name="spacing">
        <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>6</number>
       </property>
       <item>
        <widget class="QPushButton" name="pbPlayPause">

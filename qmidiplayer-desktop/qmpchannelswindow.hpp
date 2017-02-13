@@ -90,7 +90,6 @@ class qmpChannelsWindow:public QDialog
 		~qmpChannelsWindow();
 		void showEvent(QShowEvent *event);
 		void closeEvent(QCloseEvent *event);
-		void moveEvent(QMoveEvent *event);
 		void resetAcitivity();
 	public slots:
 		void channelWindowsUpdate();

@@ -36,8 +36,8 @@ qmpEfxWindow::qmpEfxWindow(QWidget *parent) :
 		0,
 		true
 	);
-	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/EfxW",QByteArray()).toByteArray().length())
-		restoreGeometry(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/EfxW",QRect(-999,-999,-999,-999)).toByteArray());
+	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/EfxW",QRect(-999,-999,999,999)).toRect()!=QRect(-999,-999,999,999))
+		setGeometry(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/EfxW",QRect(-999,-999,999,999)).toRect());
 	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/EfxWShown",0).toInt())
 	{show();qmpMainWindow::getInstance()->setFuncState("Effects",true);}
 }
@@ -52,6 +52,10 @@ qmpEfxWindow::~qmpEfxWindow()
 
 void qmpEfxWindow::closeEvent(QCloseEvent *event)
 {
+	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
+	{
+		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/EfxW",geometry());
+	}
 	setVisible(false);
 	if(!qmpMainWindow::getInstance()->isFinalizing()&&qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
 	{
@@ -82,20 +86,11 @@ void qmpEfxWindow::showEvent(QShowEvent *event)
 	if(ct==FLUID_CHORUS_MOD_SINE)ui->rbSine->setChecked(true),ui->rbTriangle->setChecked(false);
 	if(ct==FLUID_CHORUS_MOD_TRIANGLE)ui->rbSine->setChecked(false),ui->rbTriangle->setChecked(true);
 	initialized=true;
-	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/EfxW",QByteArray()).toByteArray().length())
-		restoreGeometry(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/EfxW",QRect(-999,-999,-999,-999)).toByteArray());
+	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/EfxW",QRect(-999,-999,999,999)).toRect()!=QRect(-999,-999,999,999))
+		setGeometry(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/EfxW",QRect(-999,-999,999,999)).toRect());
 	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
 	{
 		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/EfxWShown",1);
-	}
-	event->accept();
-}
-
-void qmpEfxWindow::moveEvent(QMoveEvent *event)
-{
-	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
-	{
-		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/EfxW",saveGeometry());
 	}
 	event->accept();
 }

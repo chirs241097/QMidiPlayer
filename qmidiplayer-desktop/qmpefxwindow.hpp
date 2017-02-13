@@ -34,7 +34,6 @@ class qmpEfxWindow : public QDialog
 		~qmpEfxWindow();
 		void closeEvent(QCloseEvent *event);
 		void showEvent(QShowEvent *event);
-		void moveEvent(QMoveEvent *event);
 		void sendEfxChange();
 
 	private slots:

@@ -80,8 +80,8 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent) :
 		0,
 		true
 	);
-	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/ChnlW",QByteArray()).toByteArray().length())
-		restoreGeometry(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/ChnlW",QRect(-999,-999,-999,-999)).toByteArray());
+	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/ChnlW",QRect(-999,-999,999,999)).toRect()!=QRect(-999,-999,999,999))
+		setGeometry(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/ChnlW",QRect(-999,-999,999,999)).toRect());
 	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/ChnlWShown",0).toInt())
 	{show();qmpMainWindow::getInstance()->setFuncState("Channel",true);}
 }
@@ -92,28 +92,23 @@ void qmpChannelsWindow::showEvent(QShowEvent *event)
 	{
 		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/ChnlWShown",1);
 	}
-	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/ChnlW",QByteArray()).toByteArray().length())
-		restoreGeometry(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/ChnlW",QRect(-999,-999,-999,-999)).toByteArray());
+	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/ChnlW",QRect(-999,-999,999,999)).toRect()!=QRect(-999,-999,999,999))
+		setGeometry(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/ChnlW",QRect(-999,-999,999,999)).toRect());
 	event->accept();
 }
 
 void qmpChannelsWindow::closeEvent(QCloseEvent *event)
 {
+	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
+	{
+		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/ChnlW",geometry());
+	}
 	setVisible(false);
 	if(!qmpMainWindow::getInstance()->isFinalizing()&&qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
 	{
 		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/ChnlWShown",0);
 	}
 	qmpMainWindow::getInstance()->setFuncState("Channel",false);
-	event->accept();
-}
-
-void qmpChannelsWindow::moveEvent(QMoveEvent *event)
-{
-	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
-	{
-		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/ChnlW",saveGeometry());
-	}
 	event->accept();
 }
 

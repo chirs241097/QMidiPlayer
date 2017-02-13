@@ -1,6 +1,8 @@
 #include <QLineEdit>
+#include <QToolButton>
 #include <QFileDialog>
 #include <QDir>
+#include <QMessageBox>
 #include "qmpsettingswindow.hpp"
 #include "ui_qmpsettingswindow.h"
 #include "qmpmainwindow.hpp"
@@ -351,7 +353,7 @@ void qmpSettingsWindow::updatePluginList(qmpPluginManager *pmgr)
 	{
 		ui->twPluginList->insertRow(i);
 		ui->twPluginList->setCellWidget(i,0,new QCheckBox(""));
-		if(settings->value(QString("PluginSwitch/")+QString(plugins->at(i).name.c_str()),0).toInt())
+		if(settings->value(QString("PluginSwitch/")+QString(plugins->at(i).name.c_str()),1).toInt())
 		{((QCheckBox*)ui->twPluginList->cellWidget(i,0))->setChecked(true);plugins->at(i).enabled=true;}
 		else
 		{((QCheckBox*)ui->twPluginList->cellWidget(i,0))->setChecked(false);plugins->at(i).enabled=false;}
@@ -365,6 +367,24 @@ void qmpSettingsWindow::updatePluginList(qmpPluginManager *pmgr)
 	ui->twPluginList->setColumnWidth(1,192*logicalDpiX()/96.);
 	ui->twPluginList->setColumnWidth(2,64*logicalDpiX()/96.);
 	ui->twPluginList->setColumnWidth(3,128*logicalDpiX()/96.);
+}
+
+void qmpSettingsWindow::verifySF()
+{
+	int sf=0;
+	for(int i=0;i<ui->twSoundfont->rowCount();++i)
+	if(((QCheckBox*)ui->twSoundfont->cellWidget(i,0))->isChecked())++sf;
+	if(settings->value("Midi/DefaultOutput","Internal FluidSynth").toString()=="Internal FluidSynth"&&!sf)
+	{
+		if(QMessageBox::question(this,
+		tr("No soundfont loaded"),
+		tr("Internal fluidsynth was chosen as the default output but it has no soundfont set. "
+		   "Would you like to setup soundfonts now?"))==QMessageBox::Yes)
+		{
+			show();
+			ui->tabWidget->setCurrentWidget(ui->tab_3);
+		}
+	}
 }
 
 void qmpSettingsWindow::updateCustomOptions()
@@ -407,6 +427,12 @@ void qmpSettingsWindow::updateCustomOptions()
 		{
 			QComboBox* cb=(QComboBox*)i->second.widget;if(!i->second.widget)break;
 			settings->setValue(QString(i->first.c_str()),cb->currentIndex());
+			break;
+		}
+		case 6:
+		{
+			QFileEdit* fe=(QFileEdit*)i->second.widget;if(!i->second.widget)break;
+			settings->setValue(QString(i->first.c_str()),fe->text());
 			break;
 		}
 	}
@@ -580,12 +606,13 @@ void qmpSettingsWindow::setOptionDouble(std::string key,double val)
 	((QDoubleSpinBox*)customOptions[key].widget)->setValue(val);
 }
 
-void qmpSettingsWindow::registerOptionString(std::string tab,std::string desc,std::string key,std::string defaultval)
+void qmpSettingsWindow::registerOptionString(std::string tab,std::string desc,std::string key,std::string defaultval,bool ispath)
 {
 	customOptions[key].widget=NULL;
 	customOptions[key].desc=desc;
 	customOptions[key].defaultval=QString(defaultval.c_str());
 	customOptions[key].type=4;
+	if(ispath)customOptions[key].type=6;
 	if(desc.length())
 	{
 		QGridLayout* page=NULL;
@@ -598,15 +625,26 @@ void qmpSettingsWindow::registerOptionString(std::string tab,std::string desc,st
 			ui->tabWidget->addTab(w,QString(tab.c_str()));
 			customOptPages[tab]=page;
 		}
-		QLineEdit* te=new QLineEdit(page->parentWidget());
-		QLabel* lb=new QLabel(desc.c_str(),page->parentWidget());
-		customOptions[key].widget=te;
-		te->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed);
-		lb->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 		int row=page->rowCount();
+		if(ispath)
+		{
+			QFileEdit* fe=new QFileEdit(page->parentWidget());
+			fe->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed);
+			customOptions[key].widget=fe;
+			fe->setText(settings->value(QString(key.c_str()),defaultval.c_str()).toString());
+			page->addWidget(fe,row,1);
+		}
+		else
+		{
+			QLineEdit* te=new QLineEdit(page->parentWidget());
+			te->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed);
+			customOptions[key].widget=te;
+			te->setText(settings->value(QString(key.c_str()),defaultval.c_str()).toString());
+			page->addWidget(te,row,1);
+		}
+		QLabel* lb=new QLabel(desc.c_str(),page->parentWidget());
+		lb->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 		page->addWidget(lb,row,0);
-		page->addWidget(te,row,1);
-		te->setText(settings->value(QString(key.c_str()),defaultval.c_str()).toString());
 	}
 }
 std::string qmpSettingsWindow::getOptionString(std::string key)
@@ -617,7 +655,12 @@ void qmpSettingsWindow::setOptionString(std::string key,std::string val)
 {
 	settings->setValue(QString(key.c_str()),QString(val.c_str()));
 	if(customOptions[key].widget)
-	((QLineEdit*)customOptions[key].widget)->setText(val.c_str());
+	{
+		if(customOptions[key].type==4)
+		((QLineEdit*)customOptions[key].widget)->setText(val.c_str());
+		else if(customOptions[key].type==6)
+		((QFileEdit*)customOptions[key].widget)->setText(val.c_str());
+	}
 }
 
 void qmpSettingsWindow::registerOptionEnumInt(std::string tab,std::string desc,std::string key,std::vector<std::string> options,int defaultval)
@@ -670,4 +713,23 @@ void qmpSettingsWindow::on_pbCustomizeTb_clicked()
 void qmpSettingsWindow::on_pbCustomizeAct_clicked()
 {
 	cw->launch(1);
+}
+
+QFileEdit::QFileEdit(QWidget *par):QWidget(par)
+{
+	QHBoxLayout *layout=new QHBoxLayout(this);
+	layout->setMargin(0);
+	le=new QLineEdit(this);
+	layout->addWidget(le);
+	tb=new QToolButton(this);
+	tb->setText("...");
+	layout->addWidget(tb);
+	connect(tb,SIGNAL(clicked()),this,SLOT(chooseFile()));
+}
+QString QFileEdit::text(){return le->text();}
+void QFileEdit::setText(const QString& s){le->setText(s);}
+void QFileEdit::chooseFile()
+{
+	QString s=QFileDialog::getOpenFileName(NULL,tr("Select a file"),QFileInfo(text()).dir().absolutePath());
+	if(s.length())setText(s);
 }
