@@ -1,4 +1,8 @@
 2017-02-13 0.8.5 indev
+Also use the new mechanism to handle the main Window.
+Explicit initialization of variable fixes #4 2).
+
+2017-02-13 0.8.5 indev
 Fix pitch bend range handling.
 Allow registering a string option as file path.
 Provide an easier way to set path values in options.

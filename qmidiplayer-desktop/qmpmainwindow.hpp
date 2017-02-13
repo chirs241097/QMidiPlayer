@@ -125,7 +125,6 @@ class qmpMainWindow:public QMainWindow
 		explicit qmpMainWindow(QWidget *parent = 0);
 		void init();
 		void closeEvent(QCloseEvent *event);
-		void moveEvent(QMoveEvent *event);
 		void dropEvent(QDropEvent *event);
 		void dragEnterEvent(QDragEnterEvent *event);
 		~qmpMainWindow();

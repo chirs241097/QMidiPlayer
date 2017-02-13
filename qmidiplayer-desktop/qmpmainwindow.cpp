@@ -62,7 +62,7 @@ qmpMainWindow::qmpMainWindow(QWidget *parent) :
 	setButtonHeight(ui->pbPrev,36);setButtonHeight(ui->pbSettings,36);setButtonHeight(ui->pbStop,36);
 	//setButtonHeight(ui->pbChannels,36);setButtonHeight(ui->pbPList,36);
 	//setButtonHeight(ui->pbEfx,36);setButtonHeight(ui->pbVisualization,36);
-	playing=false;stopped=true;dragging=false;
+	playing=false;stopped=true;dragging=false;fin=false;
 	settingsw=new qmpSettingsWindow(this);pmgr=new qmpPluginManager();
 	plistw=new qmpPlistWindow(this);player=NULL;timer=NULL;
 	singleFS=qmpSettingsWindow::getSettingsIntf()->value("Behavior/SingleInstance",0).toInt();
@@ -103,12 +103,8 @@ void qmpMainWindow::init()
 		}}
 	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus",0).toInt())
 	{
-		QRect g=geometry();
-		g.setTopLeft(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/MainW",QPoint(-999,-999)).toPoint());
-		if(g.topLeft()!=QPoint(-999,-999))setGeometry(g);
-		else setGeometry(QStyle::alignedRect(
-							 Qt::LeftToRight,Qt::AlignCenter,size(),
-							 qApp->desktop()->availableGeometry()));
+		QRect g=qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/MainW",QRect(-999,-999,999,999)).toRect();
+		if(g!=QRect(-999,-999,999,999))setGeometry(g);
 	}show();
 	ui->vsMasterVol->setValue(qmpSettingsWindow::getSettingsIntf()->value("Audio/Gain",50).toInt());
 	connect(timer,SIGNAL(timeout()),this,SLOT(updateWidgets()));
@@ -195,6 +191,10 @@ int qmpMainWindow::pharseArgs()
 
 void qmpMainWindow::closeEvent(QCloseEvent *event)
 {
+	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
+	{
+		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/MainW",geometry());
+	}
 	on_pbStop_clicked();fin=true;
 	for(auto i=mfunc.begin();i!=mfunc.end();++i)
 	i->second.setAssignedControl((QReflectiveAction*)NULL),
@@ -205,14 +205,6 @@ void qmpMainWindow::closeEvent(QCloseEvent *event)
 	event->accept();
 }
 
-void qmpMainWindow::moveEvent(QMoveEvent *event)
-{
-	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
-	{
-		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/MainW",event->pos());
-	}
-	event->accept();
-}
 void qmpMainWindow::dropEvent(QDropEvent *event)
 {
 	QList<QUrl> l=event->mimeData()->urls();
