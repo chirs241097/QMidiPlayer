@@ -17,12 +17,12 @@ void qmpPluginManager::scanPlugins()
 {
 	QDirIterator *dir;
 	std::vector<std::string> cpluginpaths;
-	dir=new QDirIterator(".\\plugins\\");
+	dir=new QDirIterator(QCoreApplication::applicationDirPath()+"/plugins/");
 	while(dir->hasNext())
 	{
 		dir->next();
 		if(dir->fileInfo().suffix()=="dll")
-			cpluginpaths.push_back(std::string(".\\plugins\\")+dir->fileName().toStdString());
+			cpluginpaths.push_back(QCoreApplication::applicationDirPath().toStdString()+std::string("/plugins/")+dir->fileName().toStdString());
 	}
 	delete dir;
 	for(unsigned i=0;i<cpluginpaths.size();++i)

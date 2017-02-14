@@ -1,3 +1,7 @@
+2017-02-14 0.8.5 indev
+Scan for plugins in the executable directory instead
+of the working directory.
+
 2017-02-13 0.8.5 indev
 Also use the new mechanism to handle the main Window.
 Explicit initialization of variable fixes #4 2).
