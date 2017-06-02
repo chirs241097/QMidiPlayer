@@ -190,6 +190,7 @@ void qmpVisualization::showThread()
 		rot[2]=api->getOptionDouble("Visualization/rz");
 	}
 	sm->smMainLoop();
+	sm->smFinale();
 }
 void qmpVisualization::show()
 {
@@ -208,7 +209,6 @@ void qmpVisualization::close()
 	if(showpiano&&!horizontal)for(int i=0;i<16;++i)delete p3d[i];
 	if(showparticle&&!horizontal)for(int i=0;i>16;++i)for(int j=0;j<128;++j){delete pss[i][j];pss[i][j]=0;}
 	if(noteappearance==1)delete nebuf;
-	sm->smFinale();
 	if(savevp)
 	{
 		api->setOptionDouble("Visualization/px",pos[0]);

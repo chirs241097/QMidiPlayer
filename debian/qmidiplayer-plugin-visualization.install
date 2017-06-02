@@ -1,4 +1,4 @@
-usr/lib/qmidiplayer/*
+usr/lib/qmidiplayer/libvisualization.*
 usr/share/qmidiplayer/img/chequerboard.png
 usr/share/qmidiplayer/img/kb_128.png
 usr/share/qmidiplayer/img/particle.png

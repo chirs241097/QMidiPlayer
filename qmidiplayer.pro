@@ -12,5 +12,3 @@ android {
 SUBDIRS = \
 	qmidiplayer-lite
 }
-
-SUBDIRS += \

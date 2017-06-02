@@ -1,3 +1,10 @@
+2017-06-02 0.8.5 indev
+Accumulative changes from 2017-03:
+  Don't crash if RtMidi initialization failed.
+  Hopefully fixed crash when closing the
+  visualization window on Windows.
+  Documentation update.
+
 2017-02-14 0.8.5 indev
 Scan for plugins in the executable directory instead
 of the working directory.

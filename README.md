@@ -11,6 +11,7 @@ Features:
 * Rendering midi to wave file
 * Visualization using SMELT (highly experimental Windows version now available)
 * MIDI mapping (based on RtMidi)
+* Plugin interface for extending the player easily
 
 Tested on Debian sid and Windows Vista~10.
 

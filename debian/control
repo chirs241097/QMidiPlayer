@@ -32,3 +32,8 @@ Package: qmidiplayer-plugin-visualization
 Architecture: any
 Depends: qmidiplayer, ${shlibs:Depends}, ${misc:Depends}
 Description: Midi visualization plugin for QMidiPlayer.
+
+Package: qmidiplayer-plugin-midifmt
+Architecture: any
+Depends: qmidiplayer, ${shlibs:Depends}, ${misc:Depends}
+Description: Extra midi formats support for QMidiPlayer.

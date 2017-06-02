@@ -6,20 +6,26 @@
 RtMidiOut* qmpMidiMapperRtMidi::dummy=NULL;
 qmpMidiMapperRtMidi::qmpMidiMapperRtMidi()
 {
-	dummy=new RtMidiOut();
+	try{dummy=new RtMidiOut();}
+	catch(RtMidiError &e)
+	{
+		printf("Failed to initialize the dummy device: %s\n",e.what());
+		dummy=NULL;
+	}
 	memset(ports,0,sizeof(ports));
 }
 qmpMidiMapperRtMidi::~qmpMidiMapperRtMidi()
 {
-	delete dummy;for(int i=0;i<16;++i)if(ports[i])delete ports[i];
+	delete dummy;dummy=NULL;
+	for(int i=0;i<16;++i)if(ports[i])delete ports[i];
 }
 int qmpMidiMapperRtMidi::enumDevices()
 {
-	return dummy->getPortCount();
+	return dummy?dummy->getPortCount():0;
 }
 std::string qmpMidiMapperRtMidi::deviceName(int id)
 {
-	return dummy->getPortName(id);
+	return dummy?dummy->getPortName(id):"";
 }
 int qmpMidiMapperRtMidi::deviceInit(int id)
 {

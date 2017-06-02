@@ -71,6 +71,39 @@ reader and handler hooks have `SEventCallBackData*` as their `callerdata` while 
 `callerdata` (`NULL`).
 
 # 4. Functionalities
-Plugins extend the hosts with extra functionalities. With hooks, handlers and the built-in core API, you can already do a
+Plugins extend the host with extra functionalities. With hooks, handlers and the built-in core API, you can already do a
 lot of hacking. If that cannot make you satisfied, QMidiPlayer have several vacancies that are expected to be implemented
-by plugins.
+by plugins. And with the introduction of the general functionality API, you can now virtually add anything to QMidiPlayer!
+
+## 4.1 What is a functionality?
+Have a look at the main window. By default there're three or four buttons at the bottom of it.
+These are functionalities. Functionalties go into two types: checkable and non-checkable.
+Checkable functionalities can be toggled on or off, while non-checkable functionalities have
+no such states. For non-checkable functionalities, only show() is called when the user invokes it.
+The user can arrange functionalities shown on the toolbar and the action menu to their needs.
+
+## 4.2 Visualization
+Visualization was once a feature of QMidiPlayer's core. But you can now write your own visualization with the
+Visualization interface(`qmpVisualizationIntf`). The methods in this interface should be self-explanatory.
+
+## 4.3 MIDI File Reader
+This is not strictly a "functionality", because its interface IMidiFileReader does not inherit qmpFuncBaseIntf.
+When the user requests to open a file, the core tries to load the file with registered file readers and
+accepts the first valid result. Therefore you can implement your own file reader, which may even add
+eXtended Module support to QMidiPlayer!
+
+# 5. Reference
+Well, everything above is just nonsense compared to this one. The full reference of the API is here.
+
+struct SEvent:
+members:
+
+- iid (uint32_t): internal id. Usually set to the size of the event pool when current event is read.
+- time (uint32_t): event time in tick.
+- p1 (uint32_t): parameter 1 for the midi device.
+- p2 (uint32_t): parameter 2 for the midi device.
+- type (uint8_t): type of the event together with the channel this event goes to.
+- str (std::string): Contains the raw data for string-like events.
+- default constructor: sets everything to zero or empty.
+- constructor with parameters
+- friend bool operator <(const SEvent& a,const SEvent& b)
