@@ -50,7 +50,10 @@ void CReaderCallBack::callBack(void *callerdata,void *)
 			par->pushNoteOff(cbd->time,cbd->type&0x0F,cbd->p1);
 		break;
 		case 0x90:
+			if(cbd->p2)
 			par->pushNoteOn(cbd->time,cbd->type&0x0F,cbd->p1,cbd->p2);
+			else
+			par->pushNoteOff(cbd->time,cbd->type&0x0F,cbd->p1);
 		break;
 		case 0xF0:
 			if(cbd->type==0xFF&&cbd->p1==0x58)
@@ -854,5 +857,4 @@ void qmpVisualization::pushNoteOff(uint32_t tc,uint32_t ch,uint32_t key)
 	ne->tce=tc;ne->ch=ch;ne->key=key;
 	ne->vel=pendingv[ch][key].top();pendingv[ch][key].pop();
 	pool.push_back(ne);
-	if(tc>fintk)fintk=tc;
 }

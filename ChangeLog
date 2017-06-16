@@ -1,3 +1,13 @@
+2017-06-16 0.8.6 indev
+Code refactoring:
+  Tracks information are now preserved.
+  CMidiReaderCollection no longer handles file info
+  operations.
+  Note on with zero velocity are no longer treated
+  separately.
+Small fixes to several memory leaks.
+More code refactoring is going on.
+
 2017-06-02 0.8.5 indev
 Accumulative changes from 2017-03:
   Don't crash if RtMidi initialization failed.

@@ -70,6 +70,12 @@ qmpMainWindow::qmpMainWindow(QWidget *parent) :
 
 qmpMainWindow::~qmpMainWindow()
 {
+	QList<QAction*>a=ui->lbFileName->actions();
+	for(unsigned i=0;i<a.size();++i)
+	{
+		ui->lbFileName->removeAction(a[i]);
+		delete a[i];
+	}
 	pmgr->deinitPlugins();
 	delete pmgr;if(player)delete player;
 	if(timer)delete timer;
@@ -79,6 +85,9 @@ qmpMainWindow::~qmpMainWindow()
 	delete plistw;plistw=NULL;
 	delete infow;infow=NULL;
 	delete settingsw;settingsw=NULL;
+	delete panicf;panicf=NULL;
+	delete renderf;renderf=NULL;
+	delete reloadsynf;reloadsynf=NULL;
 	delete ui;
 }
 

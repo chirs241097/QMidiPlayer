@@ -14,6 +14,7 @@ class CSMFReader:public IMidiFileReader
 {
 	private:
 		CMidiFile* ret;
+		CMidiTrack* curTrack;
 		uint32_t fmt,trk;
 		FILE *f;
 		int byteread,valid,eventdiscarded;
@@ -35,35 +36,25 @@ class CSMFReader:public IMidiFileReader
 		void commitEventChange(SEventCallBackData d);
 };
 class CMidiFileReaderCollection{
-	std::vector<std::pair<IMidiFileReader*,std::string>> readers;
-	CMidiFile* file;
-	uint32_t maxtk;
-	IMidiFileReader* currentReader;
-	void destructFile(CMidiFile*& f);
-	void dumpFile();
-public:
-	CMidiFileReaderCollection();
-	~CMidiFileReaderCollection();
-	void registerReader(IMidiFileReader* reader,std::string name);
-	void unregisterReader(std::string name);
-	void readFile(const char* fn);
-	void destructFile();
-	IMidiFileReader* getCurrentReader();
-	bool isValid();
-	const char* getTitle();
-	const char* getCopyright();
-	const SEvent* getEvent(uint32_t id);
-	uint32_t getEventCount();
-	uint32_t getDivision();
-	uint32_t getMaxTick();
-	uint32_t getStandard();
+	private:
+		std::vector<std::pair<IMidiFileReader*,std::string>> readers;
+		IMidiFileReader* currentReader;
+	public:
+		CMidiFileReaderCollection();
+		~CMidiFileReaderCollection();
+		void registerReader(IMidiFileReader* reader,std::string name);
+		void unregisterReader(std::string name);
+		CMidiFile* readFile(const char* fn);
+		IMidiFileReader* getCurrentReader();
 };
 class CMidiPlayer
 {
 	friend class CMidiFileReaderCollection;
 	private:
 		CMidiFileReaderCollection *midiReaders;
-		uint32_t stamps[101],notes;
+		CMidiFile* midiFile;
+		std::vector<std::pair<size_t,size_t>> eorder;
+		uint32_t stamps[101],notes,ecnt,maxtk;
 		uint32_t ccstamps[101][16][135],ccc[16][135];
 		//0..127:cc 128:pc 129:cp 130:pb 131:tempo 132:ts 133:ks 134:pbr
 		int32_t rpnid[16],rpnval[16];
@@ -91,6 +82,8 @@ class CMidiPlayer
 		void* fileReadFinishCBuserdata[16];
 		static CMidiPlayer* ref;
 
+		SEvent *getEvent(int id);
+		void dumpFile();
 		void setBit(uint16_t &n,uint16_t bn,uint16_t b);
 		void processEvent(const SEvent *e);
 		void processEventStub(const SEvent *e);

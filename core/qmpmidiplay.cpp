@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <cstring>
+#include <algorithm>
 #include <chrono>
 #include <thread>
 #include <fluidsynth.h>
@@ -28,9 +29,9 @@ void CMidiPlayer::fluidInitialize()
 #ifndef _WIN32
 	if(!singleInstance)
 	{
-		if(midiReaders->getStandard()==4)
+		if(midiFile->std==4)
 		fluid_synth_set_channel_type(synth,9,CHANNEL_TYPE_MELODIC);
-		else if(midiReaders->getStandard()==1)
+		else if(midiFile->std==1)
 			fluid_synth_set_channel_type(synth,9,CHANNEL_TYPE_DRUM);
 		else
 		{
@@ -194,6 +195,11 @@ void w32usleep(uint64_t t)
 	timeEndPeriod(1);
 }
 #endif
+SEvent* CMidiPlayer::getEvent(int id)
+{
+	size_t t=eorder[id].first,e=eorder[id].second;
+	return &midiFile->tracks[t].eventList[e];
+}
 void CMidiPlayer::prePlayInit()
 {
 	playerPanic(true);
@@ -202,26 +208,26 @@ void CMidiPlayer::prePlayInit()
 }
 void CMidiPlayer::playEvents()
 {
-	for(ct=midiReaders->getEvent(0)->time;tceptr<midiReaders->getEventCount();)
+	for(ct=getEvent(0)->time;tceptr<ecnt;)
 	{
 		while(tcpaused)std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		using namespace std::chrono;
 		high_resolution_clock::time_point b=high_resolution_clock::now();
-		while(!tcstop&&midiReaders&&tceptr<midiReaders->getEventCount()&&ct==midiReaders->getEvent(tceptr)->time)
-			processEvent(midiReaders->getEvent(tceptr++));
-		if(tcstop||!midiReaders||tceptr>=midiReaders->getEventCount())break;
+		while(!tcstop&&midiReaders&&tceptr<ecnt&&ct==getEvent(tceptr)->time)
+			processEvent(getEvent(tceptr++));
+		if(tcstop||!midiReaders||tceptr>=ecnt)break;
 		high_resolution_clock::time_point a=high_resolution_clock::now();
 		auto sendtime=a-b;
 		if(resumed)resumed=false;
 		else
-		if(sendtime.count()<(midiReaders->getEvent(tceptr)->time-ct)*dpt)
+		if(sendtime.count()<(getEvent(tceptr)->time-ct)*dpt)
 #ifdef _WIN32
-		w32usleep(((midiReaders->getEvent(tceptr)->time-ct)*dpt-sendtime.count())/1000);
+		w32usleep(((getEvent(tceptr)->time-ct)*dpt-sendtime.count())/1000);
 #else
-		std::this_thread::sleep_for(std::chrono::nanoseconds((midiReaders->getEvent(tceptr)->time-ct)*dpt-sendtime.count()));
+		std::this_thread::sleep_for(std::chrono::nanoseconds((getEvent(tceptr)->time-ct)*dpt-sendtime.count()));
 #endif
 		if(tcstop||!midiReaders)break;
-		ct=midiReaders->getEvent(tceptr)->time;
+		ct=getEvent(tceptr)->time;
 	}
 	while(!tcstop&&synth&&(waitvoice&&fluid_synth_get_active_voice_count(synth)>0))std::this_thread::sleep_for(std::chrono::milliseconds(2));
 	finished=1;
@@ -229,13 +235,13 @@ void CMidiPlayer::playEvents()
 void CMidiPlayer::fileTimer1Pass()
 {
 	ftime=.0;ctempo=0x7A120;dpt=ctempo*1000/divs;
-	for(uint32_t eptr=0,ct=midiReaders->getEvent(0)->time;eptr<midiReaders->getEventCount();)
+	for(uint32_t eptr=0,ct=getEvent(0)->time;eptr<ecnt;)
 	{
-		while(eptr<midiReaders->getEventCount()&&ct==midiReaders->getEvent(eptr)->time)
-			processEventStub(midiReaders->getEvent(eptr++));
-		if(eptr>=midiReaders->getEventCount())break;
-		ftime+=(midiReaders->getEvent(eptr)->time-ct)*dpt/1e9;
-		ct=midiReaders->getEvent(eptr)->time;
+		while(eptr<ecnt&&ct==getEvent(eptr)->time)
+			processEventStub(getEvent(eptr++));
+		if(eptr>=ecnt)break;
+		ftime+=(getEvent(eptr)->time-ct)*dpt/1e9;
+		ct=getEvent(eptr)->time;
 	}
 }
 void CMidiPlayer::fileTimer2Pass()
@@ -251,15 +257,15 @@ void CMidiPlayer::fileTimer2Pass()
 		ccc[i][76]=64;ccc[i][77]=64;ccc[i][78]=64;
 		ccc[i][131]=dpt;ccc[i][132]=0x04021808;
 		ccc[i][133]=0;ccc[i][134]=2;
-	}if(midiReaders->getStandard()!=4)ccc[9][0]=128;
+	}if(midiFile->std!=4)ccc[9][0]=128;
 	for(int i=0;i<16;++i)for(int j=0;j<135;++j)
 		ccstamps[0][i][j]=ccc[i][j];
-	for(uint32_t eptr=0,ct=midiReaders->getEvent(0)->time;eptr<midiReaders->getEventCount();)
+	for(uint32_t eptr=0,ct=getEvent(0)->time;eptr<ecnt;)
 	{
-		while(eptr<midiReaders->getEventCount()&&ct==midiReaders->getEvent(eptr)->time)
-			processEventStub(midiReaders->getEvent(eptr++));
-		if(eptr>=midiReaders->getEventCount())break;
-		ctime+=(midiReaders->getEvent(eptr)->time-ct)*dpt/1e9;
+		while(eptr<ecnt&&ct==getEvent(eptr)->time)
+			processEventStub(getEvent(eptr++));
+		if(eptr>=ecnt)break;
+		ctime+=(getEvent(eptr)->time-ct)*dpt/1e9;
 		while(ctime>ftime*c/100.)
 		{
 			for(int i=0;i<16;++i)for(int j=0;j<135;++j)
@@ -267,19 +273,19 @@ void CMidiPlayer::fileTimer2Pass()
 			stamps[c++]=eptr;
 			if(c>100)break;
 		}
-		ct=midiReaders->getEvent(eptr)->time;
+		ct=getEvent(eptr)->time;
 	}
 	while(c<101)
 	{
 		for(int i=0;i<16;++i)for(int j=0;j<135;++j)
 			ccstamps[c][i][j]=ccc[i][j];
-		stamps[c++]=midiReaders->getEventCount();
+		stamps[c++]=ecnt;
 	}
 }
 CMidiPlayer::CMidiPlayer(bool singleInst)
 {
 	midiReaders=new CMidiFileReaderCollection();
-	resumed=false;singleInstance=singleInst;
+	resumed=false;singleInstance=singleInst;midiFile=NULL;
 	settings=NULL;synth=NULL;adriver=NULL;waitvoice=true;
 	memset(eventHandlerCB,0,sizeof(eventHandlerCB));
 	memset(eventHandlerCBuserdata,0,sizeof(eventHandlerCBuserdata));
@@ -304,7 +310,7 @@ CMidiPlayer::CMidiPlayer(bool singleInst)
 CMidiPlayer::~CMidiPlayer()
 {
 	if(singleInstance||settings||synth||adriver)fluidDeinitialize();
-	delete midiReaders;delete mapper;
+	if(midiFile)delete midiFile;delete midiReaders;delete mapper;
 }
 void CMidiPlayer::playerPanic(bool reset)
 {
@@ -330,11 +336,27 @@ void CMidiPlayer::playerPanic(bool reset)
 }
 bool CMidiPlayer::playerLoadFile(const char* fn)
 {
-	notes=0;midiReaders->readFile(fn);
-	if(!midiReaders->isValid())return false;
-	divs=midiReaders->getDivision();
+	notes=0;if(midiFile)delete midiFile;
+	midiFile=midiReaders->readFile(fn);
+	if(!midiFile->valid)return false;
+	divs=midiFile->divs;maxtk=ecnt=0;
+	for(CMidiTrack& i:midiFile->tracks)
+	{
+		ecnt+=i.eventList.size();
+		maxtk=std::max(maxtk,i.eventList.back().time);
+	}
 	for(int i=0;i<16;++i)if(fileReadFinishCB[i])
 		fileReadFinishCB[i]->callBack(NULL,fileReadFinishCBuserdata[i]);
+	eorder.clear();
+	for(size_t i=0;i<midiFile->tracks.size();++i)
+	for(size_t j=0;j<midiFile->tracks[i].eventList.size();++j)
+	eorder.push_back(std::make_pair(i,j));
+	std::sort(eorder.begin(),eorder.end(),
+		[this](std::pair<size_t,size_t> &a,std::pair<size_t,size_t> &b)->bool{
+			return midiFile->tracks[a.first].eventList[a.second]<
+				   midiFile->tracks[b.first].eventList[b.second];
+		}
+	);
 	fileTimer1Pass();
 	fileTimer2Pass();
 	return true;
@@ -355,7 +377,7 @@ void CMidiPlayer::playerInit()
 void CMidiPlayer::playerDeinit()
 {
 	tceptr=0;tcstop=1;tcpaused=0;
-	midiReaders->destructFile();
+	delete midiFile;midiFile=NULL;
 	if(!singleInstance)fluidDeinitialize();
 }
 void CMidiPlayer::playerThread()
@@ -399,7 +421,7 @@ uint32_t CMidiPlayer::getTCeptr(){return tceptr;}
 void CMidiPlayer::setTCeptr(uint32_t ep,uint32_t st)
 {
 	resumed=true;
-	if(ep==midiReaders->getEventCount())tcstop=1;else tceptr=ep;
+	if(ep==ecnt)tcstop=1;else tceptr=ep;
 	for(int i=0;i<16;++i)
 	{
 		for(int j=0;j<120;++j)fluid_synth_cc(synth,i,j,ccstamps[st][i][j]);
@@ -416,14 +438,14 @@ double CMidiPlayer::getFtime(){return ftime;}
 void CMidiPlayer::getCurrentTimeSignature(int *n,int *d){*n=ctsn;*d=ctsd;}
 int CMidiPlayer::getCurrentKeySignature(){return cks;}
 uint32_t CMidiPlayer::getFileNoteCount(){return notes;}
-uint32_t CMidiPlayer::getFileStandard(){return midiReaders?midiReaders->getStandard():0;}
-const char* CMidiPlayer::getTitle(){return midiReaders?midiReaders->getTitle():"";}
-const char* CMidiPlayer::getCopyright(){return midiReaders?midiReaders->getCopyright():"";}
+uint32_t CMidiPlayer::getFileStandard(){return midiFile?midiFile->std:0;}
+const char* CMidiPlayer::getTitle(){return midiFile?midiFile->title:"";}
+const char* CMidiPlayer::getCopyright(){return midiFile?midiFile->copyright:"";}
 double CMidiPlayer::getTempo(){return 60./(ctempo/1e6);}
 uint32_t CMidiPlayer::getTick(){return ct;}
 uint32_t CMidiPlayer::getRawTempo(){return ctempo;}
 uint32_t CMidiPlayer::getDivision(){return divs;}
-uint32_t CMidiPlayer::getMaxTick(){return midiReaders->getMaxTick();}
+uint32_t CMidiPlayer::getMaxTick(){return maxtk;}
 double CMidiPlayer::getPitchBend(int ch){return((int)pbv[ch]-8192)/8192.*pbr[ch];}
 uint32_t CMidiPlayer::getTCpaused(){return tcpaused;}
 void CMidiPlayer::setTCpaused(uint32_t ps){tcpaused=ps;}
@@ -470,6 +492,18 @@ void CMidiPlayer::setChannelPreset(int ch,int b,int p)
 		fluid_synth_bank_select(synth,ch,b);
 		fluid_synth_program_change(synth,ch,p);
 	}
+}
+void CMidiPlayer::dumpFile()
+{
+	if(!midiFile)return;
+	for(CMidiTrack &i:midiFile->tracks)
+	for(SEvent &j:i.eventList)
+	if(j.str.length())
+		printf("type %x #%d @%d p1 %d p2 %d str %s\n",j.type,
+		j.iid,j.time,j.p1,j.p2,j.str.c_str());
+	else
+		printf("type %x #%d @%d p1 %d p2 %d\n",j.type,j.iid,
+		j.time,j.p1,j.p2);
 }
 //16MSB..LSB1
 void CMidiPlayer::setBit(uint16_t &n, uint16_t bn, uint16_t b)

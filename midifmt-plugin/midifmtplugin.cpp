@@ -50,9 +50,9 @@ bool CMidiStreamReader::midsBodyReader()
 			//fprintf(stderr,"ev: @ %x t %x p1 %x p2 %x\n",ev.time,ev.type,ev.p1,ev.p2);
 			if((ev.type&0xF0)==0x90&&ev.p2==0)//Note on with zero velo
 			ev.type=(ev.type&0x0F)|0x80;
-			ret->eventList.push_back(ev);eventdiscarded=0;
+			ret->tracks.back().appendEvent(ev);eventdiscarded=0;
 			qmpMidiFmtPlugin::api->callEventReaderCB(SEventCallBackData(ev.type,ev.p1,ev.p2,ev.time));
-			if(eventdiscarded)ret->eventList.pop_back();
+			if(eventdiscarded)ret->tracks.back().eventList.pop_back();
 			++curid;
 		}
 	}
@@ -62,13 +62,17 @@ CMidiFile* CMidiStreamReader::readFile(const char *fn)
 {
 	ret=new CMidiFile;
 	ret->title=ret->copyright=NULL;ret->std=0;ret->valid=1;
+	ret->tracks.push_back(CMidiTrack());
 	try
 	{
 		if(!(f=fopen(fn,"rb")))throw std::runtime_error("File doesn't exist");
 		if(!RIFFHeaderReader())throw std::runtime_error("Wrong RIFF header");
 		if(!midsBodyReader())throw std::runtime_error("MIDS data error");
-		std::sort(ret->eventList.begin(),ret->eventList.end());
-	}catch(std::runtime_error& e){fprintf(stderr,"MIDI Format plugin: E: %s is not a supported file. Cause: %s.\n",fn,e.what());ret->valid=0;if(f)fclose(f);f=NULL;}
+	}catch(std::runtime_error& e)
+	{
+		fprintf(stderr,"MIDI Format plugin: E: %s is not a supported file. Cause: %s.\n",fn,e.what());
+		ret->valid=0;if(f)fclose(f);f=NULL;
+	}
 	return ret;
 }
 void CMidiStreamReader::discardCurrentEvent()
@@ -77,10 +81,10 @@ void CMidiStreamReader::discardCurrentEvent()
 }
 void CMidiStreamReader::commitEventChange(SEventCallBackData d)
 {
-	ret->eventList[ret->eventList.size()-1].time=d.time;
-	ret->eventList[ret->eventList.size()-1].type=d.type;
-	ret->eventList[ret->eventList.size()-1].p1=d.p1;
-	ret->eventList[ret->eventList.size()-1].p2=d.p2;
+	ret->tracks.back().eventList.back().time=d.time;
+	ret->tracks.back().eventList.back().type=d.type;
+	ret->tracks.back().eventList.back().p1=d.p1;
+	ret->tracks.back().eventList.back().p2=d.p2;
 }
 CMidiStreamReader::CMidiStreamReader()
 {

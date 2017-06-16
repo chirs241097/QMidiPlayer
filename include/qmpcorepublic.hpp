@@ -8,7 +8,7 @@
 #else
 #define EXPORTSYM __attribute__ ((visibility ("default")))
 #endif
-#define QMP_PLUGIN_API_REV "1+indev3"
+#define QMP_PLUGIN_API_REV "1+indev4"
 //MIDI Event structure
 struct SEvent
 {
@@ -32,13 +32,25 @@ public:
 	uint32_t time,type,p1,p2;
 	SEventCallBackData(uint32_t _t,uint32_t _p1,uint32_t _p2,uint32_t _tm){type=_t;p1=_p1;p2=_p2;time=_tm;}
 };
+//MIDI Track class
+class CMidiTrack{
+	public:
+		std::vector<SEvent> eventList;
+		void appendEvent(SEvent e){eventList.push_back(e);}
+		SEvent& operator[](size_t sub){return eventList[sub];}
+};
 //MIDI File class
 class CMidiFile{
 	public:
 		bool valid;
 		char *title,*copyright;
-		std::vector<SEvent> eventList;
+		std::vector<CMidiTrack> tracks;
 		uint32_t std,divs;
+		~CMidiFile()
+		{
+			if(title)delete[] title;
+			if(copyright)delete[] copyright;
+		}
 };
 //Generic callback function that can be used for hooking the core.
 //"userdata" is set when you register the callback function.

@@ -67,7 +67,7 @@ class qmpVisualization:public qmpPluginIntf
 		smParticleSystem* pss[16][128];
 		smPSEmissionPositionGenerator* psepg;
 		float pos[3],rot[3],lastx,lasty;
-		uint32_t ctc,ctk,fintk,elb;
+		uint32_t ctc,ctk,elb;
 		double etps;
 		bool shouldclose,playing;
 		int herif,hehif,hfrf;
