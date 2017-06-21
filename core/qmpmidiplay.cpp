@@ -256,7 +256,8 @@ CMidiPlayer::CMidiPlayer()
 	memset(eventReaderCBuserdata,0,sizeof(eventReaderCBuserdata));
 	memset(fileReadFinishCB,0,sizeof(fileReadFinishCB));
 	memset(fileReadFinishCBuserdata,0,sizeof(fileReadFinishCBuserdata));
-	memset(mappedoutput,0xFF,sizeof(mappedoutput));
+	memset(mappedoutput,0,sizeof(mappedoutput));
+	mididev[0].refcnt=16;
 	memset(chstatus,0,sizeof(chstatus));
 	for(int i=0;i<16;++i)
 		chstatus[i][7]=100,chstatus[i][11]=127,
@@ -484,7 +485,6 @@ void CMidiPlayer::setChannelOutput(int ch,int outid)
 	{
 		SMidiDev& dold=mididev[origoutput];
 		dold.dev->onUnmapped(ch,--dold.refcnt);
-
 	}
 }
 uint8_t* CMidiPlayer::getChstates(){return chstate;}

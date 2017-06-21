@@ -37,6 +37,7 @@ void qmpMidiOutRtMidi::basicMessage(uint8_t type,uint8_t p1,uint8_t p2)
 	std::vector<unsigned char>msg;
 	msg.push_back(type);
 	msg.push_back(p1);
+	if(((type&0xF0)!=0xC0)&&((type&0xF0)!=0xD0))
 	msg.push_back(p2);
 	outport->sendMessage(&msg);
 }
@@ -71,9 +72,10 @@ void qmpMidiOutRtMidi::reset(uint8_t ch)
 	basicMessage(0xB0|ch,120,0);
 	basicMessage(0xB0|ch,121,0);
 }
-void qmpMidiOutRtMidi::onMapped(uint8_t,int refcnt)
+void qmpMidiOutRtMidi::onMapped(uint8_t,int)
 {
-	if(!outport||outport->isPortOpen()||refcnt)return;
+	if(!outport)deviceInit();
+	if(outport->isPortOpen())return;
 	try
 	{
 		outport->openPort(portid);
@@ -87,7 +89,7 @@ void qmpMidiOutRtMidi::onMapped(uint8_t,int refcnt)
 void qmpMidiOutRtMidi::onUnmapped(uint8_t ch,int refcnt)
 {
 	panic(ch);
-	if(!refcnt)outport->closePort();
+	if(!refcnt&&outport)outport->closePort();
 }
 
 RtMidiOut* qmpRtMidiManager::dummy=NULL;
