@@ -15,19 +15,20 @@ private:
 public:
 	explicit CQMPCoreWrapper(QObject* parent=0):QObject(parent)
 	{
-		mp=new CMidiPlayer(false);
+		mp=new CMidiPlayer();
 	}
 	~CQMPCoreWrapper(){delete mp;}
-	Q_INVOKABLE void initFluidSynth()
+	Q_INVOKABLE void initFluidSynth(QUrl sfpath)
 	{
-		fluid_settings_t *fsettings=mp->getFluidSettings();
-		fluid_settings_setstr(fsettings,"audio.driver","pulseaudio");
-		mp->fluidInitialize();
-		mp->pushSoundFont("/media/Files/FluidR3_Ext.sf2");
+		mp->fluid()->setOptStr("audio.driver","pulseaudio");
+		mp->fluid()->deviceInit();
+		mp->fluid()->loadSFont(sfpath.toLocalFile().toStdString().c_str());
+		for(int i=0;i<16;++i)
+		mp->setChannelOutput(i,0);
 	}
 	Q_INVOKABLE void deinitFluidSynth()
 	{
-		mp->fluidDeinitialize();
+		mp->fluid()->deviceDeinit();
 	}
 	Q_INVOKABLE void loadFile(QUrl file)
 	{
@@ -41,6 +42,7 @@ public:
 	Q_INVOKABLE void stop()
 	{
 		mp->playerDeinit();playerTh->join();delete playerTh;
+		mp->playerPanic();
 	}
 	Q_INVOKABLE int getProgress()
 	{

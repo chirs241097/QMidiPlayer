@@ -10,99 +10,42 @@
 uint64_t pf;
 #endif
 CMidiPlayer* CMidiPlayer::ref=NULL;
-void CMidiPlayer::fluidPreInitialize()
-{
-	settings=new_fluid_settings();
-}
-void CMidiPlayer::fluidInitialize()
-{
-	synth=new_fluid_synth(settings);
-	fluid_set_log_function(FLUID_DBG,NULL,NULL);
-	fluid_set_log_function(FLUID_INFO,NULL,NULL);
-	fluid_set_log_function(FLUID_WARN,NULL,NULL);
-	fluid_set_log_function(FLUID_ERR,fluid_default_log_function,NULL);
-	fluid_set_log_function(FLUID_PANIC,fluid_default_log_function,NULL);
-	adriver=new_fluid_audio_driver(settings,synth);
-	fluid_synth_set_chorus(synth,FLUID_CHORUS_DEFAULT_N,FLUID_CHORUS_DEFAULT_LEVEL,
-						   FLUID_CHORUS_DEFAULT_SPEED,FLUID_CHORUS_DEFAULT_DEPTH,
-						   FLUID_CHORUS_DEFAULT_TYPE);
-#ifndef _WIN32
-	if(!singleInstance)
-	{
-		if(midiFile->std==4)
-		fluid_synth_set_channel_type(synth,9,CHANNEL_TYPE_MELODIC);
-		else if(midiFile->std==1)
-			fluid_synth_set_channel_type(synth,9,CHANNEL_TYPE_DRUM);
-		else
-		{
-			fluid_synth_set_channel_type(synth,9,CHANNEL_TYPE_DRUM);
-			fluid_synth_bank_select(synth,9,128);
-		}
-	}
-#endif
-}
-void CMidiPlayer::fluidDeinitialize()
-{
-	if(!synth||!adriver||!settings)return;
-	delete_fluid_settings(settings);
-	delete_fluid_audio_driver(adriver);
-	delete_fluid_synth(synth);
-	settings=NULL;synth=NULL;adriver=NULL;
-}
-void CMidiPlayer::processEvent(const SEvent *e)
+bool CMidiPlayer::processEvent(const SEvent *e)
 {
 	SEventCallBackData cbd(e->type,e->p1,e->p2,tceptr);
 	for(int i=0;i<16;++i)if(eventHandlerCB[i])
 		eventHandlerCB[i]->callBack(&cbd,eventHandlerCBuserdata[i]);
+	uint8_t ch=e->type&0x0F;
 	switch(e->type&0xF0)
 	{
 		case 0x80://Note off
-			if(mappedoutput[e->type&0x0F])
-				mapper->noteOff(mappedoutput[e->type&0x0F]-1,e->type&0x0F,e->p1);
-			else
-				fluid_synth_noteoff(synth,e->type&0x0F,e->p1);
-		break;
+		return true;
 		case 0x90://Note on
-			if((mute>>(e->type&0x0F))&1)break;//muted
-			if(solo&&!((solo>>(e->type&0x0F))&1))break;
-			if(mappedoutput[e->type&0x0F])
-				mapper->noteOn(mappedoutput[e->type&0x0F]-1,e->type&0x0F,e->p1,e->p2);
-			else
-				fluid_synth_noteon(synth,e->type&0x0F,e->p1,e->p2);
-			chstate[e->type&0x0F]=1;
-		break;
+			if((mute>>ch)&1&&e->p2)return false;//muted
+			if(solo&&!((solo>>ch)&1)&&e->p2)return false;//excluded by solo flags
+			if(e->p2)chstate[ch]=1;
+		return true;
 		case 0xB0://CC
-			if(e->p1==100)rpnid[e->type&0x0F]=e->p2;
-			if(e->p1==6)rpnval[e->type&0x0F]=e->p2;
-			if(~rpnid[e->type&0x0F]&&~rpnval[e->type&0x0F])
+			if(e->p1==100)rpnid[ch]=e->p2;
+			if(e->p1==6)rpnval[ch]=e->p2;
+			if(~rpnid[ch]&&~rpnval[ch])
 			{
-				if(rpnid[e->type&0x0F]==0)
+				if(rpnid[ch]==0)
 				{
-					fluid_synth_pitch_wheel_sens(synth,e->type&0x0F,rpnval[e->type&0x0F]);
-					pbr[e->type&0x0F]=rpnval[e->type&0x0F];
+					internalFluid->rpnMessage(ch,0,rpnval[ch]<<7);
+					mididev[mappedoutput[ch]].dev->rpnMessage(ch,0,rpnval[ch]<<7);
+					pbr[ch]=rpnval[ch];
 				}
-				rpnid[e->type&0x0F]=rpnval[e->type&0x0F]=-1;
+				rpnid[ch]=rpnval[ch]=-1;
 			}
-			chstatus[e->type&0x0F][e->p1]=e->p2;
-			if(mappedoutput[e->type&0x0F])
-				mapper->ctrlChange(mappedoutput[e->type&0x0F]-1,e->type&0x0F,e->p1,e->p2);
-			else
-				fluid_synth_cc(synth,e->type&0x0F,e->p1,e->p2);
-		break;
+			chstatus[ch][e->p1]=e->p2;
+		return true;
 		case 0xC0://PC
-			chstatus[e->type&0x0F][128]=e->p1;
-			if(mappedoutput[e->type&0x0F])
-				mapper->progChange(mappedoutput[e->type&0x0F]-1,e->type&0x0F,e->p1);
-			else
-				fluid_synth_program_change(synth,e->type&0x0F,e->p1);
-		break;
+			chstatus[ch][128]=e->p1;
+		return true;
 		case 0xE0://PW
-			pbv[e->type&0x0F]=(e->p1|(e->p2<<7))&0x3FFF;;
-			if(mappedoutput[e->type&0x0F])
-				mapper->pitchBend(mappedoutput[e->type&0x0F]-1,e->type&0x0F,pbv[e->type&0x0F]);
-			else
-				fluid_synth_pitch_bend(synth,e->type&0x0F,pbv[e->type&0x0F]);
-		break;
+			pbv[ch]=(e->p1|(e->p2<<7))&0x3FFF;
+		return true;
 		case 0xF0://Meta/SysEx
 			if((e->type&0x0F)==0x0F)
 			{
@@ -127,15 +70,28 @@ void CMidiPlayer::processEvent(const SEvent *e)
 			}
 			if((e->type&0x0F)==0x00||(e->type&0x0F)==07)
 			{
-				int io=0;
 				if(sendSysEx)
 				{
-					for(int i=0;i<16;++i)if(deviceusage[i])mapper->sysEx(i,e->p1,e->str.c_str());
-					fluid_synth_sysex(synth,e->str.c_str(),e->p1,NULL,&io,NULL,0);
+					int l=e->p1;char *rmsg;
+					if(e->type&0x0F==0x00)
+					{
+						rmsg=(char*)malloc((++l)*sizeof(char));
+						rmsg[0]=0xF0;rmsg[1]=0;
+					}
+					else
+					{
+						rmsg=(char*)malloc(l*sizeof(char));
+						rmsg[0]=0;
+					}
+					strcat(rmsg,e->str.c_str());
+					for(auto& i:mididev)
+						if(i.refcnt)
+						i.dev->extendedMessage(l,rmsg);
 				}
 			}
-		break;
+		return false;
 	}
+	return false;
 }
 void CMidiPlayer::processEventStub(const SEvent *e)
 {
@@ -203,8 +159,9 @@ SEvent* CMidiPlayer::getEvent(int id)
 void CMidiPlayer::prePlayInit()
 {
 	playerPanic(true);
-	for(int i=0;i<16;++i)if(deviceusage[i])
-	for(int j=0;j<16;++j)mapper->reset(i,j);
+	for(size_t i=0;i<mididev.size();++i)
+	if(mididev[i].refcnt)
+	for(int j=0;j<16;++j)mididev[i].dev->reset(j);
 }
 void CMidiPlayer::playEvents()
 {
@@ -213,8 +170,12 @@ void CMidiPlayer::playEvents()
 		while(tcpaused)std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		using namespace std::chrono;
 		high_resolution_clock::time_point b=high_resolution_clock::now();
-		while(!tcstop&&midiReaders&&tceptr<ecnt&&ct==getEvent(tceptr)->time)
-			processEvent(getEvent(tceptr++));
+		for(;!tcstop&&midiReaders&&tceptr<ecnt&&ct==getEvent(tceptr)->time;++tceptr)
+			if(processEvent(getEvent(tceptr)))
+			{
+				SEvent* e=getEvent(tceptr);
+				mididev[mappedoutput[e->type&0x0F]].dev->basicMessage(e->type,e->p1,e->p2);
+			}
 		if(tcstop||!midiReaders||tceptr>=ecnt)break;
 		high_resolution_clock::time_point a=high_resolution_clock::now();
 		auto sendtime=a-b;
@@ -229,7 +190,7 @@ void CMidiPlayer::playEvents()
 		if(tcstop||!midiReaders)break;
 		ct=getEvent(tceptr)->time;
 	}
-	while(!tcstop&&synth&&(waitvoice&&fluid_synth_get_active_voice_count(synth)>0))std::this_thread::sleep_for(std::chrono::milliseconds(2));
+	while(!tcstop&&(waitvoice&&internalFluid->getPolyphone()>0))std::this_thread::sleep_for(std::chrono::milliseconds(2));
 	finished=1;
 }
 void CMidiPlayer::fileTimer1Pass()
@@ -282,20 +243,20 @@ void CMidiPlayer::fileTimer2Pass()
 		stamps[c++]=ecnt;
 	}
 }
-CMidiPlayer::CMidiPlayer(bool singleInst)
+
+CMidiPlayer::CMidiPlayer()
 {
 	midiReaders=new CMidiFileReaderCollection();
-	resumed=false;singleInstance=singleInst;midiFile=NULL;
-	settings=NULL;synth=NULL;adriver=NULL;waitvoice=true;
+	resumed=false;midiFile=NULL;internalFluid=new qmpMidiOutFluid();
+	registerMidiOutDevice(internalFluid,"Internal FluidSynth");
+	waitvoice=true;
 	memset(eventHandlerCB,0,sizeof(eventHandlerCB));
 	memset(eventHandlerCBuserdata,0,sizeof(eventHandlerCBuserdata));
 	memset(eventReaderCB,0,sizeof(eventReaderCB));
 	memset(eventReaderCBuserdata,0,sizeof(eventReaderCBuserdata));
 	memset(fileReadFinishCB,0,sizeof(fileReadFinishCB));
 	memset(fileReadFinishCBuserdata,0,sizeof(fileReadFinishCBuserdata));
-	memset(mappedoutput,0,sizeof(mappedoutput));
-	memset(deviceusage,0,sizeof(deviceusage));
-	mapper=new qmpMidiMapperRtMidi();
+	memset(mappedoutput,0xFF,sizeof(mappedoutput));
 	memset(chstatus,0,sizeof(chstatus));
 	for(int i=0;i<16;++i)
 		chstatus[i][7]=100,chstatus[i][11]=127,
@@ -309,29 +270,21 @@ CMidiPlayer::CMidiPlayer(bool singleInst)
 }
 CMidiPlayer::~CMidiPlayer()
 {
-	if(singleInstance||settings||synth||adriver)fluidDeinitialize();
-	if(midiFile)delete midiFile;delete midiReaders;delete mapper;
+	if(internalFluid)
+	{
+		internalFluid->deviceDeinit();
+		delete internalFluid;
+		internalFluid=NULL;
+	}
+	if(midiFile)delete midiFile;delete midiReaders;
 }
 void CMidiPlayer::playerPanic(bool reset)
 {
-	for(int i=0;i<16;++i)
+	for(auto& i:mididev)
+	if(i.refcnt)
 	{
-		if(synth){
-			if(reset){
-				fluid_synth_cc(synth,i,0,0);
-				fluid_synth_cc(synth,i,7,100);
-				fluid_synth_cc(synth,i,10,64);
-				fluid_synth_cc(synth,i,11,127);
-				fluid_synth_cc(synth,i,32,0);
-				fluid_synth_pitch_wheel_sens(synth,i,2);
-			}
-			fluid_synth_cc(synth,i,64,0);
-			fluid_synth_pitch_bend(synth,i,8192);
-			//all sounds off causes the minus polyphone bug...
-			fluid_synth_all_notes_off(synth,i);
-		}
-		if(deviceusage[i])for(int j=0;j<16;++j)
-		reset?mapper->reset(i,j):mapper->panic(i,j);
+		for(uint8_t j=0;j<16;++j)
+		reset?i.dev->reset(j):i.dev->panic(j);
 	}
 }
 bool CMidiPlayer::playerLoadFile(const char* fn)
@@ -372,47 +325,16 @@ void CMidiPlayer::playerInit()
 		chstatus[i][10]=chstatus[i][71]=chstatus[i][72]=
 		chstatus[i][73]=chstatus[i][74]=chstatus[i][75]=
 		chstatus[i][76]=chstatus[i][77]=chstatus[i][78]=64;
-	if(!singleInstance)fluidPreInitialize();
 }
 void CMidiPlayer::playerDeinit()
 {
 	tceptr=0;tcstop=1;tcpaused=0;
 	delete midiFile;midiFile=NULL;
-	if(!singleInstance)fluidDeinitialize();
 }
 void CMidiPlayer::playerThread()
 {
 	prePlayInit();
 	playEvents();
-}
-
-void CMidiPlayer::rendererLoadFile(const char* ofn)
-{
-	settings=new_fluid_settings();
-	fluid_settings_setstr(settings,"audio.file.name",ofn);
-}
-void CMidiPlayer::rendererInit(const char* fn)
-{
-	finished=0;
-	synth=new_fluid_synth(settings);
-	player=new_fluid_player(synth);
-	fluid_player_add(player,fn);
-}
-void CMidiPlayer::rendererThread()
-{
-	fluid_file_renderer_t* renderer=new_fluid_file_renderer(synth);
-	fluid_player_play(player);
-	while(fluid_player_get_status(player)==FLUID_PLAYER_PLAYING)
-		if(fluid_file_renderer_process_block(renderer)!=FLUID_OK)break;
-	delete_fluid_file_renderer(renderer);
-	finished=1;
-}
-void CMidiPlayer::rendererDeinit()
-{
-	delete_fluid_player(player);
-	delete_fluid_synth(synth);
-	delete_fluid_settings(settings);
-	player=NULL;synth=NULL;settings=NULL;
 }
 
 void CMidiPlayer::sendSysX(bool send){sendSysEx=send;}
@@ -424,10 +346,11 @@ void CMidiPlayer::setTCeptr(uint32_t ep,uint32_t st)
 	if(ep==ecnt)tcstop=1;else tceptr=ep;
 	for(int i=0;i<16;++i)
 	{
-		for(int j=0;j<120;++j)fluid_synth_cc(synth,i,j,ccstamps[st][i][j]);
-		fluid_synth_program_change(synth,i,ccstamps[st][i][128]);
+		for(int j=0;j<120;++j)
+		internalFluid->basicMessage(0xB0|i,j,ccstamps[st][i][j]);
+		internalFluid->basicMessage(0xC0|i,ccstamps[st][i][128],0);
 		//fluid_synth_pitch_bend(synth,i,ccstamps[st][i][130]);
-		fluid_synth_pitch_wheel_sens(synth,i,ccstamps[st][i][134]);
+		internalFluid->rpnMessage(i,0,ccstamps[st][i][134]<<7);
 		pbr[i]=ccstamps[st][i][134];
 		dpt=ccstamps[st][0][131];ctempo=dpt*divs/1000;
 		ctsn=ccstamps[st][0][132]>>24;ctsd=1<<((ccstamps[st][0][132]>>16)&0xFF);
@@ -452,14 +375,9 @@ void CMidiPlayer::setTCpaused(uint32_t ps){tcpaused=ps;}
 uint32_t CMidiPlayer::isFinished(){return finished;}
 void CMidiPlayer::setResumed(){resumed=true;}
 void CMidiPlayer::setWaitVoice(bool wv){waitvoice=wv;}
-void CMidiPlayer::setGain(double gain){if(settings)fluid_settings_setnum(settings,"synth.gain",gain);}
-int CMidiPlayer::getPolyphone(){return synth?fluid_synth_get_active_voice_count(synth):0;}
-int CMidiPlayer::getMaxPolyphone(){return synth?fluid_synth_get_polyphony(synth):0;}
-void CMidiPlayer::setMaxPolyphone(int p){if(synth)fluid_synth_set_polyphony(synth,p);}
 
 void CMidiPlayer::getChannelPreset(int ch,int *b,int *p,char *name)
 {
-	if(!synth)return(void)(*b=0,*p=0,strcpy(name,""));
 	if(mappedoutput[ch])
 	{
 		*b=((int)chstatus[ch][0]<<7)|chstatus[ch][32];
@@ -468,29 +386,27 @@ void CMidiPlayer::getChannelPreset(int ch,int *b,int *p,char *name)
 	}
 	else
 	{
-		fluid_synth_channel_info_t info;
-		fluid_synth_get_channel_info(synth,ch,&info);
-		*b=info.bank;*p=info.program;
-		strcpy(name,info.name);
+		internalFluid->getChannelInfo(ch,b,p,name);
 	}
 }
 void CMidiPlayer::setChannelPreset(int ch,int b,int p)
 {
-	if(!synth)return;
 	chstatus[ch][128]=p;
 	if(mappedoutput[ch])
 	{
 		//external device mode?
 		chstatus[ch][0]=b>>7;chstatus[ch][32]=b&0x7F;
-		mapper->ctrlChange(mappedoutput[ch]-1,ch,0,b>>7);
-		mapper->ctrlChange(mappedoutput[ch]-1,ch,32,b&0x7F);
-		mapper->progChange(mappedoutput[ch]-1,ch,p);
+		qmpMidiOutDevice* d=mididev[mappedoutput[ch]].dev;
+		d->basicMessage(0xB0|ch,0x00,b>>7);
+		d->basicMessage(0xB0|ch,0x20,b&0x7F);
+		d->basicMessage(0xC0|ch,p,0);
 	}
 	else
 	{
-		chstatus[ch][0]=b;//!!FIXME: This is not correct...
-		fluid_synth_bank_select(synth,ch,b);
-		fluid_synth_program_change(synth,ch,p);
+		chstatus[ch][0]=b;//Assuming GS. !!FIXME: This is not correct...
+		qmpMidiOutDevice* d=mididev[mappedoutput[ch]].dev;
+		d->basicMessage(0xB0|ch,0x00,b);
+		d->basicMessage(0xC0|ch,p,0);
 	}
 }
 void CMidiPlayer::dumpFile()
@@ -516,85 +432,60 @@ bool CMidiPlayer::getChannelMask(int ch)
 {return((mute>>ch)&1)||(solo&&!((solo>>ch)&1));}
 int CMidiPlayer::getCC(int ch,int id)
 {
-	int ret=0;
-	if(mappedoutput[ch])
-		ret=chstatus[ch][id];
-	else
-		if(synth)fluid_synth_get_cc(synth,ch,id,&ret);
-	return ret;
+	return chstatus[ch][id];
 }
 void CMidiPlayer::setCC(int ch,int id,int val)
 {
-	if(!synth)return;
 	chstatus[ch][id]=val;
-	mappedoutput[ch]?mapper->ctrlChange(mappedoutput[ch]-1,ch,id,val):
-					 (void)fluid_synth_cc(synth,ch,id,val);
+	mididev[mappedoutput[ch]].dev->basicMessage(0xB0|ch,id,val);
 }
-void CMidiPlayer::getReverbPara(double *r,double *d,double *w,double *l)
-{
-	if(!synth)return;
-	*r=fluid_synth_get_reverb_roomsize(synth);
-	*d=fluid_synth_get_reverb_damp(synth);
-	*w=fluid_synth_get_reverb_width(synth);
-	*l=fluid_synth_get_reverb_level(synth);
-}
-void CMidiPlayer::setReverbPara(int e,double r,double d,double w,double l)
-{
-	if(!synth)return;
-	fluid_synth_set_reverb_on(synth,e);
-	fluid_synth_set_reverb(synth,r,d,w,l);
-}
-void CMidiPlayer::getChorusPara(int *fb,double *l,double *r,double *d,int *type)
-{
-	if(!synth)return;
-	*fb=fluid_synth_get_chorus_nr(synth);
-	*l=fluid_synth_get_chorus_level(synth);
-	*r=fluid_synth_get_chorus_speed_Hz(synth);
-	*d=fluid_synth_get_chorus_depth_ms(synth);
-	*type=fluid_synth_get_chorus_type(synth);
-}
-void CMidiPlayer::setChorusPara(int e,int fb,double l,double r,double d,int type)
-{
-	if(!synth)return;
-	fluid_synth_set_chorus_on(synth,e);
-	fluid_synth_set_chorus(synth,fb,l,r,d,type);
-}
-fluid_settings_t* CMidiPlayer::getFluidSettings(){return settings;}
-void CMidiPlayer::pushSoundFont(const char *sf)
-{fluid_synth_sfload(synth,sf,1);}
-int CMidiPlayer::getSFCount()
-{return synth?fluid_synth_sfcount(synth):0;}
-fluid_sfont_t* CMidiPlayer::getSFPtr(int sfid)
-{return synth&&sfid<getSFCount()?fluid_synth_get_sfont(synth,sfid):NULL;}
 
-qmpMidiMapperRtMidi* CMidiPlayer::getMidiMapper(){return mapper;}
+qmpMidiOutFluid* CMidiPlayer::fluid(){return internalFluid;}
+
+void CMidiPlayer::registerMidiOutDevice(qmpMidiOutDevice* dev,std::string name)
+{
+	SMidiDev d;
+	d.dev=dev;d.name=name;
+	d.refcnt=0;
+	mididev.push_back(d);
+}
+void CMidiPlayer::unregisterMidiOutDevice(std::string name)
+{
+	for(auto i=mididev.begin();i!=mididev.end();++i)
+	if(i->name==name)
+	{
+		i->dev->deviceDeinit();
+		mididev.erase(i);
+		break;
+	}
+}
+std::vector<std::string> CMidiPlayer::getMidiOutDevices()
+{
+	std::vector<std::string> ret;
+	for(auto &i:mididev)
+	ret.push_back(i.name);
+	return ret;
+}
 int CMidiPlayer::getChannelOutput(int ch)
 {
 	return mappedoutput[ch];
 }
-void CMidiPlayer::setChannelOutput(int ch,int devid)
+void CMidiPlayer::setChannelOutput(int ch,int outid)
 {
 	int origoutput=mappedoutput[ch];
-	int newoutput=0;
-	if(devid>0)
+	SMidiDev& dnew=mididev[outid];
+	dnew.dev->onMapped(ch,++dnew.refcnt);
+	for(int i=0;i<128;++i)
+	if(i!=6&&i!=38&&i!=100&&i!=101)//avoid sending RPN/NRPN
+	dnew.dev->basicMessage(0xB0|ch,i,chstatus[ch][i]);
+	dnew.dev->basicMessage(0xC0|ch,chstatus[ch][128],0);
+	mappedoutput[ch]=outid;
+	if(~origoutput)
 	{
-		if(!deviceusage[devid-1])deviceiid[devid]=newoutput=mapper->deviceInit(devid-1);
-		++deviceusage[deviceiid[devid]];mapper->progChange(deviceiid[devid],ch,chstatus[ch][128]);
-		for(int i=0;i<128;++i)if(i!=100&&i!=101)mapper->ctrlChange(deviceiid[devid],ch,i,chstatus[ch][i]);
+		SMidiDev& dold=mididev[origoutput];
+		dold.dev->onUnmapped(ch,--dold.refcnt);
+
 	}
-	else
-	{
-		fluid_synth_bank_select(synth,ch,chstatus[ch][0]);
-		fluid_synth_program_change(synth,ch,chstatus[ch][128]);
-		for(int i=0;i<128;++i)if(i!=100&&i!=101&&i!=0&&i!=32)
-			fluid_synth_cc(synth,ch,i,chstatus[ch][i]);
-	}
-	mappedoutput[ch]=devid?deviceiid[devid]+1:0;
-	if(origoutput>0)
-	{
-		--deviceusage[origoutput-1];mapper->panic(origoutput-1,ch);
-		if(!deviceusage[origoutput-1])mapper->deviceDeinit(origoutput-1);
-	}else if(synth)fluid_synth_all_notes_off(synth,ch);
 }
 uint8_t* CMidiPlayer::getChstates(){return chstate;}
 int CMidiPlayer::setEventHandlerCB(IMidiCallBack *cb,void *userdata)

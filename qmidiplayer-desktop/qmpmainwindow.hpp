@@ -180,6 +180,8 @@ class qmpMainWindow:public QMainWindow
 		std::chrono::steady_clock::time_point st;
 		double offset;
 		CMidiPlayer *player;
+		qmpRtMidiManager *rtmididev;
+		qmpFileRendererFluid *fluidrenderer;
 		qmpPluginManager *pmgr;
 		QPointer<qmpPlistWindow> plistw;
 		QPointer<qmpChannelsWindow> chnlw;
@@ -194,7 +196,7 @@ class qmpMainWindow:public QMainWindow
 		std::vector<std::string> enabled_buttons,enabled_actions;
 
 		void onfnChanged();
-		void playerSetup();
+		void playerSetup(IFluidSettings *fs);
 
 	private:
 		static qmpMainWindow* ref;

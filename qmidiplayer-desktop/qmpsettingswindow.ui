@@ -53,11 +53,6 @@
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
-           <item>
-            <property name="text">
-             <string>Internal FluidSynth</string>
-            </property>
-           </item>
           </widget>
          </item>
         </layout>

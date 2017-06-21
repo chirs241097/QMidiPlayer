@@ -95,7 +95,7 @@ void qmpEfxWindow::showEvent(QShowEvent *event)
 	event->accept();
 }
 
-void qmpEfxWindow::sendEfxChange()
+void qmpEfxWindow::sendEfxChange(void *_fs)
 {
 	if(!qmpMainWindow::getInstance()||!initialized)return;
 	rr=ui->sbRoom->value()/100.;rd=ui->sbDamp->value()/100.;
@@ -103,9 +103,10 @@ void qmpEfxWindow::sendEfxChange()
 	ct=ui->rbSine->isChecked()?FLUID_CHORUS_MOD_SINE:FLUID_CHORUS_MOD_TRIANGLE;
 	cfb=ui->sbFeedBack->value();cl=ui->sbLevelC->value()/100.;
 	cr=ui->sbRate->value();cd=ui->sbDepth->value();
-	CMidiPlayer* player=qmpMainWindow::getInstance()->getPlayer();
-	player->setReverbPara(ui->cbEnabledR->isChecked()?1:0,rr,rd,rw,rl);
-	player->setChorusPara(ui->cbEnabledC->isChecked()?1:0,cfb,cl,cr,cd,ct);
+	IFluidSettings* fs=(IFluidSettings*)_fs;
+	if(!_fs)fs=qmpMainWindow::getInstance()->getPlayer()->fluid();
+	fs->setReverbPara(ui->cbEnabledR->isChecked()?1:0,rr,rd,rw,rl);
+	fs->setChorusPara(ui->cbEnabledC->isChecked()?1:0,cfb,cl,cr,cd,ct);
 
 	QSettings *settings=qmpSettingsWindow::getSettingsIntf();
 	settings->setValue("Effects/ChorusEnabled",ui->cbEnabledC->isChecked()?1:0);

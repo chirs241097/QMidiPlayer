@@ -135,9 +135,9 @@ uint32_t qmpPluginAPI::getNoteCount()
 uint32_t qmpPluginAPI::getMaxTick()
 {return qmw&&qmw->getPlayer()?qmw->getPlayer()->getMaxTick():0;}
 uint32_t qmpPluginAPI::getCurrentPolyphone()
-{return qmw&&qmw->getPlayer()?qmw->getPlayer()->getPolyphone():0;}
+{return qmw&&qmw->getPlayer()?qmw->getPlayer()->fluid()->getPolyphone():0;}
 uint32_t qmpPluginAPI::getMaxPolyphone()
-{return qmw&&qmw->getPlayer()?qmw->getPlayer()->getMaxPolyphone():0;}
+{return qmw&&qmw->getPlayer()?qmw->getPlayer()->fluid()->getMaxPolyphone():0;}
 uint32_t qmpPluginAPI::getCurrentTimeStamp()
 {return qmw&&qmw->getPlayer()?qmw->getPlayer()->getTick():0;}
 uint32_t qmpPluginAPI::getCurrentPlaybackPercentage()
@@ -182,6 +182,10 @@ void qmpPluginAPI::callEventReaderCB(SEventCallBackData d){if(qmw&&qmw->getPlaye
 void qmpPluginAPI::setFuncState(std::string name,bool state){if(qmw)qmw->setFuncState(name,state);}
 void qmpPluginAPI::setFuncEnabled(std::string name,bool enable){if(qmw)qmw->setFuncEnabled(name,enable);}
 
+void qmpPluginAPI::registerMidiOutDevice(qmpMidiOutDevice *dev, std::string name)
+{qmw->getPlayer()->registerMidiOutDevice(dev,name);}
+void qmpPluginAPI::unregisterMidiOutDevice(std::string name)
+{qmw->getPlayer()->unregisterMidiOutDevice(name);}
 int qmpPluginAPI::registerEventHandlerIntf(IMidiCallBack *cb,void *userdata)
 {return qmw->getPlayer()->setEventHandlerCB(cb,userdata);}
 void qmpPluginAPI::unregisterEventHandlerIntf(int intfhandle)

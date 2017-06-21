@@ -26,9 +26,10 @@ SOURCES += main.cpp\
 	qmpsettingswindow.cpp \
 	qmphelpwindow.cpp \
 	qdialskulpturestyle.cpp \
-	../core/qmpmidimapperrtmidi.cpp \
 	qmpplugin.cpp \
-    qmpcustomizewindow.cpp
+    qmpcustomizewindow.cpp \
+    ../core/qmpmidioutrtmidi.cpp \
+    ../core/qmpmidioutfluid.cpp
 
 HEADERS  += qmpmainwindow.hpp \
 	../core/qmpmidiplay.hpp \
@@ -41,10 +42,11 @@ HEADERS  += qmpmainwindow.hpp \
 	qmpsettingswindow.hpp \
 	qmphelpwindow.hpp \
 	qdialskulpturestyle.hpp \
-	../core/qmpmidimappers.hpp \
 	../include/qmpcorepublic.hpp \
 	qmpplugin.hpp \
-    qmpcustomizewindow.hpp
+    qmpcustomizewindow.hpp \
+    ../core/qmpmidioutrtmidi.hpp \
+    ../core/qmpmidioutfluid.hpp
 
 FORMS    += qmpmainwindow.ui \
 	qmpplistwindow.ui \

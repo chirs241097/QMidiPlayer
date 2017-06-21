@@ -8,10 +8,12 @@ Window {
 	id: window1
 	width: 420
 	height: 240
-	title: "QMidiPlayer Lite"
+	title: "QMidiPlayer Lite TP"
 	visible: true
 	property bool playing
 	playing: false
+	property string soundfont
+	soundfont: ""
 
 	MouseArea {
 		id: mouseArea1
@@ -20,9 +22,6 @@ Window {
 		anchors.leftMargin: 0
 		anchors.topMargin: 0
 		anchors.fill: parent
-		onClicked: {
-			//Qt.quit();
-		}
 
 		Button {
 			id: button2
@@ -35,7 +34,7 @@ Window {
 				if(!playing)
 				{
 					qmpcore.loadFile(fileName.text);
-					qmpcore.initFluidSynth();
+					qmpcore.initFluidSynth(soundfont);
 					qmpcore.playFile();
 					playing=true;
 					uiTimer.start();
@@ -92,6 +91,18 @@ Window {
 				}
 			}
 		}
+
+		Button {
+			id: button
+			anchors.top: parent.top
+			anchors.topMargin: 67
+			anchors.horizontalCenter: parent.horizontalCenter
+			x: 139
+			text: qsTr("Load SoundFont")
+			onClicked: {
+				sfFileDialog.open()
+			}
+		}
 	}
 
 	CQMPCoreWrapper {
@@ -115,17 +126,18 @@ Window {
 	Text {
 		id: fileName
 		text: qsTr("...")
-		anchors.centerIn: parent
+		anchors.top: parent.top
+		anchors.topMargin: 100
+		anchors.horizontalCenter: parent.horizontalCenter
+		x: 139
 	}
 
 	Button {
 		id: button1
 		x: 170
-		width: 80
-		height: 27
 		text: qsTr("Open")
 		anchors.top: parent.top
-		anchors.topMargin: 142
+		anchors.topMargin: 130
 		anchors.horizontalCenter: parent.horizontalCenter
 		onClicked: {
 			fileDialog.open();
@@ -139,6 +151,12 @@ Window {
 		onAccepted: {
 			fileName.text=fileUrl;
 		}
+	}
+	FileDialog {
+		id: sfFileDialog
+		title: qsTr("Select SoundFont")
+		nameFilters: ["SoundFont (*.sf2)"]
+		onAccepted: {soundfont=fileUrl;}
 	}
 }
 

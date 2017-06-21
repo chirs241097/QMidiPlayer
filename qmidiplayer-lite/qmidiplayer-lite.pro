@@ -7,8 +7,8 @@ CONFIG += c++11
 
 SOURCES += main.cpp \
 	../core/qmpmidiplay.cpp \
-	../core/qmpmidiread.cpp \
-	../core/qmpmidimapperrtmidi.cpp
+    ../core/qmpmidiread.cpp \
+    ../core/qmpmidioutfluid.cpp
 
 RESOURCES += qml.qrc
 
@@ -21,7 +21,7 @@ include(deployment.pri)
 HEADERS += \
 	../core/qmpmidiplay.hpp \
 	qmpcorewrapper.hpp \
-	../core/qmpmidimappers.hpp \
+    ../core/qmpmidioutfluid.hpp \
 	../include/qmpcorepublic.hpp
 unix{
 LIBS += -lfluidsynth -lrtmidi

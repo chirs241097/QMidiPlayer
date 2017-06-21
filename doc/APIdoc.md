@@ -92,18 +92,122 @@ When the user requests to open a file, the core tries to load the file with regi
 accepts the first valid result. Therefore you can implement your own file reader, which may even add
 eXtended Module support to QMidiPlayer!
 
-# 5. Reference
+## 4.4 MIDI Output Device
+This is not a functionality either. By implementing the interface qmpMidiOutDevice and registering it, you can
+add custom MIDI Devices in the built-in MIDI mapper.
+
+# 5. Generic Considerations
+
+1. If you implemented a API that returns a pointer to something, you can forget about the pointer after returning
+it. The core will free its memory after it is no longer used. You shouldn't extend the class pointed to because
+if you do so, the core will not be able to destruct it correctly. Examples include IMidiFileReader::readFile which
+returns a pointer to a CMidiFile class.
+2. However if you passed a pointer to the core through a function in qmpPluginAPI, you cannot forget about the pointer
+later. As these pointers are mostly polymorphic, the core cannot handle their destruction. You have to delete them
+yourself in the deinit() function of your plugin.
+
+# 6. Reference
 Well, everything above is just nonsense compared to this one. The full reference of the API is here.
 
-struct SEvent:
-members:
+## Structures & Classes
 
-- iid (uint32_t): internal id. Usually set to the size of the event pool when current event is read.
-- time (uint32_t): event time in tick.
-- p1 (uint32_t): parameter 1 for the midi device.
-- p2 (uint32_t): parameter 2 for the midi device.
-- type (uint8_t): type of the event together with the channel this event goes to.
-- str (std::string): Contains the raw data for string-like events.
-- default constructor: sets everything to zero or empty.
-- constructor with parameters
-- friend bool operator <(const SEvent& a,const SEvent& b)
+### struct SEvent
+Describes an MIDI event.
+
+- `uint32_t iid`  
+internal id. Usually set to the size of the event pool when current event is read.
+- `uint32_t time`  
+timestamp of the event in MIDI tick.
+- `uint32_t p1`  
+parameter 1 for the midi event.
+- `uint32_t p2`  
+parameter 2 for the midi event.
+- `uint8_t type`  
+type of the event together with the channel this event goes to.
+- `std::string str`  
+Contains the raw data for string-like events.
+- default constructor: `SEvent()`  
+sets everything to zero or empty.
+- constructor with parameters: `SEvent(uint32_t _iid,uint32_t _t,char _tp,uint32_t _p1,uint32_t _p2,const char* s=NULL)`  
+fills the event with the parameters given.
+- `friend bool operator <(const SEvent& a,const SEvent& b)`  
+compares events by their timestamps. Ties are broken by comparing precedence in file.
+
+### struct SEventCallBackData
+A stripped down version of SEvent that is used to pass event data in APIs.
+
+- `uint32_t time`
+- `uint32_t type`
+- `uint32_t p1`
+- `uint32_t p2`
+
+### class CMidiTrack
+Describes a single MIDI track. A MIDI track consists of multiple MIDI events.
+
+- `std::vector<SEvent> eventList`  
+Vector of SEvent's.
+- `void appendEvent(SEvent e)`  
+Append an event to the end of the event list.
+- `SEvent& operator[](size_t sub)`  
+Get the reference to the contained event with the given index.
+
+### class CMidiFile
+Describes a MIDI file. A MIDI file consists of multiple MIDI tracks.
+
+- `bool valid`  
+Is the MIDI file a valid one?
+- `char* title`  
+Title of the MIDI file.
+- `char* copyright`  
+Copyright information of the MIDI file.
+- `std::vector<CMidiTrack> tracks`
+Tracks in the MIDI file.
+- `uint32_t std`  
+File standard of the MIDI file.
+  - 0: unknown
+  - 1: GM Level 1
+  - 2: GM Level 2
+  - 3: GS
+  - 4: XG
+- `uint32_t div`  
+Ticks per quarter note. SMTPE format is not supported by QMidiPlayer.
+- `~CMidiFile()`  
+Frees memory occupied by the title and copyright string.
+
+### class IMidiCallBack
+Generic callback function that can be used for hooking the core.
+
+- `IMidiCallBack()`  
+Default empty constructor.
+- `virtual void callBack(void* callerdata,void* userdata)=0;`  
+Abstract function of the callback. callerdata is filled by the caller and
+userdata is set to whatever you asked for when registering the callback.
+- `virtual ~IMidiCallBack()`  
+Virtual empty destructor.
+
+### class IMidiFileReader
+MIDI file reader interface. Use this to implement your file importer.
+
+- `IMidiFileReader()`  
+Default empty constructor.
+- `virtual ~IMidiFileReader()`  
+Virtual empty destructor.
+- `virtual CMidiFile* readFile(const char* fn)=0`  
+Abstract function to be implemented by the plugin.  
+This function should read file from the given path (fn) and return a
+pointer to the resulting CMidiFile structure. You shoudn't handle the
+destruction of the resulting structure as the core will handle it.  
+Read 5.1 for more details.  
+After reading each event, you should call qmpPluginAPI::callEventReaderCB
+to invoke event reader callbacks and process their requests.
+- `virtual void discardCurrentEvent()=0`  
+Only called by event reader callbacks.  
+Expected behavior: Sets the discard flag for the last event you have read.
+If an event has its discard flag set, it shouldn't be pushed into its track.  
+discardCurrentEvent may be called multiple times by different event reader
+callbacks. In such case, there's still only one event discarded.
+- `virtual void commitEventChange(SEventCallBackData d)=0`  
+Only called by event reader callbacks.  
+Expected behavior: modifies the last event you have read to the provided data.  
+commitEventChange may be called multiple times by different event reader callbacks.
+In such case, only the last modification to the current event counts.

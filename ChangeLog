@@ -1,3 +1,15 @@
+2017-06-21 0.8.6 indev
+Code refactoring:
+  Complete rewrite of the MIDI mapper. The new
+  architecture allows implementation of custom MIDI
+  output devices.
+Enforces single fluidsynth instance. Deprecating
+the option.
+Documentation uptate.
+The lite version no longer have hardcoded soundfont
+path.
+More testing needed for this revision.
+
 2017-06-16 0.8.6 indev
 Code refactoring:
   Tracks information are now preserved.

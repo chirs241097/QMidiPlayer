@@ -15,18 +15,18 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent) :
 	setMaximumWidth(w);setMaximumHeight(h);setMinimumWidth(w);setMinimumHeight(h);
 	pselectw=new qmpPresetSelector(this);
 	ceditw=new qmpChannelEditor(this);
-	mapper=qmpMainWindow::getInstance()->getPlayer()->getMidiMapper();
 	cha=new QIcon(":/img/ledon.svg");chi=new QIcon(":/img/ledoff.svg");
 	cb=new qmpCWNoteOnCB();fused=callbacksc=cbcnt=0;
 	qmpMainWindow::getInstance()->getPlayer()->setEventHandlerCB(cb,NULL);
 	connect(cb,SIGNAL(onNoteOn()),this,SLOT(updateChannelActivity()));
-	int devc=mapper->enumDevices();
+	std::vector<std::string> devs=qmpMainWindow::getInstance()->getPlayer()->getMidiOutDevices();
+	size_t devc=devs.size();
 	//We setup default output here...
 	//Pretty strange...
-	for(int i=0;i<devc;++i)
+	for(size_t i=0;i<devc;++i)
 	{
-		qmpSettingsWindow::getDefaultOutWidget()->addItem(mapper->deviceName(i).c_str());
-		if(!QString(mapper->deviceName(i).c_str()).compare(qmpSettingsWindow::getSettingsIntf()->
+		qmpSettingsWindow::getDefaultOutWidget()->addItem(devs[i].c_str());
+		if(!QString(devs[i].c_str()).compare(qmpSettingsWindow::getSettingsIntf()->
 				value("Midi/DefaultOutput","Internal FluidSynth").toString()))
 			qmpSettingsWindow::getDefaultOutWidget()->setCurrentIndex(i+1);
 	}
@@ -44,16 +44,16 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent) :
 		connect(ui->twChannels->cellWidget(i,2),SIGNAL(stateChanged(int)),this,SLOT(channelMSChanged()));
 		ui->twChannels->setCellWidget(i,3,new QDCComboBox());
 		QDCComboBox *cb=(QDCComboBox*)ui->twChannels->cellWidget(i,3);
-		cb->addItem("Internal FluidSynth");cb->setID(i);
-		for(int j=0;j<devc;++j)
+		cb->setID(i);
+		for(size_t j=0;j<devc;++j)
 		{
-			cb->addItem(mapper->deviceName(j).c_str());
+			cb->addItem(devs[j].c_str());
 			if(!qmpSettingsWindow::getSettingsIntf()->
 					value("Midi/DefaultOutput","Internal FluidSynth").toString().compare(
-					QString(mapper->deviceName(j).c_str())))
+					QString(devs[j].c_str())))
 			{
-				cb->setCurrentIndex(j+1);
-				changeMidiMapping(i,j+1);
+				cb->setCurrentIndex(j);
+				changeMidiMapping(i,j);
 			}
 		}
 		if(qmpSettingsWindow::getSettingsIntf()->value("Midi/DisableMapping",0).toInt())

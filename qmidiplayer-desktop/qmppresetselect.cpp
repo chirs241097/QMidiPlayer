@@ -21,16 +21,11 @@ void qmpPresetSelector::showEvent(QShowEvent *e)
 {
 	memset(presets,0,sizeof(presets));
 	CMidiPlayer *plyr=qmpMainWindow::getInstance()->getPlayer();
-	if(!plyr->getSFCount())return e->ignore();
-	int sfc=plyr->getSFCount();
-	for(int i=sfc-1;i>=0;--i)
-	{
-		fluid_sfont_t* psf=plyr->getSFPtr(i);
-		fluid_preset_t preset;
-		psf->iteration_start(psf);
-		while(psf->iteration_next(psf,&preset))
-			strcpy(presets[preset.get_banknum(&preset)][preset.get_num(&preset)],preset.get_name(&preset));
-	}
+	if(!plyr->fluid()->getSFCount())return e->ignore();
+	std::vector<std::pair<std::pair<int,int>,std::string>>
+		presetlist=plyr->fluid()->listPresets();
+	for(auto &i:presetlist)
+		strcpy(presets[i.first.first][i.first.second],i.second.c_str());
 	ui->lwBankSelect->clear();
 	ui->lwPresetSelect->clear();
 	for(int i=0;i<=128;++i)
@@ -44,7 +39,7 @@ void qmpPresetSelector::showEvent(QShowEvent *e)
 void qmpPresetSelector::setupWindow(int chid)
 {
 	CMidiPlayer *plyr=qmpMainWindow::getInstance()->getPlayer();
-	if(!plyr->getSFCount())return;
+	if(!plyr->fluid()->getSFCount())return;
 	ch=chid;int b=0,p=0,r;char name[64];
 	sprintf(name,"Preset Selection - Channel #%d",ch+1);
 	setWindowTitle(name);

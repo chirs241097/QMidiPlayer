@@ -5,10 +5,10 @@
 #include <cstdlib>
 #include <utility>
 #include <vector>
-#include <fluidsynth.h>
 #define QMP_MAIN
 #include "../include/qmpcorepublic.hpp"
-#include "qmpmidimappers.hpp"
+#include "qmpmidioutrtmidi.hpp"
+#include "qmpmidioutfluid.hpp"
 class CMidiPlayer;
 class CSMFReader:public IMidiFileReader
 {
@@ -60,20 +60,23 @@ class CMidiPlayer
 		int32_t rpnid[16],rpnval[16];
 		uint16_t mute,solo;
 		double ftime;
-		bool sendSysEx,singleInstance,waitvoice;
-		fluid_settings_t* settings;
-		fluid_synth_t* synth;
-		fluid_audio_driver_t* adriver;
-		fluid_player_t* player;
+		bool sendSysEx,waitvoice;
+		uint8_t chstate[16],chstatus[16][130];//0..127: cc 128: pc
+		qmpMidiOutFluid* internalFluid;
 		uint32_t ctempo,ctsn,ctsd,dpt,divs,cks;
 		//raw tempo, timesig num., timesig den., delay per tick, division, keysig
 		//thread control
 		uint32_t tceptr,tcpaused,tcstop,ct;
 		uint32_t finished,resumed;
 		uint32_t pbr[16],pbv[16];
-		qmpMidiMapperRtMidi *mapper;
-		int mappedoutput[16],deviceusage[16],deviceiid[128];
-		uint8_t chstate[16],chstatus[16][130];//0..127: cc 128: pc
+		struct SMidiDev
+		{
+			std::string name;
+			qmpMidiOutDevice* dev;
+			int refcnt;
+		};
+		std::vector<SMidiDev> mididev;
+		int mappedoutput[16];
 		IMidiCallBack* eventHandlerCB[16];
 		IMidiCallBack* eventReaderCB[16];
 		IMidiCallBack* fileReadFinishCB[16];
@@ -85,28 +88,20 @@ class CMidiPlayer
 		SEvent *getEvent(int id);
 		void dumpFile();
 		void setBit(uint16_t &n,uint16_t bn,uint16_t b);
-		void processEvent(const SEvent *e);
+		bool processEvent(const SEvent *e);
 		void processEventStub(const SEvent *e);
 		void prePlayInit();
 		void playEvents();
 		void fileTimer1Pass();
 		void fileTimer2Pass();
 	public:
-		CMidiPlayer(bool singleInst=false);
+		CMidiPlayer();
 		~CMidiPlayer();
 		bool playerLoadFile(const char* fn);
 		void playerInit();
-		void fluidPreInitialize();
-		void fluidInitialize();
-		void fluidDeinitialize();
 		void playerDeinit();
 		void playerThread();
 		void playerPanic(bool reset=false);
-
-		void rendererLoadFile(const char* ofn);
-		void rendererInit(const char *fn);
-		void rendererThread();
-		void rendererDeinit();
 
 		//playing control methods
 		uint32_t getStamp(int id);
@@ -132,11 +127,7 @@ class CMidiPlayer
 		const char* getTitle();
 		const char* getCopyright();
 
-		void setGain(double gain);
 		void sendSysX(bool send);
-		int getPolyphone();
-		int getMaxPolyphone();
-		void setMaxPolyphone(int p);
 
 		void setChannelPreset(int ch,int b,int p);
 		void getChannelPreset(int ch,int *b,int *p,char *name);
@@ -145,19 +136,14 @@ class CMidiPlayer
 		bool getChannelMask(int ch);
 		int getCC(int ch,int id);
 		void setCC(int ch,int id,int val);
-		void getReverbPara(double *r,double *d,double *w,double *l);
-		void setReverbPara(int e,double r,double d,double w,double l);
-		void getChorusPara(int *fb,double *l,double *r,double *d,int *type);
-		void setChorusPara(int e,int fb,double l,double r,double d,int type);
 
-		fluid_settings_t* getFluidSettings();
-		void pushSoundFont(const char* sf);
-		int getSFCount();
-		fluid_sfont_t* getSFPtr(int sfid);
+		qmpMidiOutFluid* fluid();
 
-		qmpMidiMapperRtMidi* getMidiMapper();
+		void registerMidiOutDevice(qmpMidiOutDevice* dev,std::string name);
+		void unregisterMidiOutDevice(std::string name);
+		std::vector<std::string> getMidiOutDevices();
 		int getChannelOutput(int ch);
-		void setChannelOutput(int ch,int devid);
+		void setChannelOutput(int ch,int outid);
 		uint8_t* getChstates();
 		int setEventHandlerCB(IMidiCallBack *cb,void *userdata);
 		void unsetEventHandlerCB(int id);

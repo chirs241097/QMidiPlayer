@@ -8,7 +8,7 @@
 #else
 #define EXPORTSYM __attribute__ ((visibility ("default")))
 #endif
-#define QMP_PLUGIN_API_REV "1+indev4"
+#define QMP_PLUGIN_API_REV "1+indev5"
 //MIDI Event structure
 struct SEvent
 {
@@ -26,9 +26,8 @@ struct SEvent
 };
 //This struct is used by event reader callbacks and event handler callbacks
 //as caller data struct
-class SEventCallBackData
+struct SEventCallBackData
 {
-public:
 	uint32_t time,type,p1,p2;
 	SEventCallBackData(uint32_t _t,uint32_t _p1,uint32_t _p2,uint32_t _tm){type=_t;p1=_p1;p2=_p2;time=_tm;}
 };
@@ -71,17 +70,7 @@ class IMidiFileReader
 		virtual void discardCurrentEvent()=0;
 		virtual void commitEventChange(SEventCallBackData d)=0;
 };
-//Main plugin interface.
-class qmpPluginIntf
-{
-	public:
-		qmpPluginIntf(){}
-		virtual ~qmpPluginIntf(){}
-		virtual void init(){}
-		virtual void deinit(){}
-		virtual const char* pluginGetName(){return "";}
-		virtual const char* pluginGetVersion(){return "";}
-};
+//Functionality interface.
 class qmpFuncBaseIntf
 {
 	public:
@@ -90,7 +79,7 @@ class qmpFuncBaseIntf
 		virtual void close()=0;
 		virtual ~qmpFuncBaseIntf(){}
 };
-//Visualization plugin pinterface. If your plugin implements a visualization,
+//Visualization plugin interface. If your plugin implements a visualization,
 //you should implement this pinterface.
 class qmpVisualizationIntf:public qmpFuncBaseIntf
 {
@@ -103,6 +92,34 @@ class qmpVisualizationIntf:public qmpFuncBaseIntf
 		virtual void pause()=0;
 		virtual void reset()=0;
 		virtual ~qmpVisualizationIntf(){}
+};
+//Midi mapper plugin interface.
+class qmpMidiOutDevice
+{
+	public:
+		qmpMidiOutDevice(){}
+		virtual void deviceInit()=0;
+		virtual void deviceDeinit()=0;
+		virtual void basicMessage(uint8_t type,uint8_t p1,uint8_t p2)=0;
+		virtual void extendedMessage(uint8_t length,const char* data)=0;
+		virtual void rpnMessage(uint8_t ch,uint16_t type,uint16_t val)=0;
+		virtual void nrpnMessage(uint8_t ch,uint16_t type,uint16_t val)=0;
+		virtual void panic(uint8_t ch)=0;
+		virtual void reset(uint8_t ch)=0;
+		virtual void onMapped(uint8_t ch,int refcnt)=0;
+		virtual void onUnmapped(uint8_t ch,int refcnt)=0;
+		virtual ~qmpMidiOutDevice(){}
+};
+//Main plugin interface.
+class qmpPluginIntf
+{
+	public:
+		qmpPluginIntf(){}
+		virtual ~qmpPluginIntf(){}
+		virtual void init(){}
+		virtual void deinit(){}
+		virtual const char* pluginGetName(){return "";}
+		virtual const char* pluginGetVersion(){return "";}
 };
 #ifdef QMP_MAIN
 extern "C"{
@@ -151,6 +168,8 @@ class qmpPluginAPI
 		virtual void unregisterFunctionality(std::string name);
 		virtual void registerVisualizationIntf(qmpVisualizationIntf* intf,std::string name,std::string desc,const char* icon,int iconlen);
 		virtual void unregisterVisualizationIntf(std::string name);
+		virtual void registerMidiOutDevice(qmpMidiOutDevice* dev,std::string name);
+		virtual void unregisterMidiOutDevice(std::string name);
 		virtual int registerEventReaderIntf(IMidiCallBack* cb,void* userdata);
 		virtual void unregisterEventReaderIntf(int intfhandle);
 		virtual int registerEventHandlerIntf(IMidiCallBack* cb,void* userdata);

@@ -11,7 +11,7 @@
 #include "qmppresetselect.hpp"
 #include "qmpchanneleditor.hpp"
 #include "../core/qmpmidiplay.hpp"
-#include "../core/qmpmidimappers.hpp"
+#include "../core/qmpmidioutrtmidi.hpp"
 
 namespace Ui {
 	class qmpChannelsWindow;
@@ -105,7 +105,6 @@ class qmpChannelsWindow:public QDialog
 		Ui::qmpChannelsWindow *ui;
 		qmpPresetSelector *pselectw;
 		qmpChannelEditor *ceditw;
-		qmpMidiMapperRtMidi *mapper;
 		QIcon *cha,*chi;
 		qmpCWNoteOnCB *cb;
 		qmpChannelFunc *chnlf;
