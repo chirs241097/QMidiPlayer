@@ -1,4 +1,9 @@
 2017-06-21 0.8.6 indev
+Fixed FTBFS on Windows.
+Fixed the default output device option.
+Seeking now restores CC values correctly.
+
+2017-06-21 0.8.6 indev
 Fixed a bunch of bugs and crashes in the RtMidi
 output device.
 

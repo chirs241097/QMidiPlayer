@@ -28,7 +28,7 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent) :
 		qmpSettingsWindow::getDefaultOutWidget()->addItem(devs[i].c_str());
 		if(!QString(devs[i].c_str()).compare(qmpSettingsWindow::getSettingsIntf()->
 				value("Midi/DefaultOutput","Internal FluidSynth").toString()))
-			qmpSettingsWindow::getDefaultOutWidget()->setCurrentIndex(i+1);
+			qmpSettingsWindow::getDefaultOutWidget()->setCurrentIndex(i);
 	}
 	qmpSettingsWindow::getSettingsIntf()->setValue("Midi/DefaultOutput",
 			qmpSettingsWindow::getDefaultOutWidget()->currentText());

@@ -577,8 +577,9 @@ void qmpMainWindow::startRender()
 #ifdef _WIN32
 	char* ofstr=wcsto8bit((plistw->getSelectedItem()+QString(".wav")).toStdWString().c_str());
 	char* ifstr=wcsto8bit(plistw->getSelectedItem().toStdWString().c_str());
-	player->rendererLoadFile(ofstr);
-	playerSetup();player->rendererInit(ifstr);
+	fluidrenderer=new qmpFileRendererFluid(ifstr,ofstr);
+	playerSetup(fluidrenderer);
+	fluidrenderer->rendererInit();
 	free(ofstr);free(ifstr);
 #else
 	fluidrenderer=new qmpFileRendererFluid(

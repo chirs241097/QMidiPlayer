@@ -6,6 +6,7 @@
 #include <fluidsynth.h>
 #include "qmpmidiplay.hpp"
 #ifdef _WIN32
+#define NOMINMAX
 #include <windows.h>
 uint64_t pf;
 #endif
@@ -347,11 +348,19 @@ void CMidiPlayer::setTCeptr(uint32_t ep,uint32_t st)
 	if(ep==ecnt)tcstop=1;else tceptr=ep;
 	for(int i=0;i<16;++i)
 	{
+		qmpMidiOutDevice* dest=mididev[mappedoutput[i]].dev;
 		for(int j=0;j<120;++j)
-		internalFluid->basicMessage(0xB0|i,j,ccstamps[st][i][j]);
+		{
+			internalFluid->basicMessage(0xB0|i,j,ccstamps[st][i][j]);
+			dest->basicMessage(0xB0|i,j,ccstamps[st][i][j]);
+			chstatus[i][j]=ccstamps[st][i][j];
+		}
 		internalFluid->basicMessage(0xC0|i,ccstamps[st][i][128],0);
+		dest->basicMessage(0xC0|i,ccstamps[st][i][128],0);
+		chstatus[i][128]=ccstamps[st][i][128];
 		//fluid_synth_pitch_bend(synth,i,ccstamps[st][i][130]);
 		internalFluid->rpnMessage(i,0,ccstamps[st][i][134]<<7);
+		dest->rpnMessage(i,0,ccstamps[st][i][134]<<7);
 		pbr[i]=ccstamps[st][i][134];
 		dpt=ccstamps[st][0][131];ctempo=dpt*divs/1000;
 		ctsn=ccstamps[st][0][132]>>24;ctsd=1<<((ccstamps[st][0][132]>>16)&0xFF);

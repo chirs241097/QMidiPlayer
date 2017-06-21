@@ -182,7 +182,7 @@ void qmpVisualization::showThread()
 		pos[0]=0;pos[1]=120;pos[2]=70;
 		rot[0]=0;rot[1]=75;rot[2]=90;
 	}
-	ctk=0;
+	ctk=api->getCurrentTimeStamp();
 	if(savevp)
 	{
 		pos[0]=api->getOptionDouble("Visualization/px");
