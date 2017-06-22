@@ -105,13 +105,15 @@ returns a pointer to a CMidiFile class.
 2. However if you passed a pointer to the core through a function in qmpPluginAPI, you cannot forget about the pointer
 later. As these pointers are mostly polymorphic, the core cannot handle their destruction. You have to delete them
 yourself in the deinit() function of your plugin.
+3. Do not throw exceptions to the core. The core doesn't handle exceptions and they will crash the entire program.
+Use the return value to indicate failure of a procedure instead.
 
 # 6. Reference
 Well, everything above is just nonsense compared to this one. The full reference of the API is here.
 
 ## Structures & Classes
 
-### struct SEvent
+### struct `SEvent`
 Describes an MIDI event.
 
 - `uint32_t iid`  
@@ -133,7 +135,7 @@ fills the event with the parameters given.
 - `friend bool operator <(const SEvent& a,const SEvent& b)`  
 compares events by their timestamps. Ties are broken by comparing precedence in file.
 
-### struct SEventCallBackData
+### struct `SEventCallBackData`
 A stripped down version of SEvent that is used to pass event data in APIs.
 
 - `uint32_t time`
@@ -141,7 +143,7 @@ A stripped down version of SEvent that is used to pass event data in APIs.
 - `uint32_t p1`
 - `uint32_t p2`
 
-### class CMidiTrack
+### class `CMidiTrack`
 Describes a single MIDI track. A MIDI track consists of multiple MIDI events.
 
 - `std::vector<SEvent> eventList`  
@@ -151,7 +153,7 @@ Append an event to the end of the event list.
 - `SEvent& operator[](size_t sub)`  
 Get the reference to the contained event with the given index.
 
-### class CMidiFile
+### class `CMidiFile`
 Describes a MIDI file. A MIDI file consists of multiple MIDI tracks.
 
 - `bool valid`  
@@ -164,17 +166,17 @@ Copyright information of the MIDI file.
 Tracks in the MIDI file.
 - `uint32_t std`  
 File standard of the MIDI file.
-  - 0: unknown
-  - 1: GM Level 1
-  - 2: GM Level 2
-  - 3: GS
-  - 4: XG
+    - 0: unknown
+    - 1: GM Level 1
+    - 2: GM Level 2
+    - 3: GS
+    - 4: XG
 - `uint32_t div`  
 Ticks per quarter note. SMTPE format is not supported by QMidiPlayer.
 - `~CMidiFile()`  
 Frees memory occupied by the title and copyright string.
 
-### class IMidiCallBack
+### class `IMidiCallBack`
 Generic callback function that can be used for hooking the core.
 
 - `IMidiCallBack()`  
@@ -185,7 +187,7 @@ userdata is set to whatever you asked for when registering the callback.
 - `virtual ~IMidiCallBack()`  
 Virtual empty destructor.
 
-### class IMidiFileReader
+### class `IMidiFileReader`
 MIDI file reader interface. Use this to implement your file importer.
 
 - `IMidiFileReader()`  
@@ -199,7 +201,9 @@ pointer to the resulting CMidiFile structure. You shoudn't handle the
 destruction of the resulting structure as the core will handle it.  
 Read 5.1 for more details.  
 After reading each event, you should call qmpPluginAPI::callEventReaderCB
-to invoke event reader callbacks and process their requests.
+to invoke event reader callbacks and process their requests.  
+If a file not supported by the reader is provided, this function should
+return a CMidiFile* whose `valid` field is `false`.
 - `virtual void discardCurrentEvent()=0`  
 Only called by event reader callbacks.  
 Expected behavior: Sets the discard flag for the last event you have read.

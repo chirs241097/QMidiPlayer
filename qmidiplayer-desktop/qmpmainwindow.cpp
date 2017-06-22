@@ -579,7 +579,7 @@ void qmpMainWindow::startRender()
 	char* ifstr=wcsto8bit(plistw->getSelectedItem().toStdWString().c_str());
 	fluidrenderer=new qmpFileRendererFluid(ifstr,ofstr);
 	playerSetup(fluidrenderer);
-	fluidrenderer->rendererInit();
+	fluidrenderer->renderInit();
 	free(ofstr);free(ifstr);
 #else
 	fluidrenderer=new qmpFileRendererFluid(

@@ -69,27 +69,10 @@ bool CMidiPlayer::processEvent(const SEvent *e)
 					break;
 				}
 			}
-			if((e->type&0x0F)==0x00||(e->type&0x0F)==07)
-			{
-				if(sendSysEx)
-				{
-					int l=e->p1;char *rmsg;
-					if(e->type&0x0F==0x00)
-					{
-						rmsg=(char*)malloc((++l)*sizeof(char));
-						rmsg[0]=0xF0;rmsg[1]=0;
-					}
-					else
-					{
-						rmsg=(char*)malloc(l*sizeof(char));
-						rmsg[0]=0;
-					}
-					strcat(rmsg,e->str.c_str());
-					for(auto& i:mididev)
-						if(i.refcnt)
-						i.dev->extendedMessage(l,rmsg);
-				}
-			}
+			if(((e->type&0x0F)==0x00||(e->type&0x0F)==07)&&sendSysEx)
+				for(auto& i:mididev)
+					if(i.refcnt)
+						i.dev->extendedMessage(e->p1,e->str.c_str());
 		return false;
 	}
 	return false;
@@ -298,6 +281,7 @@ bool CMidiPlayer::playerLoadFile(const char* fn)
 	for(CMidiTrack& i:midiFile->tracks)
 	{
 		ecnt+=i.eventList.size();
+		if(i.eventList.size())
 		maxtk=std::max(maxtk,i.eventList.back().time);
 	}
 	for(int i=0;i<16;++i)if(fileReadFinishCB[i])

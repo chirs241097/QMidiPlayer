@@ -47,9 +47,6 @@ bool CMidiStreamReader::midsBodyReader()
 			else if(e>>24==0)//midishortmsg
 			ev=SEvent(curid,cts,e&0xFF,(e>>8)&0xFF,(e>>16)&0xFF);
 			else return false;
-			//fprintf(stderr,"ev: @ %x t %x p1 %x p2 %x\n",ev.time,ev.type,ev.p1,ev.p2);
-			if((ev.type&0xF0)==0x90&&ev.p2==0)//Note on with zero velo
-			ev.type=(ev.type&0x0F)|0x80;
 			ret->tracks.back().appendEvent(ev);eventdiscarded=0;
 			qmpMidiFmtPlugin::api->callEventReaderCB(SEventCallBackData(ev.type,ev.p1,ev.p2,ev.time));
 			if(eventdiscarded)ret->tracks.back().eventList.pop_back();
@@ -70,7 +67,7 @@ CMidiFile* CMidiStreamReader::readFile(const char *fn)
 		if(!midsBodyReader())throw std::runtime_error("MIDS data error");
 	}catch(std::runtime_error& e)
 	{
-		fprintf(stderr,"MIDI Format plugin: E: %s is not a supported file. Cause: %s.\n",fn,e.what());
+		fprintf(stderr,"CMidiStreamReader E: %s is not a supported file. Cause: %s.\n",fn,e.what());
 		ret->valid=0;if(f)fclose(f);f=NULL;
 	}
 	return ret;

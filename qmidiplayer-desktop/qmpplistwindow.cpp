@@ -210,15 +210,15 @@ void qmpPlistWindow::on_pbRepeat_clicked()
 	switch(repeat)
 	{
 		case 0:
-			ui->pbRepeat->setIcon(QIcon(":/img/repeat-non.svg"));
+			ui->pbRepeat->setIcon(QIcon(getThemedIcon(":/img/repeat-non.svg")));
 			ui->pbRepeat->setText(tr("Repeat Off"));
 		break;
 		case 1:
-			ui->pbRepeat->setIcon(QIcon(":/img/repeat-one.svg"));
+			ui->pbRepeat->setIcon(QIcon(getThemedIcon(":/img/repeat-one.svg")));
 			ui->pbRepeat->setText(tr("Repeat One"));
 		break;
 		case 2:
-			ui->pbRepeat->setIcon(QIcon(":/img/repeat-all.svg"));
+			ui->pbRepeat->setIcon(QIcon(getThemedIcon(":/img/repeat-all.svg")));
 			ui->pbRepeat->setText(tr("Repeat All"));
 		break;
 	}
@@ -230,12 +230,12 @@ void qmpPlistWindow::on_pbShuffle_clicked()
 	switch(shuffle)
 	{
 		case 1:
-			ui->pbShuffle->setIcon(QIcon(":/img/shuffle.svg"));
+			ui->pbShuffle->setIcon(QIcon(getThemedIcon(":/img/shuffle.svg")));
 			ui->pbShuffle->setText(tr("Shuffle On"));
 		break;
 		case 0:
 		default:
-			ui->pbShuffle->setIcon(QIcon(":/img/shuffle-off.svg"));
+			ui->pbShuffle->setIcon(QIcon(getThemedIcon(":/img/shuffle-off.svg")));
 			ui->pbShuffle->setText(tr("Shuffle Off"));
 		break;
 	}

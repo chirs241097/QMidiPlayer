@@ -8,9 +8,9 @@ Features:
 * Editing channel parameters on-the-fly
 * Playlists
 * Editing synthesizer effects
-* Rendering midi to wave file
-* Visualization using SMELT (highly experimental Windows version now available)
-* MIDI mapping (based on RtMidi)
+* Rendering midi to wave file (currently fluidsynth only)
+* Visualization using SMELT (experimental Windows version now available)
+* MIDI mapping (RtMidi and plugins)
 * Plugin interface for extending the player easily
 
 Tested on Debian sid and Windows Vista~10.

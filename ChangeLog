@@ -1,3 +1,10 @@
+2017-06-22 0.8.6 indev
+Minor bug fixes.
+SMF reader finally takes chunk length into account.
+Do not prepend sysex header to F0h sysex. Let the
+readers do it.
+File readers code cleanups and refined error messages.
+
 2017-06-21 0.8.6 indev
 Fixed FTBFS on Windows.
 Fixed the default output device option.

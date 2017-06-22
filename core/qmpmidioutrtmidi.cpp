@@ -69,8 +69,8 @@ void qmpMidiOutRtMidi::panic(uint8_t ch)
 }
 void qmpMidiOutRtMidi::reset(uint8_t ch)
 {
-	basicMessage(0xB0|ch,120,0);
 	basicMessage(0xB0|ch,121,0);
+	basicMessage(0xB0|ch,123,0);
 }
 void qmpMidiOutRtMidi::onMapped(uint8_t,int)
 {
