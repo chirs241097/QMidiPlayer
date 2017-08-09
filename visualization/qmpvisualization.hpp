@@ -113,7 +113,13 @@ class CloseHandler:public smHandler
 	public:
 		CloseHandler(qmpVisualization* par){p=par;}
 	public:
-		bool handlerFunc(){return true;}
+		bool handlerFunc()
+		{
+			std::thread ([this]{
+			p->api->setFuncState("Visualization",false);
+			p->close();}).detach();
+			return false;
+		}
 };
 
 class CDemoVisualization:public qmpVisualizationIntf

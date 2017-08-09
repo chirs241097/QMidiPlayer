@@ -12,7 +12,7 @@
 #define setButtonHeight(x,h) {x->setMaximumHeight(h*(logicalDpiY()/96.));x->setMinimumHeight(h*(logicalDpiY()/96.));}
 
 qmpPlistWindow::qmpPlistWindow(QWidget *parent) :
-	QDialog(parent),
+	QWidget(parent,Qt::Window),
 	ui(new Ui::qmpPlistWindow)
 {
 	ui->setupUi(this);

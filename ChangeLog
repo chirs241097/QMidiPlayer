@@ -1,3 +1,13 @@
+2017-08-10 0.8.6 indev
+Windows of several main functionalities are no longer
+QDialogs. Fixed unexpected behavior.
+Now visualization window can be closed by sending it
+a close signal.
+Trying a solution to address the problem that prevents
+plugins from being loaded correctly in Windows if the
+path contains Chinese characters. Not even tried to
+build in Windows though.
+
 2017-06-22 0.8.6 indev
 Minor bug fixes.
 SMF reader finally takes chunk length into account.

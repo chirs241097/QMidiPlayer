@@ -13,32 +13,39 @@ qmpPluginAPI* pluginAPI;
 qmpMainWindow* qmw;
 qmpSettingsWindow* qsw;
 #ifdef _WIN32
+#include <codecvt>
+#include <locale>
+std::string wstr2str(std::wstring s)
+{
+	std::wstring_convert<std::codecvt_utf8<wchar_t>,wchat_t> wsc;
+	return wsc.to_bytes(s);
+}
 void qmpPluginManager::scanPlugins()
 {
 	QDirIterator *dir;
-	std::vector<std::string> cpluginpaths;
+	std::vector<std::wstring> cpluginpaths;
 	dir=new QDirIterator(QCoreApplication::applicationDirPath()+"/plugins/");
 	while(dir->hasNext())
 	{
 		dir->next();
 		if(dir->fileInfo().suffix()=="dll")
-			cpluginpaths.push_back(QCoreApplication::applicationDirPath().toStdString()+std::string("/plugins/")+dir->fileName().toStdString());
+			cpluginpaths.push_back(QCoreApplication::applicationDirPath().toStdWString()+std::wstring(L"/plugins/")+dir->fileName().toStdWString());
 	}
 	delete dir;
 	for(unsigned i=0;i<cpluginpaths.size();++i)
 	{
-		HMODULE hso=LoadLibraryA(cpluginpaths[i].c_str());
+		HMODULE hso=LoadLibraryW(cpluginpaths[i].c_str());
 		if(!hso){fprintf(stderr,"Error while loading library: %d\n",GetLastError());continue;}
 		FARPROC hndi=GetProcAddress(hso,"qmpPluginGetInterface");
-		if(!hndi){fprintf(stderr,"file %s doesn't seem to be a qmidiplayer plugin.\n",cpluginpaths[i].c_str());continue;}
+		if(!hndi){fprintf(stderr,"plugin %s doesn't seem to be a qmidiplayer plugin.\n",wstr2str(cpluginpaths[i]).c_str());continue;}
 		FARPROC hndiv=GetProcAddress(hso,"qmpPluginGetAPIRev");
-		if(!hndiv){fprintf(stderr,"file %s is incompatible with this version of qmidiplayer.\n",cpluginpaths[i].c_str());continue;}
+		if(!hndiv){fprintf(stderr,"plugin %s is incompatible with this version of qmidiplayer.\n",wstr2str(cpluginpaths[i]).c_str());continue;}
 		qmpPluginAPIRevEntry getv=(qmpPluginAPIRevEntry)hndiv;
 		if(strcmp(getv(),QMP_PLUGIN_API_REV))
-		{fprintf(stderr,"file %s is incompatible with this version of qmidiplayer.\n",cpluginpaths[i].c_str());continue;}
+		{fprintf(stderr,"plugin %s is incompatible with this version of qmidiplayer.\n",wstr2str(cpluginpaths[i]).c_str());continue;}
 		qmpPluginEntry e=(qmpPluginEntry)hndi;
 		qmpPluginIntf* intf=e(pluginAPI);
-		plugins.push_back(qmpPlugin(std::string(intf->pluginGetName()),std::string(intf->pluginGetVersion()),std::string(cpluginpaths[i]),intf));
+		plugins.push_back(qmpPlugin(std::string(intf->pluginGetName()),std::string(intf->pluginGetVersion()),wstr2str(cpluginpaths[i]),intf));
 	}
 }
 #else

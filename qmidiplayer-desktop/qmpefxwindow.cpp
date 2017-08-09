@@ -4,7 +4,7 @@
 #include "qmpmainwindow.hpp"
 
 qmpEfxWindow::qmpEfxWindow(QWidget *parent) :
-	QDialog(parent),
+	QWidget(parent,Qt::Window),
 	ui(new Ui::qmpEfxWindow)
 {
 	ui->setupUi(this);initialized=false;
@@ -14,7 +14,6 @@ qmpEfxWindow::qmpEfxWindow(QWidget *parent) :
 		dials.at(i)->setStyle(styl);
 	int w=size().width(),h=size().height();w=w*(logicalDpiX()/96.);h=h*(logicalDpiY()/96.);
 	setMaximumWidth(w);setMaximumHeight(h);setMinimumWidth(w);setMinimumHeight(h);
-	//stub. read these from settings after the setting module is implemented
 	QSettings *settings=qmpSettingsWindow::getSettingsIntf();
 	ui->cbEnabledC->setChecked(settings->value("Effects/ChorusEnabled",1).toInt());
 	ui->cbEnabledR->setChecked(settings->value("Effects/ReverbEnabled",1).toInt());

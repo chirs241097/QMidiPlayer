@@ -7,7 +7,7 @@
 #include "qmpmainwindow.hpp"
 
 qmpChannelsWindow::qmpChannelsWindow(QWidget *parent) :
-	QDialog(parent),
+	QWidget(parent,Qt::Window),
 	ui(new Ui::qmpChannelsWindow)
 {
 	ui->setupUi(this);

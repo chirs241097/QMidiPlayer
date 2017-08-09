@@ -7,6 +7,7 @@
 #include <QApplication>
 #include <QClipboard>
 #include <QCloseEvent>
+#include <QHideEvent>
 #include "../include/qmpcorepublic.hpp"
 
 namespace Ui {
@@ -46,6 +47,7 @@ class qmpInfoWindow : public QDialog
 		explicit qmpInfoWindow(QWidget *parent = 0);
 		~qmpInfoWindow();
 		void closeEvent(QCloseEvent *e);
+		void hideEvent(QHideEvent *e);
 	public slots:
 		void updateInfo();
 

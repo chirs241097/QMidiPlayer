@@ -6,6 +6,7 @@
 #include <vector>
 #include <QDialog>
 #include <QCloseEvent>
+#include <QHideEvent>
 #include <QSettings>
 #include <QTableWidget>
 #include <QComboBox>
@@ -85,6 +86,7 @@ class qmpSettingsWindow:public QDialog
 		explicit qmpSettingsWindow(QWidget *parent=0);
 		~qmpSettingsWindow();
 		void closeEvent(QCloseEvent *event);
+		void hideEvent(QHideEvent *event);
 		void settingsInit();
 		QTableWidget *getSFWidget();
 		void updatePluginList(qmpPluginManager *pmgr);

@@ -1,7 +1,7 @@
 #ifndef QMPEFXWINDOW_HPP
 #define QMPEFXWINDOW_HPP
 
-#include <QDialog>
+#include <QWidget>
 #include <QCloseEvent>
 #include <QShowEvent>
 #include <QMoveEvent>
@@ -25,7 +25,7 @@ class qmpEfxFunc:public qmpFuncBaseIntf
 		void close();
 };
 
-class qmpEfxWindow : public QDialog
+class qmpEfxWindow:public QWidget
 {
 	Q_OBJECT
 

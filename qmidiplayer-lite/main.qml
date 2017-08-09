@@ -14,6 +14,12 @@ Window {
 	playing: false
 	property string soundfont
 	soundfont: ""
+	SystemPalette
+	{
+		id: palette
+		colorGroup: SystemPalette.Active
+	}
+	color: palette.window
 
 	MouseArea {
 		id: mouseArea1
@@ -126,6 +132,7 @@ Window {
 	Text {
 		id: fileName
 		text: qsTr("...")
+		color: palette.text
 		anchors.top: parent.top
 		anchors.topMargin: 100
 		anchors.horizontalCenter: parent.horizontalCenter

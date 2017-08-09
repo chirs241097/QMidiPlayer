@@ -1,7 +1,7 @@
 #ifndef QMPPLISTWINDOW_H
 #define QMPPLISTWINDOW_H
 
-#include <QDialog>
+#include <QWidget>
 #include <QShowEvent>
 #include <QCloseEvent>
 #include <QMoveEvent>
@@ -26,7 +26,7 @@ class qmpPlistFunc:public qmpFuncBaseIntf
 		void close();
 };
 
-class qmpPlistWindow : public QDialog
+class qmpPlistWindow:public QWidget
 {
 	Q_OBJECT
 

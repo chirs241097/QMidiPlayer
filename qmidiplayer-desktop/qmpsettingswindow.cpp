@@ -47,6 +47,12 @@ void qmpSettingsWindow::closeEvent(QCloseEvent *event)
 	emit dialogClosing();
 	event->accept();
 }
+void qmpSettingsWindow::hideEvent(QHideEvent *event)
+{
+	emit dialogClosing();
+	event->accept();
+}
+
 
 QTableWidget* qmpSettingsWindow::getSFWidget(){return ui->twSoundfont;}
 QComboBox* qmpSettingsWindow::getDefaultOutWidget(){return outwidget;}

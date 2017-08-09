@@ -38,6 +38,12 @@ void qmpInfoWindow::closeEvent(QCloseEvent *e)
 	qmpMainWindow::getInstance()->setFuncState("FileInfo",false);
 	e->accept();
 }
+void qmpInfoWindow::hideEvent(QHideEvent *e)
+{
+	qmpMainWindow::getInstance()->setFuncState("FileInfo",false);
+	e->accept();
+}
+
 
 void qmpInfoWindow::updateInfo()
 {

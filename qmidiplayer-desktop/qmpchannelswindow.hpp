@@ -3,7 +3,7 @@
 
 #include <QLabel>
 #include <QPushButton>
-#include <QDialog>
+#include <QWidget>
 #include <QComboBox>
 #include <QShowEvent>
 #include <QCloseEvent>
@@ -81,12 +81,12 @@ class qmpChannelFunc:public qmpFuncBaseIntf
 		void close();
 };
 
-class qmpChannelsWindow:public QDialog
+class qmpChannelsWindow:public QWidget
 {
 	Q_OBJECT
 
 	public:
-		explicit qmpChannelsWindow(QWidget *parent = 0);
+		explicit qmpChannelsWindow(QWidget *parent=0);
 		~qmpChannelsWindow();
 		void showEvent(QShowEvent *event);
 		void closeEvent(QCloseEvent *event);
