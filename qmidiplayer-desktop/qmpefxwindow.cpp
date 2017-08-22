@@ -4,7 +4,7 @@
 #include "qmpmainwindow.hpp"
 
 qmpEfxWindow::qmpEfxWindow(QWidget *parent) :
-	QWidget(parent,Qt::Window),
+	QWidget(parent,Qt::Dialog),
 	ui(new Ui::qmpEfxWindow)
 {
 	ui->setupUi(this);initialized=false;

@@ -11,7 +11,6 @@
 #include <QCheckBox>
 #include "qmpmainwindow.hpp"
 #include "ui_qmpmainwindow.h"
-#include "../core/qmpmidiplay.hpp"
 #define setButtonHeight(x,h) {x->setMaximumHeight(h*(logicalDpiY()/96.));x->setMinimumHeight(h*(logicalDpiY()/96.));}
 #define setButtonWidth(x,h) {x->setMaximumWidth(h*(logicalDpiY()/96.));x->setMinimumWidth(h*(logicalDpiY()/96.));}
 #ifdef _WIN32
@@ -23,12 +22,6 @@ char* wcsto8bit(const wchar_t* s)
 	WideCharToMultiByte(CP_OEMCP,WC_NO_BEST_FIT_CHARS,s,-1,c,size,0,0);
 	return c;
 }
-#define LOAD_SOUNDFONT(a) \
-	{\
-		char* c=wcsto8bit(settingsw->getSFWidget()->item(i,1)->text().toStdWString().c_str());\
-		a->loadSFont(c);\
-		free(c);\
-	}
 #define LOAD_FILE \
 	{\
 		for(auto i=mfunc.begin();i!=mfunc.end();++i)if(i->second.isVisualization())((qmpVisualizationIntf*)(i->second.i()))->reset();\
@@ -37,8 +30,6 @@ char* wcsto8bit(const wchar_t* s)
 		free(c);\
 	}
 #else
-#define LOAD_SOUNDFONT(a) \
-	a->loadSFont(settingsw->getSFWidget()->item(i,1)->text().toStdString().c_str())
 #define LOAD_FILE \
 	{\
 		for(auto i=mfunc.begin();i!=mfunc.end();++i)if(i->second.isVisualization())((qmpVisualizationIntf*)(i->second.i()))->reset();\
@@ -60,12 +51,9 @@ qmpMainWindow::qmpMainWindow(QWidget *parent) :
 	setMaximumWidth(w);setMaximumHeight(h);setMinimumWidth(w);setMinimumHeight(h);
 	setButtonHeight(ui->pbNext,36);setButtonHeight(ui->pbPlayPause,36);setButtonHeight(ui->pbAdd,36);
 	setButtonHeight(ui->pbPrev,36);setButtonHeight(ui->pbSettings,36);setButtonHeight(ui->pbStop,36);
-	//setButtonHeight(ui->pbChannels,36);setButtonHeight(ui->pbPList,36);
-	//setButtonHeight(ui->pbEfx,36);setButtonHeight(ui->pbVisualization,36);
 	playing=false;stopped=true;dragging=false;fin=false;
 	settingsw=new qmpSettingsWindow(this);pmgr=new qmpPluginManager();
 	plistw=new qmpPlistWindow(this);player=NULL;timer=NULL;fluidrenderer=NULL;
-	singleFS=qmpSettingsWindow::getSettingsIntf()->value("Behavior/SingleInstance",0).toInt();
 }
 
 qmpMainWindow::~qmpMainWindow()
@@ -96,11 +84,29 @@ qmpMainWindow::~qmpMainWindow()
 
 void qmpMainWindow::init()
 {
-	player=new CMidiPlayer();
-	rtmididev=new qmpRtMidiManager();
-	rtmididev->createDevices();
-	std::vector<std::pair<qmpMidiOutRtMidi*,std::string>> rtdev=rtmididev->getDevices();
-	for(auto &i:rtdev)player->registerMidiOutDevice(i.first,i.second);
+	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus",0).toInt())
+	{
+		QRect g=qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/MainW",QRect(-999,-999,999,999)).toRect();
+		if(g!=QRect(-999,-999,999,999))setGeometry(g);
+	}show();
+
+	ui->centralWidget->setEnabled(false);
+	std::future<void> f=std::async(std::launch::async,
+		[this]
+		{
+			player=new CMidiPlayer();
+			rtmididev=new qmpRtMidiManager();
+			rtmididev->createDevices();
+			std::vector<std::pair<qmpMidiOutRtMidi*,std::string>> rtdev=rtmididev->getDevices();
+			for(auto &i:rtdev)player->registerMidiOutDevice(i.first,i.second);
+			reloadsynf=new qmpReloadSynthFunc(this);
+			playerSetup(player->fluid());player->fluid()->deviceInit();
+			loadSoundFont(player->fluid());
+		}
+	);
+	while(f.wait_for(std::chrono::milliseconds(100))==std::future_status::timeout);
+	ui->centralWidget->setEnabled(true);
+
 	chnlw=new qmpChannelsWindow(this);
 	efxw=new qmpEfxWindow(this);
 	infow=new qmpInfoWindow(this);
@@ -108,20 +114,10 @@ void qmpMainWindow::init()
 	timer=new QTimer(this);
 	renderf=new qmpRenderFunc(this);
 	panicf=new qmpPanicFunc(this);
-	reloadsynf=new qmpReloadSynthFunc(this);
 	registerFunctionality(renderf,"Render",tr("Render to wave").toStdString(),getThemedIconc(":/img/render.svg"),0,false);
 	registerFunctionality(panicf,"Panic",tr("Panic").toStdString(),getThemedIconc(":/img/panic.svg"),0,false);
 	registerFunctionality(reloadsynf,"ReloadSynth",tr("Restart fluidsynth").toStdString(),getThemedIconc(":/img/repeat-base.svg"),0,false);
 	pmgr->scanPlugins();settingsw->updatePluginList(pmgr);pmgr->initPlugins();
-	playerSetup(player->fluid());player->fluid()->deviceInit();
-	for(int i=settingsw->getSFWidget()->rowCount()-1;i>=0;--i){if(!((QCheckBox*)settingsw->getSFWidget()->cellWidget(i,0))->isChecked())continue;
-			LOAD_SOUNDFONT(player->fluid());
-		}
-	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus",0).toInt())
-	{
-		QRect g=qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/MainW",QRect(-999,-999,999,999)).toRect();
-		if(g!=QRect(-999,-999,999,999))setGeometry(g);
-	}show();
 	ui->vsMasterVol->setValue(qmpSettingsWindow::getSettingsIntf()->value("Audio/Gain",50).toInt());
 	connect(timer,SIGNAL(timeout()),this,SLOT(updateWidgets()));
 	connect(timer,SIGNAL(timeout()),chnlw,SLOT(channelWindowsUpdate()));
@@ -369,6 +365,20 @@ void qmpMainWindow::playerSetup(IFluidSettings* fs)
 	fs->setOptStr("synth.midi-bank-select",bsmode);
 	player->sendSysX(settings->value("Midi/SendSysEx",1).toInt());
 }
+void qmpMainWindow::loadSoundFont(IFluidSettings *fs)
+{
+	for(int i=settingsw->getSFWidget()->rowCount()-1;i>=0;--i)
+	{
+		if(!((QCheckBox*)settingsw->getSFWidget()->cellWidget(i,0))->isChecked())continue;
+#ifdef _WIN32
+		char* c=wcsto8bit(settingsw->getSFWidget()->item(i,1)->text().toStdWString().c_str());
+		fs->loadSFont(c);
+		free(c);
+#else
+		fs->loadSFont(settingsw->getSFWidget()->item(i,1)->text().toStdString().c_str());
+#endif
+	}
+}
 
 void qmpMainWindow::on_pbPlayPause_clicked()
 {
@@ -589,10 +599,8 @@ void qmpMainWindow::startRender()
 	playerSetup(fluidrenderer);
 	fluidrenderer->renderInit();
 #endif
+	loadSoundFont(fluidrenderer);
 	ui->centralWidget->setEnabled(false);
-	for(int i=settingsw->getSFWidget()->rowCount()-1;i>=0;--i){if(!((QCheckBox*)settingsw->getSFWidget()->cellWidget(i,0))->isChecked())continue;
-		LOAD_SOUNDFONT(fluidrenderer);
-	}
 	fluidrenderer->setGain(ui->vsMasterVol->value()/250.);
 	efxw->sendEfxChange(fluidrenderer);timer->start(UPDATE_INTERVAL);
 	renderTh=new std::thread(&qmpFileRendererFluid::renderWorker,fluidrenderer);
@@ -600,10 +608,18 @@ void qmpMainWindow::startRender()
 
 void qmpMainWindow::reloadSynth()
 {
-	player->fluid()->deviceDeinit(true);playerSetup(player->fluid());player->fluid()->deviceInit();
-	for(int i=settingsw->getSFWidget()->rowCount()-1;i>=0;--i){if(!((QCheckBox*)settingsw->getSFWidget()->cellWidget(i,0))->isChecked())continue;
-		LOAD_SOUNDFONT(player->fluid());
-	}
+	ui->centralWidget->setEnabled(false);
+	std::future<void> f=std::async(std::launch::async,
+		[this]
+		{
+				player->fluid()->deviceDeinit(true);
+				playerSetup(player->fluid());
+				player->fluid()->deviceInit();
+				loadSoundFont(player->fluid());
+		}
+	);
+	while(f.wait_for(std::chrono::milliseconds(100))==std::future_status::timeout);
+	ui->centralWidget->setEnabled(true);
 }
 
 std::vector<std::string>& qmpMainWindow::getWidgets(int w)

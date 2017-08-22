@@ -1,3 +1,8 @@
+2017-08-22 0.8.6 indev
+Windows type of functionality windows is now Qt::Dialog.
+Initialization fluidsynth asynchronously.
+Minor documentation update.
+
 2017-08-10 0.8.6 indev
 Windows of several main functionalities are no longer
 QDialogs. Fixed unexpected behavior.

@@ -26,11 +26,13 @@
 		If troubleshooting cannot solve your problem, please don't hesitate to report an issue.
 		<h3>1. I can't hear anything!</h3>
 		<p>
-			1) Check current audio driver in the option dialog. Do not use an audio driver
-			that is not installed on your system.<br>
-			2) If no soundfont is loaded, the synthesizer won't make any sound...<br>
-			3) Check audio buffer settings in the synth section.<br>
-			4) Check if your midi file is valid.
+			<ol>
+			<li>Check current audio driver in the option dialog. Do not use an audio driver
+			that is not installed on your system.</li>
+			<li>If no soundfont is loaded, the internal synthesizer won't make any sound...</li>
+			<li>Check audio driver/buffer settings in the synth section.</li>
+			<li>Check if your midi file is valid/having correct bank selecting method<s>/having zero volume</s>.</li>
+			</ol>
 		</p>
 		<h3>2. The playback is intermittent.</h3>
 		<p>
@@ -60,11 +62,20 @@
 			Bank selecting to external devices is sent in raw format. The midi
 			file may be incompatible with your device.
 		</p>
-		<h3>9. 3D visualization is upsidedown/rotated/black.</h3>
+		<h3>9. 3D visualization is upsidedown/rotated/black/blinking.</h3>
 		<p>
-			For those who see a rotated display, try setting Visualization-Video/Multisampling
-			to 1 or above. If that doesn't solve your problem or you see nothing at
-			all, please send me more details about your problem.
+			For those who see a rotated and blinking display, try setting
+			Visualization-Video/Multisampling to 1 or above. If that doesn't
+			solve your problem or you see nothing at all, please send me more
+			details about your problem (graphics card, drivers etc.).
+		</p>
+		<p>
+			Devices/drivers reported to have this issue:
+			<ul>
+				<li>Intel HD 5500 found in i5-5200U / official Windows driver</li>
+				<li>Unknown low-end AMD card / official Windows driver</li>
+				<li>Raspberry Pi 2 VC4 / Full KMS OpenGL (GLX)</li>
+			</ul>
 		</p>
 	</div>
 </body>

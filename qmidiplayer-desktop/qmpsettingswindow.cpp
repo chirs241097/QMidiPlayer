@@ -385,7 +385,7 @@ void qmpSettingsWindow::verifySF()
 		if(QMessageBox::question(this,
 		tr("No soundfont loaded"),
 		tr("Internal fluidsynth was chosen as the default output but it has no soundfont set. "
-		   "Would you like to setup soundfonts now?"))==QMessageBox::Yes)
+		   "Would you like to setup soundfonts now? After that you may have to reload the internal synth."))==QMessageBox::Yes)
 		{
 			show();
 			ui->tabWidget->setCurrentWidget(ui->tab_3);

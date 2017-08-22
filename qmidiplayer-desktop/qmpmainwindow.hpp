@@ -16,6 +16,7 @@
 #include <QApplication>
 #include <thread>
 #include <chrono>
+#include <future>
 #include <map>
 #include "../core/qmpmidiplay.hpp"
 #include "qmpplugin.hpp"
@@ -174,7 +175,7 @@ class qmpMainWindow:public QMainWindow
 	private:
 		Ui::qmpMainWindow *ui;
 		QTimer *timer;
-		bool playing,stopped,dragging,fin,singleFS,havemidi;
+		bool playing,stopped,dragging,fin,havemidi;
 		std::thread *playerTh=NULL;
 		std::thread *renderTh=NULL;
 		std::chrono::steady_clock::time_point st;
@@ -197,6 +198,7 @@ class qmpMainWindow:public QMainWindow
 
 		void onfnChanged();
 		void playerSetup(IFluidSettings *fs);
+		void loadSoundFont(IFluidSettings *fs);
 
 	private:
 		static qmpMainWindow* ref;
