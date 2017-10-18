@@ -159,18 +159,18 @@ void qmpVisualization::showThread()
 	if(!api->getOptionString("Visualization/font2").length()||!font.loadTTF(api->getOptionString("Visualization/font2").c_str(),fontsize))
 	if(!font.loadTTF("/usr/share/fonts/truetype/freefont/FreeMono.ttf",fontsize))
 	if(!font.loadTTF("/usr/share/fonts/gnu-free/FreeMono.otf",fontsize))
-	if(!font.loadTTF((std::string(getenv("windir"))+"/Fonts/cour.ttf").c_str(),fontsize))
+	if(!font.loadTTF((std::string(getenv("windir")?getenv("windir"):"")+"/Fonts/cour.ttf").c_str(),fontsize))
 	printf("W: Font load failed.\n");
 	if(!api->getOptionString("Visualization/font2").length()||!fonthdpi.loadTTF(api->getOptionString("Visualization/font2").c_str(),180))
 	if(!fonthdpi.loadTTF("/usr/share/fonts/truetype/freefont/FreeMono.ttf",180))
 	if(!fonthdpi.loadTTF("/usr/share/fonts/gnu-free/FreeMono.otf",180))
-	if(!fonthdpi.loadTTF((std::string(getenv("windir"))+"/Fonts/cour.ttf").c_str(),180))
+	if(!fonthdpi.loadTTF((std::string(getenv("windir")?getenv("windir"):"")+"/Fonts/cour.ttf").c_str(),180))
 	printf("W: Font load failed.\n");
 	if(!api->getOptionString("Visualization/font1").length()||!font2.loadTTF(api->getOptionString("Visualization/font1").c_str(),fontsize))
 	if(!font2.loadTTF("/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",fontsize))
 	if(!font2.loadTTF("/usr/share/fonts/wenquanyi/wqy-microhei/wqy-microhei.ttc",fontsize))
-	if(!font2.loadTTF((std::string(getenv("windir"))+"/Fonts/msyh.ttc").c_str(),fontsize))
-	if(!font2.loadTTF((std::string(getenv("windir"))+"/Fonts/segoeui.ttf").c_str(),fontsize))
+	if(!font2.loadTTF((std::string(getenv("windir")?getenv("windir"):"")+"/Fonts/msyh.ttc").c_str(),fontsize))
+	if(!font2.loadTTF((std::string(getenv("windir")?getenv("windir"):"")+"/Fonts/segoeui.ttf").c_str(),fontsize))
 	printf("W: Font load failed.\n");
 	if(horizontal)
 	{
@@ -751,14 +751,17 @@ void qmpVisualization::init()
 {
 	cb=new CReaderCallBack(this);
 	hcb=new CEventHandlerCallBack(this);
-	vi=new CDemoVisualization(this);
 	h=new CMidiVisualHandler(this);
 	frcb=new CFRFinishedCallBack(this);
 	closeh=new CloseHandler(this);
 	rendererTh=NULL;playing=false;
 	memset(spectra,0,sizeof(spectra));
 	memset(spectrar,0,sizeof(spectrar));
-	api->registerVisualizationIntf(vi,"Visualization","Visualization",api->isDarkTheme()?":/img/visualization_i.svg":":/img/visualization.svg",0);
+	api->registerFunctionality(this,"Visualization","Visualization",api->isDarkTheme()?":/img/visualization_i.svg":":/img/visualization.svg",0,true);
+	api->registerUIHook("main.start",qmpVisualization::cbstart,(void*)this);
+	api->registerUIHook("main.stop",qmpVisualization::cbstop,(void*)this);
+	api->registerUIHook("main.pause",qmpVisualization::cbpause,(void*)this);
+	api->registerUIHook("main.reset",qmpVisualization::cbreset,(void*)this);
 	herif=api->registerEventReaderIntf(cb,NULL);
 	hehif=api->registerEventHandlerIntf(hcb,NULL);
 	hfrf=api->registerFileReadFinishedHandlerIntf(frcb,NULL);
@@ -788,7 +791,7 @@ void qmpVisualization::init()
 	api->registerOptionInt("Visualization-Appearance","Note stretch","Visualization/notestretch",20,500,100);
 	api->registerOptionInt("Visualization-Appearance","Minimum note length","Visualization/minnotelen",20,500,100);
 	api->registerOptionUint("Visualization-Appearance","Chequer board tint (AARRGGBB)","Visualization/chkrtint",0,0xFFFFFFFF,0xFF999999);
-	api->registerOptionString("Visualization-Appearance","Background Image","Visualization/background","");
+	api->registerOptionString("Visualization-Appearance","Background Image","Visualization/background","",true);
 	api->registerOptionDouble("","","Visualization/px",-999999999,999999999,0);
 	api->registerOptionDouble("","","Visualization/py",-999999999,999999999,120);
 	api->registerOptionDouble("","","Visualization/pz",-999999999,999999999,70);
@@ -832,17 +835,37 @@ void qmpVisualization::deinit()
 {
 	if(!api)return;close();tspool.clear();
 	for(unsigned i=0;i<pool.size();++i)delete pool[i];pool.clear();
-	api->unregisterVisualizationIntf("Visualization");
+	api->unregisterFunctionality("Visualization");
 	api->unregisterEventReaderIntf(herif);
 	api->unregisterEventHandlerIntf(hehif);
 	api->unregisterFileReadFinishedHandlerIntf(hfrf);
-	delete cb;delete hcb;delete vi;delete frcb;
+	delete cb;delete hcb;delete frcb;
 	delete h;delete closeh;
 }
 const char* qmpVisualization::pluginGetName()
 {return "QMidiPlayer Default Visualization Plugin";}
 const char* qmpVisualization::pluginGetVersion()
-{return "0.8.3";}
+{return "0.8.6";}
+void qmpVisualization::cbstart(void *,void *usrd)
+{
+	qmpVisualization* v=(qmpVisualization*)usrd;
+	v->start();
+}
+void qmpVisualization::cbstop(void *,void *usrd)
+{
+	qmpVisualization* v=(qmpVisualization*)usrd;
+	v->stop();
+}
+void qmpVisualization::cbpause(void *,void *usrd)
+{
+	qmpVisualization* v=(qmpVisualization*)usrd;
+	v->pause();
+}
+void qmpVisualization::cbreset(void *,void *usrd)
+{
+	qmpVisualization* v=(qmpVisualization*)usrd;
+	v->reset();
+}
 
 void qmpVisualization::pushNoteOn(uint32_t tc,uint32_t ch,uint32_t key,uint32_t vel)
 {

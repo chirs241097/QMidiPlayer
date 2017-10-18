@@ -99,7 +99,7 @@ void qmpRtMidiManager::createDevices()
 	catch(RtMidiError &e)
 	{
 		printf("Failed to initialize the dummy device: %s\n",e.what());
-		dummy=NULL;
+		dummy=NULL;return;
 	}
 	for(unsigned i=0;i<dummy->getPortCount();++i)
 	devices.push_back(std::make_pair(new qmpMidiOutRtMidi(i),dummy->getPortName(i)));

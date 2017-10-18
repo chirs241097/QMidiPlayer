@@ -8,7 +8,7 @@
 #else
 #define EXPORTSYM __attribute__ ((visibility ("default")))
 #endif
-#define QMP_PLUGIN_API_REV "1+indev5"
+#define QMP_PLUGIN_API_REV "1+indev7"
 //MIDI Event structure
 struct SEvent
 {
@@ -53,19 +53,21 @@ class CMidiFile{
 };
 //Generic callback function that can be used for hooking the core.
 //"userdata" is set when you register the callback function.
-class IMidiCallBack
+class ICallBack
 {
 	public:
-		IMidiCallBack(){}
+		ICallBack(){}
 		virtual void callBack(void* callerdata,void* userdata)=0;
-		virtual ~IMidiCallBack(){}
+		virtual ~ICallBack(){}
 };
+//alternative callback function type
+typedef void (*callback_t)(void*,void*);
 //MIDI file reader interface. Use this to implement your file importer.
-class IMidiFileReader
+class qmpFileReader
 {
 	public:
-		IMidiFileReader(){}
-		virtual ~IMidiFileReader(){}
+		qmpFileReader(){}
+		virtual ~qmpFileReader(){}
 		virtual CMidiFile* readFile(const char* fn)=0;
 		virtual void discardCurrentEvent()=0;
 		virtual void commitEventChange(SEventCallBackData d)=0;
@@ -78,20 +80,6 @@ class qmpFuncBaseIntf
 		virtual void show()=0;
 		virtual void close()=0;
 		virtual ~qmpFuncBaseIntf(){}
-};
-//Visualization plugin interface. If your plugin implements a visualization,
-//you should implement this pinterface.
-class qmpVisualizationIntf:public qmpFuncBaseIntf
-{
-	public:
-		qmpVisualizationIntf(){}
-		virtual void show()=0;
-		virtual void close()=0;
-		virtual void start()=0;
-		virtual void stop()=0;
-		virtual void pause()=0;
-		virtual void reset()=0;
-		virtual ~qmpVisualizationIntf(){}
 };
 //Midi mapper plugin interface.
 class qmpMidiOutDevice
@@ -166,17 +154,18 @@ class qmpPluginAPI
 
 		virtual void registerFunctionality(qmpFuncBaseIntf* i,std::string name,std::string desc,const char* icon,int iconlen,bool checkable);
 		virtual void unregisterFunctionality(std::string name);
-		virtual void registerVisualizationIntf(qmpVisualizationIntf* intf,std::string name,std::string desc,const char* icon,int iconlen);
-		virtual void unregisterVisualizationIntf(std::string name);
+		virtual int registerUIHook(std::string e,ICallBack* cb,void* userdat);
+		virtual int registerUIHook(std::string e,callback_t cb,void* userdat);
+		virtual void unregisterUIHook(std::string e,int hook);
 		virtual void registerMidiOutDevice(qmpMidiOutDevice* dev,std::string name);
 		virtual void unregisterMidiOutDevice(std::string name);
-		virtual int registerEventReaderIntf(IMidiCallBack* cb,void* userdata);
+		virtual int registerEventReaderIntf(ICallBack* cb,void* userdata);
 		virtual void unregisterEventReaderIntf(int intfhandle);
-		virtual int registerEventHandlerIntf(IMidiCallBack* cb,void* userdata);
+		virtual int registerEventHandlerIntf(ICallBack* cb,void* userdata);
 		virtual void unregisterEventHandlerIntf(int intfhandle);
-		virtual int registerFileReadFinishedHandlerIntf(IMidiCallBack* cb,void* userdata);
+		virtual int registerFileReadFinishedHandlerIntf(ICallBack* cb,void* userdata);
 		virtual void unregisterFileReadFinishedHandlerIntf(int intfhandle);
-		virtual void registerFileReader(IMidiFileReader* reader,std::string name);
+		virtual void registerFileReader(qmpFileReader* reader,std::string name);
 		virtual void unregisterFileReader(std::string name);
 
 		//if desc=="", the option won't be visible in the settings form.

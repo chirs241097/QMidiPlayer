@@ -276,7 +276,7 @@ bool CMidiPlayer::playerLoadFile(const char* fn)
 {
 	notes=0;if(midiFile)delete midiFile;
 	midiFile=midiReaders->readFile(fn);
-	if(!midiFile->valid)return false;
+	if(!midiFile||!midiFile->valid)return false;
 	divs=midiFile->divs;maxtk=ecnt=0;
 	for(CMidiTrack& i:midiFile->tracks)
 	{
@@ -481,7 +481,7 @@ void CMidiPlayer::setChannelOutput(int ch,int outid)
 	}
 }
 uint8_t* CMidiPlayer::getChstates(){return chstate;}
-int CMidiPlayer::setEventHandlerCB(IMidiCallBack *cb,void *userdata)
+int CMidiPlayer::setEventHandlerCB(ICallBack *cb,void *userdata)
 {
 	for(int i=0;i<16;++i)
 	{
@@ -496,7 +496,7 @@ int CMidiPlayer::setEventHandlerCB(IMidiCallBack *cb,void *userdata)
 }
 void CMidiPlayer::unsetEventHandlerCB(int id)
 {eventHandlerCB[id]=NULL;eventHandlerCBuserdata[id]=NULL;}
-int CMidiPlayer::setEventReaderCB(IMidiCallBack *cb,void *userdata)
+int CMidiPlayer::setEventReaderCB(ICallBack *cb,void *userdata)
 {
 	for(int i=0;i<16;++i)
 	{
@@ -511,7 +511,7 @@ int CMidiPlayer::setEventReaderCB(IMidiCallBack *cb,void *userdata)
 }
 void CMidiPlayer::unsetEventReaderCB(int id)
 {eventReaderCB[id]=NULL;eventReaderCBuserdata[id]=NULL;}
-int CMidiPlayer::setFileReadFinishedCB(IMidiCallBack *cb,void *userdata)
+int CMidiPlayer::setFileReadFinishedCB(ICallBack *cb,void *userdata)
 {
 	for(int i=0;i<16;++i)
 	{
@@ -526,7 +526,7 @@ int CMidiPlayer::setFileReadFinishedCB(IMidiCallBack *cb,void *userdata)
 }
 void CMidiPlayer::unsetFileReadFinishedCB(int id)
 {fileReadFinishCB[id]=NULL;fileReadFinishCBuserdata[id]=NULL;}
-void CMidiPlayer::registerReader(IMidiFileReader *reader,std::string name)
+void CMidiPlayer::registerReader(qmpFileReader *reader,std::string name)
 {midiReaders->registerReader(reader,name);}
 void CMidiPlayer::unregisterReader(std::string name)
 {midiReaders->unregisterReader(name);}

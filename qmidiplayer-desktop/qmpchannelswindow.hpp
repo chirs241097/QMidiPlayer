@@ -59,7 +59,7 @@ class QDCComboBox:public QComboBox
 		void indexChangedSlot(int idx){emit(onChange(id,idx));}
 };
 
-class qmpCWNoteOnCB:public QObject,public IMidiCallBack
+class qmpCWNoteOnCB:public QObject,public ICallBack
 {
 	Q_OBJECT
 	public:

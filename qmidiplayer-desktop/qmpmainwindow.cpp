@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <cmath>
+#include <functional>
 #include <QUrl>
 #include <QFileInfo>
 #include <QMimeData>
@@ -22,19 +23,6 @@ char* wcsto8bit(const wchar_t* s)
 	WideCharToMultiByte(CP_OEMCP,WC_NO_BEST_FIT_CHARS,s,-1,c,size,0,0);
 	return c;
 }
-#define LOAD_FILE \
-	{\
-		for(auto i=mfunc.begin();i!=mfunc.end();++i)if(i->second.isVisualization())((qmpVisualizationIntf*)(i->second.i()))->reset();\
-		char* c=wcsto8bit(fns.toStdWString().c_str());\
-		if(!player->playerLoadFile(c)){free(c);QMessageBox::critical(this,tr("Error"),tr("%1 is not a valid midi file.").arg(fns));return;}\
-		free(c);\
-	}
-#else
-#define LOAD_FILE \
-	{\
-		for(auto i=mfunc.begin();i!=mfunc.end();++i)if(i->second.isVisualization())((qmpVisualizationIntf*)(i->second.i()))->reset();\
-		if(!player->playerLoadFile(fns.toStdString().c_str())){QMessageBox::critical(this,tr("Error"),tr("%1 is not a valid midi file.").arg(fns));return;}\
-	}
 #endif
 #define UPDATE_INTERVAL 66
 
@@ -240,7 +228,7 @@ void qmpMainWindow::updateWidgets()
 		if(!plistw->getRepeat())
 		{
 			timer->stop();stopped=true;playing=false;
-			for(auto i=mfunc.begin();i!=mfunc.end();++i)if(i->second.isVisualization())((qmpVisualizationIntf*)(i->second.i()))->stop();
+			invokeCallback("main.stop",NULL);
 			setFuncEnabled("Render",stopped);setFuncEnabled("ReloadSynth",stopped);
 			chnlw->resetAcitivity();
 			player->playerDeinit();playerTh->join();
@@ -288,7 +276,7 @@ void qmpMainWindow::switchTrack(QString s)
 	setFuncEnabled("Render",stopped);setFuncEnabled("ReloadSynth",stopped);
 	ui->pbPlayPause->setIcon(QIcon(getThemedIcon(":/img/pause.svg")));
 	timer->stop();player->playerDeinit();
-	for(auto i=mfunc.begin();i!=mfunc.end();++i)if(i->second.isVisualization())((qmpVisualizationIntf*)(i->second.i()))->stop();
+	invokeCallback("main.stop",NULL);
 	if(playerTh){playerTh->join();delete playerTh;playerTh=NULL;}
 	player->playerPanic(true);
 	ui->hsTimer->setValue(0);
@@ -296,12 +284,12 @@ void qmpMainWindow::switchTrack(QString s)
 	QString fns=s;setWindowTitle(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.'))+" - QMidiPlayer");
 	ui->lbFileName->setText(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.')));
 	onfnChanged();
-	LOAD_FILE;
+	if(!loadFile(fns))return;
 	char ts[100];
 	sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
 	ui->lbFinTime->setText(ts);
 	player->playerInit();
-	for(auto i=mfunc.begin();i!=mfunc.end();++i)if(i->second.isVisualization())((qmpVisualizationIntf*)(i->second.i()))->start();
+	invokeCallback("main.start",NULL);
 	player->fluid()->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
 	player->setWaitVoice(qmpSettingsWindow::getSettingsIntf()->value("Midi/WaitVoice",1).toInt());
 	playerTh=new std::thread(&CMidiPlayer::playerThread,player);
@@ -379,6 +367,23 @@ void qmpMainWindow::loadSoundFont(IFluidSettings *fs)
 #endif
 	}
 }
+int qmpMainWindow::loadFile(QString fns)
+{
+#ifdef _WIN32
+	char* c=wcsto8bit(fns.toStdWString().c_str());
+#else
+	std::string s=fns.toStdString();
+	const char* c=s.c_str();
+#endif
+	int ret=1;
+	invokeCallback("main.reset",NULL);
+	if(!player->playerLoadFile(c))
+	{QMessageBox::critical(this,tr("Error"),tr("%1 is not a valid midi file.").arg(fns));ret=0;}
+#ifdef _WIN32
+	free(c);
+#endif
+	return ret;
+}
 
 void qmpMainWindow::on_pbPlayPause_clicked()
 {
@@ -394,12 +399,12 @@ void qmpMainWindow::on_pbPlayPause_clicked()
 		}setWindowTitle(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.'))+" - QMidiPlayer");
 		ui->lbFileName->setText(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.')));
 		onfnChanged();
-		LOAD_FILE;
+		if(!loadFile(fns))return;
 		char ts[100];
 		sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
 		ui->lbFinTime->setText(ts);
 		player->playerInit();
-		for(auto i=mfunc.begin();i!=mfunc.end();++i)if(i->second.isVisualization())((qmpVisualizationIntf*)(i->second.i()))->start();
+		invokeCallback("main.start",NULL);
 		player->fluid()->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
 		player->setWaitVoice(qmpSettingsWindow::getSettingsIntf()->value("Midi/WaitVoice",1).toInt());
 		playerTh=new std::thread(&CMidiPlayer::playerThread,player);
@@ -423,7 +428,7 @@ void qmpMainWindow::on_pbPlayPause_clicked()
 			player->setResumed();
 		}
 		player->setTCpaused(!playing);
-		for(auto i=mfunc.begin();i!=mfunc.end();++i)if(i->second.isVisualization())((qmpVisualizationIntf*)(i->second.i()))->pause();
+		invokeCallback("main.pause",NULL);
 	}
 	ui->pbPlayPause->setIcon(QIcon(getThemedIcon(playing?":/img/pause.svg":":/img/play.svg")));
 }
@@ -490,7 +495,7 @@ void qmpMainWindow::on_pbStop_clicked()
 	if(!stopped)
 	{
 		timer->stop();stopped=true;playing=false;
-		for(auto i=mfunc.begin();i!=mfunc.end();++i)if(i->second.isVisualization())((qmpVisualizationIntf*)(i->second.i()))->stop();
+		invokeCallback("main.stop",NULL);
 		player->playerDeinit();
 		setFuncEnabled("Render",stopped);setFuncEnabled("ReloadSynth",stopped);
 		player->playerPanic(true);chnlw->resetAcitivity();
@@ -543,19 +548,32 @@ void qmpMainWindow::onfnChanged()
 	ui->lbFileName->setFont(f);
 }
 
-void qmpMainWindow::registerVisualizationIntf(qmpVisualizationIntf* intf,std::string name,std::string desc,const char* icon,int iconlen)
+int qmpMainWindow::registerUIHook(std::string e,ICallBack *callback,void* userdat)
 {
-	registerFunctionality(intf,name,desc,icon,iconlen,true,true);
+	std::map<int,std::pair<qmpCallBack,void*>>& m=muicb[e];
+	int id=0;
+	if(m.size())id=m.rbegin()->first+1;
+	m[id]=std::make_pair(qmpCallBack(callback),userdat);
+	return id;
 }
-void qmpMainWindow::unregisterVisualizationIntf(std::string name)
+int qmpMainWindow::registerUIHook(std::string e,callback_t callback,void *userdat)
 {
-	unregisterFunctionality(name);
+	std::map<int,std::pair<qmpCallBack,void*>>& m=muicb[e];
+	int id=0;
+	if(m.size())id=m.rbegin()->first+1;
+	m[id]=std::make_pair(qmpCallBack(callback),userdat);
+	return id;
+}
+void qmpMainWindow::unregisterUIHook(std::string e,int hook)
+{
+	std::map<int,std::pair<qmpCallBack,void*>>& m=muicb[e];
+	m.erase(hook);
 }
 
-void qmpMainWindow::registerFunctionality(qmpFuncBaseIntf *i,std::string name,std::string desc,const char *icon,int iconlen,bool checkable,bool isv)
+void qmpMainWindow::registerFunctionality(qmpFuncBaseIntf *i,std::string name,std::string desc,const char *icon,int iconlen,bool checkable)
 {
 	if(mfunc.find(name)!=mfunc.end())return;
-	mfunc[name]=qmpFuncPrivate(i,desc,icon,iconlen,checkable,isv);
+	mfunc[name]=qmpFuncPrivate(i,desc,icon,iconlen,checkable);
 }
 
 void qmpMainWindow::unregisterFunctionality(std::string name)
@@ -676,6 +694,14 @@ void qmpMainWindow::setupWidget()
 	ui->buttonwidget->layout()->setAlignment(Qt::AlignLeft);
 }
 
+void qmpMainWindow::invokeCallback(std::string cat,void* callerdat)
+{
+	std::map<int,std::pair<qmpCallBack,void*>> *mp;
+	mp=&muicb[cat];
+	for(auto&i:*mp)
+		i.second.first(callerdat,i.second.second);
+}
+
 void qmpMainWindow::on_pbSettings_clicked()
 {
 	if(ui->pbSettings->isChecked())settingsw->show();else settingsw->close();
@@ -699,8 +725,8 @@ void qmpMainWindow::on_pushButton_clicked()
 	helpw->show();
 }
 
-qmpFuncPrivate::qmpFuncPrivate(qmpFuncBaseIntf *i,std::string _desc,const char *icon,int iconlen,bool checkable,bool _isv):
-	_i(i),des(_desc),_checkable(checkable),visual(_isv)
+qmpFuncPrivate::qmpFuncPrivate(qmpFuncBaseIntf *i,std::string _desc,const char *icon,int iconlen,bool checkable):
+	_i(i),des(_desc),_checkable(checkable)
 {
 	if(icon)
 	{

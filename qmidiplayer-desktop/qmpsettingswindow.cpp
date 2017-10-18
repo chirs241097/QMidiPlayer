@@ -383,9 +383,9 @@ void qmpSettingsWindow::verifySF()
 	if(((QCheckBox*)ui->twSoundfont->cellWidget(i,0))->isChecked())++sf;
 	if(settings->value("Midi/DefaultOutput","Internal FluidSynth").toString()=="Internal FluidSynth"&&!sf)
 	{
-        // blmark: show dialog at the current screen which user using now.
-        int curMonitor = QApplication::desktop()->screenNumber(this);
-        if(QMessageBox::question(QDesktopWidget().screen(curMonitor),//this,
+		// blmark: show dialog at the current screen which user using now.
+		int curMonitor = QApplication::desktop()->screenNumber(this);
+		if(QMessageBox::question(QDesktopWidget().screen(curMonitor),//this,
 		tr("No soundfont loaded"),
 		tr("Internal fluidsynth was chosen as the default output but it has no soundfont set. "
 		   "Would you like to setup soundfonts now? After that you may have to reload the internal synth."))==QMessageBox::Yes)

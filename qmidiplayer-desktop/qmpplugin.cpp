@@ -193,27 +193,29 @@ void qmpPluginAPI::registerMidiOutDevice(qmpMidiOutDevice *dev, std::string name
 {qmw->getPlayer()->registerMidiOutDevice(dev,name);}
 void qmpPluginAPI::unregisterMidiOutDevice(std::string name)
 {qmw->getPlayer()->unregisterMidiOutDevice(name);}
-int qmpPluginAPI::registerEventHandlerIntf(IMidiCallBack *cb,void *userdata)
+int qmpPluginAPI::registerEventHandlerIntf(ICallBack *cb,void *userdata)
 {return qmw->getPlayer()->setEventHandlerCB(cb,userdata);}
 void qmpPluginAPI::unregisterEventHandlerIntf(int intfhandle)
 {qmw->getPlayer()->unsetEventHandlerCB(intfhandle);}
-int qmpPluginAPI::registerEventReaderIntf(IMidiCallBack *cb,void *userdata)
+int qmpPluginAPI::registerEventReaderIntf(ICallBack *cb,void *userdata)
 {return qmw->getPlayer()->setEventReaderCB(cb,userdata);}
 void qmpPluginAPI::unregisterEventReaderIntf(int intfhandle)
 {qmw->getPlayer()->unsetEventReaderCB(intfhandle);}
-void qmpPluginAPI::registerVisualizationIntf(qmpVisualizationIntf* intf,std::string name,std::string desc,const char* icon,int iconlen)
-{qmw->registerVisualizationIntf(intf,name,desc,icon,iconlen);}
-void qmpPluginAPI::unregisterVisualizationIntf(std::string name)
-{qmw->unregisterVisualizationIntf(name);}
+int qmpPluginAPI::registerUIHook(std::string e,ICallBack* cb,void* userdat)
+{return qmw->registerUIHook(e,cb,userdat);}
+int qmpPluginAPI::registerUIHook(std::string e,callback_t cb,void* userdat)
+{return qmw->registerUIHook(e,cb,userdat);}
+void qmpPluginAPI::unregisterUIHook(std::string e,int hook)
+{qmw->unregisterUIHook(e,hook);}
 void qmpPluginAPI::registerFunctionality(qmpFuncBaseIntf *i,std::string name,std::string desc,const char *icon,int iconlen,bool checkable)
 {qmw->registerFunctionality(i,name,desc,icon,iconlen,checkable);}
 void qmpPluginAPI::unregisterFunctionality(std::string name)
 {qmw->unregisterFunctionality(name);}
-int qmpPluginAPI::registerFileReadFinishedHandlerIntf(IMidiCallBack* cb,void* userdata)
+int qmpPluginAPI::registerFileReadFinishedHandlerIntf(ICallBack* cb,void* userdata)
 {return qmw->getPlayer()->setFileReadFinishedCB(cb,userdata);}
 void qmpPluginAPI::unregisterFileReadFinishedHandlerIntf(int intfhandle)
 {qmw->getPlayer()->unsetFileReadFinishedCB(intfhandle);}
-void qmpPluginAPI::registerFileReader(IMidiFileReader* reader,std::string name)
+void qmpPluginAPI::registerFileReader(qmpFileReader* reader,std::string name)
 {qmw->getPlayer()->registerReader(reader,name);}
 void qmpPluginAPI::unregisterFileReader(std::string name)
 {qmw->getPlayer()->unregisterReader(name);}

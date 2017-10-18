@@ -33,8 +33,9 @@ Window {
 			id: button2
 			x: 170
 			text: qsTr("Play")
+			anchors.horizontalCenterOffset: 0
 			anchors.top: parent.top
-			anchors.topMargin: 172
+			anchors.topMargin: 213
 			anchors.horizontalCenter: parent.horizontalCenter
 			onClicked: {
 				if(!playing)
@@ -58,14 +59,14 @@ Window {
 
 		Slider {
 			id: hsTimer
-			y: 210
+			y: 190
 			height: 22
 			anchors.right: parent.right
-			anchors.rightMargin: 8
+			anchors.rightMargin: 0
 			anchors.left: parent.left
-			anchors.leftMargin: 8
+			anchors.leftMargin: 0
 			anchors.bottom: parent.bottom
-			anchors.bottomMargin: 8
+			anchors.bottomMargin: 28
 			tickmarksEnabled: false
 			stepSize: 1
 			maximumValue: 100
@@ -132,11 +133,14 @@ Window {
 	Text {
 		id: fileName
 		text: qsTr("...")
+		horizontalAlignment: Text.AlignHCenter
 		color: palette.text
 		anchors.top: parent.top
 		anchors.topMargin: 100
 		anchors.horizontalCenter: parent.horizontalCenter
 		x: 139
+		width: 31
+		height: 11
 	}
 
 	Button {

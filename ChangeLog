@@ -1,3 +1,13 @@
+2017-10-18 0.8.6 alpha
+API changes:
+  - Lots of renaming.
+  - qmpVisualizationIntf no longer exists. Visualization
+  is now just a normal functionality.
+  - Added UI Hooks.
+Fixed a bunch of crashes and insanities in the
+visualization plugin.
+I think it's now time for 0.8.6 alpha.
+
 2017-08-22 0.8.6 indev
 Windows type of functionality windows is now Qt::Dialog.
 Initialization fluidsynth asynchronously.

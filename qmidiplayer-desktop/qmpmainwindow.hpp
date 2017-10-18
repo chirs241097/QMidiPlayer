@@ -18,6 +18,7 @@
 #include <chrono>
 #include <future>
 #include <map>
+#include <unordered_map>
 #include "../core/qmpmidiplay.hpp"
 #include "qmpplugin.hpp"
 #include "qmpplistwindow.hpp"
@@ -95,19 +96,18 @@ class qmpFuncPrivate
 		qmpFuncBaseIntf* _i;
 		QIcon _icon;
 		std::string des;
-		bool _checkable,checked,visual;
+		bool _checkable,checked;
 		QReflectiveAction* asgna;
 		QReflectivePushButton* asgnb;
 	public:
 		qmpFuncPrivate(){}
-		qmpFuncPrivate(qmpFuncBaseIntf* i,std::string _desc,const char* icon,int iconlen,bool checkable,bool _isv);
+		qmpFuncPrivate(qmpFuncBaseIntf* i,std::string _desc,const char* icon,int iconlen,bool checkable);
 		~qmpFuncPrivate(){asgna=NULL;asgnb=NULL;}
 		qmpFuncBaseIntf* i(){return _i;}
 		void setAssignedControl(QReflectiveAction* a){asgna=a;if(!a)return;asgna->setCheckable(_checkable);asgna->setChecked(checked);}
 		void setAssignedControl(QReflectivePushButton* a){asgnb=a;if(!a)return;asgnb->setCheckable(_checkable);asgnb->setChecked(checked);}
 		const QIcon& icon(){return _icon;}
 		const std::string& desc(){return des;}
-		bool isVisualization(){return visual;}
 		bool isCheckable(){return _checkable;}
 		bool isChecked(){return checked;}
 		void setEnabled(bool e){if(asgna)asgna->setEnabled(e);if(asgnb)asgnb->setEnabled(e);}
@@ -117,6 +117,24 @@ class qmpFuncPrivate
 class qmpRenderFunc;
 class qmpPanicFunc;
 class qmpReloadSynthFunc;
+
+class qmpCallBack
+{
+	private:
+		int t;
+		ICallBack* cbc;
+		callback_t cbf;
+	public:
+		qmpCallBack(){t=-1;cbc=NULL;cbf=NULL;}
+		qmpCallBack(ICallBack* _cb){t=0;cbc=_cb;cbf=NULL;}
+		qmpCallBack(callback_t _cb){t=1;cbf=_cb;cbc=NULL;}
+		void operator ()(void* cbd,void* usrd)
+		{
+			if(t<0)return;
+			if(t)cbf(cbd,usrd);
+			else cbc->callBack(cbd,usrd);
+		}
+};
 
 class qmpMainWindow:public QMainWindow
 {
@@ -140,16 +158,18 @@ class qmpMainWindow:public QMainWindow
 		uint32_t getPlaybackPercentage();
 		void playerSeek(uint32_t percentage);
 		int pharseArgs();
-		void registerVisualizationIntf(qmpVisualizationIntf* intf,std::string name,std::string desc,const char* icon,int iconlen);
-		void unregisterVisualizationIntf(std::string name);
-		void registerFunctionality(qmpFuncBaseIntf* i,std::string name,std::string desc,const char* icon,int iconlen,bool checkable,bool isv=false);
+		void registerFunctionality(qmpFuncBaseIntf* i,std::string name,std::string desc,const char* icon,int iconlen,bool checkable);
 		void unregisterFunctionality(std::string name);
+		int registerUIHook(std::string e,ICallBack* callback,void* userdat);
+		int registerUIHook(std::string e,callback_t callback,void* userdat);
+		void unregisterUIHook(std::string e,int hook);
 		void setFuncState(std::string name,bool state);
 		void setFuncEnabled(std::string name,bool enable);
 		bool isDarkTheme();
 		void startRender();
 		void reloadSynth();
 		void setupWidget();
+		void invokeCallback(std::string cat,void *callerdat);
 		std::vector<std::string>& getWidgets(int w);
 		std::map<std::string,qmpFuncPrivate>& getFunc();
 
@@ -191,6 +211,7 @@ class qmpMainWindow:public QMainWindow
 		QPointer<qmpSettingsWindow> settingsw;
 		QPointer<qmpHelpWindow> helpw;
 		std::map<std::string,qmpFuncPrivate> mfunc;
+		std::unordered_map<std::string,std::map<int,std::pair<qmpCallBack,void*>>> muicb;
 		qmpRenderFunc* renderf;
 		qmpPanicFunc* panicf;
 		qmpReloadSynthFunc* reloadsynf;
@@ -199,6 +220,7 @@ class qmpMainWindow:public QMainWindow
 		void onfnChanged();
 		void playerSetup(IFluidSettings *fs);
 		void loadSoundFont(IFluidSettings *fs);
+		int loadFile(QString fns);
 
 	private:
 		static qmpMainWindow* ref;

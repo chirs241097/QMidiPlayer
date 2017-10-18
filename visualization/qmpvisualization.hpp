@@ -12,7 +12,7 @@
 #include "../include/qmpcorepublic.hpp"
 
 class qmpVisualization;
-class CReaderCallBack:public IMidiCallBack
+class CReaderCallBack:public ICallBack
 {
 	private:
 		qmpVisualization *par;
@@ -20,7 +20,7 @@ class CReaderCallBack:public IMidiCallBack
 		CReaderCallBack(qmpVisualization *_par){par=_par;}
 		void callBack(void *callerdata,void *userdata);
 };
-class CEventHandlerCallBack:public IMidiCallBack
+class CEventHandlerCallBack:public ICallBack
 {
 	private:
 		qmpVisualization *par;
@@ -28,7 +28,7 @@ class CEventHandlerCallBack:public IMidiCallBack
 		CEventHandlerCallBack(qmpVisualization *_par){par=_par;}
 		void callBack(void*,void*);
 };
-class CFRFinishedCallBack:public IMidiCallBack
+class CFRFinishedCallBack:public ICallBack
 {
 	private:
 		qmpVisualization *par;
@@ -42,7 +42,7 @@ struct MidiVisualEvent
 	uint32_t key,vel;
 	uint32_t ch;
 };
-class qmpVisualization:public qmpPluginIntf
+class qmpVisualization:public qmpPluginIntf,public qmpFuncBaseIntf
 {
 	friend class CEventHandlerCallBack;
 	friend class CReaderCallBack;
@@ -52,7 +52,6 @@ class qmpVisualization:public qmpPluginIntf
 		qmpPluginAPI* api;
 		CReaderCallBack* cb;
 		CEventHandlerCallBack* hcb;
-		qmpVisualizationIntf* vi;
 		CFRFinishedCallBack* frcb;
 		std::thread* rendererTh;
 		std::vector<MidiVisualEvent*>pool;
@@ -83,18 +82,23 @@ class qmpVisualization:public qmpPluginIntf
 	public:
 		qmpVisualization(qmpPluginAPI* _api);
 		~qmpVisualization();
+		void show();
+		void close();
 		bool update();
 		void start();
 		void stop();
 		void pause();
-		void show();
-		void close();
 		void reset();
 
 		void init();
 		void deinit();
 		const char* pluginGetName();
 		const char* pluginGetVersion();
+
+		static void cbstart(void* cbd,void* usrd);
+		static void cbstop(void* cbd,void* usrd);
+		static void cbpause(void* cbd,void* usrd);
+		static void cbreset(void* cbd,void* usrd);
 };
 
 class CMidiVisualHandler:public smHandler
@@ -120,20 +124,6 @@ class CloseHandler:public smHandler
 			p->close();}).detach();
 			return false;
 		}
-};
-
-class CDemoVisualization:public qmpVisualizationIntf
-{
-	private:
-		qmpVisualization* par;
-	public:
-		CDemoVisualization(qmpVisualization *p){par=p;}
-		void show(){par->show();}
-		void close(){par->close();}
-		void start(){par->start();}
-		void stop(){par->stop();}
-		void pause(){par->pause();}
-		void reset(){par->reset();}
 };
 
 extern "C"{

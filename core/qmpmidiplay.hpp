@@ -10,7 +10,7 @@
 #include "qmpmidioutrtmidi.hpp"
 #include "qmpmidioutfluid.hpp"
 class CMidiPlayer;
-class CSMFReader:public IMidiFileReader
+class CSMFReader:public qmpFileReader
 {
 	private:
 		CMidiFile* ret;
@@ -37,15 +37,15 @@ class CSMFReader:public IMidiFileReader
 };
 class CMidiFileReaderCollection{
 	private:
-		std::vector<std::pair<IMidiFileReader*,std::string>> readers;
-		IMidiFileReader* currentReader;
+		std::vector<std::pair<qmpFileReader*,std::string>> readers;
+		qmpFileReader* currentReader;
 	public:
 		CMidiFileReaderCollection();
 		~CMidiFileReaderCollection();
-		void registerReader(IMidiFileReader* reader,std::string name);
+		void registerReader(qmpFileReader* reader,std::string name);
 		void unregisterReader(std::string name);
 		CMidiFile* readFile(const char* fn);
-		IMidiFileReader* getCurrentReader();
+		qmpFileReader* getCurrentReader();
 };
 class CMidiPlayer
 {
@@ -77,9 +77,9 @@ class CMidiPlayer
 		};
 		std::vector<SMidiDev> mididev;
 		int mappedoutput[16];
-		IMidiCallBack* eventHandlerCB[16];
-		IMidiCallBack* eventReaderCB[16];
-		IMidiCallBack* fileReadFinishCB[16];
+		ICallBack* eventHandlerCB[16];
+		ICallBack* eventReaderCB[16];
+		ICallBack* fileReadFinishCB[16];
 		void* eventHandlerCBuserdata[16];
 		void* eventReaderCBuserdata[16];
 		void* fileReadFinishCBuserdata[16];
@@ -145,13 +145,13 @@ class CMidiPlayer
 		int getChannelOutput(int ch);
 		void setChannelOutput(int ch,int outid);
 		uint8_t* getChstates();
-		int setEventHandlerCB(IMidiCallBack *cb,void *userdata);
+		int setEventHandlerCB(ICallBack *cb,void *userdata);
 		void unsetEventHandlerCB(int id);
-		int setEventReaderCB(IMidiCallBack *cb,void *userdata);
+		int setEventReaderCB(ICallBack *cb,void *userdata);
 		void unsetEventReaderCB(int id);
-		int setFileReadFinishedCB(IMidiCallBack *cb,void *userdata);
+		int setFileReadFinishedCB(ICallBack *cb,void *userdata);
 		void unsetFileReadFinishedCB(int id);
-		void registerReader(IMidiFileReader* reader,std::string name);
+		void registerReader(qmpFileReader* reader,std::string name);
 		void unregisterReader(std::string name);
 		void callEventReaderCB(SEventCallBackData d);
 

@@ -4,7 +4,7 @@
 #include <cstdio>
 #include "../include/qmpcorepublic.hpp"
 
-class CMidiStreamReader:public IMidiFileReader
+class CMidiStreamReader:public qmpFileReader
 {
 	private:
 		CMidiFile* ret;

@@ -250,7 +250,7 @@ CMidiFileReaderCollection::~CMidiFileReaderCollection()
 {
 	delete readers[0].first;
 }
-void CMidiFileReaderCollection::registerReader(IMidiFileReader* reader,std::string name)
+void CMidiFileReaderCollection::registerReader(qmpFileReader* reader,std::string name)
 {
 	for(unsigned i=0;i<readers.size();++i)
 		if(readers[i].second==name)return;
@@ -279,5 +279,5 @@ CMidiFile* CMidiFileReaderCollection::readFile(const char* fn)
 	currentReader=NULL;
 	return file;
 }
-IMidiFileReader* CMidiFileReaderCollection::getCurrentReader()
+qmpFileReader* CMidiFileReaderCollection::getCurrentReader()
 {return currentReader;}
