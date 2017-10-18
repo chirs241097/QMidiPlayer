@@ -675,6 +675,7 @@ void qmpMainWindow::setupWidget()
 		}
 		else
 		setButtonWidth(pb,32);
+		pb->setIconSize(QSize(16,16));
 		ui->buttonwidget->layout()->addWidget(pb);
 		mfunc[enabled_buttons[i]].setAssignedControl(pb);
 		connect(pb,SIGNAL(onClick(std::string)),this,SLOT(funcReflector(std::string)));

@@ -321,8 +321,8 @@ QSlider{height:10px;}</string>
         </property>
         <property name="iconSize">
          <size>
-          <width>32</width>
-          <height>32</height>
+          <width>24</width>
+          <height>24</height>
          </size>
         </property>
        </widget>
@@ -356,8 +356,8 @@ QSlider{height:10px;}</string>
         </property>
         <property name="iconSize">
          <size>
-          <width>32</width>
-          <height>32</height>
+          <width>24</width>
+          <height>24</height>
          </size>
         </property>
        </widget>
@@ -391,8 +391,8 @@ QSlider{height:10px;}</string>
         </property>
         <property name="iconSize">
          <size>
-          <width>32</width>
-          <height>32</height>
+          <width>24</width>
+          <height>24</height>
          </size>
         </property>
        </widget>
@@ -426,8 +426,8 @@ QSlider{height:10px;}</string>
         </property>
         <property name="iconSize">
          <size>
-          <width>32</width>
-          <height>32</height>
+          <width>24</width>
+          <height>24</height>
          </size>
         </property>
        </widget>
@@ -475,6 +475,12 @@ QSlider{height:10px;}</string>
          <iconset resource="resources.qrc">
           <normaloff>:/img/open.svg</normaloff>:/img/open.svg</iconset>
         </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
        </widget>
       </item>
       <item>
@@ -506,8 +512,8 @@ QSlider{height:10px;}</string>
         </property>
         <property name="iconSize">
          <size>
-          <width>32</width>
-          <height>32</height>
+          <width>24</width>
+          <height>24</height>
          </size>
         </property>
         <property name="checkable">
