@@ -66,7 +66,7 @@ class QReflectiveAction:public QAction
 		}
 	public:
 		explicit QReflectiveAction(const QIcon& icon,const QString& text,const std::string& ref):
-		QAction(icon,text),reflt(ref){
+		QAction(icon,text,NULL),reflt(ref){
 			connect(this,SIGNAL(triggered(bool)),this,SLOT(triggerslot()));
 		}
 };
