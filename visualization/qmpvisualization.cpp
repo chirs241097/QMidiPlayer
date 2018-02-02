@@ -410,6 +410,8 @@ void qmpVisualization::updateVisualization3D()
 			p3d[i]->setKeyTravelDist(j,traveld[i][j]/10.);
 		}
 		p3d[i]->render(smvec3d(0.756*api->getPitchBend(i),stairpiano?55-i*7:62-i*8,stairpiano*i*2));
+	}
+	for(int i=0;i<16;++i)
 		if(showlabel)
 		{
 			std::string s=api->getChannelPresetString(i);
@@ -418,7 +420,6 @@ void qmpVisualization::updateVisualization3D()
 			fonthdpi.render(-49,stairpiano?56-i*7:63-i*8,stairpiano*i*2+0.1,0xFFFFFFFF,ALIGN_RIGHT,.008,0.01);
 			fonthdpi.render(-49.05,stairpiano?56.05-i*7:63.05-i*8,stairpiano*i*2+0.2,0xFF000000,ALIGN_RIGHT,.008,0.01);
 		}
-	}
 	if(playing)ctk+=(int)1e6/((double)api->getRawTempo()/api->getDivision())*sm->smGetDelta();
 	while(pool.size()&&elb<pool.size()&&((double)ctk-pool[elb]->tce)*lpt>viewdist*2)++elb;
 	sm->smRenderEnd();
