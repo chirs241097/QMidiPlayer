@@ -1,3 +1,12 @@
+2018-02-07 0.8.6 alpha
+Forgot to unregister UI hooks.
+
+2018-02-03 0.8.6 alpha
+Minor performance improvement to the 3D visualization.
+
+2018-01-29 0.8.6 alpha
+Fixed FTBFS with Qt 5.6.
+
 2017-10-18 0.8.6 alpha
 API changes:
   - Lots of renaming.

@@ -759,10 +759,10 @@ void qmpVisualization::init()
 	memset(spectra,0,sizeof(spectra));
 	memset(spectrar,0,sizeof(spectrar));
 	api->registerFunctionality(this,"Visualization","Visualization",api->isDarkTheme()?":/img/visualization_i.svg":":/img/visualization.svg",0,true);
-	api->registerUIHook("main.start",qmpVisualization::cbstart,(void*)this);
-	api->registerUIHook("main.stop",qmpVisualization::cbstop,(void*)this);
-	api->registerUIHook("main.pause",qmpVisualization::cbpause,(void*)this);
-	api->registerUIHook("main.reset",qmpVisualization::cbreset,(void*)this);
+	uihb=api->registerUIHook("main.start",qmpVisualization::cbstart,(void*)this);
+	uihs=api->registerUIHook("main.stop",qmpVisualization::cbstop,(void*)this);
+	uihp=api->registerUIHook("main.pause",qmpVisualization::cbpause,(void*)this);
+	uihr=api->registerUIHook("main.reset",qmpVisualization::cbreset,(void*)this);
 	herif=api->registerEventReaderIntf(cb,NULL);
 	hehif=api->registerEventHandlerIntf(hcb,NULL);
 	hfrf=api->registerFileReadFinishedHandlerIntf(frcb,NULL);
@@ -836,6 +836,10 @@ void qmpVisualization::deinit()
 {
 	if(!api)return;close();tspool.clear();
 	for(unsigned i=0;i<pool.size();++i)delete pool[i];pool.clear();
+	api->unregisterUIHook("main.start",uihb);
+	api->unregisterUIHook("main.stop",uihs);
+	api->unregisterUIHook("main.pause",uihp);
+	api->unregisterUIHook("main.reset",uihr);
 	api->unregisterFunctionality("Visualization");
 	api->unregisterEventReaderIntf(herif);
 	api->unregisterEventHandlerIntf(hehif);
