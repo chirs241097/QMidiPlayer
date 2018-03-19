@@ -157,7 +157,7 @@ class qmpMainWindow:public QMainWindow
 		std::wstring getWTitle();
 		uint32_t getPlaybackPercentage();
 		void playerSeek(uint32_t percentage);
-		int pharseArgs();
+		int parseArgs();
 		void registerFunctionality(qmpFuncBaseIntf* i,std::string name,std::string desc,const char* icon,int iconlen,bool checkable);
 		void unregisterFunctionality(std::string name);
 		int registerUIHook(std::string e,ICallBack* callback,void* userdat);
@@ -216,6 +216,7 @@ class qmpMainWindow:public QMainWindow
 		qmpPanicFunc* panicf;
 		qmpReloadSynthFunc* reloadsynf;
 		std::vector<std::string> enabled_buttons,enabled_actions;
+		std::vector<QString> argfiles;
 
 		void onfnChanged();
 		void playerSetup(IFluidSettings *fs);

@@ -1,3 +1,7 @@
+2018-03-19 0.8.6 alpha
+Unified meta event reading code.
+Fixed playlist dialog behaving oddly.
+
 2018-02-07 0.8.6 alpha
 Forgot to unregister UI hooks.
 

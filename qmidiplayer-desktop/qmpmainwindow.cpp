@@ -41,7 +41,7 @@ qmpMainWindow::qmpMainWindow(QWidget *parent) :
 	setButtonHeight(ui->pbPrev,36);setButtonHeight(ui->pbSettings,36);setButtonHeight(ui->pbStop,36);
 	playing=false;stopped=true;dragging=false;fin=false;
 	settingsw=new qmpSettingsWindow(this);pmgr=new qmpPluginManager();
-	plistw=new qmpPlistWindow(this);player=NULL;timer=NULL;fluidrenderer=NULL;
+	player=NULL;timer=NULL;fluidrenderer=NULL;
 }
 
 qmpMainWindow::~qmpMainWindow()
@@ -95,6 +95,7 @@ void qmpMainWindow::init()
 	while(f.wait_for(std::chrono::milliseconds(100))==std::future_status::timeout);
 	ui->centralWidget->setEnabled(true);
 
+	plistw=new qmpPlistWindow(this);
 	chnlw=new qmpChannelsWindow(this);
 	efxw=new qmpEfxWindow(this);
 	infow=new qmpInfoWindow(this);
@@ -102,6 +103,11 @@ void qmpMainWindow::init()
 	timer=new QTimer(this);
 	renderf=new qmpRenderFunc(this);
 	panicf=new qmpPanicFunc(this);
+	if(havemidi)
+	{
+		plistw->emptyList();
+		for(auto&i:argfiles)plistw->insertItem(i);
+	}
 	registerFunctionality(renderf,"Render",tr("Render to wave").toStdString(),getThemedIconc(":/img/render.svg"),0,false);
 	registerFunctionality(panicf,"Panic",tr("Panic").toStdString(),getThemedIconc(":/img/panic.svg"),0,false);
 	registerFunctionality(reloadsynf,"ReloadSynth",tr("Restart fluidsynth").toStdString(),getThemedIconc(":/img/repeat-base.svg"),0,false);
@@ -120,7 +126,7 @@ void qmpMainWindow::init()
 	setupWidget();settingsw->verifySF();
 }
 
-int qmpMainWindow::pharseArgs()
+int qmpMainWindow::parseArgs()
 {
 	bool loadfolder=false;havemidi=false;
 	QStringList args=QApplication::arguments();
@@ -146,45 +152,21 @@ int qmpMainWindow::pharseArgs()
 				loadfolder=true;
 		}
 		else
-#ifdef _WIN32
+		if(QFileInfo(args.at(i)).exists())
 		{
-			char* c=wcsto8bit(args.at(i).toStdWString().c_str());
-			if(fluid_is_midifile(c))
-			{
-				if(!havemidi){havemidi=true;plistw->emptyList();}
-				if(loadfolder||qmpSettingsWindow::getSettingsIntf()->value("Behavior/LoadFolder",0).toInt())
-				{
-					QDirIterator di(QFileInfo(args.at(i)).absolutePath());
-					while(di.hasNext())
-					{
-						QString c=di.next();char* cc=wcsto8bit(c.toStdWString().c_str());
-						if((c.endsWith(".mid")||c.endsWith(".midi"))&&fluid_is_midifile(cc))
-						plistw->insertItem(c);free(cc);
-					}
-				}
-				else
-				plistw->insertItem(args.at(i));
-			}
-			free(c);
-		}
-#else
-		if(fluid_is_midifile(args.at(i).toStdString().c_str()))
-		{
-			if(!havemidi){havemidi=true;plistw->emptyList();}
+			if(!havemidi)havemidi=true;
 			if(loadfolder||qmpSettingsWindow::getSettingsIntf()->value("Behavior/LoadFolder",0).toInt())
 			{
 				QDirIterator di(QFileInfo(args.at(i)).absolutePath());
 				while(di.hasNext())
 				{
 					QString c=di.next();
-					if((c.endsWith(".mid")||c.endsWith(".midi"))&&fluid_is_midifile(c.toStdString().c_str()))
-					plistw->insertItem(c.toStdString().c_str());
+					argfiles.push_back(c);
 				}
 			}
 			else
-			plistw->insertItem(args.at(i).toStdString().c_str());
+			argfiles.push_back(args.at(i));
 		}
-#endif
 	}
 	return 0;
 }

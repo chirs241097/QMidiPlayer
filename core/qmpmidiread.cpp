@@ -12,6 +12,7 @@ const char* GM1SysX="\xF0\x7E\x7F\x09\x01\xF7";
 const char* GM2SysX="\xF0\x7E\x7F\x09\x03\xF7";
 const char* GSSysEx="\xF0\x41\x10\x42\x12\x40\x00\x7F\x00\x41\xF7";
 const char* XGSysEx="\xF0\x43\x10\x4C\x00\x00\x7E\x00\xF7";
+#define assert(x) if(!(x))this->error(false,"assertion failure @ qmpmidiread.cpp:%d",__LINE__)
 void CSMFReader::error(int fatal,const char* format,...)
 {
 	va_list ap;char buf[1024],bufr[1024];
@@ -68,43 +69,44 @@ int CSMFReader::eventReader()//returns 0 if End of Track encountered
 			if((type&0x0F)==0x0F)//Meta Event
 			{
 				char metatype=fgetc(f);
+				uint32_t len=readVL();char* str=NULL;
+				if(len<=1024&&len>0)str=new char[len+8];
+				if(str)fread(str,1,len,f);else fseek(f,len,SEEK_CUR);
+				if(str)str[len]='\0';
 				switch(metatype)
 				{
 					case 0x00://Sequence Number
-						fgetc(f);fgetc(f);fgetc(f);
+						assert(len==2||len==0);
 					break;
 					case 0x20://Channel Prefix
-						fgetc(f);fgetc(f);
+						assert(len==1);
 					break;
 					case 0x2F://End of Track
-						fgetc(f);
+						assert(len==0);
 						return 0;
 					break;
 					case 0x51://Set Tempo
-						p1=readDW();p1&=0x00FFFFFF;
+						assert(len==3);
+						p1=((str[0]&0xffu)<<16u)|(str[1]&0xffu)<<8u|(str[2]&0xffu);
 						curTrack->appendEvent(SEvent(curid,curt,type,metatype,p1));
 					break;
 					case 0x54://SMTPE offset, not handled.
-						fgetc(f);fgetc(f);fgetc(f);
-						fgetc(f);fgetc(f);fgetc(f);
+						assert(len==5);
 					break;
 					case 0x58://Time signature
-						fgetc(f);p1=readDW();
+						assert(len==4);
+						p1=((str[0]&0xffu)<<24u)|(str[1]&0xffu)<<16u|(str[2]&0xffu)<<8u|(str[3]&0xffu);
 						curTrack->appendEvent(SEvent(curid,curt,type,metatype,p1));
 					break;
 					case 0x59://Key signature
-						fgetc(f);p1=readSW();
+						assert(len==2);
+						p1=(str[0]&0xffu)<<8u|(str[1]&0xffu);
 						curTrack->appendEvent(SEvent(curid,curt,type,metatype,p1));
 					break;
 					case 0x01:case 0x02:case 0x03:
 					case 0x04:case 0x05:case 0x06:
 					case 0x07:case 0x7F:default://text-like meta
 					{
-						uint32_t len=readVL(),c;char* str=NULL;
-						if(len<=1024&&len>0)str=new char[len+8];
-						for(c=0;c<len;++c)
-							if(str)str[c]=fgetc(f);else fgetc(f);
-						if(str)str[c]='\0';
 						curTrack->appendEvent(SEvent(curid,curt,type,metatype,0,str));
 						if(str&&metatype==0x03&&!ret->title)
 						{
@@ -116,9 +118,9 @@ int CSMFReader::eventReader()//returns 0 if End of Track encountered
 							ret->copyright=new char[len+8];
 							strcpy(ret->copyright,str);
 						}
-						if(len<=1024&&len>0)delete[] str;
 					}
 				}
+				if(str)delete[] str;
 			}
 			else if((type&0x0F)==0x00||(type&0x0F)==0x07)//SysEx
 			{
@@ -200,6 +202,7 @@ int CSMFReader::chunkReader(int hdrXp)
 			uint32_t chnklen=readDW();fseek(f,chnklen,SEEK_CUR);return 0;
 		}
 		else return trackChunkReader(),1;
+	return 0;
 }
 CSMFReader::CSMFReader()
 {
