@@ -420,7 +420,6 @@ void qmpVisualization::updateVisualization3D()
 			fonthdpi.render(-49,stairpiano?56-i*7:63-i*8,stairpiano*i*2+0.1,0xFFFFFFFF,ALIGN_RIGHT,.008,0.01);
 			fonthdpi.render(-49.05,stairpiano?56.05-i*7:63.05-i*8,stairpiano*i*2+0.2,0xFF000000,ALIGN_RIGHT,.008,0.01);
 		}
-	if(playing)ctk+=(int)1e6/((double)api->getRawTempo()/api->getDivision())*sm->smGetDelta();
 	while(pool.size()&&elb<pool.size()&&((double)ctk-pool[elb]->tce)*lpt>viewdist*2)++elb;
 	sm->smRenderEnd();
 	if(showparticle&&!horizontal)
@@ -662,7 +661,6 @@ void qmpVisualization::updateVisualization2D()
 			sm->smRenderQuad(&nq);
 		}
 	}
-	if(playing)ctk+=(int)1e6/((double)api->getRawTempo()/api->getDivision())*sm->smGetDelta();
 }
 bool qmpVisualization::update()
 {
@@ -671,6 +669,7 @@ bool qmpVisualization::update()
 		api->playerSeek(api->getCurrentPlaybackPercentage()+(sm->smGetKeyState(SMK_SHIFT)?5:1));
 	if(sm->smGetKeyState(SMK_LEFT)==SMKST_HIT)
 		api->playerSeek(api->getCurrentPlaybackPercentage()-(sm->smGetKeyState(SMK_SHIFT)?5:1));
+	if(playing)ctk+=1e6/api->getRawTempo()*api->getDivision()*sm->smGetDelta();
 	if(!flat)
 		updateVisualization3D();
 	sm->smRenderBegin2D();

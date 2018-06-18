@@ -1,3 +1,7 @@
+2018-06-18 0.8.6 alpha
+Precise playback (no more slowdown).
+Also the visualization should now sync better.
+
 2018-03-19 0.8.6 alpha
 Unified meta event reading code.
 Fixed playlist dialog behaving oddly.

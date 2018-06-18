@@ -63,8 +63,9 @@ class CMidiPlayer
 		bool sendSysEx,waitvoice;
 		uint8_t chstate[16],chstatus[16][130];//0..127: cc 128: pc
 		qmpMidiOutFluid* internalFluid;
-		uint32_t ctempo,ctsn,ctsd,dpt,divs,cks;
-		//raw tempo, timesig num., timesig den., delay per tick, division, keysig
+		uint32_t ctempo,ctsn,ctsd,divs,cks;
+		double dpt;//time per tick
+		//raw tempo, timesig num., timesig den., division, keysig
 		//thread control
 		uint32_t tceptr,tcpaused,tcstop,ct;
 		uint32_t finished,resumed;

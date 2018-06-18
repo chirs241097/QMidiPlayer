@@ -100,7 +100,8 @@ int CSMFReader::eventReader()//returns 0 if End of Track encountered
 					break;
 					case 0x59://Key signature
 						assert(len==2);
-						p1=(str[0]&0xffu)<<8u|(str[1]&0xffu);
+						if(len>=2)
+						p1=(str[0]&0xffu)<<8u|(str[1]&0xffu);else p1=0;
 						curTrack->appendEvent(SEvent(curid,curt,type,metatype,p1));
 					break;
 					case 0x01:case 0x02:case 0x03:

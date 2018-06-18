@@ -10,6 +10,9 @@
 #include <windows.h>
 uint64_t pf;
 #endif
+//debug purpose
+uint32_t ttick;
+std::chrono::high_resolution_clock::time_point ttime;
 CMidiPlayer* CMidiPlayer::ref=NULL;
 bool CMidiPlayer::processEvent(const SEvent *e)
 {
@@ -53,7 +56,9 @@ bool CMidiPlayer::processEvent(const SEvent *e)
 				switch(e->p1)
 				{
 					case 0x51:
-						ctempo=e->p2;dpt=ctempo*1000/divs;
+						ctempo=e->p2;dpt=ctempo*1000./divs;
+						ttime=std::chrono::high_resolution_clock::now();
+						ttick=getTick();
 					break;
 					case 0x58:
 						ctsn=e->p2>>24;
@@ -106,8 +111,8 @@ void CMidiPlayer::processEventStub(const SEvent *e)
 				switch(e->p1)
 				{
 					case 0x51:
-						ctempo=e->p2;dpt=ctempo*1000/divs;
-						ccc[0][131]=dpt;
+						ctempo=e->p2;dpt=ctempo*1000./divs;
+						ccc[0][131]=ctempo;
 					break;
 					case 0x58:
 						ccc[0][132]=e->p2;
@@ -149,11 +154,19 @@ void CMidiPlayer::prePlayInit()
 }
 void CMidiPlayer::playEvents()
 {
+	static uint32_t _lrtick;_lrtick=0;
+	ttick=getEvent(0)->time;ttime=std::chrono::high_resolution_clock::now();
 	for(ct=getEvent(0)->time;tceptr<ecnt;)
 	{
 		while(tcpaused)std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		using namespace std::chrono;
 		high_resolution_clock::time_point b=high_resolution_clock::now();
+		if(getTick()-_lrtick>divs){
+			_lrtick=getTick();
+			//double _dt=(getTick()-ttick)*dpt-duration_cast<nanoseconds>((b-ttime)).count();
+			//<0: slower than expected, >0: faster than expected
+			//fprintf(stderr,"@ tick %u, dtime %.6fus",getTick(),_dt/1000.);
+		}
 		for(;!tcstop&&midiReaders&&tceptr<ecnt&&ct==getEvent(tceptr)->time;++tceptr)
 			if(processEvent(getEvent(tceptr)))
 			{
@@ -163,14 +176,20 @@ void CMidiPlayer::playEvents()
 		if(tcstop||!midiReaders||tceptr>=ecnt)break;
 		high_resolution_clock::time_point a=high_resolution_clock::now();
 		auto sendtime=a-b;
-		if(resumed)resumed=false;
+		if(resumed){resumed=false;
+		ttick=getTick();ttime=high_resolution_clock::now();
+		}
 		else
 		if(sendtime.count()<(getEvent(tceptr)->time-ct)*dpt)
+		{
+			double ns_sleep=(getEvent(tceptr)->time-ct)*dpt-sendtime.count();
+			double correction=(getTick()-ttick)*dpt-(b-ttime).count();
 #ifdef _WIN32
-		w32usleep(((getEvent(tceptr)->time-ct)*dpt-sendtime.count())/1000);
+			w32usleep((uint64_t)(((getEvent(tceptr)->time-ct)*dpt-sendtime.count())/1000));
 #else
-		std::this_thread::sleep_for(std::chrono::nanoseconds((getEvent(tceptr)->time-ct)*dpt-sendtime.count()));
+			std::this_thread::sleep_for(std::chrono::nanoseconds((uint64_t)(ns_sleep+correction)));
 #endif
+		}
 		if(tcstop||!midiReaders)break;
 		ct=getEvent(tceptr)->time;
 	}
@@ -179,7 +198,7 @@ void CMidiPlayer::playEvents()
 }
 void CMidiPlayer::fileTimer1Pass()
 {
-	ftime=.0;ctempo=0x7A120;dpt=ctempo*1000/divs;
+	ftime=.0;ctempo=0x7A120;dpt=ctempo*1000./divs;
 	for(uint32_t eptr=0,ct=getEvent(0)->time;eptr<ecnt;)
 	{
 		while(eptr<ecnt&&ct==getEvent(eptr)->time)
@@ -191,7 +210,7 @@ void CMidiPlayer::fileTimer1Pass()
 }
 void CMidiPlayer::fileTimer2Pass()
 {
-	double ctime=.0;uint32_t c=1;ctempo=0x7A120;dpt=ctempo*1000/divs;
+	double ctime=.0;uint32_t c=1;ctempo=0x7A120;dpt=ctempo*1000./divs;
 	memset(stamps,0,sizeof(stamps));memset(ccstamps,0,sizeof(ccstamps));
 	memset(ccc,0,sizeof(ccc));memset(rpnid,0xFF,sizeof(rpnid));memset(rpnval,0xFF,sizeof(rpnval));
 	for(int i=0;i<16;++i)
@@ -200,7 +219,7 @@ void CMidiPlayer::fileTimer2Pass()
 		ccc[i][11]=127;ccc[i][71]=64;ccc[i][72]=64;
 		ccc[i][73]=64;ccc[i][74]=64;ccc[i][75]=64;
 		ccc[i][76]=64;ccc[i][77]=64;ccc[i][78]=64;
-		ccc[i][131]=dpt;ccc[i][132]=0x04021808;
+		ccc[i][131]=ctempo;ccc[i][132]=0x04021808;
 		ccc[i][133]=0;ccc[i][134]=2;
 	}if(midiFile->std!=4)ccc[9][0]=128;
 	for(int i=0;i<16;++i)for(int j=0;j<135;++j)
@@ -302,7 +321,7 @@ bool CMidiPlayer::playerLoadFile(const char* fn)
 }
 void CMidiPlayer::playerInit()
 {
-	ctempo=0x7A120;ctsn=4;ctsd=4;cks=0;dpt=ctempo*1000/divs;
+	ctempo=0x7A120;ctsn=4;ctsd=4;cks=0;dpt=ctempo*1000./divs;
 	tceptr=0;tcstop=0;tcpaused=0;finished=0;mute=solo=0;
 	for(int i=0;i<16;++i)pbr[i]=2,pbv[i]=8192;
 	sendSysEx=true;memset(rpnid,0xFF,sizeof(rpnid));memset(rpnval,0xFF,sizeof(rpnval));
@@ -346,7 +365,7 @@ void CMidiPlayer::setTCeptr(uint32_t ep,uint32_t st)
 		internalFluid->rpnMessage(i,0,ccstamps[st][i][134]<<7);
 		dest->rpnMessage(i,0,ccstamps[st][i][134]<<7);
 		pbr[i]=ccstamps[st][i][134];
-		dpt=ccstamps[st][0][131];ctempo=dpt*divs/1000;
+		ctempo=ccstamps[st][0][131];dpt=ctempo*1000./divs;
 		ctsn=ccstamps[st][0][132]>>24;ctsd=1<<((ccstamps[st][0][132]>>16)&0xFF);
 		cks=ccstamps[st][0][133];
 	}
