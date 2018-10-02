@@ -1,3 +1,8 @@
+2018-10-02 0.8.6 alpha
+Fixed layout with Qt 5.11.
+Minor code cleanups in qmpchannelswindow.
+Documentation update.
+
 2018-06-18 0.8.6 alpha
 Precise playback (no more slowdown).
 Also the visualization should now sync better.

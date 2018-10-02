@@ -45,6 +45,7 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent) :
 		ui->twChannels->setCellWidget(i,3,new QDCComboBox());
 		QDCComboBox *cb=(QDCComboBox*)ui->twChannels->cellWidget(i,3);
 		cb->setID(i);
+		cb->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Fixed);
 		for(size_t j=0;j<devc;++j)
 		{
 			cb->addItem(devs[j].c_str());
@@ -59,13 +60,13 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent) :
 		if(qmpSettingsWindow::getSettingsIntf()->value("Midi/DisableMapping",0).toInt())
 			cb->setEnabled(false);
 		connect(cb,SIGNAL(onChange(int,int)),this,SLOT(changeMidiMapping(int,int)));
-		ui->twChannels->setCellWidget(i,4,new QDCLabel(""));
-		((QDCLabel*)ui->twChannels->cellWidget(i,4))->setID(i);
-		connect(ui->twChannels->cellWidget(i,4),SIGNAL(onDoubleClick(int)),this,SLOT(showPresetWindow(int)));
+		ui->twChannels->setItem(i,4,new QTableWidgetItem(""));
+		ui->twChannels->item(i,4)->setFlags(Qt::ItemIsEnabled);
 		ui->twChannels->setCellWidget(i,5,new QDCPushButton("..."));
-		((QDCLabel*)ui->twChannels->cellWidget(i,5))->setID(i);
+		((QDCPushButton*)ui->twChannels->cellWidget(i,5))->setID(i);
 		connect(ui->twChannels->cellWidget(i,5),SIGNAL(onClick(int)),this,SLOT(showChannelEditorWindow(int)));
 	}
+	connect(ui->twChannels,SIGNAL(cellDoubleClicked(int,int)),this,SLOT(showPresetWindow(int,int)));
 	ui->twChannels->setColumnWidth(0,24*(logicalDpiX()/96.));
 	ui->twChannels->setColumnWidth(1,24*(logicalDpiX()/96.));
 	ui->twChannels->setColumnWidth(2,24*(logicalDpiX()/96.));
@@ -130,7 +131,7 @@ void qmpChannelsWindow::channelWindowsUpdate()
 	if(qmpMainWindow::getInstance()->getPlayer()->isFinished())
 	{
 		for(int i=0;i<16;++i)
-			((QLabel*)ui->twChannels->cellWidget(i,4))->setText("");
+			ui->twChannels->item(i,4)->setText("");
 		connect(cb,SIGNAL(onNoteOn()),this,SLOT(updateChannelActivity()));
 		fused=0;return;
 	}
@@ -153,14 +154,14 @@ void qmpChannelsWindow::channelWindowsUpdate()
 		sprintf(data,"%03d:%03d %s",b,p,nm);
 		if(fused)
 		{
-			if(strcmp(((QLabel*)ui->twChannels->cellWidget(i,4))->
+			if(strcmp((ui->twChannels->item(i,4))->
 					  text().toStdString().c_str(),data))
 			{
 				connect(cb,SIGNAL(onNoteOn()),this,SLOT(updateChannelActivity()));
 				fused=0;
 			}
 		}
-		((QLabel*)ui->twChannels->cellWidget(i,4))->setText(data);
+		ui->twChannels->item(i,4)->setText(data);
 		ui->twChannels->item(i,0)->setIcon(
 		qmpMainWindow::getInstance()->getPlayer()->getChstates()[i]?*cha:*chi);
 		if(qmpMainWindow::getInstance()->getPlayer()->getChstates()[i])
@@ -207,8 +208,9 @@ void qmpChannelsWindow::on_pbUnsolo_clicked()
 	}
 }
 
-void qmpChannelsWindow::showPresetWindow(int chid)
+void qmpChannelsWindow::showPresetWindow(int chid,int col)
 {
+	if(col!=4)return;
 	pselectw->show();
 	pselectw->setupWindow(chid);
 }

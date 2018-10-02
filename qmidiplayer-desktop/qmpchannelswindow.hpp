@@ -17,20 +17,6 @@ namespace Ui {
 	class qmpChannelsWindow;
 }
 
-class QDCLabel:public QLabel
-{
-	Q_OBJECT
-	private:
-		int id;
-	protected:
-		void mouseDoubleClickEvent(QMouseEvent *event){event->accept();emit onDoubleClick(id);}
-	public:
-		QDCLabel(QString s):QLabel(s){id=-1;}
-		void setID(int _id){id=_id;}
-	signals:
-		void onDoubleClick(int id);
-};
-
 class QDCPushButton:public QPushButton
 {
 	Q_OBJECT
@@ -41,6 +27,7 @@ class QDCPushButton:public QPushButton
 	public:
 		QDCPushButton(QString s):QPushButton(s){id=-1;}
 		void setID(int _id){id=_id;}
+		QSize sizeHint()const{return QSize();}
 	signals:
 		void onClick(int id);
 };
@@ -53,6 +40,8 @@ class QDCComboBox:public QComboBox
 	public:
 		QDCComboBox():QComboBox(){id=-1;connect(this,SIGNAL(currentIndexChanged(int)),this,SLOT(indexChangedSlot(int)));}
 		void setID(int _id){id=_id;}
+		QSize sizeHint()const{return QSize();}
+		QSize minimumSizeHint()const{return QSize();}
 	signals:
 		void onChange(int id,int idx);
 	public slots:
@@ -95,7 +84,7 @@ class qmpChannelsWindow:public QWidget
 		void channelWindowsUpdate();
 		void updateChannelActivity();
 		void channelMSChanged();
-		void showPresetWindow(int chid);
+		void showPresetWindow(int chid,int col);
 		void showChannelEditorWindow(int chid);
 		void changeMidiMapping(int chid,int idx);
 		void on_pbUnmute_clicked();
