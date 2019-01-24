@@ -11,7 +11,7 @@
 QSettings* qmpSettingsWindow::settings=NULL;
 QComboBox* qmpSettingsWindow::outwidget=NULL;
 
-void qmpFluidForEachOpt(void* data,char*,char* option)
+void qmpFluidForEachOpt(void* data,const char*,const char* option)
 {
 	QComboBox *pcb=(QComboBox*)data;
 	pcb->addItem(option);
@@ -388,7 +388,7 @@ void qmpSettingsWindow::verifySF()
 		if(QMessageBox::question(QDesktopWidget().screen(curMonitor),//this,
 		tr("No soundfont loaded"),
 		tr("Internal fluidsynth was chosen as the default output but it has no soundfont set. "
-		   "Would you like to setup soundfonts now? After that you may have to reload the internal synth."))==QMessageBox::Yes)
+		   "Would you like to setup soundfonts now? You may have to reload the internal synth afterwards."))==QMessageBox::Yes)
 		{
 			show();
 			ui->tabWidget->setCurrentWidget(ui->tab_3);

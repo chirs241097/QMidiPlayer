@@ -215,7 +215,7 @@ void CMidiPlayer::fileTimer2Pass()
 	memset(ccc,0,sizeof(ccc));memset(rpnid,0xFF,sizeof(rpnid));memset(rpnval,0xFF,sizeof(rpnval));
 	for(int i=0;i<16;++i)
 	{
-		ccc[i][7]=100;ccc[i][10]=64;ccc[i][11]=127;
+		ccc[i][7]=100;ccc[i][8]=64;ccc[i][10]=64;ccc[i][11]=127;
 		ccc[i][11]=127;ccc[i][71]=64;ccc[i][72]=64;
 		ccc[i][73]=64;ccc[i][74]=64;ccc[i][75]=64;
 		ccc[i][76]=64;ccc[i][77]=64;ccc[i][78]=64;

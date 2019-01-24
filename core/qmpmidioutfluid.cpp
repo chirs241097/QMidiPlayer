@@ -28,9 +28,8 @@ void qmpMidiOutFluid::deviceInit()
 		delete_fluid_synth(synth);synth=NULL;
 		return;
 	}
-	fluid_synth_set_chorus(synth,FLUID_CHORUS_DEFAULT_N,FLUID_CHORUS_DEFAULT_LEVEL,
-						   FLUID_CHORUS_DEFAULT_SPEED,FLUID_CHORUS_DEFAULT_DEPTH,
-						   FLUID_CHORUS_DEFAULT_TYPE);
+	fluid_synth_set_chorus(synth,3,2.0,0.3,8.0,
+						   FLUID_CHORUS_MOD_SINE);
 	/*if(midiFile->std==4)
 	fluid_synth_set_channel_type(synth,9,CHANNEL_TYPE_MELODIC);
 	else if(midiFile->std==1)
@@ -149,13 +148,13 @@ std::vector<std::pair<std::pair<int,int>,std::string>> qmpMidiOutFluid::listPres
 	for(int i=getSFCount()-1;i>=0;--i)
 	{
 		fluid_sfont_t* psf=fluid_synth_get_sfont(synth,i);
-		fluid_preset_t preset;
-		psf->iteration_start(psf);
-		while(psf->iteration_next(psf,&preset))
+		fluid_preset_t* preset;
+		fluid_sfont_iteration_start(psf);
+		while(preset=fluid_sfont_iteration_next(psf))
 			pmap[std::make_pair(
-					preset.get_banknum(&preset),
-					preset.get_num(&preset)
-			)]=preset.get_name(&preset);
+					fluid_preset_get_banknum(preset),
+					fluid_preset_get_num(preset)
+			)]=fluid_preset_get_name(preset);
 	}
 	for(auto i=pmap.begin();i!=pmap.end();++i)
 	ret.push_back(std::make_pair(i->first,i->second));
@@ -176,10 +175,10 @@ void qmpMidiOutFluid::setGain(double gain)
 void qmpMidiOutFluid::getChannelInfo(int ch,int *b, int *p, char *s)
 {
 	if(!synth)return;
-	fluid_synth_channel_info_t chinfo;
-	fluid_synth_get_channel_info(synth,ch,&chinfo);
-	*b=chinfo.bank;*p=chinfo.program;
-	strcpy(s,chinfo.name);
+	fluid_preset_t* chpreset=fluid_synth_get_channel_preset(synth,ch);
+	*b=fluid_preset_get_banknum(chpreset);
+	*p=fluid_preset_get_num(chpreset);
+	strcpy(s,fluid_preset_get_name(chpreset));
 }
 void qmpMidiOutFluid::getReverbPara(double *r,double *d,double *w,double *l)
 {
@@ -200,8 +199,8 @@ void qmpMidiOutFluid::getChorusPara(int *fb,double *l,double *r,double *d,int *t
 	if(!synth)return;
 	*fb=fluid_synth_get_chorus_nr(synth);
 	*l=fluid_synth_get_chorus_level(synth);
-	*r=fluid_synth_get_chorus_speed_Hz(synth);
-	*d=fluid_synth_get_chorus_depth_ms(synth);
+	*r=fluid_synth_get_chorus_speed(synth);
+	*d=fluid_synth_get_chorus_depth(synth);
 	*type=fluid_synth_get_chorus_type(synth);
 }
 void qmpMidiOutFluid::setChorusPara(int e,int fb,double l,double r,double d,int type)

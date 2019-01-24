@@ -17,16 +17,16 @@ qmpEfxWindow::qmpEfxWindow(QWidget *parent) :
 	QSettings *settings=qmpSettingsWindow::getSettingsIntf();
 	ui->cbEnabledC->setChecked(settings->value("Effects/ChorusEnabled",1).toInt());
 	ui->cbEnabledR->setChecked(settings->value("Effects/ReverbEnabled",1).toInt());
-	rr=settings->value("Effects/ReverbRoom",FLUID_REVERB_DEFAULT_ROOMSIZE).toDouble();
-	rd=settings->value("Effects/ReverbDamp",FLUID_REVERB_DEFAULT_DAMP).toDouble();
-	rw=settings->value("Effects/ReverbWidth",FLUID_REVERB_DEFAULT_WIDTH).toDouble();
-	rl=settings->value("Effects/ReverbLevel",FLUID_REVERB_DEFAULT_LEVEL).toDouble();
+	rr=settings->value("Effects/ReverbRoom",0.2).toDouble();
+	rd=settings->value("Effects/ReverbDamp",0.0).toDouble();
+	rw=settings->value("Effects/ReverbWidth",0.5).toDouble();
+	rl=settings->value("Effects/ReverbLevel",0.9).toDouble();
 
-	cfb=settings->value("Effects/ChorusFeedbk",FLUID_CHORUS_DEFAULT_N).toInt();
-	cl=settings->value("Effects/ChorusLevel",FLUID_CHORUS_DEFAULT_LEVEL).toDouble();
-	cr=settings->value("Effects/ChorusRate",FLUID_CHORUS_DEFAULT_SPEED).toDouble();
-	cd=settings->value("Effects/ChorusDepth",FLUID_CHORUS_DEFAULT_DEPTH).toDouble();
-	ct=settings->value("Effects/ChorusType",FLUID_CHORUS_DEFAULT_TYPE).toInt();
+	cfb=settings->value("Effects/ChorusFeedbk",3).toInt();
+	cl=settings->value("Effects/ChorusLevel",2.0).toDouble();
+	cr=settings->value("Effects/ChorusRate",0.3).toDouble();
+	cd=settings->value("Effects/ChorusDepth",8.0).toDouble();
+	ct=settings->value("Effects/ChorusType",FLUID_CHORUS_MOD_SINE).toInt();
 	qmpMainWindow::getInstance()->registerFunctionality(
 		efxf=new qmpEfxFunc(this),
 		std::string("Effects"),

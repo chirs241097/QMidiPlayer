@@ -15,7 +15,7 @@
 #define setButtonHeight(x,h) {x->setMaximumHeight(h*(logicalDpiY()/96.));x->setMinimumHeight(h*(logicalDpiY()/96.));}
 #define setButtonWidth(x,h) {x->setMaximumWidth(h*(logicalDpiY()/96.));x->setMinimumWidth(h*(logicalDpiY()/96.));}
 #ifdef _WIN32
-#include <Windows.h>
+#include <windows.h>
 char* wcsto8bit(const wchar_t* s)
 {
 	int size=WideCharToMultiByte(CP_OEMCP,WC_NO_BEST_FIT_CHARS,s,-1,0,0,0,0);
@@ -276,7 +276,7 @@ void qmpMainWindow::switchTrack(QString s)
 	player->setWaitVoice(qmpSettingsWindow::getSettingsIntf()->value("Midi/WaitVoice",1).toInt());
 	playerTh=new std::thread(&CMidiPlayer::playerThread,player);
 #ifdef _WIN32
-	SetThreadPriority(playerTh->native_handle(),THREAD_PRIORITY_TIME_CRITICAL);
+	SetThreadPriority((void*)playerTh->native_handle(),THREAD_PRIORITY_TIME_CRITICAL);
 #endif
 	st=std::chrono::steady_clock::now();offset=0;
 	timer->start(UPDATE_INTERVAL);
@@ -391,7 +391,7 @@ void qmpMainWindow::on_pbPlayPause_clicked()
 		player->setWaitVoice(qmpSettingsWindow::getSettingsIntf()->value("Midi/WaitVoice",1).toInt());
 		playerTh=new std::thread(&CMidiPlayer::playerThread,player);
 #ifdef _WIN32
-			SetThreadPriority(playerTh->native_handle(),THREAD_PRIORITY_TIME_CRITICAL);
+			SetThreadPriority((void*)playerTh->native_handle(),THREAD_PRIORITY_TIME_CRITICAL);
 #endif
 		st=std::chrono::steady_clock::now();offset=0;
 		timer->start(UPDATE_INTERVAL);
