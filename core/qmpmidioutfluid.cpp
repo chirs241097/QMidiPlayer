@@ -110,6 +110,7 @@ void qmpMidiOutFluid::reset(uint8_t ch)
 	this->panic(ch);
 	fluid_synth_cc(synth,ch,0,0);
 	fluid_synth_cc(synth,ch,7,100);
+	fluid_synth_cc(synth,ch,8,64);
 	fluid_synth_cc(synth,ch,10,64);
 	fluid_synth_cc(synth,ch,11,127);
 	fluid_synth_cc(synth,ch,32,0);
@@ -172,13 +173,19 @@ void qmpMidiOutFluid::setGain(double gain)
 {
 	if(settings)fluid_settings_setnum(settings,"synth.gain",gain);
 }
-void qmpMidiOutFluid::getChannelInfo(int ch,int *b, int *p, char *s)
+void qmpMidiOutFluid::getChannelInfo(int ch,int *b,int *p,char *s)
 {
 	if(!synth)return;
 	fluid_preset_t* chpreset=fluid_synth_get_channel_preset(synth,ch);
+	if(!chpreset)
+	{
+		*b=*p=-1;
+		strcpy(s,"---");
+		return;
+	}
 	*b=fluid_preset_get_banknum(chpreset);
 	*p=fluid_preset_get_num(chpreset);
-	strcpy(s,fluid_preset_get_name(chpreset));
+	strncpy(s,fluid_preset_get_name(chpreset),256);
 }
 void qmpMidiOutFluid::getReverbPara(double *r,double *d,double *w,double *l)
 {

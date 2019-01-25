@@ -309,7 +309,7 @@ void qmpMainWindow::playerSetup(IFluidSettings* fs)
 	fs->setOptInt("audio.period-size",settings->value("Audio/BufSize","").toInt());
 	fs->setOptInt("audio.periods",settings->value("Audio/BufCnt","").toInt());
 	fs->setOptStr("audio.sample-format",settings->value("Audio/Format","").toString().toStdString().c_str());
-	fs->setOptInt("synth.sample-rate",settings->value("Audio/Frequency","").toInt());
+	fs->setOptNum("synth.sample-rate",settings->value("Audio/Frequency","").toInt());
 	fs->setOptInt("synth.polyphony",settings->value("Audio/Polyphony","").toInt());
 	fs->setOptInt("synth.cpu-cores",settings->value("Audio/Threads","").toInt());
 	char bsmode[4];

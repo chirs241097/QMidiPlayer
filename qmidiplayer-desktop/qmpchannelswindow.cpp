@@ -148,7 +148,7 @@ void qmpChannelsWindow::channelWindowsUpdate()
 	}
 	for(int i=0;i<16;++i)
 	{
-		char data[128],nm[25];
+		char data[128],nm[256];
 		int b,p;
 		qmpMainWindow::getInstance()->getPlayer()->getChannelPreset(i,&b,&p,nm);
 		sprintf(data,"%03d:%03d %s",b,p,nm);

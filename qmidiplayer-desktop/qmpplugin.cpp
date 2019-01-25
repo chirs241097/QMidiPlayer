@@ -153,7 +153,7 @@ int qmpPluginAPI::getChannelCC(int ch,int cc)
 {return qmw&&qmw->getPlayer()?qmw->getPlayer()->getCC(ch,cc):0;}
 int qmpPluginAPI::getChannelPreset(int ch)
 {
-	int b,p;char nm[25];
+	int b,p;char nm[256];
 	if(qmw&&qmw->getPlayer())
 	{
 		qmw->getPlayer()->getChannelPreset(ch,&b,&p,nm);
@@ -173,11 +173,11 @@ std::wstring qmpPluginAPI::getWTitle()
 {return qmw?qmw->getWTitle():L"";}
 std::string qmpPluginAPI::getChannelPresetString(int ch)
 {
-	int b,p;char nm[25],ret[33];ret[0]=0;
+	int b,p;char nm[256],ret[320];ret[0]=0;
 	if(qmw&&qmw->getPlayer())
 	{
 		qmw->getPlayer()->getChannelPreset(ch,&b,&p,nm);
-		sprintf(ret,"%03d:%03d %s",b,p,nm);
+		snprintf(ret,320,"%03d:%03d %s",b,p,nm);
 	}
 	return std::string(ret);
 }

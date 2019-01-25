@@ -40,7 +40,7 @@ void qmpPresetSelector::setupWindow(int chid)
 {
 	CMidiPlayer *plyr=qmpMainWindow::getInstance()->getPlayer();
 	if(!plyr->fluid()->getSFCount())return;
-	ch=chid;int b=0,p=0,r;char name[64];
+	ch=chid;int b=0,p=0,r;char name[256];
 	sprintf(name,"Preset Selection - Channel #%d",ch+1);
 	setWindowTitle(name);
 	plyr->getChannelPreset(chid,&b,&p,name);

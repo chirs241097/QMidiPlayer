@@ -252,7 +252,7 @@
        <item row="4" column="0">
         <widget class="QLabel" name="lbFrequency">
          <property name="text">
-          <string>Audio Frequency</string>
+          <string>Sample Rate</string>
          </property>
         </widget>
        </item>
@@ -347,7 +347,7 @@
        <item row="3" column="0">
         <widget class="QLabel" name="lbFormat">
          <property name="text">
-          <string>Audio Format</string>
+          <string>Sample Format</string>
          </property>
         </widget>
        </item>
