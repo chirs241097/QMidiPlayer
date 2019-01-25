@@ -1,3 +1,8 @@
+2019-01-25 0.8.6 alpha
+Fixed a crash caused by improper preset probing.
+Further ensure CC#8 is initialized correctly.
+Minor string table update.
+
 2019-01-24 0.8.6 alpha
 Migrated to fluidsynth 2.x.
 Moved to mxe for Windows build.
