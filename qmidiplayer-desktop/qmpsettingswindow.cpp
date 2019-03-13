@@ -22,8 +22,6 @@ qmpSettingsWindow::qmpSettingsWindow(QWidget *parent) :
 	ui(new Ui::qmpSettingsWindow)
 {
 	ui->setupUi(this);customOptions.clear();customOptPages.clear();
-	int w=size().width(),h=size().height();w=w*(logicalDpiX()/96.);h=h*(logicalDpiY()/96.);
-	setMaximumWidth(w);setMaximumHeight(h);setMinimumWidth(w);setMinimumHeight(h);
 	connect(this,SIGNAL(dialogClosing()),parent,SLOT(dialogClosed()));
 	settings=new QSettings(QDir::homePath()+QString("/.config/qmprc"),QSettings::IniFormat);
 	settingsInit();outwidget=ui->cbOutputDevice;
@@ -161,7 +159,7 @@ void qmpSettingsWindow::settingsInit()
 
 	selected=-1;
 	for(int i=0;i<ui->cbBSMode->count();++i)
-	if(ui->cbBSMode->itemText(i)==settings->value("Audio/BankSelect","GS").toString())
+	if(ui->cbBSMode->itemText(i)==settings->value("Audio/BankSelect","CC#0").toString())
 	{selected=i;break;}
 	if(~selected)ui->cbBSMode->setCurrentIndex(selected);
 	settings->setValue("Audio/BankSelect",ui->cbBSMode->currentText());
@@ -175,8 +173,8 @@ void qmpSettingsWindow::settingsInit()
 		ui->twSoundfont->setCellWidget(i-1,0,new QCheckBox(""));
 		((QCheckBox*)ui->twSoundfont->cellWidget(i-1,0))->setChecked(settings->value("SoundFonts/SF"+QString::number(i)+"Enabled",1).toInt());
 	}
-	ui->twSoundfont->setColumnWidth(0,22*logicalDpiX()/96.);
-	ui->twSoundfont->setColumnWidth(1,400*logicalDpiX()/96.);
+	ui->twSoundfont->setColumnWidth(0,22);
+	ui->twSoundfont->setColumnWidth(1,400);
 	QStringList qs;qs.push_back("E");qs.push_back("Path");
 	ui->twSoundfont->setHorizontalHeaderLabels(qs);
 	settings->setValue("SoundFonts/SFCount",sfc);
@@ -370,10 +368,10 @@ void qmpSettingsWindow::updatePluginList(qmpPluginManager *pmgr)
 		for(int j=1;j<=3;++j)
 		ui->twPluginList->item(i,j)->setFlags(ui->twPluginList->item(i,j)->flags()^Qt::ItemIsEditable);
 	}
-	ui->twPluginList->setColumnWidth(0,22*logicalDpiX()/96.);
-	ui->twPluginList->setColumnWidth(1,192*logicalDpiX()/96.);
-	ui->twPluginList->setColumnWidth(2,64*logicalDpiX()/96.);
-	ui->twPluginList->setColumnWidth(3,128*logicalDpiX()/96.);
+	ui->twPluginList->setColumnWidth(0,22);
+	ui->twPluginList->setColumnWidth(1,192);
+	ui->twPluginList->setColumnWidth(2,64);
+	ui->twPluginList->setColumnWidth(3,128);
 }
 
 void qmpSettingsWindow::verifySF()

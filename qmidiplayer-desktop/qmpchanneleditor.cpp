@@ -8,8 +8,6 @@ qmpChannelEditor::qmpChannelEditor(QWidget *parent) :
 	ui(new Ui::qmpChannelEditor)
 {
 	ui->setupUi(this);ch=0;
-	int w=size().width(),h=size().height();w=w*(logicalDpiX()/96.);h=h*(logicalDpiY()/96.);
-	setMaximumWidth(w);setMaximumHeight(h);setMinimumWidth(w);setMinimumHeight(h);
 	styl=new QDialSkulptureStyle();
 	QList<QDial*> dials=findChildren<QDial*>();
 	for(int i=0;i<dials.count();++i)

@@ -16,8 +16,6 @@ qmpPlistWindow::qmpPlistWindow(QWidget *parent) :
 	ui(new Ui::qmpPlistWindow)
 {
 	ui->setupUi(this);
-	int w=size().width(),h=size().height();w=w*(logicalDpiX()/96.);h=h*(logicalDpiY()/96.);
-	setMaximumWidth(w);setMaximumHeight(h);setMinimumWidth(w);setMinimumHeight(h);
 	setButtonHeight(ui->pbAdd,36);setButtonHeight(ui->pbAddFolder,36);
 	setButtonHeight(ui->pbClear,36);setButtonHeight(ui->pbLoad,36);
 	setButtonHeight(ui->pbRemove,36);setButtonHeight(ui->pbRepeat,36);

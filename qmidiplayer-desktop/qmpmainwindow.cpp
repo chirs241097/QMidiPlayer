@@ -35,8 +35,6 @@ qmpMainWindow::qmpMainWindow(QWidget *parent) :
 	ui->setupUi(this);
 	ui->lbCurPoly->setText("00000");ui->lbMaxPoly->setText("00000");
 	ui->lbFileName->setText("");ref=this;ui->verticalLayout->setAlignment(ui->pushButton,Qt::AlignRight);
-	int w=size().width(),h=size().height();w=w*(logicalDpiX()/96.);h=h*(logicalDpiY()/96.);
-	setMaximumWidth(w);setMaximumHeight(h);setMinimumWidth(w);setMinimumHeight(h);
 	setButtonHeight(ui->pbNext,36);setButtonHeight(ui->pbPlayPause,36);setButtonHeight(ui->pbAdd,36);
 	setButtonHeight(ui->pbPrev,36);setButtonHeight(ui->pbSettings,36);setButtonHeight(ui->pbStop,36);
 	playing=false;stopped=true;dragging=false;fin=false;

@@ -20,9 +20,12 @@
 
 *****************************************************************************/
 #include <cmath>
+#include <functional>
 #include <QStyleOptionSlider>
 #include <QPixmapCache>
 #include <QPainter>
+#include <QPointF>
+#include <QRectF>
 
 #include "qdialskulpturestyle.hpp"
 
@@ -33,41 +36,41 @@
 static const bool UsePixmapCache = true;
 
 static void
-paintIndicatorCached(QPainter *painter, const QStyleOption *option, void (*paintIndicator)(QPainter *painter, const QStyleOption *option), bool useCache, const QString &pixmapName)
+paintIndicatorCached(QPainter *painter, const QStyleOption *option, std::function<void(QPainter*,const QStyleOption*)> paintFunc, bool useCache, const QString &pixmapName)
 {
-	QPixmap pixmap;
-
-	if (!useCache || !QPixmapCache::find(pixmapName, pixmap)) {
-		pixmap =  QPixmap(option->rect.size());
-#if 1
-		pixmap.fill(Qt::transparent);
-	//  pixmap.fill(Qt::red);
-#else
-		pixmap.fill(option->palette.color(QPalette::Window));
-#endif
-		QPainter p(&pixmap);
-		QStyleOption opt = *option;
-		opt.rect = QRect(QPoint(0, 0), option->rect.size());
-	//  p.setCompositionMode(QPainter::CompositionMode_Clear);
-	//  p.setCompositionMode(QPainter::CompositionMode_Source);
-	//  p.fillRect(opt.rect, Qt::transparent);
-	//  p.setCompositionMode(QPainter::CompositionMode_SourceOver);
-		p.setFont(painter->font());
-		p.setRenderHint(QPainter::Antialiasing, true);
-		paintIndicator(&p, &opt);
-		p.end();
-		if (useCache) {
-			QPixmapCache::insert(pixmapName, pixmap);
-		//  qDebug() << "inserted into cache:" << pixmapName;
+	QRect rect = option->rect;
+	QPixmap internalPixmapCache;
+	QImage imageCache;
+	QPainter *p = painter;
+	int txType = painter->deviceTransform().type() | painter->worldTransform().type();
+	bool doPixmapCache = useCache && (!option->rect.isEmpty())
+			&& ((txType <= QTransform::TxTranslate) || (painter->deviceTransform().type() == QTransform::TxScale));
+	if (doPixmapCache && QPixmapCache::find(pixmapName, &internalPixmapCache)) {
+		painter->drawPixmap(option->rect.topLeft(), internalPixmapCache);
+	} else {
+		if (doPixmapCache) {
+			rect.setRect(0, 0, option->rect.width(), option->rect.height());
+			qreal pixelRatio=painter->device()->devicePixelRatioF();
+			imageCache = QImage(option->rect.size() * pixelRatio, QImage::Format_ARGB32_Premultiplied);
+			imageCache.setDevicePixelRatio(pixelRatio);
+			imageCache.fill(0);
+			p = new QPainter(&imageCache);
+		}
+		paintFunc(p,option);
+		if (doPixmapCache) {
+			p->end();
+			delete p;
+			internalPixmapCache = QPixmap::fromImage(imageCache);
+			painter->drawPixmap(option->rect.topLeft(), internalPixmapCache);
+			QPixmapCache::insert(pixmapName, internalPixmapCache);
 		}
 	}
-	painter->drawPixmap(option->rect, pixmap);
 }
 
 void
 paintDialBase(QPainter *painter, const QStyleOption *option)
 {
-//  painter->fillRect(option->rect, Qt::red);
+//	painter->fillRect(option->rect, Qt::red);
 //  painter->save();
 //  painter->setRenderHint(QPainter::Antialiasing, true);
 	int d = qMin(option->rect.width(), option->rect.height());
@@ -79,6 +82,7 @@ paintDialBase(QPainter *painter, const QStyleOption *option)
 //  const qreal angle = 90;
 
 	painter->setPen(Qt::NoPen);
+	painter->setRenderHint(QPainter::Antialiasing);
 	QColor border_color = option->palette.color(QPalette::Window);
 #if 0
 	{
@@ -268,7 +272,7 @@ shaded_color(const QColor &color, int shade)
 static void
 paintGrip(QPainter *painter, const QStyleOption *option)
 {
-//  painter->fillRect(option->rect, Qt::red);
+	//painter->fillRect(option->rect, Qt::red);
 	int d = qMin(option->rect.width(), option->rect.height());
 	// good values are 3 (very small), 4 (small), 5 (good), 7 (large), 9 (huge)
 	// int d = 5;
@@ -279,6 +283,7 @@ paintGrip(QPainter *painter, const QStyleOption *option)
 		qreal opacity = 0.9;
 
 	painter->save();
+	painter->setRenderHint(QPainter::Antialiasing);
 	painter->setPen(Qt::NoPen);
 	if (option->state & QStyle::State_Enabled) {
 		if (option->state & QStyle::State_Sunken) {
@@ -342,7 +347,7 @@ paintGrip(QPainter *painter, const QStyleOption *option)
 }
 
 void
-paintCachedGrip(QPainter *painter, const QStyleOption *option, QPalette::ColorRole /*bgrole*/)
+paintCachedGrip(QPainter *painter, const QStyleOption *option)
 {
 	bool useCache = UsePixmapCache;
 	QString pixmapName;
@@ -359,7 +364,13 @@ paintCachedGrip(QPainter *painter, const QStyleOption *option, QPalette::ColorRo
 				QByteArray colorName = option->palette.color(QPalette::Button).name().toLatin1();
 				pixmapName.sprintf("scp-isg-%x-%x-%s-%x-%x", state, option->direction, colorName.constData(), option->rect.width(), option->rect.height());
 	}
-	paintIndicatorCached(painter, option, paintGrip, useCache, pixmapName);
+	paintIndicatorCached(painter,option,
+		[=](QPainter *painter,const QStyleOption *option){
+			QStyleOption opt(*option);
+			opt.rect.moveTo(0,0);
+			paintGrip(painter,&opt);
+		},
+	useCache,pixmapName);
 }
 
 void
@@ -394,7 +405,7 @@ QDialSkulptureStyle::drawComplexControl( ComplexControl cc,
 	opt.state &= ~QStyle::State_HasFocus;
 	opt.rect.setWidth(opt.rect.width() & ~1);
 	opt.rect.setHeight(opt.rect.height() & ~1);
-	//((QCommonStyle *) this)->
+	opt.rect.moveCenter(option->rect.center());
 	QCommonStyle::drawComplexControl(QStyle::CC_Dial, &opt, painter, widget);
 
 	// focus rectangle
@@ -409,7 +420,10 @@ QDialSkulptureStyle::drawComplexControl( ComplexControl cc,
 
 	// dial base
 	if (d <= 256) {
-		paintIndicatorDial(painter, &opt);
+		QStyleOptionSlider topt(opt);
+		topt.rect.adjust(2,2,-2,-2);
+		topt.rect.moveCenter(option->rect.center());
+		paintIndicatorDial(painter, &topt);
 	} else {
 		// large dials are slow to render, do not render them
 	}
@@ -433,5 +447,5 @@ QDialSkulptureStyle::drawComplexControl( ComplexControl cc,
 
 	qreal rr = d / 2.0 - gripSize - 2;
 	opt.rect.translate(int(0.5 + rr * cos(angle)), int(0.5 - rr * sin(angle)));
-	paintCachedGrip(painter, &opt, option->state & QStyle::State_Enabled ? QPalette::Button : QPalette::Window);
+	paintCachedGrip(painter, &opt);
 }

@@ -12,8 +12,6 @@ qmpEfxWindow::qmpEfxWindow(QWidget *parent) :
 	QList<QDial*> dials=findChildren<QDial*>();
 	for(int i=0;i<dials.count();++i)
 		dials.at(i)->setStyle(styl);
-	int w=size().width(),h=size().height();w=w*(logicalDpiX()/96.);h=h*(logicalDpiY()/96.);
-	setMaximumWidth(w);setMaximumHeight(h);setMinimumWidth(w);setMinimumHeight(h);
 	QSettings *settings=qmpSettingsWindow::getSettingsIntf();
 	ui->cbEnabledC->setChecked(settings->value("Effects/ChorusEnabled",1).toInt());
 	ui->cbEnabledR->setChecked(settings->value("Effects/ReverbEnabled",1).toInt());

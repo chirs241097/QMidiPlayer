@@ -13,8 +13,6 @@ qmpCustomizeWindow::qmpCustomizeWindow(QWidget *parent) :
 	ui(new Ui::qmpCustomizeWindow)
 {
 	ui->setupUi(this);
-	int w=size().width(),h=size().height();w=w*(logicalDpiX()/96.);h=h*(logicalDpiY()/96.);
-	setMinimumWidth(w);setMinimumHeight(h);
 	QSettings *s=qmpMainWindow::getInstance()->getSettingsWindow()->getSettingsIntf();
 	QList<QVariant> defa={"FileInfo","Render","Panic","ReloadSynth"};
 	QList<QVariant> defb={"Channel","Playlist","Effects","Visualization"};

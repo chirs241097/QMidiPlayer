@@ -8,8 +8,6 @@ qmpPresetSelector::qmpPresetSelector(QWidget *parent) :
 	ui(new Ui::qmpPresetSelector)
 {
 	ui->setupUi(this);
-	int w=size().width(),h=size().height();w=w*(logicalDpiX()/96.);h=h*(logicalDpiY()/96.);
-	setMaximumWidth(w);setMaximumHeight(h);setMinimumWidth(w);setMinimumHeight(h);
 }
 
 qmpPresetSelector::~qmpPresetSelector()
@@ -88,13 +86,17 @@ void qmpPresetSelector::on_pbOk_clicked()
 	CMidiPlayer *plyr=qmpMainWindow::getInstance()->getPlayer();
 	if(plyr->getChannelOutput(ch)){
 		plyr->setChannelPreset(ch,(ui->spCustomMSB->value()<<7)|ui->spCustomLSB->value(),ui->spCustomPC->value());
-		//plyr->setCC(ch,0,ui->spCustomMSB->value());
-		//plyr->setCC(ch,32,ui->spCustomLSB->value());
 	}
 	else{
 		if(!ui->lwBankSelect->currentItem()||!ui->lwPresetSelect->currentItem())return (void)close();
-		int b,p;sscanf(ui->lwBankSelect->currentItem()->text().toStdString().c_str(),"%d",&b);
-		sscanf(ui->lwPresetSelect->currentItem()->text().toStdString().c_str(),"%d",&p);
+		int b,p;
+		b=ui->lwBankSelect->currentItem()->text().toInt();
+		p=ui->lwPresetSelect->currentItem()->text().split(' ').first().toInt();
+		QString s=qmpSettingsWindow::getSettingsIntf()->value("Audio/BankSelect","CC#0").toString();
+		if(s=="CC#32"){
+			if(b==128)b=127<<7;
+		}
+		else if(s=="CC#0")b<<=7;
 		plyr->setChannelPreset(ch,b,p);
 	}
 	close();

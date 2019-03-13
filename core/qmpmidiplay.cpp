@@ -405,22 +405,11 @@ void CMidiPlayer::getChannelPreset(int ch,int *b,int *p,char *name)
 void CMidiPlayer::setChannelPreset(int ch,int b,int p)
 {
 	chstatus[ch][128]=p;
-	if(mappedoutput[ch])
-	{
-		//external device mode?
-		chstatus[ch][0]=b>>7;chstatus[ch][32]=b&0x7F;
-		qmpMidiOutDevice* d=mididev[mappedoutput[ch]].dev;
-		d->basicMessage(0xB0|ch,0x00,b>>7);
-		d->basicMessage(0xB0|ch,0x20,b&0x7F);
-		d->basicMessage(0xC0|ch,p,0);
-	}
-	else
-	{
-		chstatus[ch][0]=b;//Assuming GS. !!FIXME: This is not correct...
-		qmpMidiOutDevice* d=mididev[mappedoutput[ch]].dev;
-		d->basicMessage(0xB0|ch,0x00,b);
-		d->basicMessage(0xC0|ch,p,0);
-	}
+	chstatus[ch][0]=b>>7;chstatus[ch][32]=b&0x7F;
+	qmpMidiOutDevice* d=mididev[mappedoutput[ch]].dev;
+	d->basicMessage(0xB0|ch,0x00,b>>7);
+	d->basicMessage(0xB0|ch,0x20,b&0x7F);
+	d->basicMessage(0xC0|ch,p,0);
 }
 void CMidiPlayer::dumpFile()
 {

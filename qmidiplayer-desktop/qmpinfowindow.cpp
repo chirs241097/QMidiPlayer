@@ -13,8 +13,6 @@ qmpInfoWindow::qmpInfoWindow(QWidget *parent) :
 	ui(new Ui::qmpInfoWindow)
 {
 	ui->setupUi(this);
-	int w=size().width(),h=size().height();w=w*(logicalDpiX()/96.);h=h*(logicalDpiY()/96.);
-	setMinimumWidth(w);setMinimumHeight(h);
 	qmpMainWindow::getInstance()->registerFunctionality(
 		infof=new qmpInfoFunc(this),
 		std::string("FileInfo"),

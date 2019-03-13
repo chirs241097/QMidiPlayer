@@ -11,8 +11,6 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent) :
 	ui(new Ui::qmpChannelsWindow)
 {
 	ui->setupUi(this);
-	int w=size().width(),h=size().height();w=w*(logicalDpiX()/96.);h=h*(logicalDpiY()/96.);
-	setMaximumWidth(w);setMaximumHeight(h);setMinimumWidth(w);setMinimumHeight(h);
 	pselectw=new qmpPresetSelector(this);
 	ceditw=new qmpChannelEditor(this);
 	cha=new QIcon(":/img/ledon.svg");chi=new QIcon(":/img/ledoff.svg");
@@ -67,12 +65,12 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent) :
 		connect(ui->twChannels->cellWidget(i,5),SIGNAL(onClick(int)),this,SLOT(showChannelEditorWindow(int)));
 	}
 	connect(ui->twChannels,SIGNAL(cellDoubleClicked(int,int)),this,SLOT(showPresetWindow(int,int)));
-	ui->twChannels->setColumnWidth(0,24*(logicalDpiX()/96.));
-	ui->twChannels->setColumnWidth(1,24*(logicalDpiX()/96.));
-	ui->twChannels->setColumnWidth(2,24*(logicalDpiX()/96.));
-	ui->twChannels->setColumnWidth(3,192*(logicalDpiX()/96.));
-	ui->twChannels->setColumnWidth(4,208*(logicalDpiX()/96.));
-	ui->twChannels->setColumnWidth(5,32*(logicalDpiX()/96.));
+	ui->twChannels->setColumnWidth(0,24);
+	ui->twChannels->setColumnWidth(1,24);
+	ui->twChannels->setColumnWidth(2,24);
+	ui->twChannels->setColumnWidth(3,192);
+	ui->twChannels->setColumnWidth(4,208);
+	ui->twChannels->setColumnWidth(5,32);
 	qmpMainWindow::getInstance()->registerFunctionality(
 		chnlf=new qmpChannelFunc(this),
 		std::string("Channel"),
