@@ -221,7 +221,8 @@ void CMidiPlayer::fileTimer2Pass()
 		ccc[i][76]=64;ccc[i][77]=64;ccc[i][78]=64;
 		ccc[i][131]=ctempo;ccc[i][132]=0x04021808;
 		ccc[i][133]=0;ccc[i][134]=2;
-	}if(midiFile->std!=4)ccc[9][0]=128;
+	}
+	ccc[9][0]=127;
 	for(int i=0;i<16;++i)for(int j=0;j<135;++j)
 		ccstamps[0][i][j]=ccc[i][j];
 	for(uint32_t eptr=0,ct=getEvent(0)->time;eptr<ecnt;)
@@ -263,10 +264,12 @@ CMidiPlayer::CMidiPlayer()
 	mididev[0].refcnt=16;
 	memset(chstatus,0,sizeof(chstatus));
 	for(int i=0;i<16;++i)
-		chstatus[i][7]=100,chstatus[i][11]=127,
+	{
+		chstatus[i][7]=100;chstatus[i][11]=127;
 		chstatus[i][10]=chstatus[i][71]=chstatus[i][72]=
 		chstatus[i][73]=chstatus[i][74]=chstatus[i][75]=
 		chstatus[i][76]=chstatus[i][77]=chstatus[i][78]=64;
+	}
 #ifdef _WIN32
 	QueryPerformanceFrequency((LARGE_INTEGER*)&pf);
 #endif
@@ -325,11 +328,17 @@ void CMidiPlayer::playerInit()
 	tceptr=0;tcstop=0;tcpaused=0;finished=0;mute=solo=0;
 	for(int i=0;i<16;++i)pbr[i]=2,pbv[i]=8192;
 	sendSysEx=true;memset(rpnid,0xFF,sizeof(rpnid));memset(rpnval,0xFF,sizeof(rpnval));
-	memset(chstatus,0,sizeof(chstatus));for(int i=0;i<16;++i)
-		chstatus[i][7]=100,chstatus[i][11]=127,
+	memset(chstatus,0,sizeof(chstatus));
+	chstatus[9][0]=127;
+	for(int i=0;i<16;++i)
+	{
+		chstatus[i][7]=100;chstatus[i][11]=127;
 		chstatus[i][10]=chstatus[i][71]=chstatus[i][72]=
 		chstatus[i][73]=chstatus[i][74]=chstatus[i][75]=
 		chstatus[i][76]=chstatus[i][77]=chstatus[i][78]=64;
+		for(int cc=0;cc<127;++cc)
+			mididev[mappedoutput[i]].dev->basicMessage(0xB0|i,cc,chstatus[i][cc]);
+	}
 }
 void CMidiPlayer::playerDeinit()
 {

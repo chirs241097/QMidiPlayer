@@ -30,15 +30,6 @@ void qmpMidiOutFluid::deviceInit()
 	}
 	fluid_synth_set_chorus(synth,3,2.0,0.3,8.0,
 						   FLUID_CHORUS_MOD_SINE);
-	/*if(midiFile->std==4)
-	fluid_synth_set_channel_type(synth,9,CHANNEL_TYPE_MELODIC);
-	else if(midiFile->std==1)
-		fluid_synth_set_channel_type(synth,9,CHANNEL_TYPE_DRUM);
-	else
-	{
-		fluid_synth_set_channel_type(synth,9,CHANNEL_TYPE_DRUM);
-		fluid_synth_bank_select(synth,9,128);
-	}*/
 }
 void qmpMidiOutFluid::deviceDeinit(){deviceDeinit(false);}
 void qmpMidiOutFluid::deviceDeinit(bool freshsettings)
@@ -108,12 +99,16 @@ void qmpMidiOutFluid::panic(uint8_t ch)
 void qmpMidiOutFluid::reset(uint8_t ch)
 {
 	this->panic(ch);
-	fluid_synth_cc(synth,ch,0,0);
+	for(int i=0;i<128;++i)
+		fluid_synth_cc(synth,ch,i,0);
+	if(ch==9)
+		fluid_synth_cc(synth,ch,0,127);
+	else
+		fluid_synth_cc(synth,ch,0,0);
 	fluid_synth_cc(synth,ch,7,100);
 	fluid_synth_cc(synth,ch,8,64);
 	fluid_synth_cc(synth,ch,10,64);
 	fluid_synth_cc(synth,ch,11,127);
-	fluid_synth_cc(synth,ch,32,0);
 	fluid_synth_pitch_wheel_sens(synth,ch,2);
 }
 void qmpMidiOutFluid::onMapped(uint8_t,int)

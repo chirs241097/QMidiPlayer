@@ -1,3 +1,6 @@
+2019-03-18 0.8.6 alpha
+Fixed initial preset selection in XG mode.
+
 2019-03-13 0.8.6 alpha
 Set preset bank correctly in XG mode.
 Removed High DPI handling code. Good luck to Windows users out there.
