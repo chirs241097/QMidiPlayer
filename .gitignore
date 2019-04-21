@@ -1,3 +1,6 @@
 # User configuration
 *.pro.user
 build/
+
+# KDE-generated rubbish
+.directory

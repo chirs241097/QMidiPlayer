@@ -177,8 +177,11 @@ void qmpMainWindow::closeEvent(QCloseEvent *event)
 	}
 	on_pbStop_clicked();fin=true;
 	for(auto i=mfunc.begin();i!=mfunc.end();++i)
-	i->second.setAssignedControl((QReflectiveAction*)NULL),
-	i->second.setAssignedControl((QReflectivePushButton*)NULL);
+	{
+		i->second.i()->close();
+		i->second.setAssignedControl((QReflectiveAction*)NULL),
+		i->second.setAssignedControl((QReflectivePushButton*)NULL);
+	}
 	efxw->close();chnlw->close();
 	plistw->close();infow->close();
 	settingsw->close();

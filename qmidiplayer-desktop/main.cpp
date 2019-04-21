@@ -24,6 +24,8 @@
 int main(int argc,char **argv)
 {
 	QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+	if(!qgetenv("QT_SCALE_FACTOR").length()&&!qgetenv("QT_SCREEN_SCALE_FACTORS").length())
+	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 	QApplication a(argc,argv);
 	QTranslator qtTranslator;
 	qtTranslator.load("qt_"+QLocale::system().name(),

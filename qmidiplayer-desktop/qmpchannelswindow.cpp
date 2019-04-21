@@ -71,6 +71,7 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent) :
 	ui->twChannels->setColumnWidth(3,192);
 	ui->twChannels->setColumnWidth(4,208);
 	ui->twChannels->setColumnWidth(5,32);
+	ui->twChannels->installEventFilter(this);
 	qmpMainWindow::getInstance()->registerFunctionality(
 		chnlf=new qmpChannelFunc(this),
 		std::string("Channel"),
@@ -222,6 +223,18 @@ void qmpChannelsWindow::showChannelEditorWindow(int chid)
 void qmpChannelsWindow::changeMidiMapping(int chid,int idx)
 {
 	qmpMainWindow::getInstance()->getPlayer()->setChannelOutput(chid,idx);
+}
+
+bool qmpChannelsWindow::eventFilter(QObject *o,QEvent *e)
+{
+	if(e->type()==QEvent::KeyPress&&ui->twChannels->currentColumn()==4)
+	{
+		QKeyEvent *ke=static_cast<QKeyEvent*>(e);
+		if(ke->key()!=Qt::Key_Enter&&ke->key()!=Qt::Key_Return)return false;
+		showPresetWindow(ui->twChannels->currentRow(),4);
+		return true;
+	}
+	return false;
 }
 
 qmpChannelFunc::qmpChannelFunc(qmpChannelsWindow *par)

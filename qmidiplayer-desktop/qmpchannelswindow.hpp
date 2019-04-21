@@ -90,6 +90,9 @@ class qmpChannelsWindow:public QWidget
 		void on_pbUnmute_clicked();
 		void on_pbUnsolo_clicked();
 
+	protected:
+		bool eventFilter(QObject *o,QEvent *e);
+
 	private:
 		Ui::qmpChannelsWindow *ui;
 		qmpPresetSelector *pselectw;

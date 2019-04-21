@@ -332,11 +332,11 @@ void CMidiPlayer::playerInit()
 	chstatus[9][0]=127;
 	for(int i=0;i<16;++i)
 	{
-		chstatus[i][7]=100;chstatus[i][11]=127;
+		chstatus[i][7]=100;chstatus[i][8]=64;chstatus[i][11]=127;
 		chstatus[i][10]=chstatus[i][71]=chstatus[i][72]=
 		chstatus[i][73]=chstatus[i][74]=chstatus[i][75]=
 		chstatus[i][76]=chstatus[i][77]=chstatus[i][78]=64;
-		for(int cc=0;cc<127;++cc)
+		for(int cc=0;cc<124;++cc)//Temporary fix before introduction of per-device initialization profile
 			mididev[mappedoutput[i]].dev->basicMessage(0xB0|i,cc,chstatus[i][cc]);
 	}
 }
@@ -486,7 +486,7 @@ void CMidiPlayer::setChannelOutput(int ch,int outid)
 	int origoutput=mappedoutput[ch];
 	SMidiDev& dnew=mididev[outid];
 	dnew.dev->onMapped(ch,++dnew.refcnt);
-	for(int i=0;i<128;++i)
+	for(int i=0;i<124;++i)
 	if(i!=6&&i!=38&&i!=100&&i!=101)//avoid sending RPN/NRPN
 	dnew.dev->basicMessage(0xB0|ch,i,chstatus[ch][i]);
 	dnew.dev->basicMessage(0xC0|ch,chstatus[ch][128],0);

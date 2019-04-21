@@ -1,3 +1,10 @@
+2019-04-22 0.8.7 indev
+New development cycle!
+Partially reintroduce High DPI handling.
+Pressing enter when a preset is focused now opens the preset selection dialog.
+Close all functionality windows before shutting down.
+And the most important one of them all: new simple visualization!
+
 2019-03-18 0.8.6 alpha
 Fixed initial preset selection in XG mode.
 
