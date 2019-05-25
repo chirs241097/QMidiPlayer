@@ -34,7 +34,7 @@ class qmpEfxWindow:public QWidget
 		~qmpEfxWindow();
 		void closeEvent(QCloseEvent *event);
 		void showEvent(QShowEvent *event);
-		void sendEfxChange(void *_fs=NULL);
+		void sendEfxChange(void *_fs=nullptr);
 
 	private slots:
 		void on_dRoom_valueChanged();

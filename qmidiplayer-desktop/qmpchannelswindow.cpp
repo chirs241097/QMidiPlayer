@@ -15,7 +15,7 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent) :
 	ceditw=new qmpChannelEditor(this);
 	cha=new QIcon(":/img/ledon.svg");chi=new QIcon(":/img/ledoff.svg");
 	cb=new qmpCWNoteOnCB();fused=callbacksc=cbcnt=0;
-	qmpMainWindow::getInstance()->getPlayer()->setEventHandlerCB(cb,NULL);
+	qmpMainWindow::getInstance()->getPlayer()->setEventHandlerCB(cb,nullptr);
 	connect(cb,SIGNAL(onNoteOn()),this,SLOT(updateChannelActivity()));
 	std::vector<std::string> devs=qmpMainWindow::getInstance()->getPlayer()->getMidiOutDevices();
 	size_t devc=devs.size();

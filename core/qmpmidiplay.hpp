@@ -3,6 +3,8 @@
 #define QMPMIDIPLAY_H
 #include <cstring>
 #include <cstdlib>
+#include <chrono>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 #define QMP_MAIN
@@ -17,23 +19,24 @@ class CSMFReader:public qmpFileReader
 		CMidiTrack* curTrack;
 		uint32_t fmt,trk;
 		FILE *f;
-		int byteread,valid,eventdiscarded;
-		uint32_t curt,curid;
+		bool eventdiscarded;
+		uint32_t byteread,curt,curid;
 
 		void error(int fatal,const char* format,...);
-		uint32_t readSW();
-		uint32_t readDW();
-		uint32_t readVL();
-		int eventReader();
-		void trackChunkReader();
-		void headerChunkReader();
-		int chunkReader(int hdrXp);
+		uint8_t read_u8();
+		uint16_t read_u16();
+		uint32_t read_u32();
+		uint32_t read_varlen();
+		int read_event();
+		void read_track();
+		void read_header();
+		uint32_t read_chunk(int is_header);
 	public:
 		CSMFReader();
 		~CSMFReader();
 		CMidiFile* readFile(const char* fn);
 		void discardCurrentEvent();
-		void commitEventChange(SEventCallBackData d);
+		void commitEventChange(SEvent d);
 };
 class CMidiFileReaderCollection{
 	private:
@@ -70,6 +73,9 @@ class CMidiPlayer
 		uint32_t tceptr,tcpaused,tcstop,ct;
 		uint32_t finished,resumed;
 		uint32_t pbr[16],pbv[16];
+		//playback correction
+		uint32_t ttick;
+		std::chrono::high_resolution_clock::time_point ttime;
 		struct SMidiDev
 		{
 			std::string name;
@@ -84,6 +90,10 @@ class CMidiPlayer
 		void* eventHandlerCBuserdata[16];
 		void* eventReaderCBuserdata[16];
 		void* fileReadFinishCBuserdata[16];
+		std::unordered_map<int,std::pair<callback_t,void*>> event_handlers;
+		std::unordered_map<int,std::pair<callback_t,void*>> event_read_handlers;
+		std::unordered_map<int,std::pair<callback_t,void*>> file_read_finish_hooks;
+		int event_handlers_id,event_read_handlers_id,file_read_finish_hooks_id;
 		static CMidiPlayer* ref;
 
 		SEvent *getEvent(int id);
@@ -152,12 +162,18 @@ class CMidiPlayer
 		void unsetEventReaderCB(int id);
 		int setFileReadFinishedCB(ICallBack *cb,void *userdata);
 		void unsetFileReadFinishedCB(int id);
+		int registerEventHandler(callback_t cb,void *userdata);
+		void unregisterEventHandler(int id);
+		int registerEventReadHandler(callback_t cb,void *userdata);
+		void unregisterEventReadHandler(int id);
+		int registerFileReadFinishHook(callback_t cb,void *userdata);
+		void unregisterFileReadFinishHook(int id);
 		void registerReader(qmpFileReader* reader,std::string name);
 		void unregisterReader(std::string name);
-		void callEventReaderCB(SEventCallBackData d);
+		void callEventReaderCB(SEvent d);
 
 		void discardCurrentEvent();
-		void commitEventChange(SEventCallBackData d);
+		void commitEventChange(SEvent d);
 
 		static CMidiPlayer* getInstance();
 };

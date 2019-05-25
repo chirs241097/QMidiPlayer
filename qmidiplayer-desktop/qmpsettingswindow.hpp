@@ -37,7 +37,7 @@ class QFileEdit:public QWidget
 	private slots:
 		void chooseFile();
 	public:
-		QFileEdit(QWidget* par=NULL);
+		QFileEdit(QWidget* par=nullptr);
 		QString text();
 		void setText(const QString& s);
 };

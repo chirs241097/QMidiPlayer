@@ -26,7 +26,7 @@ char* wcsto8bit(const wchar_t* s)
 #endif
 #define UPDATE_INTERVAL 66
 
-qmpMainWindow* qmpMainWindow::ref=NULL;
+qmpMainWindow* qmpMainWindow::ref=nullptr;
 
 qmpMainWindow::qmpMainWindow(QWidget *parent) :
 	QMainWindow(parent),
@@ -39,7 +39,7 @@ qmpMainWindow::qmpMainWindow(QWidget *parent) :
 	setButtonHeight(ui->pbPrev,36);setButtonHeight(ui->pbSettings,36);setButtonHeight(ui->pbStop,36);
 	playing=false;stopped=true;dragging=false;fin=false;
 	settingsw=new qmpSettingsWindow(this);pmgr=new qmpPluginManager();
-	player=NULL;timer=NULL;fluidrenderer=NULL;
+	player=nullptr;timer=nullptr;fluidrenderer=nullptr;
 }
 
 qmpMainWindow::~qmpMainWindow()
@@ -56,15 +56,15 @@ qmpMainWindow::~qmpMainWindow()
 	rtmididev->deleteDevices();
 	delete pmgr;if(player)delete player;
 	if(timer)delete timer;
-	delete helpw;helpw=NULL;
-	delete efxw;efxw=NULL;
-	delete chnlw;chnlw=NULL;
-	delete plistw;plistw=NULL;
-	delete infow;infow=NULL;
-	delete settingsw;settingsw=NULL;
-	delete panicf;panicf=NULL;
-	delete renderf;renderf=NULL;
-	delete reloadsynf;reloadsynf=NULL;
+	delete helpw;helpw=nullptr;
+	delete efxw;efxw=nullptr;
+	delete chnlw;chnlw=nullptr;
+	delete plistw;plistw=nullptr;
+	delete infow;infow=nullptr;
+	delete settingsw;settingsw=nullptr;
+	delete panicf;panicf=nullptr;
+	delete renderf;renderf=nullptr;
+	delete reloadsynf;reloadsynf=nullptr;
 	delete ui;
 }
 
@@ -179,8 +179,8 @@ void qmpMainWindow::closeEvent(QCloseEvent *event)
 	for(auto i=mfunc.begin();i!=mfunc.end();++i)
 	{
 		i->second.i()->close();
-		i->second.setAssignedControl((QReflectiveAction*)NULL),
-		i->second.setAssignedControl((QReflectivePushButton*)NULL);
+		i->second.setAssignedControl((QReflectiveAction*)nullptr),
+		i->second.setAssignedControl((QReflectivePushButton*)nullptr);
 	}
 	efxw->close();chnlw->close();
 	plistw->close();infow->close();
@@ -211,11 +211,11 @@ void qmpMainWindow::updateWidgets()
 		if(!plistw->getRepeat())
 		{
 			timer->stop();stopped=true;playing=false;
-			invokeCallback("main.stop",NULL);
+			invokeCallback("main.stop",nullptr);
 			setFuncEnabled("Render",stopped);setFuncEnabled("ReloadSynth",stopped);
 			chnlw->resetAcitivity();
 			player->playerDeinit();playerTh->join();
-			delete playerTh;playerTh=NULL;
+			delete playerTh;playerTh=nullptr;
 			player->playerPanic(true);
 			chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 			ui->pbPlayPause->setIcon(QIcon(getThemedIcon(":/img/play.svg")));
@@ -232,9 +232,9 @@ void qmpMainWindow::updateWidgets()
 		{
 			renderTh->join();timer->stop();
 			ui->centralWidget->setEnabled(true);
-			delete renderTh;renderTh=NULL;
+			delete renderTh;renderTh=nullptr;
 			fluidrenderer->renderDeinit();
-			delete fluidrenderer;fluidrenderer=NULL;
+			delete fluidrenderer;fluidrenderer=nullptr;
 		}
 	}
 	while(!player->isFinished()&&player->getTCeptr()>player->getStamp(ui->hsTimer->value())
@@ -259,8 +259,8 @@ void qmpMainWindow::switchTrack(QString s)
 	setFuncEnabled("Render",stopped);setFuncEnabled("ReloadSynth",stopped);
 	ui->pbPlayPause->setIcon(QIcon(getThemedIcon(":/img/pause.svg")));
 	timer->stop();player->playerDeinit();
-	invokeCallback("main.stop",NULL);
-	if(playerTh){playerTh->join();delete playerTh;playerTh=NULL;}
+	invokeCallback("main.stop",nullptr);
+	if(playerTh){playerTh->join();delete playerTh;playerTh=nullptr;}
 	player->playerPanic(true);
 	ui->hsTimer->setValue(0);
 	chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
@@ -272,7 +272,7 @@ void qmpMainWindow::switchTrack(QString s)
 	sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
 	ui->lbFinTime->setText(ts);
 	player->playerInit();
-	invokeCallback("main.start",NULL);
+	invokeCallback("main.start",nullptr);
 	player->fluid()->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
 	player->setWaitVoice(qmpSettingsWindow::getSettingsIntf()->value("Midi/WaitVoice",1).toInt());
 	playerTh=new std::thread(&CMidiPlayer::playerThread,player);
@@ -359,7 +359,7 @@ int qmpMainWindow::loadFile(QString fns)
 	const char* c=s.c_str();
 #endif
 	int ret=1;
-	invokeCallback("main.reset",NULL);
+	invokeCallback("main.reset",nullptr);
 	if(!player->playerLoadFile(c))
 	{QMessageBox::critical(this,tr("Error"),tr("%1 is not a valid midi file.").arg(fns));ret=0;}
 #ifdef _WIN32
@@ -387,7 +387,7 @@ void qmpMainWindow::on_pbPlayPause_clicked()
 		sprintf(ts,"%02d:%02d",(int)player->getFtime()/60,(int)player->getFtime()%60);
 		ui->lbFinTime->setText(ts);
 		player->playerInit();
-		invokeCallback("main.start",NULL);
+		invokeCallback("main.start",nullptr);
 		player->fluid()->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
 		player->setWaitVoice(qmpSettingsWindow::getSettingsIntf()->value("Midi/WaitVoice",1).toInt());
 		playerTh=new std::thread(&CMidiPlayer::playerThread,player);
@@ -411,7 +411,7 @@ void qmpMainWindow::on_pbPlayPause_clicked()
 			player->setResumed();
 		}
 		player->setTCpaused(!playing);
-		invokeCallback("main.pause",NULL);
+		invokeCallback("main.pause",nullptr);
 	}
 	ui->pbPlayPause->setIcon(QIcon(getThemedIcon(playing?":/img/pause.svg":":/img/play.svg")));
 }
@@ -478,11 +478,11 @@ void qmpMainWindow::on_pbStop_clicked()
 	if(!stopped)
 	{
 		timer->stop();stopped=true;playing=false;
-		invokeCallback("main.stop",NULL);
+		invokeCallback("main.stop",nullptr);
 		player->playerDeinit();
 		setFuncEnabled("Render",stopped);setFuncEnabled("ReloadSynth",stopped);
 		player->playerPanic(true);chnlw->resetAcitivity();
-		if(playerTh){playerTh->join();delete playerTh;playerTh=NULL;}
+		if(playerTh){playerTh->join();delete playerTh;playerTh=nullptr;}
 		chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 		ui->pbPlayPause->setIcon(QIcon(getThemedIcon(":/img/play.svg")));
 		ui->hsTimer->setValue(0);
@@ -631,8 +631,8 @@ std::map<std::string,qmpFuncPrivate>& qmpMainWindow::getFunc()
 void qmpMainWindow::setupWidget()
 {
 	for(auto i=mfunc.begin();i!=mfunc.end();++i)
-	i->second.setAssignedControl((QReflectiveAction*)NULL),
-	i->second.setAssignedControl((QReflectivePushButton*)NULL);
+	i->second.setAssignedControl((QReflectiveAction*)nullptr),
+	i->second.setAssignedControl((QReflectivePushButton*)nullptr);
 	QList<QWidget*>w=ui->buttonwidget->findChildren<QWidget*>("",Qt::FindDirectChildrenOnly);
 	for(unsigned i=0;i<w.size();++i)
 	delete w[i];
@@ -723,7 +723,7 @@ qmpFuncPrivate::qmpFuncPrivate(qmpFuncBaseIntf *i,std::string _desc,const char *
 		_icon=QIcon(pixm);
 	}else _icon=QIcon();
 	checked=false;
-	asgna=NULL;asgnb=NULL;
+	asgna=nullptr;asgnb=nullptr;
 }
 
 void qmpMainWindow::on_pbAdd_clicked()

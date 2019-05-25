@@ -6,13 +6,13 @@
 qmpMidiOutRtMidi::qmpMidiOutRtMidi(unsigned _portid)
 {
 	portid=_portid;
-	outport=NULL;
+	outport=nullptr;
 }
 qmpMidiOutRtMidi::~qmpMidiOutRtMidi()
 {
 	if(!outport)return;
 	if(outport->isPortOpen())outport->closePort();
-	delete outport;outport=NULL;
+	delete outport;outport=nullptr;
 }
 void qmpMidiOutRtMidi::deviceInit()
 {
@@ -23,7 +23,7 @@ void qmpMidiOutRtMidi::deviceInit()
 	catch(RtMidiError &e)
 	{
 		printf("Cannot create RtMidi Output instance: %s\n",e.what());
-		outport=NULL;
+		outport=nullptr;
 	}
 }
 void qmpMidiOutRtMidi::deviceDeinit()
@@ -92,14 +92,14 @@ void qmpMidiOutRtMidi::onUnmapped(uint8_t ch,int refcnt)
 	if(!refcnt&&outport)outport->closePort();
 }
 
-RtMidiOut* qmpRtMidiManager::dummy=NULL;
+RtMidiOut* qmpRtMidiManager::dummy=nullptr;
 void qmpRtMidiManager::createDevices()
 {
 	try{dummy=new RtMidiOut();}
 	catch(RtMidiError &e)
 	{
 		printf("Failed to initialize the dummy device: %s\n",e.what());
-		dummy=NULL;return;
+		dummy=nullptr;return;
 	}
 	for(unsigned i=0;i<dummy->getPortCount();++i)
 	devices.push_back(std::make_pair(new qmpMidiOutRtMidi(i),dummy->getPortName(i)));

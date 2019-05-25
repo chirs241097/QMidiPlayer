@@ -5,27 +5,27 @@
 qmpMidiOutFluid::qmpMidiOutFluid()
 {
 	settings=new_fluid_settings();
-	synth=NULL;adriver=NULL;
+	synth=nullptr;adriver=nullptr;
 }
 qmpMidiOutFluid::~qmpMidiOutFluid()
 {
 	delete_fluid_settings(settings);
-	settings=NULL;
+	settings=nullptr;
 }
 void qmpMidiOutFluid::deviceInit()
 {
 	synth=new_fluid_synth(settings);
 	if(!synth){fputs("Error creating fluidsynth instance!",stderr);return;}
-	fluid_set_log_function(FLUID_DBG,NULL,NULL);
-	fluid_set_log_function(FLUID_INFO,NULL,NULL);
-	fluid_set_log_function(FLUID_WARN,NULL,NULL);
-	fluid_set_log_function(FLUID_ERR,fluid_default_log_function,NULL);
-	fluid_set_log_function(FLUID_PANIC,fluid_default_log_function,NULL);
+	fluid_set_log_function(FLUID_DBG,nullptr,nullptr);
+	fluid_set_log_function(FLUID_INFO,nullptr,nullptr);
+	fluid_set_log_function(FLUID_WARN,nullptr,nullptr);
+	fluid_set_log_function(FLUID_ERR,fluid_default_log_function,nullptr);
+	fluid_set_log_function(FLUID_PANIC,fluid_default_log_function,nullptr);
 	adriver=new_fluid_audio_driver(settings,synth);
 	if(!adriver)
 	{
 		fputs("Error creating fluidsynth audio driver!",stderr);
-		delete_fluid_synth(synth);synth=NULL;
+		delete_fluid_synth(synth);synth=nullptr;
 		return;
 	}
 	fluid_synth_set_chorus(synth,3,2.0,0.3,8.0,
@@ -37,7 +37,7 @@ void qmpMidiOutFluid::deviceDeinit(bool freshsettings)
 	if(!synth||!adriver)return;
 	delete_fluid_audio_driver(adriver);
 	delete_fluid_synth(synth);
-	synth=NULL;adriver=NULL;
+	synth=nullptr;adriver=nullptr;
 	if(freshsettings)
 	{
 		delete_fluid_settings(settings);
@@ -70,7 +70,7 @@ void qmpMidiOutFluid::basicMessage(uint8_t type,uint8_t p1,uint8_t p2)
 void qmpMidiOutFluid::extendedMessage(uint8_t length,const char *data)
 {
 	int rlen=0;
-	fluid_synth_sysex(synth,data,length,NULL,&rlen,NULL,0);
+	fluid_synth_sysex(synth,data,length,nullptr,&rlen,nullptr,0);
 }
 void qmpMidiOutFluid::rpnMessage(uint8_t ch,uint16_t type,uint16_t val)
 {
@@ -234,7 +234,7 @@ void qmpFileRendererFluid::renderDeinit()
 	delete_fluid_player(player);
 	delete_fluid_synth(synth);
 	delete_fluid_settings(settings);
-	player=NULL;synth=NULL;settings=NULL;
+	player=nullptr;synth=nullptr;settings=nullptr;
 }
 void qmpFileRendererFluid::renderWorker()
 {

@@ -7,8 +7,8 @@ void qmpSimpleVisualization::close(){p->close();}
 void qmpSimpleVisualization::init()
 {
 	api->registerFunctionality(this,"Keyboard","Keyboard",api->isDarkTheme()?":/img/visualization_i.svg":":/img/visualization.svg",0,true);
-	p=new qmpKeyboardWindow(api,NULL);
-	uihs=api->registerUIHook("main.stop",qmpSimpleVisualization::cbstop,(void*)this);
+	p=new qmpKeyboardWindow(api,(QWidget*)api->getMainWindow());
+	uihs=api->registerUIHook("main.stop",[this](const void*,void*){this->p->resetAll();},nullptr);
 }
 void qmpSimpleVisualization::deinit()
 {
@@ -21,9 +21,3 @@ const char* qmpSimpleVisualization::pluginGetName()
 {return "QMidiPlayer Simple Visualization Plugin";}
 const char* qmpSimpleVisualization::pluginGetVersion()
 {return "0.8.6";}
-
-void qmpSimpleVisualization::cbstop(void*,void* usrd)
-{
-	qmpSimpleVisualization *v=(qmpSimpleVisualization*)usrd;
-	v->p->resetAll();
-}

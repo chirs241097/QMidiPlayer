@@ -1,6 +1,7 @@
 #ifndef QMPCOREPUBLIC_HPP
 #define QMPCOREPUBLIC_HPP
 #include <cstdint>
+#include <functional>
 #include <vector>
 #include <string>
 #ifdef _WIN32
@@ -8,28 +9,21 @@
 #else
 #define EXPORTSYM __attribute__ ((visibility ("default")))
 #endif
-#define QMP_PLUGIN_API_REV "1+indev7"
+#define QMP_PLUGIN_API_REV "1+indev8"
 //MIDI Event structure
 struct SEvent
 {
-	uint32_t iid,time,p1,p2;
-	uint8_t type;
+	uint32_t iid,time;
+	uint8_t type,p1,p2;
 	std::string str;
 	SEvent(){time=p1=p2=0;type=0;str="";}
-	SEvent(uint32_t _iid,uint32_t _t,char _tp,uint32_t _p1,uint32_t _p2,const char* s=NULL)
+	SEvent(uint32_t _iid,uint32_t _t,uint8_t _tp,uint8_t _p1,uint8_t _p2,const char* s=nullptr)
 	{
 		iid=_iid;time=_t;type=_tp;
 		p1=_p1;p2=_p2;
 		if(s)str=std::string(s);else str="";
 	}
 	friend bool operator <(const SEvent& a,const SEvent& b){return a.time-b.time?a.time<b.time:a.iid<b.iid;}
-};
-//This struct is used by event reader callbacks and event handler callbacks
-//as caller data struct
-struct SEventCallBackData
-{
-	uint32_t time,type,p1,p2;
-	SEventCallBackData(uint32_t _t,uint32_t _p1,uint32_t _p2,uint32_t _tm){type=_t;p1=_p1;p2=_p2;time=_tm;}
 };
 //MIDI Track class
 class CMidiTrack{
@@ -53,15 +47,16 @@ class CMidiFile{
 };
 //Generic callback function that can be used for hooking the core.
 //"userdata" is set when you register the callback function.
+//Deprecated. Removing in 0.9.x.
 class ICallBack
 {
 	public:
 		ICallBack(){}
-		virtual void callBack(void* callerdata,void* userdata)=0;
+		virtual void callBack(const void* callerdata,void* userdata)=0;
 		virtual ~ICallBack(){}
 };
 //alternative callback function type
-typedef void (*callback_t)(void*,void*);
+typedef std::function<void(const void*,void*)> callback_t;
 //MIDI file reader interface. Use this to implement your file importer.
 class qmpFileReader
 {
@@ -70,7 +65,7 @@ class qmpFileReader
 		virtual ~qmpFileReader(){}
 		virtual CMidiFile* readFile(const char* fn)=0;
 		virtual void discardCurrentEvent()=0;
-		virtual void commitEventChange(SEventCallBackData d)=0;
+		virtual void commitEventChange(SEvent d)=0;
 };
 //Functionality interface.
 class qmpFuncBaseIntf
@@ -138,6 +133,7 @@ class qmpPluginAPI
 		virtual std::wstring getWTitle();
 		virtual std::string getChannelPresetString(int ch);
 		virtual bool isDarkTheme();
+		virtual void* getMainWindow();
 
 		//WARNING!!: This function should be called from event reader callbacks only and
 		//it is somehow dangerous -- other plugins might be unaware of the removal of the
@@ -146,9 +142,9 @@ class qmpPluginAPI
 		//WARNING!!: This function should be called from event reader callbacks only and
 		//it is somehow dangerous -- other plugins might be unaware of the event change.
 		//The design might be modified afterward.
-		virtual void commitEventChange(SEventCallBackData d);
+		virtual void commitEventChange(SEvent d);
 		//This function should be called from a file reader when it has read a new event
-		virtual void callEventReaderCB(SEventCallBackData d);
+		virtual void callEventReaderCB(SEvent d);
 		virtual void setFuncState(std::string name,bool state);
 		virtual void setFuncEnabled(std::string name,bool enable);
 
@@ -165,6 +161,12 @@ class qmpPluginAPI
 		virtual void unregisterEventHandlerIntf(int intfhandle);
 		virtual int registerFileReadFinishedHandlerIntf(ICallBack* cb,void* userdata);
 		virtual void unregisterFileReadFinishedHandlerIntf(int intfhandle);
+		virtual int registerEventHandler(callback_t cb,void *userdata);
+		virtual void unregisterEventHandler(int id);
+		virtual int registerEventReadHandler(callback_t cb,void *userdata);
+		virtual void unregisterEventReadHandler(int id);
+		virtual int registerFileReadFinishHook(callback_t cb,void *userdata);
+		virtual void unregisterFileReadFinishHook(int id);
 		virtual void registerFileReader(qmpFileReader* reader,std::string name);
 		virtual void unregisterFileReader(std::string name);
 

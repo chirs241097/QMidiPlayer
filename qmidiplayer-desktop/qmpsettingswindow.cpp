@@ -8,8 +8,8 @@
 #include "ui_qmpsettingswindow.h"
 #include "qmpmainwindow.hpp"
 
-QSettings* qmpSettingsWindow::settings=NULL;
-QComboBox* qmpSettingsWindow::outwidget=NULL;
+QSettings* qmpSettingsWindow::settings=nullptr;
+QComboBox* qmpSettingsWindow::outwidget=nullptr;
 
 void qmpFluidForEachOpt(void* data,const char*,const char* option)
 {
@@ -35,7 +35,7 @@ qmpSettingsWindow::qmpSettingsWindow(QWidget *parent) :
 qmpSettingsWindow::~qmpSettingsWindow()
 {
 	delete cw;
-	delete settings;settings=NULL;
+	delete settings;settings=nullptr;
 	delete ui;
 }
 
@@ -447,7 +447,7 @@ void qmpSettingsWindow::updateCustomOptions()
 
 void qmpSettingsWindow::registerOptionInt(std::string tab,std::string desc,std::string key,int min,int max,int defaultval)
 {
-	customOptions[key].widget=NULL;
+	customOptions[key].widget=nullptr;
 	customOptions[key].desc=desc;
 	customOptions[key].defaultval=defaultval;
 	customOptions[key].minv=min;
@@ -455,7 +455,7 @@ void qmpSettingsWindow::registerOptionInt(std::string tab,std::string desc,std::
 	customOptions[key].type=0;
 	if(desc.length())
 	{
-		QGridLayout* page=NULL;
+		QGridLayout* page=nullptr;
 		if(customOptPages[tab])page=customOptPages[tab];
 		else
 		{
@@ -491,7 +491,7 @@ void qmpSettingsWindow::setOptionInt(std::string key,int val)
 
 void qmpSettingsWindow::registerOptionUint(std::string tab,std::string desc,std::string key,unsigned min,unsigned max,unsigned defaultval)
 {
-	customOptions[key].widget=NULL;
+	customOptions[key].widget=nullptr;
 	customOptions[key].desc=desc;
 	customOptions[key].defaultval=defaultval;
 	customOptions[key].minv=min;
@@ -499,7 +499,7 @@ void qmpSettingsWindow::registerOptionUint(std::string tab,std::string desc,std:
 	customOptions[key].type=1;
 	if(desc.length())
 	{
-		QGridLayout* page=NULL;
+		QGridLayout* page=nullptr;
 		if(customOptPages[tab])page=customOptPages[tab];
 		else
 		{
@@ -534,13 +534,13 @@ void qmpSettingsWindow::setOptionUint(std::string key,unsigned val)
 
 void qmpSettingsWindow::registerOptionBool(std::string tab,std::string desc,std::string key,bool defaultval)
 {
-	customOptions[key].widget=NULL;
+	customOptions[key].widget=nullptr;
 	customOptions[key].desc=desc;
 	customOptions[key].defaultval=defaultval;
 	customOptions[key].type=2;
 	if(desc.length())
 	{
-		QGridLayout* page=NULL;
+		QGridLayout* page=nullptr;
 		if(customOptPages[tab])page=customOptPages[tab];
 		else
 		{
@@ -571,7 +571,7 @@ void qmpSettingsWindow::setOptionBool(std::string key,bool val)
 
 void qmpSettingsWindow::registerOptionDouble(std::string tab,std::string desc,std::string key,double min,double max,double defaultval)
 {
-	customOptions[key].widget=NULL;
+	customOptions[key].widget=nullptr;
 	customOptions[key].desc=desc;
 	customOptions[key].defaultval=defaultval;
 	customOptions[key].minv=min;
@@ -579,7 +579,7 @@ void qmpSettingsWindow::registerOptionDouble(std::string tab,std::string desc,st
 	customOptions[key].type=3;
 	if(desc.length())
 	{
-		QGridLayout* page=NULL;
+		QGridLayout* page=nullptr;
 		if(customOptPages[tab])page=customOptPages[tab];
 		else
 		{
@@ -615,14 +615,14 @@ void qmpSettingsWindow::setOptionDouble(std::string key,double val)
 
 void qmpSettingsWindow::registerOptionString(std::string tab,std::string desc,std::string key,std::string defaultval,bool ispath)
 {
-	customOptions[key].widget=NULL;
+	customOptions[key].widget=nullptr;
 	customOptions[key].desc=desc;
 	customOptions[key].defaultval=QString(defaultval.c_str());
 	customOptions[key].type=4;
 	if(ispath)customOptions[key].type=6;
 	if(desc.length())
 	{
-		QGridLayout* page=NULL;
+		QGridLayout* page=nullptr;
 		if(customOptPages[tab])page=customOptPages[tab];
 		else
 		{
@@ -672,13 +672,13 @@ void qmpSettingsWindow::setOptionString(std::string key,std::string val)
 
 void qmpSettingsWindow::registerOptionEnumInt(std::string tab,std::string desc,std::string key,std::vector<std::string> options,int defaultval)
 {
-	customOptions[key].widget=NULL;
+	customOptions[key].widget=nullptr;
 	customOptions[key].desc=desc;
 	customOptions[key].defaultval=defaultval;
 	customOptions[key].type=5;
 	if(desc.length())
 	{
-		QGridLayout* page=NULL;
+		QGridLayout* page=nullptr;
 		if(customOptPages[tab])page=customOptPages[tab];
 		else
 		{
@@ -737,6 +737,6 @@ QString QFileEdit::text(){return le->text();}
 void QFileEdit::setText(const QString& s){le->setText(s);}
 void QFileEdit::chooseFile()
 {
-	QString s=QFileDialog::getOpenFileName(NULL,tr("Select a file"),QFileInfo(text()).dir().absolutePath());
+	QString s=QFileDialog::getOpenFileName(nullptr,tr("Select a file"),QFileInfo(text()).dir().absolutePath());
 	if(s.length())setText(s);
 }

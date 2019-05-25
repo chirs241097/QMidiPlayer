@@ -18,8 +18,6 @@ class qmpSimpleVisualization:public qmpPluginIntf,public qmpFuncBaseIntf
 		void deinit();
 		const char* pluginGetName();
 		const char* pluginGetVersion();
-
-		static void cbstop(void* cbd,void* usrd);
 };
 
 extern "C"{

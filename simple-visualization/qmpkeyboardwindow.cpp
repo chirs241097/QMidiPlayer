@@ -25,10 +25,10 @@ void qmpKeyboardWindow::onkeystatesupdate(int ch,int key,bool state)
 void qmpKeyboardWindow::resetAll()
 {for(int ch=0;ch<16;++ch)pw[ch]->reset();}
 
-void EventCallback::callBack(void* callerdata,void* userdata)
+void EventCallback::callBack(const void *callerdata,void* userdata)
 {
-	qmpKeyboardWindow *w=(qmpKeyboardWindow*)userdata;
-	SEventCallBackData *cbd=(SEventCallBackData*)callerdata;
+	const qmpKeyboardWindow *w=(const qmpKeyboardWindow*)userdata;
+	const SEvent *cbd=(const SEvent*)callerdata;
 	if((cbd->type&0xF0)==0x80)
 		emit keystateupdated(cbd->type&0xF,cbd->p1,false);
 	if((cbd->type&0xF0)==0x90)

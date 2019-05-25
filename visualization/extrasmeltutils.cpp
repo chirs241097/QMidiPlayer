@@ -3,9 +3,9 @@
 #include <algorithm>
 #include <smcolor.hpp>
 #include "extrasmeltutils.hpp"
-SMELT* smEntity3DBuffer::sm=NULL;
-SMELT* smParticle::sm=NULL;
-SMELT* smParticleSystem::sm=NULL;
+SMELT* smEntity3DBuffer::sm=nullptr;
+SMELT* smParticle::sm=nullptr;
+SMELT* smParticleSystem::sm=nullptr;
 smVertex makeVertex(float x,float y,float z,DWORD color,float tx,float ty)
 {smVertex v;v.x=x;v.y=y;v.z=z;v.col=color;v.tx=tx;v.ty=ty;return v;}
 void smEntity3D::addVerices(int n,...)
@@ -93,7 +93,7 @@ void smParticle::update()
 	q.v[3].x=v3.x+pos.x;q.v[3].y=v3.y+pos.y;q.v[3].z=v3.z+pos.z;
 }
 smParticleSystem::smParticleSystem()
-{sm=smGetInterface(SMELT_APILEVEL);particles.clear();posGenerator=NULL;active=false;}
+{sm=smGetInterface(SMELT_APILEVEL);particles.clear();posGenerator=nullptr;active=false;}
 smParticleSystem::~smParticleSystem()
 {for(unsigned i=0;i<particles.size();++i)delete particles[i];particles.clear();}
 void smParticleSystem::setParticleSystemInfo(smParticleSystemInfo _psinfo)
@@ -104,7 +104,7 @@ void smParticleSystem::setPSEmissionPosGen(smPSEmissionPositionGenerator *_gen)
 void smParticleSystem::setPSLookAt(smvec3d at){lookat=true;lookatpos=at;}
 void smParticleSystem::unsetPSLookAt(){lookat=false;}
 void smParticleSystem::startPS()
-{active=true;nemdelay=0;re.setSeed(time(NULL));}
+{active=true;nemdelay=0;re.setSeed(time(nullptr));}
 void smParticleSystem::stopPS()
 {active=false;}
 void smParticleSystem::updatePS()
@@ -166,7 +166,7 @@ void smParticleSystem::updatePS()
 		}
 	}
 	while(!particles.empty()&&particles.back()->dead)
-	{delete particles.back();particles.back()=NULL;particles.pop_back();}
+	{delete particles.back();particles.back()=nullptr;particles.pop_back();}
 }
 void smParticleSystem::renderPS()
 {for(unsigned i=0;i<particles.size();++i)particles[i]->render();}

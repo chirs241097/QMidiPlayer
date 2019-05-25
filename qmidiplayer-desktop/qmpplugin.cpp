@@ -101,7 +101,7 @@ qmpPluginManager::~qmpPluginManager()
 		if(plugins[i].initialized)plugins[i].pinterface->deinit();
 		delete plugins[i].pinterface;
 	}
-	qmw=NULL;qsw=NULL;delete pluginAPI;
+	qmw=nullptr;qsw=nullptr;delete pluginAPI;
 }
 std::vector<qmpPlugin> *qmpPluginManager::getPlugins()
 {
@@ -182,10 +182,11 @@ std::string qmpPluginAPI::getChannelPresetString(int ch)
 	return std::string(ret);
 }
 bool qmpPluginAPI::isDarkTheme(){return qmw?qmw->isDarkTheme():false;}
+void* qmpPluginAPI::getMainWindow(){return (void*)qmw;}
 
 void qmpPluginAPI::discardCurrentEvent(){if(qmw&&qmw->getPlayer())qmw->getPlayer()->discardCurrentEvent();}
-void qmpPluginAPI::commitEventChange(SEventCallBackData d){if(qmw&&qmw->getPlayer())qmw->getPlayer()->commitEventChange(d);}
-void qmpPluginAPI::callEventReaderCB(SEventCallBackData d){if(qmw&&qmw->getPlayer())qmw->getPlayer()->callEventReaderCB(d);}
+void qmpPluginAPI::commitEventChange(SEvent d){if(qmw&&qmw->getPlayer())qmw->getPlayer()->commitEventChange(d);}
+void qmpPluginAPI::callEventReaderCB(SEvent d){if(qmw&&qmw->getPlayer())qmw->getPlayer()->callEventReaderCB(d);}
 void qmpPluginAPI::setFuncState(std::string name,bool state){if(qmw)qmw->setFuncState(name,state);}
 void qmpPluginAPI::setFuncEnabled(std::string name,bool enable){if(qmw)qmw->setFuncEnabled(name,enable);}
 
@@ -219,6 +220,18 @@ void qmpPluginAPI::registerFileReader(qmpFileReader* reader,std::string name)
 {qmw->getPlayer()->registerReader(reader,name);}
 void qmpPluginAPI::unregisterFileReader(std::string name)
 {qmw->getPlayer()->unregisterReader(name);}
+int qmpPluginAPI::registerEventHandler(callback_t cb,void *userdata)
+{return qmw->getPlayer()->registerEventHandler(cb,userdata);}
+void qmpPluginAPI::unregisterEventHandler(int id)
+{qmw->getPlayer()->unregisterEventHandler(id);}
+int qmpPluginAPI::registerEventReadHandler(callback_t cb,void *userdata)
+{return qmw->getPlayer()->registerEventReadHandler(cb,userdata);}
+void qmpPluginAPI::unregisterEventReadHandler(int id)
+{qmw->getPlayer()->unregisterEventReadHandler(id);}
+int qmpPluginAPI::registerFileReadFinishHook(callback_t cb,void *userdata)
+{return qmw->getPlayer()->registerFileReadFinishHook(cb,userdata);}
+void qmpPluginAPI::unregisterFileReadFinishHook(int id)
+{qmw->getPlayer()->unregisterFileReadFinishHook(id);}
 
 void qmpPluginAPI::registerOptionInt(std::string tab,std::string desc,std::string key,int min,int max,int defaultval)
 {qsw->registerOptionInt(tab,desc,key,min,max,defaultval);}

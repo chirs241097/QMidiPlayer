@@ -12,7 +12,7 @@ qmpVirtualPiano3D::qmpVirtualPiano3D()
 qmpVirtualPiano3D::~qmpVirtualPiano3D()
 {
 	delete wkcf;delete wkeb;delete wkd;delete wkg;delete wka;delete bk;
-	wkcf=wkeb=wkd=wkg=wka=bk=NULL;delete ebuf;ebuf=NULL;
+	wkcf=wkeb=wkd=wkg=wka=bk=nullptr;delete ebuf;ebuf=nullptr;
 }
 void qmpVirtualPiano3D::render(smvec3d p)
 {

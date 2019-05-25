@@ -1,3 +1,12 @@
+2019-05-25 0.8.7 indev
+Massive code refactor en cours!
+Less complain from compilers:
+ - use nullptr instead of NULL
+ - use types for event fields
+ - explicit type casting added
+Stop saving parameters of meta events in p1/p2 fields of SEvent.
+callback_t now uses std::function, deprecating ICallback.
+
 2019-04-22 0.8.7 indev
 New development cycle!
 Partially reintroduce High DPI handling.

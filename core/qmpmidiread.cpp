@@ -8,10 +8,10 @@
 #include <cstdarg>
 #include <algorithm>
 #include "qmpmidiplay.hpp"
-const char* GM1SysX="\xF0\x7E\x7F\x09\x01\xF7";
-const char* GM2SysX="\xF0\x7E\x7F\x09\x03\xF7";
-const char* GSSysEx="\xF0\x41\x10\x42\x12\x40\x00\x7F\x00\x41\xF7";
-const char* XGSysEx="\xF0\x43\x10\x4C\x00\x00\x7E\x00\xF7";
+static const char* GM1SysX="\xF0\x7E\x7F\x09\x01\xF7";
+static const char* GM2SysX="\xF0\x7E\x7F\x09\x03\xF7";
+static const char* GSSysEx="\xF0\x41\x10\x42\x12\x40\x00\x7F\x00\x41\xF7";
+static const char* XGSysEx="\xF0\x43\x10\x4C\x00\x00\x7E\x00\xF7";
 #define assert(x) if(!(x))this->error(false,"assertion failure @ qmpmidiread.cpp:%d",__LINE__)
 void CSMFReader::error(int fatal,const char* format,...)
 {
@@ -21,34 +21,56 @@ void CSMFReader::error(int fatal,const char* format,...)
 	if(fatal)throw std::runtime_error(bufr);
 	else fprintf(stderr,"CSMFReader W: %s.\n",bufr);
 }
-uint32_t CSMFReader::readSW()
+uint8_t CSMFReader::read_u8()
 {
-	uint32_t ret=0;
-	for(int i=0;i<2;++i){ret<<=8;ret|=((uint32_t)fgetc(f))&0xFF;}
+	uint8_t ret=0;
+	int t=fgetc(f);
+	if(!~t)error(1,"Unexpected EOF");
+	ret=(uint8_t)t;
 	return ret;
 }
-uint32_t CSMFReader::readDW()
+uint16_t CSMFReader::read_u16()
 {
-	uint32_t ret=0;
-	for(int i=0;i<4;++i){ret<<=8;ret|=((uint32_t)fgetc(f))&0xFF;}
+	uint16_t ret=0;
+	size_t sz=fread(&ret,2,1,f);
+	if(sz<1)error(1,"Unexpected EOF");
+#if defined(_MSC_VER)&&defined(_WIN32)
+	ret=_byteswap_ushort(ret);
+#elif __BYTE_ORDER__==__ORDER_LITTLE_ENDIAN__
+	ret=__builtin_bswap16(ret);
+#endif
 	return ret;
 }
-uint32_t CSMFReader::readVL()
+uint32_t CSMFReader::read_u32()
 {
-	uint32_t ret=0,t,c=0;
+	uint32_t ret=0;
+	size_t sz=fread(&ret,4,1,f);
+	if(sz<1)error(1,"Unexpected EOF");
+#if defined(_MSC_VER)&&defined(_WIN32)
+	ret=_byteswap_ulong(ret);
+#elif __BYTE_ORDER__==__ORDER_LITTLE_ENDIAN__
+	ret=__builtin_bswap32(ret);
+#endif
+	return ret;
+}
+uint32_t CSMFReader::read_varlen()
+{
+	uint32_t ret=0,c=0;
+	int t;
 	do
 	{
 		t=fgetc(f);
+		if(!~t)error(1,"Unexpected EOF");
 		if(++c>4)error(1,"Variable length type overflow");
 		ret<<=7;ret|=(t&0x7F);
 	}while(t&0x80);
 	return ret;
 }
-int CSMFReader::eventReader()//returns 0 if End of Track encountered
+int CSMFReader::read_event()//returns 0 if End of Track encountered
 {
-	uint32_t delta=readVL();curt+=delta;
-	char type=fgetc(f);uint32_t p1,p2;
-	static char lasttype;eventdiscarded=0;
+	uint32_t delta=read_varlen();curt+=delta;
+	uint8_t type=read_u8();uint32_t p1,p2;
+	static uint8_t lasttype;eventdiscarded=false;
 	if(!(type&0x80)){fseek(f,-1,SEEK_CUR);type=lasttype;}
 	switch(type&0xF0)
 	{
@@ -57,19 +79,19 @@ int CSMFReader::eventReader()//returns 0 if End of Track encountered
 		case 0xA0://Note Aftertouch
 		case 0xB0://Controller Change
 		case 0xE0://Pitch wheel
-			p1=fgetc(f);p2=fgetc(f);
+			p1=read_u8();p2=read_u8();
 			curTrack->appendEvent(SEvent(curid,curt,type,p1,p2));
 		break;
 		case 0xC0://Patch Change
 		case 0xD0://Channel Aftertouch
-			p1=fgetc(f);
+			p1=read_u8();
 			curTrack->appendEvent(SEvent(curid,curt,type,p1,0));
 		break;
 		case 0xF0:
 			if((type&0x0F)==0x0F)//Meta Event
 			{
-				char metatype=fgetc(f);
-				uint32_t len=readVL();char* str=NULL;
+				uint8_t metatype=read_u8();
+				uint32_t len=read_varlen();char* str=nullptr;
 				if(len<=1024&&len>0)str=new char[len+8];
 				if(str)fread(str,1,len,f);else fseek(f,len,SEEK_CUR);
 				if(str)str[len]='\0';
@@ -83,26 +105,21 @@ int CSMFReader::eventReader()//returns 0 if End of Track encountered
 					break;
 					case 0x2F://End of Track
 						assert(len==0);
-						return 0;
-					break;
+					return 0;
 					case 0x51://Set Tempo
 						assert(len==3);
-						p1=((str[0]&0xffu)<<16u)|(str[1]&0xffu)<<8u|(str[2]&0xffu);
-						curTrack->appendEvent(SEvent(curid,curt,type,metatype,p1));
+						curTrack->appendEvent(SEvent(curid,curt,type,metatype,0,str));
 					break;
 					case 0x54://SMTPE offset, not handled.
 						assert(len==5);
 					break;
 					case 0x58://Time signature
 						assert(len==4);
-						p1=((str[0]&0xffu)<<24u)|(str[1]&0xffu)<<16u|(str[2]&0xffu)<<8u|(str[3]&0xffu);
-						curTrack->appendEvent(SEvent(curid,curt,type,metatype,p1));
+						curTrack->appendEvent(SEvent(curid,curt,type,metatype,0,str));
 					break;
 					case 0x59://Key signature
 						assert(len==2);
-						if(len>=2)
-						p1=(str[0]&0xffu)<<8u|(str[1]&0xffu);else p1=0;
-						curTrack->appendEvent(SEvent(curid,curt,type,metatype,p1));
+						curTrack->appendEvent(SEvent(curid,curt,type,metatype,0,str));
 					break;
 					case 0x01:case 0x02:case 0x03:
 					case 0x04:case 0x05:case 0x06:
@@ -125,14 +142,19 @@ int CSMFReader::eventReader()//returns 0 if End of Track encountered
 			}
 			else if((type&0x0F)==0x00||(type&0x0F)==0x07)//SysEx
 			{
-				uint32_t len=readVL(),c;char* str=NULL;
+				uint32_t len=read_varlen();char* str=nullptr;
 				str=new char[len+8];
 				if((type&0x0F)==0x00)
 				{
 					str[0]=0xF0;++len;
-					for(c=1;c<len;++c){str[c]=fgetc(f);}
+					size_t sz=fread(str+1,1,len-1,f);
+					if(sz<len-1)error(1,"Unexpected EOF");
 				}
-				else for(c=0;c<len;++c){str[c]=fgetc(f);}
+				else
+				{
+					size_t sz=fread(str,1,len,f);
+					if(sz<len)error(1,"Unexpected EOF");
+				}
 				curTrack->appendEvent(SEvent(curid,curt,type,len,0,str));
 				if(!strcmp(str,GM1SysX))ret->std=1;
 				if(!strcmp(str,GM2SysX))ret->std=2;
@@ -149,17 +171,16 @@ int CSMFReader::eventReader()//returns 0 if End of Track encountered
 	if(curTrack->eventList.size())
 	{
 		SEvent& le=curTrack->eventList.back();
-		SEventCallBackData cbd(le.type,le.p1,le.p2,le.time);
-		CMidiPlayer::getInstance()->callEventReaderCB(cbd);
+		CMidiPlayer::getInstance()->callEventReaderCB(le);
 	}
 	return 1;
 }
-void CSMFReader::trackChunkReader()
+void CSMFReader::read_track()
 {
 	ret->tracks.push_back(CMidiTrack());
 	curTrack=&ret->tracks.back();
-	int chnklen=readDW();byteread=ftell(f);curt=0;curid=0;
-	while(eventReader());
+	uint32_t chnklen=read_u32();byteread=ftell(f);curt=0;curid=0;
+	while(read_event());
 	byteread=ftell(f)-byteread;
 	if(byteread<chnklen)
 	{
@@ -169,21 +190,21 @@ void CSMFReader::trackChunkReader()
 	if(byteread>chnklen)
 		error(1,"Read past end of track");
 }
-void CSMFReader::headerChunkReader()
+void CSMFReader::read_header()
 {
-	int chnklen=readDW();byteread=ftell(f);
+	uint32_t chnklen=read_u32();byteread=ftell(f);
 	if(chnklen<6)error(1,"Header chunk too short");
 	if(chnklen>6)error(0,"Header chunk length longer than expected. Ignoring extra bytes");
-	fmt=readSW();trk=readSW();ret->divs=readSW();
+	fmt=read_u16();trk=read_u16();ret->divs=read_u16();
 	if(ret->divs&0x8000)error(1,"SMTPE format is not supported");
 	for(byteread=ftell(f)-byteread;byteread<chnklen;++byteread){fgetc(f);}
 }
-int CSMFReader::chunkReader(int hdrXp)
+uint32_t CSMFReader::read_chunk(int is_header)
 {
 	char hdr[6];
 	fread(hdr,1,4,f);
 	if(feof(f))error(1,"Unexpected EOF");
-	if(hdrXp)
+	if(is_header)
 	{
 		if(!strncmp(hdr,"RIFF",4))
 		{
@@ -194,37 +215,37 @@ int CSMFReader::chunkReader(int hdrXp)
 			fread(hdr,1,4,f);
 		}
 		if(strncmp(hdr,"MThd",4)){error(1,"Wrong MIDI header.");}
-		else return headerChunkReader(),0;
+		else return read_header(),0;
 	}
 	else
 		if(strncmp(hdr,"MTrk",4))
 		{
 			error(0,"Wrong track chunk header. Ignoring the whole chunk");
-			uint32_t chnklen=readDW();fseek(f,chnklen,SEEK_CUR);return 0;
+			uint32_t chnklen=read_u32();fseek(f,chnklen,SEEK_CUR);return 0;
 		}
-		else return trackChunkReader(),1;
+		else return read_track(),1;
 	return 0;
 }
 CSMFReader::CSMFReader()
 {
-	f=NULL;
+	f=nullptr;
 }
 CMidiFile* CSMFReader::readFile(const char* fn)
 {
 	ret=new CMidiFile;
-	ret->title=ret->copyright=NULL;ret->std=0;ret->valid=1;
+	ret->title=ret->copyright=nullptr;ret->std=0;ret->valid=1;
 	try
 	{
 		if(!(f=fopen(fn,"rb")))
-			throw std::runtime_error("File doesn't exist");
-		chunkReader(1);
-		for(uint32_t i=0;i<trk;i+=chunkReader(0));
-		fclose(f);f=NULL;
+			throw std::runtime_error("Can't open file");
+		read_chunk(1);
+		for(uint32_t i=0;i<trk;i+=read_chunk(0));
+		fclose(f);f=nullptr;
 	}
 	catch(std::runtime_error& e)
 	{
 		fprintf(stderr,"CSMFReader E: %s is not a supported file. Cause: %s.\n",fn,e.what());
-		ret->valid=0;if(f)fclose(f);f=NULL;
+		ret->valid=0;if(f)fclose(f);f=nullptr;
 	}
 	return ret;
 }
@@ -234,10 +255,10 @@ CSMFReader::~CSMFReader()
 
 void CSMFReader::discardCurrentEvent()
 {
-	if(eventdiscarded)return;eventdiscarded=1;
+	if(eventdiscarded)return;eventdiscarded=true;
 	curTrack->eventList.pop_back();
 }
-void CSMFReader::commitEventChange(SEventCallBackData d)
+void CSMFReader::commitEventChange(SEvent d)
 {
 	curTrack->eventList.back().time=d.time;
 	curTrack->eventList.back().type=d.type;
@@ -247,7 +268,7 @@ void CSMFReader::commitEventChange(SEventCallBackData d)
 
 CMidiFileReaderCollection::CMidiFileReaderCollection()
 {
-	readers.clear();currentReader=NULL;
+	readers.clear();currentReader=nullptr;
 	registerReader(new CSMFReader(),"Default SMF Reader");
 }
 CMidiFileReaderCollection::~CMidiFileReaderCollection()
@@ -271,7 +292,7 @@ void CMidiFileReaderCollection::unregisterReader(std::string name)
 }
 CMidiFile* CMidiFileReaderCollection::readFile(const char* fn)
 {
-	CMidiFile *file=NULL;
+	CMidiFile *file=nullptr;
 	for(unsigned i=0;i<readers.size();++i)
 	{
 		currentReader=readers[i].first;
@@ -280,7 +301,7 @@ CMidiFile* CMidiFileReaderCollection::readFile(const char* fn)
 		if(t->valid){file=t;break;}
 		else delete t;
 	}
-	currentReader=NULL;
+	currentReader=nullptr;
 	return file;
 }
 qmpFileReader* CMidiFileReaderCollection::getCurrentReader()

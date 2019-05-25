@@ -42,7 +42,7 @@ class smXLinePSGenerator:public smPSEmissionPositionGenerator
 		smRandomEngine re;
 		double var;
 	public:
-		smXLinePSGenerator(double _var){re.setSeed(time(NULL));var=_var;}
+		smXLinePSGenerator(double _var){re.setSeed(time(nullptr));var=_var;}
 		smvec3d genPos(){return smvec3d(re.nextDouble(-var,var),0,0);}
 };
 class smParticleSystemInfo

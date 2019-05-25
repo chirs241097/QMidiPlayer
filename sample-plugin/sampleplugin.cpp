@@ -2,7 +2,7 @@
 #include "sampleplugin.hpp"
 
 qmpSamplePlugin::qmpSamplePlugin(qmpPluginAPI* _api){api=_api;}
-qmpSamplePlugin::~qmpSamplePlugin(){api=NULL;}
+qmpSamplePlugin::~qmpSamplePlugin(){api=nullptr;}
 void qmpSamplePlugin::init()
 {fputs("Hello world from plugin init!\n",stderr);}
 void qmpSamplePlugin::deinit()

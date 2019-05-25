@@ -52,8 +52,8 @@ class qmpCWNoteOnCB:public QObject,public ICallBack
 {
 	Q_OBJECT
 	public:
-		void callBack(void* callerdata,void*)
-		{if(((((SEventCallBackData*)callerdata)->type)&0xF0)==0x90)emit onNoteOn();}
+		void callBack(const void* callerdata,void*)
+		{if(((((const SEvent*)callerdata)->type)&0xF0)==0x90)emit onNoteOn();}
 	signals:
 		void onNoteOn();
 };

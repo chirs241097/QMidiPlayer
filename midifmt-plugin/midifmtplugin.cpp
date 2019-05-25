@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include "midifmtplugin.hpp"
-qmpPluginAPI* qmpMidiFmtPlugin::api=NULL;
+qmpPluginAPI* qmpMidiFmtPlugin::api=nullptr;
 
 uint32_t CMidiStreamReader::readDWLE()
 {
@@ -43,12 +43,18 @@ bool CMidiStreamReader::midsBodyReader()
 			uint32_t e=readDWLE();
 			SEvent ev;
 			if(e>>24==1)//set tempo
-			ev=SEvent(curid,cts,0xFF,0x51,e&0x00FFFFFF);
+			{
+				char s[3]={'\0'};
+				for(int i=0;i<3;++i)
+					s[i]=(e>>(8*(2-i)))&0xff;
+				ev=SEvent(curid,cts,0xFF,0x51,0);
+				ev.str=std::string(s,3);
+			}
 			else if(e>>24==0)//midishortmsg
 			ev=SEvent(curid,cts,e&0xFF,(e>>8)&0xFF,(e>>16)&0xFF);
 			else return false;
 			ret->tracks.back().appendEvent(ev);eventdiscarded=0;
-			qmpMidiFmtPlugin::api->callEventReaderCB(SEventCallBackData(ev.type,ev.p1,ev.p2,ev.time));
+			qmpMidiFmtPlugin::api->callEventReaderCB(ev);
 			if(eventdiscarded)ret->tracks.back().eventList.pop_back();
 			++curid;
 		}
@@ -58,7 +64,7 @@ bool CMidiStreamReader::midsBodyReader()
 CMidiFile* CMidiStreamReader::readFile(const char *fn)
 {
 	ret=new CMidiFile;
-	ret->title=ret->copyright=NULL;ret->std=0;ret->valid=1;
+	ret->title=ret->copyright=nullptr;ret->std=0;ret->valid=1;
 	ret->tracks.push_back(CMidiTrack());
 	try
 	{
@@ -68,7 +74,7 @@ CMidiFile* CMidiStreamReader::readFile(const char *fn)
 	}catch(std::runtime_error& e)
 	{
 		fprintf(stderr,"CMidiStreamReader E: %s is not a supported file. Cause: %s.\n",fn,e.what());
-		ret->valid=0;if(f)fclose(f);f=NULL;
+		ret->valid=0;if(f)fclose(f);f=nullptr;
 	}
 	return ret;
 }
@@ -76,7 +82,7 @@ void CMidiStreamReader::discardCurrentEvent()
 {
 	eventdiscarded=1;
 }
-void CMidiStreamReader::commitEventChange(SEventCallBackData d)
+void CMidiStreamReader::commitEventChange(SEvent d)
 {
 	ret->tracks.back().eventList.back().time=d.time;
 	ret->tracks.back().eventList.back().type=d.type;
@@ -85,7 +91,7 @@ void CMidiStreamReader::commitEventChange(SEventCallBackData d)
 }
 CMidiStreamReader::CMidiStreamReader()
 {
-	ret=NULL;f=NULL;
+	ret=nullptr;f=nullptr;
 }
 CMidiStreamReader::~CMidiStreamReader()
 {
@@ -94,7 +100,7 @@ CMidiStreamReader::~CMidiStreamReader()
 qmpMidiFmtPlugin::qmpMidiFmtPlugin(qmpPluginAPI *_api)
 {api=_api;}
 qmpMidiFmtPlugin::~qmpMidiFmtPlugin()
-{api=NULL;}
+{api=nullptr;}
 void qmpMidiFmtPlugin::init()
 {
 	api->registerFileReader(mdsreader=new CMidiStreamReader,"MIDS reader");

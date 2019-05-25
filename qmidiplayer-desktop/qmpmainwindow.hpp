@@ -66,7 +66,7 @@ class QReflectiveAction:public QAction
 		}
 	public:
 		explicit QReflectiveAction(const QIcon& icon,const QString& text,const std::string& ref):
-		QAction(icon,text,NULL),reflt(ref){
+		QAction(icon,text,nullptr),reflt(ref){
 			connect(this,SIGNAL(triggered(bool)),this,SLOT(triggerslot()));
 		}
 };
@@ -102,7 +102,7 @@ class qmpFuncPrivate
 	public:
 		qmpFuncPrivate(){}
 		qmpFuncPrivate(qmpFuncBaseIntf* i,std::string _desc,const char* icon,int iconlen,bool checkable);
-		~qmpFuncPrivate(){asgna=NULL;asgnb=NULL;}
+		~qmpFuncPrivate(){asgna=nullptr;asgnb=nullptr;}
 		qmpFuncBaseIntf* i(){return _i;}
 		void setAssignedControl(QReflectiveAction* a){asgna=a;if(!a)return;asgna->setCheckable(_checkable);asgna->setChecked(checked);}
 		void setAssignedControl(QReflectivePushButton* a){asgnb=a;if(!a)return;asgnb->setCheckable(_checkable);asgnb->setChecked(checked);}
@@ -125,9 +125,9 @@ class qmpCallBack
 		ICallBack* cbc;
 		callback_t cbf;
 	public:
-		qmpCallBack(){t=-1;cbc=NULL;cbf=NULL;}
-		qmpCallBack(ICallBack* _cb){t=0;cbc=_cb;cbf=NULL;}
-		qmpCallBack(callback_t _cb){t=1;cbf=_cb;cbc=NULL;}
+		qmpCallBack(){t=-1;cbc=nullptr;cbf=nullptr;}
+		qmpCallBack(ICallBack* _cb){t=0;cbc=_cb;cbf=nullptr;}
+		qmpCallBack(callback_t _cb){t=1;cbf=_cb;cbc=nullptr;}
 		void operator ()(void* cbd,void* usrd)
 		{
 			if(t<0)return;
@@ -196,8 +196,8 @@ class qmpMainWindow:public QMainWindow
 		Ui::qmpMainWindow *ui;
 		QTimer *timer;
 		bool playing,stopped,dragging,fin,havemidi;
-		std::thread *playerTh=NULL;
-		std::thread *renderTh=NULL;
+		std::thread *playerTh=nullptr;
+		std::thread *renderTh=nullptr;
 		std::chrono::steady_clock::time_point st;
 		double offset;
 		CMidiPlayer *player;

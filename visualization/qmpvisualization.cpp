@@ -41,9 +41,9 @@ bool cmp(MidiVisualEvent* a,MidiVisualEvent* b)
 	if(a->tcs<b->tcs)return true;if(a->tcs>b->tcs)return false;
 	if(a->tce<b->tce)return true;return false;
 }
-void CReaderCallBack::callBack(void *callerdata,void *)
+void CReaderCallBack::callBack(const void *callerdata,void *)
 {
-	SEventCallBackData* cbd=(SEventCallBackData*)callerdata;
+	const SEvent* cbd=(const SEvent*)callerdata;
 	switch(cbd->type&0xF0)
 	{
 		case 0x80:
@@ -57,11 +57,11 @@ void CReaderCallBack::callBack(void *callerdata,void *)
 		break;
 		case 0xF0:
 			if(cbd->type==0xFF&&cbd->p1==0x58)
-				par->tspool.push_back(std::make_pair(cbd->time,cbd->p2));
+				par->tspool.push_back(std::make_pair(cbd->time,(cbd->str[0]<<24)|(cbd->str[1]<<16)));
 		break;
 	}
 }
-void CEventHandlerCallBack::callBack(void*,void*)
+void CEventHandlerCallBack::callBack(const void*,void*)
 {
 	if(par->ctk>par->api->getCurrentTimeStamp()+par->api->getDivision()/3)
 		par->elb=0;
@@ -69,7 +69,7 @@ void CEventHandlerCallBack::callBack(void*,void*)
 		fprintf(stderr,"Visualization: out of sync! %u vs %u ad: %u\n",par->ctk,par->api->getCurrentTimeStamp());*/
 	par->ctk=par->api->getCurrentTimeStamp();
 }
-void CFRFinishedCallBack::callBack(void*,void*)
+void CFRFinishedCallBack::callBack(const void*,void*)
 {
 	std::sort(par->tspool.begin(),par->tspool.end());
 	for(uint32_t tk=0,n=4,s=0;tk<=par->api->getMaxTick();){
@@ -153,7 +153,7 @@ void qmpVisualization::showThread()
 	}else memset(pss,0,sizeof(pss));
 	if(showpiano&&!horizontal)for(int i=0;i<16;++i)p3d[i]=new qmpVirtualPiano3D();
 	memset(traveld,0,sizeof(traveld));
-	if(noteappearance==1)nebuf=new smEntity3DBuffer();else nebuf=NULL;
+	if(noteappearance==1)nebuf=new smEntity3DBuffer();else nebuf=nullptr;
 	tdscn=sm->smTargetCreate(wwidth*wsupersample,wheight*wsupersample,wmultisample);
 	tdparticles=sm->smTargetCreate(wwidth*wsupersample,wheight*wsupersample,wmultisample);
 	if(!api->getOptionString("Visualization/font2").length()||!font.loadTTF(api->getOptionString("Visualization/font2").c_str(),fontsize))
@@ -206,7 +206,7 @@ void qmpVisualization::close()
 	{
 		rendererTh->join();
 		delete rendererTh;
-		rendererTh=NULL;
+		rendererTh=nullptr;
 	}else return;
 
 	if(showpiano&&!horizontal)for(int i=0;i<16;++i)delete p3d[i];
@@ -746,7 +746,7 @@ void qmpVisualization::drawCube(smvec3d a,smvec3d b,DWORD col,SMTEX tex)
 }
 
 qmpVisualization::qmpVisualization(qmpPluginAPI* _api){api=_api;}
-qmpVisualization::~qmpVisualization(){api=NULL;}
+qmpVisualization::~qmpVisualization(){api=nullptr;}
 void qmpVisualization::init()
 {
 	cb=new CReaderCallBack(this);
@@ -754,17 +754,17 @@ void qmpVisualization::init()
 	h=new CMidiVisualHandler(this);
 	frcb=new CFRFinishedCallBack(this);
 	closeh=new CloseHandler(this);
-	rendererTh=NULL;playing=false;
+	rendererTh=nullptr;playing=false;
 	memset(spectra,0,sizeof(spectra));
 	memset(spectrar,0,sizeof(spectrar));
 	api->registerFunctionality(this,"Visualization","Visualization",api->isDarkTheme()?":/img/visualization_i.svg":":/img/visualization.svg",0,true);
-	uihb=api->registerUIHook("main.start",qmpVisualization::cbstart,(void*)this);
-	uihs=api->registerUIHook("main.stop",qmpVisualization::cbstop,(void*)this);
-	uihp=api->registerUIHook("main.pause",qmpVisualization::cbpause,(void*)this);
-	uihr=api->registerUIHook("main.reset",qmpVisualization::cbreset,(void*)this);
-	herif=api->registerEventReaderIntf(cb,NULL);
-	hehif=api->registerEventHandlerIntf(hcb,NULL);
-	hfrf=api->registerFileReadFinishedHandlerIntf(frcb,NULL);
+	uihb=api->registerUIHook("main.start",[this](const void*,void*){this->start();},nullptr);
+	uihs=api->registerUIHook("main.stop",[this](const void*,void*){this->stop();},nullptr);
+	uihp=api->registerUIHook("main.pause",[this](const void*,void*){this->pause();},nullptr);
+	uihr=api->registerUIHook("main.reset",[this](const void*,void*){this->reset();},nullptr);
+	herif=api->registerEventReaderIntf(cb,nullptr);
+	hehif=api->registerEventHandlerIntf(hcb,nullptr);
+	hfrf=api->registerFileReadFinishedHandlerIntf(frcb,nullptr);
 	api->registerOptionBool("Visualization-Appearance","Show Piano","Visualization/showpiano",true);
 	api->registerOptionBool("Visualization-Appearance","3D Notes","Visualization/3dnotes",true);
 	api->registerOptionBool("Visualization-Appearance","Arrange channels on a stair","Visualization/stairpiano",true);
@@ -850,26 +850,6 @@ const char* qmpVisualization::pluginGetName()
 {return "QMidiPlayer Default Visualization Plugin";}
 const char* qmpVisualization::pluginGetVersion()
 {return "0.8.6";}
-void qmpVisualization::cbstart(void *,void *usrd)
-{
-	qmpVisualization* v=(qmpVisualization*)usrd;
-	v->start();
-}
-void qmpVisualization::cbstop(void *,void *usrd)
-{
-	qmpVisualization* v=(qmpVisualization*)usrd;
-	v->stop();
-}
-void qmpVisualization::cbpause(void *,void *usrd)
-{
-	qmpVisualization* v=(qmpVisualization*)usrd;
-	v->pause();
-}
-void qmpVisualization::cbreset(void *,void *usrd)
-{
-	qmpVisualization* v=(qmpVisualization*)usrd;
-	v->reset();
-}
 
 void qmpVisualization::pushNoteOn(uint32_t tc,uint32_t ch,uint32_t key,uint32_t vel)
 {

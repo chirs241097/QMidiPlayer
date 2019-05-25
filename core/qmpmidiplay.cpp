@@ -10,15 +10,13 @@
 #include <windows.h>
 uint64_t pf;
 #endif
-//debug purpose
-uint32_t ttick;
-std::chrono::high_resolution_clock::time_point ttime;
-CMidiPlayer* CMidiPlayer::ref=NULL;
+CMidiPlayer* CMidiPlayer::ref=nullptr;
 bool CMidiPlayer::processEvent(const SEvent *e)
 {
-	SEventCallBackData cbd(e->type,e->p1,e->p2,tceptr);
 	for(int i=0;i<16;++i)if(eventHandlerCB[i])
-		eventHandlerCB[i]->callBack(&cbd,eventHandlerCBuserdata[i]);
+		eventHandlerCB[i]->callBack((void*)e,eventHandlerCBuserdata[i]);
+	for(auto i=event_handlers.begin();i!=event_handlers.end();++i)
+		i->second.first((void*)e,i->second.second);
 	uint8_t ch=e->type&0x0F;
 	switch(e->type&0xF0)
 	{
@@ -56,16 +54,28 @@ bool CMidiPlayer::processEvent(const SEvent *e)
 				switch(e->p1)
 				{
 					case 0x51:
-						ctempo=e->p2;dpt=ctempo*1000./divs;
+					{
+						ctempo=0;
+#if (__BYTE_ORDER__==__ORDER_LITTLE_ENDIAN__)||defined(_WIN32)
+						std::string x(e->str);
+						std::reverse(x.begin(),x.end());
+						memcpy(&ctempo,x.data(),3);
+#else
+						memcpy(&ctempo,e->str.data(),3);
+						ctempo>>=8;
+#endif
+						dpt=ctempo*1000./divs;
 						ttime=std::chrono::high_resolution_clock::now();
 						ttick=getTick();
+					}
 					break;
 					case 0x58:
-						ctsn=e->p2>>24;
-						ctsd=1<<((e->p2>>16)&0xFF);
+						ctsn=(uint32_t)e->str[0];
+						ctsd=1<<((uint32_t)e->str[1]);
 					break;
 					case 0x59:
-						cks=e->p2;
+						if(e->str.length()==2)
+						cks=(e->str[0]<<8u)|e->str[1];
 					break;
 					case 0x01:case 0x02:case 0x03:
 					case 0x04:case 0x05:case 0x06:
@@ -111,14 +121,26 @@ void CMidiPlayer::processEventStub(const SEvent *e)
 				switch(e->p1)
 				{
 					case 0x51:
-						ctempo=e->p2;dpt=ctempo*1000./divs;
+					{
+						ctempo=0;
+#if (__BYTE_ORDER__==__ORDER_LITTLE_ENDIAN__)||defined(_WIN32)
+						std::string x(e->str);
+						std::reverse(x.begin(),x.end());
+						memcpy(&ctempo,x.data(),3);
+#else
+						memcpy(&ctempo,e->str.data(),3);
+						ctempo>>=8;
+#endif
+						dpt=ctempo*1000./divs;
 						ccc[0][131]=ctempo;
+					}
 					break;
 					case 0x58:
-						ccc[0][132]=e->p2;
+						ccc[0][132]=(e->str[0]<<24u)|(e->str[1]<<16u);
 					break;
 					case 0x59:
-						ccc[0][133]=e->p2;
+						if(e->str.length()>=2)
+						ccc[0][133]=(e->str[0]<<8u)|e->str[1];
 					break;
 				}
 			}
@@ -251,9 +273,10 @@ void CMidiPlayer::fileTimer2Pass()
 CMidiPlayer::CMidiPlayer()
 {
 	midiReaders=new CMidiFileReaderCollection();
-	resumed=false;midiFile=NULL;internalFluid=new qmpMidiOutFluid();
+	resumed=false;midiFile=nullptr;internalFluid=new qmpMidiOutFluid();
 	registerMidiOutDevice(internalFluid,"Internal FluidSynth");
 	waitvoice=true;
+	event_handlers_id=event_read_handlers_id=file_read_finish_hooks_id=0;
 	memset(eventHandlerCB,0,sizeof(eventHandlerCB));
 	memset(eventHandlerCBuserdata,0,sizeof(eventHandlerCBuserdata));
 	memset(eventReaderCB,0,sizeof(eventReaderCB));
@@ -281,7 +304,7 @@ CMidiPlayer::~CMidiPlayer()
 	{
 		internalFluid->deviceDeinit();
 		delete internalFluid;
-		internalFluid=NULL;
+		internalFluid=nullptr;
 	}
 	if(midiFile)delete midiFile;delete midiReaders;
 }
@@ -307,7 +330,9 @@ bool CMidiPlayer::playerLoadFile(const char* fn)
 		maxtk=std::max(maxtk,i.eventList.back().time);
 	}
 	for(int i=0;i<16;++i)if(fileReadFinishCB[i])
-		fileReadFinishCB[i]->callBack(NULL,fileReadFinishCBuserdata[i]);
+		fileReadFinishCB[i]->callBack(nullptr,fileReadFinishCBuserdata[i]);
+	for(auto i=file_read_finish_hooks.begin();i!=file_read_finish_hooks.end();++i)
+		i->second.first(nullptr,i->second.second);
 	eorder.clear();
 	for(size_t i=0;i<midiFile->tracks.size();++i)
 	for(size_t j=0;j<midiFile->tracks[i].eventList.size();++j)
@@ -343,7 +368,7 @@ void CMidiPlayer::playerInit()
 void CMidiPlayer::playerDeinit()
 {
 	tceptr=0;tcstop=1;tcpaused=0;
-	delete midiFile;midiFile=NULL;
+	delete midiFile;midiFile=nullptr;
 }
 void CMidiPlayer::playerThread()
 {
@@ -503,7 +528,7 @@ int CMidiPlayer::setEventHandlerCB(ICallBack *cb,void *userdata)
 	for(int i=0;i<16;++i)
 	{
 		if(eventHandlerCB[i]==cb)return i;
-		if(eventHandlerCB[i]==NULL)
+		if(eventHandlerCB[i]==nullptr)
 		{
 			eventHandlerCB[i]=cb;eventHandlerCBuserdata[i]=userdata;
 			return i;
@@ -512,13 +537,13 @@ int CMidiPlayer::setEventHandlerCB(ICallBack *cb,void *userdata)
 	return -1;
 }
 void CMidiPlayer::unsetEventHandlerCB(int id)
-{eventHandlerCB[id]=NULL;eventHandlerCBuserdata[id]=NULL;}
+{eventHandlerCB[id]=nullptr;eventHandlerCBuserdata[id]=nullptr;}
 int CMidiPlayer::setEventReaderCB(ICallBack *cb,void *userdata)
 {
 	for(int i=0;i<16;++i)
 	{
 		if(eventReaderCB[i]==cb)return i;
-		if(eventReaderCB[i]==NULL)
+		if(eventReaderCB[i]==nullptr)
 		{
 			eventReaderCB[i]=cb;eventReaderCBuserdata[i]=userdata;
 			return i;
@@ -527,13 +552,13 @@ int CMidiPlayer::setEventReaderCB(ICallBack *cb,void *userdata)
 	return -1;
 }
 void CMidiPlayer::unsetEventReaderCB(int id)
-{eventReaderCB[id]=NULL;eventReaderCBuserdata[id]=NULL;}
+{eventReaderCB[id]=nullptr;eventReaderCBuserdata[id]=nullptr;}
 int CMidiPlayer::setFileReadFinishedCB(ICallBack *cb,void *userdata)
 {
 	for(int i=0;i<16;++i)
 	{
 		if(fileReadFinishCB[i]==cb)return i;
-		if(fileReadFinishCB[i]==NULL)
+		if(fileReadFinishCB[i]==nullptr)
 		{
 			fileReadFinishCB[i]=cb;fileReadFinishCBuserdata[i]=userdata;
 			return i;
@@ -542,23 +567,49 @@ int CMidiPlayer::setFileReadFinishedCB(ICallBack *cb,void *userdata)
 	return -1;
 }
 void CMidiPlayer::unsetFileReadFinishedCB(int id)
-{fileReadFinishCB[id]=NULL;fileReadFinishCBuserdata[id]=NULL;}
+{fileReadFinishCB[id]=nullptr;fileReadFinishCBuserdata[id]=nullptr;}
+int CMidiPlayer::registerEventHandler(callback_t cb,void *userdata)
+{
+	event_handlers[event_handlers_id++]=std::make_pair(cb,userdata);
+}
+void CMidiPlayer::unregisterEventHandler(int id)
+{
+	event_handlers.find(id)!=event_handlers.end()&&event_handlers.erase(id);
+}
+int CMidiPlayer::registerEventReadHandler(callback_t cb,void *userdata)
+{
+	event_read_handlers[event_read_handlers_id++]=std::make_pair(cb,userdata);
+}
+void CMidiPlayer::unregisterEventReadHandler(int id)
+{
+	event_read_handlers.find(id)!=event_read_handlers.end()&&event_read_handlers.erase(id);
+}
+int CMidiPlayer::registerFileReadFinishHook(callback_t cb,void *userdata)
+{
+	file_read_finish_hooks[file_read_finish_hooks_id++]=std::make_pair(cb,userdata);
+}
+void CMidiPlayer::unregisterFileReadFinishHook(int id)
+{
+	file_read_finish_hooks.find(id)!=file_read_finish_hooks.end()&&file_read_finish_hooks.erase(id);
+}
 void CMidiPlayer::registerReader(qmpFileReader *reader,std::string name)
 {midiReaders->registerReader(reader,name);}
 void CMidiPlayer::unregisterReader(std::string name)
 {midiReaders->unregisterReader(name);}
-void CMidiPlayer::callEventReaderCB(SEventCallBackData d)
+void CMidiPlayer::callEventReaderCB(SEvent d)
 {
 	if((d.type&0xF0)==0x90)++notes;
 	for(int i=0;i<16;++i)if(eventReaderCB[i])
 	eventReaderCB[i]->callBack(&d,eventReaderCBuserdata[i]);
+	for(auto i=event_read_handlers.begin();i!=event_read_handlers.end();++i)
+		i->second.first(&d,i->second.second);
 }
 void CMidiPlayer::discardCurrentEvent()
 {
 	if(midiReaders->getCurrentReader())
 	midiReaders->getCurrentReader()->discardCurrentEvent();
 }
-void CMidiPlayer::commitEventChange(SEventCallBackData d)
+void CMidiPlayer::commitEventChange(SEvent d)
 {
 	if(midiReaders->getCurrentReader())
 	midiReaders->getCurrentReader()->commitEventChange(d);

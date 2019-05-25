@@ -18,7 +18,7 @@ class CReaderCallBack:public ICallBack
 		qmpVisualization *par;
 	public:
 		CReaderCallBack(qmpVisualization *_par){par=_par;}
-		void callBack(void *callerdata,void *userdata);
+		void callBack(const void *callerdata,void *userdata);
 };
 class CEventHandlerCallBack:public ICallBack
 {
@@ -26,7 +26,7 @@ class CEventHandlerCallBack:public ICallBack
 		qmpVisualization *par;
 	public:
 		CEventHandlerCallBack(qmpVisualization *_par){par=_par;}
-		void callBack(void*,void*);
+		void callBack(const void*,void*);
 };
 class CFRFinishedCallBack:public ICallBack
 {
@@ -34,7 +34,7 @@ class CFRFinishedCallBack:public ICallBack
 		qmpVisualization *par;
 	public:
 		CFRFinishedCallBack(qmpVisualization *_par){par=_par;}
-		void callBack(void*,void*);
+		void callBack(const void*,void*);
 };
 struct MidiVisualEvent
 {
@@ -95,11 +95,6 @@ class qmpVisualization:public qmpPluginIntf,public qmpFuncBaseIntf
 		void deinit();
 		const char* pluginGetName();
 		const char* pluginGetVersion();
-
-		static void cbstart(void* cbd,void* usrd);
-		static void cbstop(void* cbd,void* usrd);
-		static void cbpause(void* cbd,void* usrd);
-		static void cbreset(void* cbd,void* usrd);
 };
 
 class CMidiVisualHandler:public smHandler

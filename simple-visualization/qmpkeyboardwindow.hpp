@@ -10,7 +10,7 @@ class EventCallback:public QObject,public ICallBack
 {
 	Q_OBJECT
 	public:
-		void callBack(void* callerdata,void* userdata);
+		void callBack(const void *callerdata,void *userdata);
 	signals:
 		void keystateupdated(int ch,int key,bool state);
 };

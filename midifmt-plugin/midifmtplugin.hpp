@@ -18,7 +18,7 @@ class CMidiStreamReader:public qmpFileReader
 		~CMidiStreamReader();
 		CMidiFile* readFile(const char *fn);
 		void discardCurrentEvent();
-		void commitEventChange(SEventCallBackData d);
+		void commitEventChange(SEvent d);
 };
 
 class qmpMidiFmtPlugin:public qmpPluginIntf
