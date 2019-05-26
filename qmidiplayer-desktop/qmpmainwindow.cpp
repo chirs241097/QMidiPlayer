@@ -54,7 +54,7 @@ qmpMainWindow::~qmpMainWindow()
 	std::vector<std::pair<qmpMidiOutRtMidi*,std::string>> rtdev=rtmididev->getDevices();
 	for(auto &i:rtdev)player->unregisterMidiOutDevice(i.second);
 	rtmididev->deleteDevices();
-	delete pmgr;if(player)delete player;
+	delete pmgr;
 	if(timer)delete timer;
 	delete helpw;helpw=nullptr;
 	delete efxw;efxw=nullptr;
@@ -65,6 +65,7 @@ qmpMainWindow::~qmpMainWindow()
 	delete panicf;panicf=nullptr;
 	delete renderf;renderf=nullptr;
 	delete reloadsynf;reloadsynf=nullptr;
+	if(player)delete player;
 	delete ui;
 }
 

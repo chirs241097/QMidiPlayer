@@ -12,30 +12,6 @@
 #include "../include/qmpcorepublic.hpp"
 
 class qmpVisualization;
-class CReaderCallBack:public ICallBack
-{
-	private:
-		qmpVisualization *par;
-	public:
-		CReaderCallBack(qmpVisualization *_par){par=_par;}
-		void callBack(const void *callerdata,void *userdata);
-};
-class CEventHandlerCallBack:public ICallBack
-{
-	private:
-		qmpVisualization *par;
-	public:
-		CEventHandlerCallBack(qmpVisualization *_par){par=_par;}
-		void callBack(const void*,void*);
-};
-class CFRFinishedCallBack:public ICallBack
-{
-	private:
-		qmpVisualization *par;
-	public:
-		CFRFinishedCallBack(qmpVisualization *_par){par=_par;}
-		void callBack(const void*,void*);
-};
 struct MidiVisualEvent
 {
 	uint32_t tcs,tce;
@@ -44,15 +20,9 @@ struct MidiVisualEvent
 };
 class qmpVisualization:public qmpPluginIntf,public qmpFuncBaseIntf
 {
-	friend class CEventHandlerCallBack;
-	friend class CReaderCallBack;
 	friend class CloseHandler;
-	friend class CFRFinishedCallBack;
 	private:
 		qmpPluginAPI* api;
-		CReaderCallBack* cb;
-		CEventHandlerCallBack* hcb;
-		CFRFinishedCallBack* frcb;
 		std::thread* rendererTh;
 		std::vector<MidiVisualEvent*>pool;
 		smHandler *h,*closeh;
@@ -69,7 +39,7 @@ class qmpVisualization:public qmpPluginIntf,public qmpFuncBaseIntf
 		uint32_t ctc,ctk,elb;
 		double etps;
 		bool shouldclose,playing;
-		int herif,hehif,hfrf;
+		int herh,heh,hfrf;
 		int uihb,uihs,uihp,uihr;
 		std::vector<std::pair<uint32_t,uint32_t>>tspool;
 		int traveld[16][128];bool notestatus[16][128],lastnotestatus[16][128];

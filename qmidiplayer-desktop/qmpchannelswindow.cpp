@@ -14,9 +14,15 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent) :
 	pselectw=new qmpPresetSelector(this);
 	ceditw=new qmpChannelEditor(this);
 	cha=new QIcon(":/img/ledon.svg");chi=new QIcon(":/img/ledoff.svg");
-	cb=new qmpCWNoteOnCB();fused=callbacksc=cbcnt=0;
-	qmpMainWindow::getInstance()->getPlayer()->setEventHandlerCB(cb,nullptr);
-	connect(cb,SIGNAL(onNoteOn()),this,SLOT(updateChannelActivity()));
+	fused=callbacksc=cbcnt=0;
+	eh=qmpMainWindow::getInstance()->getPlayer()->registerEventHandler(
+		[this](const void *ee,void*){
+			const SEvent *e=(const SEvent*)ee;
+			if((e->type&0xF0)==0x90&&e->p2>0&&(e->flags&0x01))
+				emit this->noteOn();
+		}
+	,nullptr);
+	connect(this,&qmpChannelsWindow::noteOn,this,&qmpChannelsWindow::updateChannelActivity);
 	std::vector<std::string> devs=qmpMainWindow::getInstance()->getPlayer()->getMidiOutDevices();
 	size_t devc=devs.size();
 	//We setup default output here...
@@ -131,7 +137,7 @@ void qmpChannelsWindow::channelWindowsUpdate()
 	{
 		for(int i=0;i<16;++i)
 			ui->twChannels->item(i,4)->setText("");
-		connect(cb,SIGNAL(onNoteOn()),this,SLOT(updateChannelActivity()));
+		connect(this,&qmpChannelsWindow::noteOn,this,&qmpChannelsWindow::updateChannelActivity);
 		fused=0;return;
 	}
 	++cbcnt;
@@ -139,7 +145,7 @@ void qmpChannelsWindow::channelWindowsUpdate()
 	{
 		if(callbacksc>8192)
 		{
-			disconnect(cb,SIGNAL(onNoteOn()),this,SLOT(updateChannelActivity()));
+			disconnect(this,&qmpChannelsWindow::noteOn,this,&qmpChannelsWindow::updateChannelActivity);
 			fprintf(stderr,"Fuse!\n");fused=1;
 		}
 		cbcnt=0;
@@ -156,7 +162,7 @@ void qmpChannelsWindow::channelWindowsUpdate()
 			if(strcmp((ui->twChannels->item(i,4))->
 					  text().toStdString().c_str(),data))
 			{
-				connect(cb,SIGNAL(onNoteOn()),this,SLOT(updateChannelActivity()));
+				connect(this,&qmpChannelsWindow::noteOn,this,&qmpChannelsWindow::updateChannelActivity);
 				fused=0;
 			}
 		}
@@ -184,9 +190,10 @@ void qmpChannelsWindow::channelMSChanged()
 qmpChannelsWindow::~qmpChannelsWindow()
 {
 	qmpMainWindow::getInstance()->unregisterFunctionality("Channel");
+	qmpMainWindow::getInstance()->getPlayer()->unregisterEventHandler(eh);
 	delete chnlf;
 	delete chi;delete cha;
-	delete cb;delete ui;
+	delete ui;
 }
 
 void qmpChannelsWindow::on_pbUnmute_clicked()

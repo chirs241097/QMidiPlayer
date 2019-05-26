@@ -48,16 +48,6 @@ class QDCComboBox:public QComboBox
 		void indexChangedSlot(int idx){emit(onChange(id,idx));}
 };
 
-class qmpCWNoteOnCB:public QObject,public ICallBack
-{
-	Q_OBJECT
-	public:
-		void callBack(const void* callerdata,void*)
-		{if(((((const SEvent*)callerdata)->type)&0xF0)==0x90)emit onNoteOn();}
-	signals:
-		void onNoteOn();
-};
-
 class qmpChannelsWindow;
 
 class qmpChannelFunc:public qmpFuncBaseIntf
@@ -75,7 +65,7 @@ class qmpChannelsWindow:public QWidget
 	Q_OBJECT
 
 	public:
-		explicit qmpChannelsWindow(QWidget *parent=0);
+		explicit qmpChannelsWindow(QWidget *parent=nullptr);
 		~qmpChannelsWindow();
 		void showEvent(QShowEvent *event);
 		void closeEvent(QCloseEvent *event);
@@ -90,6 +80,9 @@ class qmpChannelsWindow:public QWidget
 		void on_pbUnmute_clicked();
 		void on_pbUnsolo_clicked();
 
+	signals:
+		void noteOn();
+
 	protected:
 		bool eventFilter(QObject *o,QEvent *e);
 
@@ -98,8 +91,8 @@ class qmpChannelsWindow:public QWidget
 		qmpPresetSelector *pselectw;
 		qmpChannelEditor *ceditw;
 		QIcon *cha,*chi;
-		qmpCWNoteOnCB *cb;
 		qmpChannelFunc *chnlf;
+		int eh;
 		//callback fuse... (avoid black midi blocking the main thread)
 		int callbacksc,cbcnt,fused;
 };

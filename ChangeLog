@@ -1,3 +1,8 @@
+2019-05-26 0.8.7 indev
+New flag field in SEvent.
+Further type usage corrections.
+Removed all references to ICallback in official plugins.
+
 2019-05-25 0.8.7 indev
 Massive code refactor en cours!
 Less complain from compilers:
@@ -5,6 +10,7 @@ Less complain from compilers:
  - use types for event fields
  - explicit type casting added
 Stop saving parameters of meta events in p1/p2 fields of SEvent.
+SEventCallBackData removed. Use SEvent instead.
 callback_t now uses std::function, deprecating ICallback.
 
 2019-04-22 0.8.7 indev

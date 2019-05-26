@@ -15,12 +15,13 @@ struct SEvent
 {
 	uint32_t iid,time;
 	uint8_t type,p1,p2;
+	uint8_t flags;
 	std::string str;
-	SEvent(){time=p1=p2=0;type=0;str="";}
+	SEvent(){time=iid=0;type=p1=p2=0;flags=0;str="";}
 	SEvent(uint32_t _iid,uint32_t _t,uint8_t _tp,uint8_t _p1,uint8_t _p2,const char* s=nullptr)
 	{
 		iid=_iid;time=_t;type=_tp;
-		p1=_p1;p2=_p2;
+		p1=_p1;p2=_p2;flags=0;
 		if(s)str=std::string(s);else str="";
 	}
 	friend bool operator <(const SEvent& a,const SEvent& b){return a.time-b.time?a.time<b.time:a.iid<b.iid;}

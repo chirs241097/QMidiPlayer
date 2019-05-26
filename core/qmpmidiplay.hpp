@@ -96,7 +96,7 @@ class CMidiPlayer
 		int event_handlers_id,event_read_handlers_id,file_read_finish_hooks_id;
 		static CMidiPlayer* ref;
 
-		SEvent *getEvent(int id);
+		SEvent *getEvent(uint32_t id);
 		void dumpFile();
 		void setBit(uint16_t &n,uint16_t bn,uint16_t b);
 		bool processEvent(const SEvent *e);

@@ -41,51 +41,6 @@ bool cmp(MidiVisualEvent* a,MidiVisualEvent* b)
 	if(a->tcs<b->tcs)return true;if(a->tcs>b->tcs)return false;
 	if(a->tce<b->tce)return true;return false;
 }
-void CReaderCallBack::callBack(const void *callerdata,void *)
-{
-	const SEvent* cbd=(const SEvent*)callerdata;
-	switch(cbd->type&0xF0)
-	{
-		case 0x80:
-			par->pushNoteOff(cbd->time,cbd->type&0x0F,cbd->p1);
-		break;
-		case 0x90:
-			if(cbd->p2)
-			par->pushNoteOn(cbd->time,cbd->type&0x0F,cbd->p1,cbd->p2);
-			else
-			par->pushNoteOff(cbd->time,cbd->type&0x0F,cbd->p1);
-		break;
-		case 0xF0:
-			if(cbd->type==0xFF&&cbd->p1==0x58)
-				par->tspool.push_back(std::make_pair(cbd->time,(cbd->str[0]<<24)|(cbd->str[1]<<16)));
-		break;
-	}
-}
-void CEventHandlerCallBack::callBack(const void*,void*)
-{
-	if(par->ctk>par->api->getCurrentTimeStamp()+par->api->getDivision()/3)
-		par->elb=0;
-	/*if(abs((int)par->ctk-(int)par->api->getCurrentTimeStamp())>par->api->getDivision()/4)
-		fprintf(stderr,"Visualization: out of sync! %u vs %u ad: %u\n",par->ctk,par->api->getCurrentTimeStamp());*/
-	par->ctk=par->api->getCurrentTimeStamp();
-}
-void CFRFinishedCallBack::callBack(const void*,void*)
-{
-	std::sort(par->tspool.begin(),par->tspool.end());
-	for(uint32_t tk=0,n=4,s=0;tk<=par->api->getMaxTick();){
-		while(tk<(s>=par->tspool.size()?par->api->getMaxTick():par->tspool[s].first)){
-			par->pool.push_back(new MidiVisualEvent{tk,tk,0,0,999});
-			tk+=n*par->api->getDivision();
-		}
-		tk=(s>=par->tspool.size()?par->api->getMaxTick():par->tspool[s].first);
-		if(tk==par->api->getMaxTick()){
-			par->pool.push_back(new MidiVisualEvent{tk,tk,0,0,999});
-			++tk;break;
-		}
-		else n=par->tspool[s++].second>>24;
-	}
-	std::sort(par->pool.begin(),par->pool.end(),cmp);
-}
 void qmpVisualization::showThread()
 {
 	wwidth=api->getOptionInt("Visualization/wwidth");
@@ -749,10 +704,7 @@ qmpVisualization::qmpVisualization(qmpPluginAPI* _api){api=_api;}
 qmpVisualization::~qmpVisualization(){api=nullptr;}
 void qmpVisualization::init()
 {
-	cb=new CReaderCallBack(this);
-	hcb=new CEventHandlerCallBack(this);
 	h=new CMidiVisualHandler(this);
-	frcb=new CFRFinishedCallBack(this);
 	closeh=new CloseHandler(this);
 	rendererTh=nullptr;playing=false;
 	memset(spectra,0,sizeof(spectra));
@@ -762,9 +714,54 @@ void qmpVisualization::init()
 	uihs=api->registerUIHook("main.stop",[this](const void*,void*){this->stop();},nullptr);
 	uihp=api->registerUIHook("main.pause",[this](const void*,void*){this->pause();},nullptr);
 	uihr=api->registerUIHook("main.reset",[this](const void*,void*){this->reset();},nullptr);
-	herif=api->registerEventReaderIntf(cb,nullptr);
-	hehif=api->registerEventHandlerIntf(hcb,nullptr);
-	hfrf=api->registerFileReadFinishedHandlerIntf(frcb,nullptr);
+	herh=api->registerEventReadHandler(
+		[this](const void *ee,void*){
+			const SEvent* e=(const SEvent*)ee;
+			switch(e->type&0xF0)
+			{
+				case 0x80:
+					this->pushNoteOff(e->time,e->type&0x0F,e->p1);
+				break;
+				case 0x90:
+					if(e->p2)
+					this->pushNoteOn(e->time,e->type&0x0F,e->p1,e->p2);
+					else
+					this->pushNoteOff(e->time,e->type&0x0F,e->p1);
+				break;
+				case 0xF0:
+					if(e->type==0xFF&&e->p1==0x58)
+						this->tspool.push_back(std::make_pair(e->time,(e->str[0]<<24)|(e->str[1]<<16)));
+				break;
+			}
+		}
+	,nullptr);
+	heh=api->registerEventHandler(
+		[this](const void*,void*){
+			if(this->ctk>this->api->getCurrentTimeStamp()+this->api->getDivision()/3)
+				this->elb=0;
+			/*if(abs((int)this->ctk-(int)this->api->getCurrentTimeStamp())>this->api->getDivision()/4)
+				fprintf(stderr,"Visualization: out of sync! %u vs %u ad: %u\n",this->ctk,this->api->getCurrentTimeStamp());*/
+			this->ctk=this->api->getCurrentTimeStamp();
+		}
+	,nullptr);
+	hfrf=api->registerFileReadFinishHook(
+		[this](const void*,void*){
+			std::sort(this->tspool.begin(),this->tspool.end());
+			for(uint32_t tk=0,n=4,s=0;tk<=this->api->getMaxTick();){
+				while(tk<(s>=this->tspool.size()?this->api->getMaxTick():this->tspool[s].first)){
+					this->pool.push_back(new MidiVisualEvent{tk,tk,0,0,999});
+					tk+=n*this->api->getDivision();
+				}
+				tk=(s>=this->tspool.size()?this->api->getMaxTick():this->tspool[s].first);
+				if(tk==this->api->getMaxTick()){
+					this->pool.push_back(new MidiVisualEvent{tk,tk,0,0,999});
+					++tk;break;
+				}
+				else n=this->tspool[s++].second>>24;
+			}
+			std::sort(this->pool.begin(),this->pool.end(),cmp);
+		}
+	,nullptr);
 	api->registerOptionBool("Visualization-Appearance","Show Piano","Visualization/showpiano",true);
 	api->registerOptionBool("Visualization-Appearance","3D Notes","Visualization/3dnotes",true);
 	api->registerOptionBool("Visualization-Appearance","Arrange channels on a stair","Visualization/stairpiano",true);
@@ -840,10 +837,9 @@ void qmpVisualization::deinit()
 	api->unregisterUIHook("main.pause",uihp);
 	api->unregisterUIHook("main.reset",uihr);
 	api->unregisterFunctionality("Visualization");
-	api->unregisterEventReaderIntf(herif);
-	api->unregisterEventHandlerIntf(hehif);
-	api->unregisterFileReadFinishedHandlerIntf(hfrf);
-	delete cb;delete hcb;delete frcb;
+	api->unregisterEventReadHandler(herh);
+	api->unregisterEventHandler(heh);
+	api->unregisterFileReadFinishHook(hfrf);
 	delete h;delete closeh;
 }
 const char* qmpVisualization::pluginGetName()

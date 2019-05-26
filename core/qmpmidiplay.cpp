@@ -13,8 +13,12 @@ uint64_t pf;
 CMidiPlayer* CMidiPlayer::ref=nullptr;
 bool CMidiPlayer::processEvent(const SEvent *e)
 {
+	SEvent fe(*e);
+	fe.flags&=0xfe;
+	if(tceptr>=eorder.size()-1||getEvent(tceptr+1)->time>e->time)
+		fe.flags|=0x01;
 	for(int i=0;i<16;++i)if(eventHandlerCB[i])
-		eventHandlerCB[i]->callBack((void*)e,eventHandlerCBuserdata[i]);
+		eventHandlerCB[i]->callBack((void*)&fe,eventHandlerCBuserdata[i]);
 	for(auto i=event_handlers.begin();i!=event_handlers.end();++i)
 		i->second.first((void*)e,i->second.second);
 	uint8_t ch=e->type&0x0F;
@@ -162,7 +166,7 @@ void w32usleep(uint64_t t)
 	timeEndPeriod(1);
 }
 #endif
-SEvent* CMidiPlayer::getEvent(int id)
+SEvent* CMidiPlayer::getEvent(uint32_t id)
 {
 	size_t t=eorder[id].first,e=eorder[id].second;
 	return &midiFile->tracks[t].eventList[e];
@@ -570,7 +574,9 @@ void CMidiPlayer::unsetFileReadFinishedCB(int id)
 {fileReadFinishCB[id]=nullptr;fileReadFinishCBuserdata[id]=nullptr;}
 int CMidiPlayer::registerEventHandler(callback_t cb,void *userdata)
 {
-	event_handlers[event_handlers_id++]=std::make_pair(cb,userdata);
+	int ret;
+	event_handlers[ret=event_handlers_id++]=std::make_pair(cb,userdata);
+	return ret;
 }
 void CMidiPlayer::unregisterEventHandler(int id)
 {
@@ -578,7 +584,9 @@ void CMidiPlayer::unregisterEventHandler(int id)
 }
 int CMidiPlayer::registerEventReadHandler(callback_t cb,void *userdata)
 {
-	event_read_handlers[event_read_handlers_id++]=std::make_pair(cb,userdata);
+	int ret;
+	event_read_handlers[ret=event_read_handlers_id++]=std::make_pair(cb,userdata);
+	return ret;
 }
 void CMidiPlayer::unregisterEventReadHandler(int id)
 {
@@ -586,7 +594,9 @@ void CMidiPlayer::unregisterEventReadHandler(int id)
 }
 int CMidiPlayer::registerFileReadFinishHook(callback_t cb,void *userdata)
 {
-	file_read_finish_hooks[file_read_finish_hooks_id++]=std::make_pair(cb,userdata);
+	int ret;
+	file_read_finish_hooks[ret=file_read_finish_hooks_id++]=std::make_pair(cb,userdata);
+	return ret;
 }
 void CMidiPlayer::unregisterFileReadFinishHook(int id)
 {
