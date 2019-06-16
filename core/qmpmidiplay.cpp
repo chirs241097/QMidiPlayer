@@ -241,7 +241,7 @@ void CMidiPlayer::fileTimer2Pass()
 	memset(ccc,0,sizeof(ccc));memset(rpnid,0xFF,sizeof(rpnid));memset(rpnval,0xFF,sizeof(rpnval));
 	for(int i=0;i<16;++i)
 	{
-		ccc[i][7]=100;ccc[i][8]=64;ccc[i][10]=64;ccc[i][11]=127;
+		ccc[i][7]=100;ccc[i][8]=64;ccc[i][10]=64;
 		ccc[i][11]=127;ccc[i][71]=64;ccc[i][72]=64;
 		ccc[i][73]=64;ccc[i][74]=64;ccc[i][75]=64;
 		ccc[i][76]=64;ccc[i][77]=64;ccc[i][78]=64;
@@ -427,19 +427,6 @@ uint32_t CMidiPlayer::isFinished(){return finished;}
 void CMidiPlayer::setResumed(){resumed=true;}
 void CMidiPlayer::setWaitVoice(bool wv){waitvoice=wv;}
 
-void CMidiPlayer::getChannelPreset(int ch,int *b,int *p,char *name)
-{
-	if(mappedoutput[ch])
-	{
-		*b=((int)chstatus[ch][0]<<7)|chstatus[ch][32];
-		*p=chstatus[ch][128];
-		strcpy(name,"");
-	}
-	else
-	{
-		internalFluid->getChannelInfo(ch,b,p,name);
-	}
-}
 void CMidiPlayer::setChannelPreset(int ch,int b,int p)
 {
 	chstatus[ch][128]=p;
@@ -509,6 +496,10 @@ std::vector<std::string> CMidiPlayer::getMidiOutDevices()
 int CMidiPlayer::getChannelOutput(int ch)
 {
 	return mappedoutput[ch];
+}
+qmpMidiOutDevice* CMidiPlayer::getChannelOutputDevice(int ch)
+{
+	return mididev[mappedoutput[ch]].dev;
 }
 void CMidiPlayer::setChannelOutput(int ch,int outid)
 {

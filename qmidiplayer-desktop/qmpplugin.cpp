@@ -153,11 +153,11 @@ int qmpPluginAPI::getChannelCC(int ch,int cc)
 {return qmw&&qmw->getPlayer()?qmw->getPlayer()->getCC(ch,cc):0;}
 int qmpPluginAPI::getChannelPreset(int ch)
 {
-	int b,p;char nm[256];
+	uint16_t b;uint8_t p;std::string nm;
 	if(qmw&&qmw->getPlayer())
 	{
-		qmw->getPlayer()->getChannelPreset(ch,&b,&p,nm);
-		return p;
+		if(qmw->getPlayer()->getChannelOutputDevice(ch)->getChannelPreset(ch,&b,&p,nm))return p;
+		return qmw->getPlayer()->getCC(ch,128);
 	}
 	return 0;
 }
@@ -173,11 +173,12 @@ std::wstring qmpPluginAPI::getWTitle()
 {return qmw?qmw->getWTitle():L"";}
 std::string qmpPluginAPI::getChannelPresetString(int ch)
 {
-	int b,p;char nm[256],ret[320];ret[0]=0;
+	uint16_t b;uint8_t p;char ret[320];ret[0]=0;
+	std::string nm;
 	if(qmw&&qmw->getPlayer())
 	{
-		qmw->getPlayer()->getChannelPreset(ch,&b,&p,nm);
-		snprintf(ret,320,"%03d:%03d %s",b,p,nm);
+		qmw->getPlayer()->getChannelOutputDevice(ch)->getChannelPreset(ch,&b,&p,nm);
+		snprintf(ret,320,"%03d:%03d %s",b,p,nm.c_str());
 	}
 	return std::string(ret);
 }

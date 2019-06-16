@@ -1,9 +1,23 @@
 #ifndef QMPMIDIMAPPERS_H
 #define QMPMIDIMAPPERS_H
+#include <unordered_map>
 #include <vector>
 #define QMP_MAIN
 #include "../include/qmpcorepublic.hpp"
 #include RT_MIDI_H
+struct qmpDeviceInitializer
+{
+	CMidiTrack initseq;
+	struct BankStore
+	{
+		std::unordered_map<uint8_t,std::string> presets;
+		std::string bankname;
+	};
+	std::unordered_map<uint16_t,BankStore> banks;
+	uint8_t initv[130];
+
+	static qmpDeviceInitializer* parse(const char* path);
+};
 class qmpMidiOutRtMidi:public qmpMidiOutDevice
 {
 private:
@@ -22,6 +36,11 @@ public:
 	void reset(uint8_t ch);
 	void onMapped(uint8_t ch,int refcnt);
 	void onUnmapped(uint8_t ch,int refcnt);
+	std::vector<std::pair<uint16_t,std::string>> getBankList();
+	std::vector<std::pair<uint8_t,std::string>> getPresets(int bank);
+	std::string getPresetName(uint16_t bank,uint8_t preset);
+	bool getChannelPreset(int ch,uint16_t *bank,uint8_t *preset,std::string &presetname);
+	uint8_t getInitialCCValue(uint8_t cc);
 };
 class qmpRtMidiManager
 {

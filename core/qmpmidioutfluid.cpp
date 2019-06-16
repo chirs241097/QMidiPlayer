@@ -1,6 +1,6 @@
 #include <cstdio>
 #include <cstring>
-#include <map>
+#include <algorithm>
 #include "qmpmidioutfluid.hpp"
 qmpMidiOutFluid::qmpMidiOutFluid()
 {
@@ -30,6 +30,7 @@ void qmpMidiOutFluid::deviceInit()
 	}
 	fluid_synth_set_chorus(synth,3,2.0,0.3,8.0,
 						   FLUID_CHORUS_MOD_SINE);
+	bnk.clear();pst.clear();
 }
 void qmpMidiOutFluid::deviceDeinit(){deviceDeinit(false);}
 void qmpMidiOutFluid::deviceDeinit(bool freshsettings)
@@ -38,6 +39,7 @@ void qmpMidiOutFluid::deviceDeinit(bool freshsettings)
 	delete_fluid_audio_driver(adriver);
 	delete_fluid_synth(synth);
 	synth=nullptr;adriver=nullptr;
+	bnk.clear();pst.clear();
 	if(freshsettings)
 	{
 		delete_fluid_settings(settings);
@@ -117,6 +119,54 @@ void qmpMidiOutFluid::onMapped(uint8_t,int)
 void qmpMidiOutFluid::onUnmapped(uint8_t,int)
 {
 }
+std::vector<std::pair<uint16_t,std::string>> qmpMidiOutFluid::getBankList()
+{
+	return bnk;
+}
+std::vector<std::pair<uint8_t,std::string>> qmpMidiOutFluid::getPresets(int bank)
+{
+	std::vector<std::pair<uint8_t,std::string>> ret;
+	if(pst.find(bank)==pst.end())return ret;
+	for(uint8_t i=0;i<128;++i)
+	{
+		if(pst[bank][i].length())
+		ret.emplace_back(i,pst[bank][i]);
+	}
+	return ret;
+}
+std::string qmpMidiOutFluid::getPresetName(uint16_t bank,uint8_t preset)
+{
+	if(pst.find(bank)==pst.end())return "";
+	return pst[bank][preset];
+}
+bool qmpMidiOutFluid::getChannelPreset(int ch,uint16_t *bank,uint8_t *preset,std::string &presetname)
+{
+	if(!synth)return false;
+	fluid_preset_t* chpreset=fluid_synth_get_channel_preset(synth,ch);
+	if(!chpreset)
+	{
+		*bank=*preset=-1;
+		presetname="---";
+		return true;
+	}
+	*bank=fluid_preset_get_banknum(chpreset);
+	*preset=fluid_preset_get_num(chpreset);
+	presetname=fluid_preset_get_name(chpreset);
+	return true;
+}
+uint8_t qmpMidiOutFluid::getInitialCCValue(uint8_t cc)
+{
+	switch(cc)
+	{
+		case 11:return 127;
+		case 7:return 100;
+		case 8:case 10:case 71:case 72:
+		case 73:case 74:case 75:case 76:
+		case 77:case 78:return 64;
+		case 129:return 2;
+		default:return 0;
+	}
+}
 void qmpMidiOutFluid::setOptStr(const char *opt,const char *val)
 {
 	fluid_settings_setstr(settings,opt,val);
@@ -132,29 +182,33 @@ void qmpMidiOutFluid::setOptNum(const char *opt,double val)
 void qmpMidiOutFluid::loadSFont(const char *path)
 {
 	if(synth)fluid_synth_sfload(synth,path,1);
+	update_preset_list();
 }
 int qmpMidiOutFluid::getSFCount()
 {
 	return synth?fluid_synth_sfcount(synth):0;
 }
-std::vector<std::pair<std::pair<int,int>,std::string>> qmpMidiOutFluid::listPresets()
+void qmpMidiOutFluid::update_preset_list()
 {
-	std::vector<std::pair<std::pair<int,int>,std::string>> ret;
-	std::map<std::pair<int,int>,std::string> pmap;
+	bnk.clear();pst.clear();
 	for(int i=getSFCount()-1;i>=0;--i)
 	{
 		fluid_sfont_t* psf=fluid_synth_get_sfont(synth,i);
 		fluid_preset_t* preset;
 		fluid_sfont_iteration_start(psf);
 		while(preset=fluid_sfont_iteration_next(psf))
-			pmap[std::make_pair(
-					fluid_preset_get_banknum(preset),
-					fluid_preset_get_num(preset)
-			)]=fluid_preset_get_name(preset);
+		{
+			uint16_t b=fluid_preset_get_banknum(preset);
+			uint8_t p=fluid_preset_get_num(preset);
+			if(bnk.empty()||bnk.back().first!=b)
+				bnk.emplace_back(b,"");
+			if(pst[b].empty())pst[b].resize(128);
+			pst[b][p]=std::string(fluid_preset_get_name(preset));
+			if(!pst[b][p].length())pst[b][p]=" ";
+		}
 	}
-	for(auto i=pmap.begin();i!=pmap.end();++i)
-	ret.push_back(std::make_pair(i->first,i->second));
-	return ret;
+	std::sort(bnk.begin(),bnk.end());
+	bnk.erase(std::unique(bnk.begin(),bnk.end()),bnk.end());
 }
 int qmpMidiOutFluid::getPolyphone()
 {

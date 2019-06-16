@@ -141,7 +141,6 @@ class CMidiPlayer
 		void sendSysX(bool send);
 
 		void setChannelPreset(int ch,int b,int p);
-		void getChannelPreset(int ch,int *b,int *p,char *name);
 		void setMute(int ch,bool m);
 		void setSolo(int ch,bool s);
 		bool getChannelMask(int ch);
@@ -154,6 +153,7 @@ class CMidiPlayer
 		void unregisterMidiOutDevice(std::string name);
 		std::vector<std::string> getMidiOutDevices();
 		int getChannelOutput(int ch);
+		qmpMidiOutDevice* getChannelOutputDevice(int ch);
 		void setChannelOutput(int ch,int outid);
 		uint8_t* getChstates();
 		int setEventHandlerCB(ICallBack *cb,void *userdata);

@@ -1,3 +1,15 @@
+2019-06-16 0.8.7 indev
+Inital implementation of the device properties API.
+
+Added new interfaces to qmpMidiOutDevice.
+Implemented the new interfaces for qmpMidiOutFluid.
+Initial infra for device initialization file parsing.
+Move to the new interfaces for getting list of presets.
+Use DevIL instead of CxImage.
+
+External output devices are broken now but that is for
+another commit.
+
 2019-05-26 0.8.7 indev
 New flag field in SEvent.
 Further type usage corrections.

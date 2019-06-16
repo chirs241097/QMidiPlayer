@@ -36,12 +36,12 @@ unix {
 		INCLUDEPATH += /home/chrisoft/devel/SMELT/include/ /usr/include/freetype2
 		LIBS += -L/home/chrisoft/devel/SMELT/smelt/glfw/
 		LIBS += -L/home/chrisoft/devel/SMELT/extensions/
-		LIBS += -lstdc++ -lfreetype -lz -lsmeltext -lsmelt-dumb -lCxImage -ljpeg -lpng -lglfw -lGLEW -lGL
+        LIBS += -lstdc++ -lfreetype -lz -lsmeltext -lsmelt-dumb -lIL -ljpeg -lpng -lglfw -lGLEW -lGL
 	}else{
 		INCLUDEPATH += $$(SMELT_DIR)/include/ /usr/include/freetype2
 		LIBS += -L$$(SMELT_DIR)/smelt/glfw/
 		LIBS += -L$$(SMELT_DIR)/extensions/
-		LIBS += -lstdc++ -lfreetype -lz -lsmeltext -lsmelt-dumb -lCxImage -ljpeg -lpng -lglfw -lGLEW -lGL
+        LIBS += -lstdc++ -lfreetype -lz -lsmeltext -lsmelt-dumb -lIL -ljpeg -lpng -lglfw -lGLEW -lGL
 	}
 }
 win32 {

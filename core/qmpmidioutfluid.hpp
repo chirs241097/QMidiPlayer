@@ -3,6 +3,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <unordered_map>
 #include "../include/qmpcorepublic.hpp"
 #include <fluidsynth.h>
 class IFluidSettings
@@ -22,6 +23,9 @@ class qmpMidiOutFluid:public qmpMidiOutDevice,public IFluidSettings
 		fluid_settings_t* settings;
 		fluid_synth_t* synth;
 		fluid_audio_driver_t* adriver;
+		std::vector<std::pair<uint16_t,std::string>> bnk;
+		std::unordered_map<uint16_t,std::vector<std::string>> pst;
+		void update_preset_list();
 	public:
 		qmpMidiOutFluid();
 		~qmpMidiOutFluid();
@@ -36,13 +40,17 @@ class qmpMidiOutFluid:public qmpMidiOutDevice,public IFluidSettings
 		void reset(uint8_t ch);
 		void onMapped(uint8_t ch,int refcnt);
 		void onUnmapped(uint8_t ch,int refcnt);
+		std::vector<std::pair<uint16_t,std::string>> getBankList();
+		std::vector<std::pair<uint8_t,std::string>> getPresets(int bank);
+		std::string getPresetName(uint16_t bank,uint8_t preset);
+		bool getChannelPreset(int ch,uint16_t *bank,uint8_t *preset,std::string &presetname);
+		uint8_t getInitialCCValue(uint8_t cc);
 		//FluidSynth specific stuff
 		void setOptStr(const char* opt,const char* val);
 		void setOptInt(const char* opt,int val);
 		void setOptNum(const char* opt,double val);
 		void loadSFont(const char* path);
 		int getSFCount();
-		std::vector<std::pair<std::pair<int,int>,std::string>> listPresets();
 
 		int getPolyphone();
 		int getMaxPolyphone();

@@ -20,29 +20,25 @@ void qmpPresetSelector::showEvent(QShowEvent *e)
 	memset(presets,0,sizeof(presets));
 	CMidiPlayer *plyr=qmpMainWindow::getInstance()->getPlayer();
 	if(!plyr->fluid()->getSFCount())return e->ignore();
-	std::vector<std::pair<std::pair<int,int>,std::string>>
-		presetlist=plyr->fluid()->listPresets();
-	for(auto &i:presetlist)
-		strcpy(presets[i.first.first][i.first.second],i.second.c_str());
 	ui->lwBankSelect->clear();
 	ui->lwPresetSelect->clear();
-	for(int i=0;i<=128;++i)
-	{
-		int b=0;
-		for(int j=0;j<128;++j)if(strlen(presets[i][j])){b=1;break;}
-		if(b)ui->lwBankSelect->addItem(QString::number(i));
-	}
 	e->accept();
 }
 void qmpPresetSelector::setupWindow(int chid)
 {
 	CMidiPlayer *plyr=qmpMainWindow::getInstance()->getPlayer();
 	if(!plyr->fluid()->getSFCount())return;
-	ch=chid;int b=0,p=0,r;char name[256];
+	ch=chid;int r;char name[256];
+	uint16_t b;uint8_t p;
+	std::string pstname;
 	sprintf(name,"Preset Selection - Channel #%d",ch+1);
 	setWindowTitle(name);
-	plyr->getChannelPreset(chid,&b,&p,name);
-	if(plyr->getChannelOutput(chid)){
+	r=plyr->getChannelOutputDevice(ch)->getChannelPreset(ch,&b,&p,pstname);
+	ui->lwBankSelect->blockSignals(true);
+	ui->lwBankSelect->clear();
+	ui->lwPresetSelect->clear();
+	ui->lwBankSelect->blockSignals(false);
+	if(plyr->getChannelOutputDevice(ch)->getBankList().empty()){
 		ui->lwPresetSelect->setEnabled(false);
 		ui->lwBankSelect->setEnabled(false);
 		ui->spCustomLSB->setEnabled(true);
@@ -58,21 +54,20 @@ void qmpPresetSelector::setupWindow(int chid)
 		ui->spCustomLSB->setEnabled(false);
 		ui->spCustomMSB->setEnabled(false);
 		ui->spCustomPC->setEnabled(false);
-		for(int i=0;i<ui->lwBankSelect->count();++i){
-			sscanf(ui->lwBankSelect->item(i)->text().toStdString().c_str(),"%3d",&r);
-			if(r==b){ui->lwBankSelect->setCurrentRow(i);break;}
-		}
-		r=0;
-		ui->lwPresetSelect->clear();
-		for(int i=0,cr=0;i<128;++i)
-		if(strlen(presets[b][i]))
+		ui->lwBankSelect->blockSignals(true);
+		for(auto&i:plyr->getChannelOutputDevice(ch)->getBankList())
 		{
-			sprintf(name,"%03d %s",i,presets[b][i]);
-			if(i==p)r=cr;
-			ui->lwPresetSelect->addItem(name);
-			cr++;
+			snprintf(name,256,"%03d %s",i.first,i.second.c_str());
+			ui->lwBankSelect->addItem(name);
+			if(i.first==b)ui->lwBankSelect->setCurrentRow(ui->lwBankSelect->count()-1);
 		}
-		ui->lwPresetSelect->setCurrentRow(r);
+		ui->lwBankSelect->blockSignals(false);
+		for(auto&i:plyr->getChannelOutputDevice(ch)->getPresets(b))
+		{
+			snprintf(name,256,"%03d %s",i.first,i.second.c_str());
+			ui->lwPresetSelect->addItem(name);
+			if(i.first==p)ui->lwPresetSelect->setCurrentRow(ui->lwPresetSelect->count()-1);
+		}
 	}
 }
 
@@ -109,14 +104,15 @@ void qmpPresetSelector::on_lwPresetSelect_itemDoubleClicked()
 
 void qmpPresetSelector::on_lwBankSelect_currentRowChanged()
 {
+	fprintf(stderr,"bs cr changed\n");
 	ui->lwPresetSelect->clear();
 	if(!ui->lwBankSelect->currentItem())return;
-	char name[30];int b;
+	char name[256];int b;
 	sscanf(ui->lwBankSelect->currentItem()->text().toStdString().c_str(),"%d",&b);
-	for(int i=0;i<128;++i)
-	if(strlen(presets[b][i]))
+	CMidiPlayer *plyr=qmpMainWindow::getInstance()->getPlayer();
+	for(auto&i:plyr->getChannelOutputDevice(ch)->getPresets(b))
 	{
-		sprintf(name,"%03d %s",i,presets[b][i]);
+		snprintf(name,256,"%03d %s",i.first,i.second.c_str());
 		ui->lwPresetSelect->addItem(name);
 	}
 }

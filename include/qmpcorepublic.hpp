@@ -24,6 +24,8 @@ struct SEvent
 		p1=_p1;p2=_p2;flags=0;
 		if(s)str=std::string(s);else str="";
 	}
+	SEvent(uint32_t _iid,uint32_t _t,uint8_t _tp,uint8_t _p1,uint8_t _p2,std::string s):
+	    iid(_iid),time(_t),type(_tp),p1(_p1),p2(_p2),str(s){}
 	friend bool operator <(const SEvent& a,const SEvent& b){return a.time-b.time?a.time<b.time:a.iid<b.iid;}
 };
 //MIDI Track class
@@ -92,6 +94,11 @@ class qmpMidiOutDevice
 		virtual void reset(uint8_t ch)=0;
 		virtual void onMapped(uint8_t ch,int refcnt)=0;
 		virtual void onUnmapped(uint8_t ch,int refcnt)=0;
+		virtual std::vector<std::pair<uint16_t,std::string>> getBankList()=0;
+		virtual std::vector<std::pair<uint8_t,std::string>> getPresets(int bank)=0;
+		virtual std::string getPresetName(uint16_t bank,uint8_t preset)=0;
+		virtual bool getChannelPreset(int ch,uint16_t *bank,uint8_t *preset,std::string &presetname)=0;
+		virtual uint8_t getInitialCCValue(uint8_t cc)=0;
 		virtual ~qmpMidiOutDevice(){}
 };
 //Main plugin interface.

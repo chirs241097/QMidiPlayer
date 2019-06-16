@@ -94,7 +94,8 @@ int CSMFReader::read_event()//returns 0 if End of Track encountered
 				uint32_t len=read_varlen();char* str=nullptr;
 				if(len<=1024&&len>0)str=new char[len+8];
 				if(str)fread(str,1,len,f);else fseek(f,len,SEEK_CUR);
-				if(str)str[len]='\0';
+				std::string sstr;
+				if(str){str[len]='\0';sstr=std::string(str,len);}
 				switch(metatype)
 				{
 					case 0x00://Sequence Number
@@ -108,24 +109,24 @@ int CSMFReader::read_event()//returns 0 if End of Track encountered
 					return 0;
 					case 0x51://Set Tempo
 						assert(len==3);
-						curTrack->appendEvent(SEvent(curid,curt,type,metatype,0,str));
+						curTrack->appendEvent(SEvent(curid,curt,type,metatype,0,sstr));
 					break;
 					case 0x54://SMTPE offset, not handled.
 						assert(len==5);
 					break;
 					case 0x58://Time signature
 						assert(len==4);
-						curTrack->appendEvent(SEvent(curid,curt,type,metatype,0,str));
+						curTrack->appendEvent(SEvent(curid,curt,type,metatype,0,sstr));
 					break;
 					case 0x59://Key signature
 						assert(len==2);
-						curTrack->appendEvent(SEvent(curid,curt,type,metatype,0,str));
+						curTrack->appendEvent(SEvent(curid,curt,type,metatype,0,sstr));
 					break;
 					case 0x01:case 0x02:case 0x03:
 					case 0x04:case 0x05:case 0x06:
 					case 0x07:case 0x7F:default://text-like meta
 					{
-						curTrack->appendEvent(SEvent(curid,curt,type,metatype,0,str));
+						curTrack->appendEvent(SEvent(curid,curt,type,metatype,0,sstr));
 						if(str&&metatype==0x03&&!ret->title)
 						{
 							ret->title=new char[len+8];
