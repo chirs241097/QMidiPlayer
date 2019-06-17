@@ -1,25 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>qmpPresetSelector</class>
- <widget class="QDialog" name="qmpPresetSelector">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>404</width>
-    <height>300</height>
-   </rect>
-  </property>
+ <widget class="QDialog" name="qmpPresetSelector">\
   <property name="minimumSize">
    <size>
-    <width>404</width>
+    <width>480</width>
     <height>300</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>404</width>
-    <height>300</height>
+    <width>16777215</width>
+    <height>16777215</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -47,7 +39,7 @@
          </property>
          <property name="maximumSize">
           <size>
-           <width>64</width>
+           <width>16777215</width>
            <height>16777215</height>
           </size>
          </property>

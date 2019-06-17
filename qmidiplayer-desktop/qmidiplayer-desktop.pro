@@ -29,7 +29,8 @@ SOURCES += main.cpp\
 	qmpplugin.cpp \
     qmpcustomizewindow.cpp \
     ../core/qmpmidioutrtmidi.cpp \
-    ../core/qmpmidioutfluid.cpp
+    ../core/qmpmidioutfluid.cpp \
+    qmpdevpropdialog.cpp
 
 HEADERS  += qmpmainwindow.hpp \
 	../core/qmpmidiplay.hpp \
@@ -46,7 +47,8 @@ HEADERS  += qmpmainwindow.hpp \
 	qmpplugin.hpp \
     qmpcustomizewindow.hpp \
     ../core/qmpmidioutrtmidi.hpp \
-    ../core/qmpmidioutfluid.hpp
+    ../core/qmpmidioutfluid.hpp \
+    qmpdevpropdialog.hpp
 
 FORMS    += qmpmainwindow.ui \
 	qmpplistwindow.ui \
@@ -57,7 +59,8 @@ FORMS    += qmpmainwindow.ui \
 	qmpinfowindow.ui \
 	qmpsettingswindow.ui \
 	qmphelpwindow.ui \
-    qmpcustomizewindow.ui
+    qmpcustomizewindow.ui \
+    qmpdevpropdialog.ui
 
 TRANSLATIONS += translations/qmp_zh_CN.ts
 DEFINES += BUILD_MACHINE=$${QMAKE_HOST.name}

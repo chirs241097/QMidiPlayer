@@ -1,3 +1,11 @@
+2019-06-17 0.8.7 indev
+Device initialization file implementation (part 1).
+
+Added UI for external device configuration.
+Instrument mapping portion of the device intialization file is now working.
+Fixed a few spots where return value of getChannelPreset() is ignored.
+Fixed layout of the preset selection dialog.
+
 2019-06-16 0.8.7 indev
 Inital implementation of the device properties API.
 

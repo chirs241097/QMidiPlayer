@@ -156,8 +156,14 @@ void qmpChannelsWindow::channelWindowsUpdate()
 		char data[128];
 		std::string nm;
 		uint16_t b;uint8_t p;
-		qmpMainWindow::getInstance()->getPlayer()->getChannelOutputDevice(i)->getChannelPreset(i,&b,&p,nm);
+		CMidiPlayer *plyr=qmpMainWindow::getInstance()->getPlayer();
+		bool r=plyr->getChannelOutputDevice(i)->getChannelPreset(i,&b,&p,nm);
 		sprintf(data,"%03d:%03d %s",b,p,nm.c_str());
+		if(!r)
+		{
+			nm=plyr->getChannelOutputDevice(i)->getPresetName(plyr->getCC(i,0)<<7|plyr->getCC(i,32),plyr->getCC(i,128));
+			sprintf(data,"%03d:%03d:%03d %s",plyr->getCC(i,0),plyr->getCC(i,32),plyr->getCC(i,128),nm.c_str());
+		}
 		if(fused)
 		{
 			if(strcmp((ui->twChannels->item(i,4))->

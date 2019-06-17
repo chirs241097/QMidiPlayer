@@ -34,6 +34,7 @@ void qmpPresetSelector::setupWindow(int chid)
 	sprintf(name,"Preset Selection - Channel #%d",ch+1);
 	setWindowTitle(name);
 	r=plyr->getChannelOutputDevice(ch)->getChannelPreset(ch,&b,&p,pstname);
+	if(!r){b=plyr->getCC(ch,0)<<7|plyr->getCC(ch,32);p=plyr->getCC(ch,128);}
 	ui->lwBankSelect->blockSignals(true);
 	ui->lwBankSelect->clear();
 	ui->lwPresetSelect->clear();
@@ -80,7 +81,14 @@ void qmpPresetSelector::on_pbOk_clicked()
 {
 	CMidiPlayer *plyr=qmpMainWindow::getInstance()->getPlayer();
 	if(plyr->getChannelOutput(ch)){
+		if(ui->spCustomMSB->isEnabled())
 		plyr->setChannelPreset(ch,(ui->spCustomMSB->value()<<7)|ui->spCustomLSB->value(),ui->spCustomPC->value());
+		else
+		{
+			int b=ui->lwBankSelect->currentItem()->text().split(' ').first().toInt();
+			int p=ui->lwPresetSelect->currentItem()->text().split(' ').first().toInt();
+			plyr->setChannelPreset(ch,b,p);
+		}
 	}
 	else{
 		if(!ui->lwBankSelect->currentItem()||!ui->lwPresetSelect->currentItem())return (void)close();

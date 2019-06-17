@@ -85,7 +85,12 @@ void qmpMainWindow::init()
 			rtmididev=new qmpRtMidiManager();
 			rtmididev->createDevices();
 			std::vector<std::pair<qmpMidiOutRtMidi*,std::string>> rtdev=rtmididev->getDevices();
-			for(auto &i:rtdev)player->registerMidiOutDevice(i.first,i.second);
+			for(auto &i:rtdev)
+			{
+				player->registerMidiOutDevice(i.first,i.second);
+				QString di=qmpSettingsWindow::getSettingsIntf()->value(QString("DevInit/%1").arg(QString::fromStdString(i.second)),"").toString();
+				if(di.length())i.first->setInitializerFile(di.toUtf8().data());
+			}
 			reloadsynf=new qmpReloadSynthFunc(this);
 			playerSetup(player->fluid());player->fluid()->deviceInit();
 			loadSoundFont(player->fluid());

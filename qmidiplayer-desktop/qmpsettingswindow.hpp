@@ -14,6 +14,7 @@
 #include <QFormLayout>
 #include "qmpplugin.hpp"
 #include "qmpcustomizewindow.hpp"
+#include "qmpdevpropdialog.hpp"
 
 namespace Ui {
 	class qmpSettingsWindow;
@@ -130,6 +131,8 @@ class qmpSettingsWindow:public QDialog
 
 		void on_pbCustomizeAct_clicked();
 
+		void on_pbExtDevSetup_clicked();
+
 	private:
 		Ui::qmpSettingsWindow *ui;
 		void settingsUpdate();
@@ -137,6 +140,7 @@ class qmpSettingsWindow:public QDialog
 		std::map<std::string,QGridLayout*> customOptPages;
 		void updateCustomOptions();
 		qmpCustomizeWindow *cw;
+		qmpDevPropDialog *dps;
 		static QSettings *settings;
 		static QComboBox* outwidget;
 	public:

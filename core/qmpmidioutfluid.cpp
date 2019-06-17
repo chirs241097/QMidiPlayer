@@ -123,7 +123,7 @@ std::vector<std::pair<uint16_t,std::string>> qmpMidiOutFluid::getBankList()
 {
 	return bnk;
 }
-std::vector<std::pair<uint8_t,std::string>> qmpMidiOutFluid::getPresets(int bank)
+std::vector<std::pair<uint8_t,std::string>> qmpMidiOutFluid::getPresets(uint16_t bank)
 {
 	std::vector<std::pair<uint8_t,std::string>> ret;
 	if(pst.find(bank)==pst.end())return ret;
@@ -137,6 +137,7 @@ std::vector<std::pair<uint8_t,std::string>> qmpMidiOutFluid::getPresets(int bank
 std::string qmpMidiOutFluid::getPresetName(uint16_t bank,uint8_t preset)
 {
 	if(pst.find(bank)==pst.end())return "";
+	//should consult fluidsynth instead? (4 bank mapping methods)
 	return pst[bank][preset];
 }
 bool qmpMidiOutFluid::getChannelPreset(int ch,uint16_t *bank,uint8_t *preset,std::string &presetname)

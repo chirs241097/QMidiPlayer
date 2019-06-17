@@ -95,7 +95,7 @@ class qmpMidiOutDevice
 		virtual void onMapped(uint8_t ch,int refcnt)=0;
 		virtual void onUnmapped(uint8_t ch,int refcnt)=0;
 		virtual std::vector<std::pair<uint16_t,std::string>> getBankList()=0;
-		virtual std::vector<std::pair<uint8_t,std::string>> getPresets(int bank)=0;
+		virtual std::vector<std::pair<uint8_t,std::string>> getPresets(uint16_t bank)=0;
 		virtual std::string getPresetName(uint16_t bank,uint8_t preset)=0;
 		virtual bool getChannelPreset(int ch,uint16_t *bank,uint8_t *preset,std::string &presetname)=0;
 		virtual uint8_t getInitialCCValue(uint8_t cc)=0;

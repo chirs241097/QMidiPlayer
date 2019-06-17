@@ -30,11 +30,12 @@ qmpSettingsWindow::qmpSettingsWindow(QWidget *parent) :
 	ui->pbDown->setIcon(QIcon(getThemedIcon(":/img/down.svg")));
 	ui->pbUp->setIcon(QIcon(getThemedIcon(":/img/up.svg")));
 	cw=new qmpCustomizeWindow(this);
+	dps=new qmpDevPropDialog(this);
 }
 
 qmpSettingsWindow::~qmpSettingsWindow()
 {
-	delete cw;
+	delete cw;delete dps;
 	delete settings;settings=nullptr;
 	delete ui;
 }
@@ -739,4 +740,9 @@ void QFileEdit::chooseFile()
 {
 	QString s=QFileDialog::getOpenFileName(nullptr,tr("Select a file"),QFileInfo(text()).dir().absolutePath());
 	if(s.length())setText(s);
+}
+
+void qmpSettingsWindow::on_pbExtDevSetup_clicked()
+{
+	dps->launch();
 }

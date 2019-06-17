@@ -1,6 +1,7 @@
 #include <cctype>
 #include <cstdio>
 #include <cstring>
+#include <algorithm>
 #include <deque>
 #include <vector>
 #include RT_MIDI_H
@@ -132,6 +133,27 @@ qmpDeviceInitializer* qmpDeviceInitializer::parse(const char* path)
 				}
 			}
 		}
+		else if(st_inmapping)
+		{
+			if(b.front()=='['&&b.back()==']')
+			{
+				b=b.substr(1,b.length()-2);
+				split(b,':',tok);
+				if(tok.size()<3)err("invalid bank")
+				cmsb=strtol(tok[0].c_str(),nullptr,10);
+				clsb=strtol(tok[1].c_str(),nullptr,10);
+				ret->banks[cmsb<<7|clsb]=BankStore{{},tok[2]};
+			}
+			else if(b.find('=')!=std::string::npos)
+			{
+				if(!~cmsb||!~clsb)err("inst outside a bank")
+				split(b,'=',tok);
+				if(tok.size()<2)err("invalid inst")
+				int p=strtol(tok[0].c_str(),nullptr,10);
+				ret->banks[cmsb<<7|clsb].presets[p]=tok[1];
+			}
+			else err("invalid mapping line")
+		}
 	}
 #undef err
 
@@ -143,10 +165,12 @@ qmpMidiOutRtMidi::qmpMidiOutRtMidi(unsigned _portid)
 {
 	portid=_portid;
 	outport=nullptr;
+	devinit=nullptr;
 }
 qmpMidiOutRtMidi::~qmpMidiOutRtMidi()
 {
 	if(!outport)return;
+	if(devinit){delete devinit;devinit=nullptr;}
 	if(outport->isPortOpen())outport->closePort();
 	delete outport;outport=nullptr;
 }
@@ -229,18 +253,44 @@ void qmpMidiOutRtMidi::onUnmapped(uint8_t ch,int refcnt)
 }
 std::vector<std::pair<uint16_t,std::string>> qmpMidiOutRtMidi::getBankList()
 {
+	if(!devinit)return{};
+	std::vector<std::pair<uint16_t,std::string>> ret;
+	for(auto&i:devinit->banks)
+		ret.push_back({i.first,i.second.bankname});
+	std::sort(ret.begin(),ret.end(),[](std::pair<uint16_t,std::string>&a,std::pair<uint16_t,std::string>&b){return a.first<b.first;});
+	return ret;
 }
-std::vector<std::pair<uint8_t,std::string>> qmpMidiOutRtMidi::getPresets(int bank)
+std::vector<std::pair<uint8_t,std::string>> qmpMidiOutRtMidi::getPresets(uint16_t bank)
 {
+	if(!devinit)return{};
+	if(devinit->banks.find(bank)==devinit->banks.end())return{};
+	std::vector<std::pair<uint8_t,std::string>> ret;
+	for(auto&i:devinit->banks[bank].presets)
+		ret.push_back({i.first,i.second});
+	std::sort(ret.begin(),ret.end(),[](std::pair<uint8_t,std::string>&a,std::pair<uint8_t,std::string>&b){return a.first<b.first;});
+	return ret;
 }
 std::string qmpMidiOutRtMidi::getPresetName(uint16_t bank,uint8_t preset)
 {
+	if(!devinit)return"";
+	if(devinit->banks.find(bank)!=devinit->banks.end())
+	if(devinit->banks[bank].presets.find(preset)!=devinit->banks[bank].presets.end())
+		return devinit->banks[bank].presets[preset];
+	return"";
 }
 bool qmpMidiOutRtMidi::getChannelPreset(int ch,uint16_t *bank,uint8_t *preset,std::string &presetname)
 {
+	//This ain't a state-tracking device
+	return false;
 }
 uint8_t qmpMidiOutRtMidi::getInitialCCValue(uint8_t cc)
 {
+	if(!devinit)return 0;//Nope!
+}
+void qmpMidiOutRtMidi::setInitializerFile(const char* path)
+{
+	if(devinit)delete devinit;
+	devinit=qmpDeviceInitializer::parse(path);
 }
 
 RtMidiOut* qmpRtMidiManager::dummy=nullptr;
