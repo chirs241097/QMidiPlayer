@@ -1,3 +1,9 @@
+2019-06-30 0.8.7 indev
+Use splitter in preset selection dialog.
+
+Device initialization settings are no longer lost if QMidiPlayer starts with
+the device disconnected.
+
 2019-06-17 0.8.7 indev
 Device initialization file implementation (part 1).
 

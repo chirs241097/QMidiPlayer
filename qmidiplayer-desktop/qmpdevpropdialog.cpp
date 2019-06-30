@@ -73,7 +73,16 @@ void qmpDevPropDialog::setupRow(const QString&dn,const QString&din)
 			if(s==QString::fromStdString(ds)){conn=true;break;}
 		((QCheckBox*)ui->twProps->cellWidget(r,1))->setChecked(conn);
 	});
-	if(dn.length())cb->setCurrentText(dn);
+	if(dn.length())
+	{
+		cb->setCurrentText(dn);
+		if(cb->currentText()!=dn)
+		{
+			cb->setEditable(true);
+			cb->setCurrentText(dn);
+			cb->setEnabled(false);
+		}
+	}
 	emit cb->currentTextChanged(cb->currentText());
 	connect(pb,&QPushButton::clicked,this,[this,lb,fw]{
 		lb->setText(QFileDialog::getOpenFileUrl(this,"Select Device Initialization File",QUrl()).path());
