@@ -112,7 +112,6 @@ void qmpPresetSelector::on_lwPresetSelect_itemDoubleClicked()
 
 void qmpPresetSelector::on_lwBankSelect_currentRowChanged()
 {
-	fprintf(stderr,"bs cr changed\n");
 	ui->lwPresetSelect->clear();
 	if(!ui->lwBankSelect->currentItem())return;
 	char name[256];int b;

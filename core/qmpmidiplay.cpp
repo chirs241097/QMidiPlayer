@@ -176,7 +176,7 @@ void CMidiPlayer::prePlayInit()
 	playerPanic(true);
 	for(size_t i=0;i<mididev.size();++i)
 	if(mididev[i].refcnt)
-	for(int j=0;j<16;++j)mididev[i].dev->reset(j);
+	mididev[i].dev->reset(0xFF);
 }
 void CMidiPlayer::playEvents()
 {
@@ -241,14 +241,10 @@ void CMidiPlayer::fileTimer2Pass()
 	memset(ccc,0,sizeof(ccc));memset(rpnid,0xFF,sizeof(rpnid));memset(rpnval,0xFF,sizeof(rpnval));
 	for(int i=0;i<16;++i)
 	{
-		ccc[i][7]=100;ccc[i][8]=64;ccc[i][10]=64;
-		ccc[i][11]=127;ccc[i][71]=64;ccc[i][72]=64;
-		ccc[i][73]=64;ccc[i][74]=64;ccc[i][75]=64;
-		ccc[i][76]=64;ccc[i][77]=64;ccc[i][78]=64;
+		memset(ccc[i],0xFF,128*sizeof(uint32_t));
 		ccc[i][131]=ctempo;ccc[i][132]=0x04021808;
 		ccc[i][133]=0;ccc[i][134]=2;
 	}
-	ccc[9][0]=127;
 	for(int i=0;i<16;++i)for(int j=0;j<135;++j)
 		ccstamps[0][i][j]=ccc[i][j];
 	for(uint32_t eptr=0,ct=getEvent(0)->time;eptr<ecnt;)
@@ -290,13 +286,6 @@ CMidiPlayer::CMidiPlayer()
 	memset(mappedoutput,0,sizeof(mappedoutput));
 	mididev[0].refcnt=16;
 	memset(chstatus,0,sizeof(chstatus));
-	for(int i=0;i<16;++i)
-	{
-		chstatus[i][7]=100;chstatus[i][11]=127;
-		chstatus[i][10]=chstatus[i][71]=chstatus[i][72]=
-		chstatus[i][73]=chstatus[i][74]=chstatus[i][75]=
-		chstatus[i][76]=chstatus[i][77]=chstatus[i][78]=64;
-	}
 #ifdef _WIN32
 	QueryPerformanceFrequency((LARGE_INTEGER*)&pf);
 #endif
@@ -358,15 +347,9 @@ void CMidiPlayer::playerInit()
 	for(int i=0;i<16;++i)pbr[i]=2,pbv[i]=8192;
 	sendSysEx=true;memset(rpnid,0xFF,sizeof(rpnid));memset(rpnval,0xFF,sizeof(rpnval));
 	memset(chstatus,0,sizeof(chstatus));
-	chstatus[9][0]=127;
 	for(int i=0;i<16;++i)
 	{
-		chstatus[i][7]=100;chstatus[i][8]=64;chstatus[i][11]=127;
-		chstatus[i][10]=chstatus[i][71]=chstatus[i][72]=
-		chstatus[i][73]=chstatus[i][74]=chstatus[i][75]=
-		chstatus[i][76]=chstatus[i][77]=chstatus[i][78]=64;
-		for(int cc=0;cc<124;++cc)//Temporary fix before introduction of per-device initialization profile
-			mididev[mappedoutput[i]].dev->basicMessage(0xB0|i,cc,chstatus[i][cc]);
+		memset(chstatus[i],0xff,128*sizeof(uint8_t));
 	}
 }
 void CMidiPlayer::playerDeinit()
@@ -392,9 +375,12 @@ void CMidiPlayer::setTCeptr(uint32_t ep,uint32_t st)
 		qmpMidiOutDevice* dest=mididev[mappedoutput[i]].dev;
 		for(int j=0;j<120;++j)
 		{
-			internalFluid->basicMessage(0xB0|i,j,ccstamps[st][i][j]);
-			dest->basicMessage(0xB0|i,j,ccstamps[st][i][j]);
-			chstatus[i][j]=ccstamps[st][i][j];
+			if(~ccstamps[st][i][j])
+			{
+				internalFluid->basicMessage(0xB0|i,j,ccstamps[st][i][j]);
+				dest->basicMessage(0xB0|i,j,ccstamps[st][i][j]);
+				chstatus[i][j]=ccstamps[st][i][j];
+			}
 		}
 		internalFluid->basicMessage(0xC0|i,ccstamps[st][i][128],0);
 		dest->basicMessage(0xC0|i,ccstamps[st][i][128],0);
@@ -459,6 +445,8 @@ bool CMidiPlayer::getChannelMask(int ch)
 {return((mute>>ch)&1)||(solo&&!((solo>>ch)&1));}
 int CMidiPlayer::getCC(int ch,int id)
 {
+	if(chstatus[ch][id]==0xff)
+		return getChannelOutputDevice(ch)->getInitialCCValue(id);
 	return chstatus[ch][id];
 }
 void CMidiPlayer::setCC(int ch,int id,int val)

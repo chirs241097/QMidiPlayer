@@ -26,7 +26,12 @@ void qmpChannelEditor::setupWindow(int chid)
 	setWindowTitle(tr("Channel Parameter Editor - Channel #%1").arg(ch+1));
 	CMidiPlayer* player=qmpMainWindow::getInstance()->getPlayer();
 	uint16_t b;uint8_t p;std::string pstn;
-	player->getChannelOutputDevice(ch)->getChannelPreset(ch,&b,&p,pstn);
+	if(!player->getChannelOutputDevice(ch)->getChannelPreset(ch,&b,&p,pstn))
+	{
+		b=player->getCC(ch,0)<<7|player->getCC(ch,32);
+		p=player->getCC(ch,128);
+		pstn=player->getChannelOutputDevice(ch)->getPresetName(b,p);
+	}
 	ui->lbPresetName->setText(pstn.c_str());
 	sprintf(str,"BK: %03d",b);ui->lbBank->setText(str);
 	sprintf(str,"PC: %03d",p);ui->lbPreset->setText(str);

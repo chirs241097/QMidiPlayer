@@ -100,6 +100,7 @@ void qmpMidiOutFluid::panic(uint8_t ch)
 }
 void qmpMidiOutFluid::reset(uint8_t ch)
 {
+	if(!~ch){fluid_synth_system_reset(synth);return;}
 	this->panic(ch);
 	for(int i=0;i<128;++i)
 		fluid_synth_cc(synth,ch,i,0);

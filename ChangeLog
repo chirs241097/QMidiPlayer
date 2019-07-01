@@ -1,3 +1,8 @@
+2019-07-01 0.8.7 indev
+Actually send initialization sequence to external devices.
+
+Replace hardcoded initial CC values with values from device property API.
+
 2019-06-30 0.8.7 indev
 Use splitter in preset selection dialog.
 

@@ -229,8 +229,26 @@ void qmpMidiOutRtMidi::panic(uint8_t ch)
 }
 void qmpMidiOutRtMidi::reset(uint8_t ch)
 {
-	basicMessage(0xB0|ch,121,0);
-	basicMessage(0xB0|ch,123,0);
+	if(ch==0xFF)
+	{
+		if(devinit)
+		{
+			for(auto&msg:devinit->initseq.eventList)
+			{
+				if((msg.type&0xF0)==0xF0)
+					extendedMessage(msg.str.length(),msg.str.data());
+				else
+				{
+					basicMessage(msg.type,msg.p1,msg.p2);
+				}
+			}
+		}
+	}
+	else
+	{
+		basicMessage(0xB0|ch,121,0);
+		basicMessage(0xB0|ch,123,0);
+	}
 }
 void qmpMidiOutRtMidi::onMapped(uint8_t,int)
 {
@@ -286,6 +304,7 @@ bool qmpMidiOutRtMidi::getChannelPreset(int ch,uint16_t *bank,uint8_t *preset,st
 uint8_t qmpMidiOutRtMidi::getInitialCCValue(uint8_t cc)
 {
 	if(!devinit)return 0;//Nope!
+	return devinit->initv[cc];
 }
 void qmpMidiOutRtMidi::setInitializerFile(const char* path)
 {
