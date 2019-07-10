@@ -244,7 +244,7 @@ void qmpMainWindow::updateWidgets()
 		}
 	}
 	while(!player->isFinished()&&player->getTCeptr()>player->getStamp(ui->hsTimer->value())
-		  &&ui->hsTimer->value()<=100&&!dragging)
+		  &&ui->hsTimer->value()<100&&!dragging)
 		ui->hsTimer->setValue(ui->hsTimer->value()+1);
 	if(playing)
 	{
