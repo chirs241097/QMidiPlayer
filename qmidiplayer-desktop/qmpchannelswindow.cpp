@@ -1,20 +1,252 @@
 #include <cstdio>
+#include <functional>
 #include <QCheckBox>
 #include <QPushButton>
 #include <QComboBox>
+#include <QTimer>
 #include "qmpchannelswindow.hpp"
 #include "ui_qmpchannelswindow.h"
 #include "qmpmainwindow.hpp"
+
+qmpChannelsModel::qmpChannelsModel(QObject*parent):QAbstractTableModel(parent)
+{
+	evh=qmpMainWindow::getInstance()->getPlayer()->registerEventHandler(
+		[this](const void* _e,void*){
+			if(!updatequeued)
+			{
+				updatequeued=true;
+				const SEvent *e=(const SEvent*)(_e);
+				if((e->p1&0xF0)==0xC0)
+					emit dataChanged(index(e->p1&0xF0,4),index(e->p1&0xF0,4),{Qt::ItemDataRole::DisplayRole});
+				QMetaObject::invokeMethod(this, &qmpChannelsModel::updateChannelActivity, Qt::ConnectionType::QueuedConnection);
+			}
+		}
+	,nullptr);
+	QTimer*t=new QTimer(this);
+	t->setInterval(500);
+	t->setSingleShot(false);
+	connect(t,&QTimer::timeout,[this](){emit this->dataChanged(this->index(0,4),this->index(15,4),{Qt::ItemDataRole::DisplayRole});});
+	memset(mute,0,sizeof(mute));
+	memset(solo,0,sizeof(solo));
+}
+int qmpChannelsModel::columnCount(const QModelIndex&parent)const
+{return parent.isValid()?0:6;}
+int qmpChannelsModel::rowCount(const QModelIndex&parent)const
+{return parent.isValid()?0:16;}
+QModelIndex qmpChannelsModel::parent(const QModelIndex&child)const
+{
+	Q_UNUSED(child)
+	return QModelIndex();
+}
+QVariant qmpChannelsModel::data(const QModelIndex&index,int role)const
+{
+	switch(index.column())
+	{
+		case 0:
+			if(role==Qt::ItemDataRole::DecorationRole)
+			{
+				using namespace std::chrono_literals;
+				bool lit=(std::chrono::system_clock::now()-qmpMainWindow::getInstance()->getPlayer()->getLastEventTS()[index.row()])<50ms;
+				return lit?QIcon(":/img/ledon.svg"):QIcon(":/img/ledoff.svg");
+			}
+		break;
+		case 1:
+			if(role==Qt::ItemDataRole::CheckStateRole)
+				return mute[index.row()]?Qt::CheckState::Checked:Qt::CheckState::Unchecked;
+		break;
+		case 2:
+			if(role==Qt::ItemDataRole::CheckStateRole)
+				return solo[index.row()]?Qt::CheckState::Checked:Qt::CheckState::Unchecked;
+		break;
+		case 3:
+			if(role==Qt::ItemDataRole::DisplayRole)
+			{
+				std::vector<std::string> devs=qmpMainWindow::getInstance()->getPlayer()->getMidiOutDevices();
+				return QString::fromStdString(devs[qmpMainWindow::getInstance()->getPlayer()->getChannelOutput(index.row())]);
+			}
+		break;
+		case 4:
+		{
+			if(role==Qt::ItemDataRole::DisplayRole)
+			{
+				int ch=index.row();
+				uint16_t b;uint8_t p;
+				std::string nm;
+				char data[256];
+				CMidiPlayer *plyr=qmpMainWindow::getInstance()->getPlayer();
+				bool r=plyr->getChannelOutputDevice(ch)->getChannelPreset(ch,&b,&p,nm);
+				sprintf(data,"%03d:%03d %s",b,p,nm.c_str());
+				if(!r)
+				{
+					nm=plyr->getChannelOutputDevice(ch)->getPresetName(plyr->getCC(ch,0)<<7|plyr->getCC(ch,32),plyr->getCC(ch,128));
+					sprintf(data,"%03d:%03d:%03d %s",plyr->getCC(ch,0),plyr->getCC(ch,32),plyr->getCC(ch,128),nm.c_str());
+				}
+				return QString(data);
+			}
+		}
+		break;
+		case 5:
+			if(role==Qt::ItemDataRole::DisplayRole)
+				return "...";
+			if(role==Qt::ItemDataRole::TextAlignmentRole)
+				return Qt::AlignmentFlag::AlignCenter;
+		break;
+	}
+	return QVariant();
+}
+QVariant qmpChannelsModel::headerData(int section,Qt::Orientation orientation,int role)const
+{
+	if(role!=Qt::ItemDataRole::DisplayRole)return QVariant();
+	if(orientation==Qt::Orientation::Vertical)
+		return section+1;
+	switch(section)
+	{
+		case 0:return QString("A");
+		case 1:return QString("M");
+		case 2:return QString("S");
+		case 3:return QString("Device");
+		case 4:return QString("Preset");
+		case 5:return QString("...");
+	}
+	return QString();
+}
+Qt::ItemFlags qmpChannelsModel::flags(const QModelIndex&idx)const
+{
+	Qt::ItemFlags ret=Qt::ItemFlag::ItemIsEnabled|Qt::ItemFlag::ItemIsSelectable;
+	if(idx.column()==1||idx.column()==2)
+		ret|=Qt::ItemFlag::ItemIsUserCheckable;
+	if(idx.column()==3)
+		ret|=Qt::ItemFlag::ItemIsEditable;
+	return ret;
+}
+void qmpChannelsModel::updateChannelActivity()
+{
+	emit dataChanged(index(0,0),index(15,0),{Qt::ItemDataRole::DecorationRole});
+	updatequeued=false;
+}
+void qmpChannelsModel::channelMSClicked(const QModelIndex&idx)
+{
+	bool*x[3]={nullptr,mute,solo};
+	if(x[idx.column()][idx.row()]^=1)
+		x[3-idx.column()][idx.row()]=0;
+	qmpMainWindow::getInstance()->getPlayer()->setMute(idx.row(),mute[idx.row()]);
+	qmpMainWindow::getInstance()->getPlayer()->setSolo(idx.row(),solo[idx.row()]);
+	emit dataChanged(index(idx.row(),1),index(idx.row(),2),{Qt::ItemDataRole::CheckStateRole});
+}
+void qmpChannelsModel::channelMSClearAll(int type)
+{
+	if(type==1)
+	{
+		memset(mute,0,sizeof(mute));
+		for(int i=0;i<16;++i)
+			qmpMainWindow::getInstance()->getPlayer()->setMute(i,0);
+		emit dataChanged(index(0,1),index(15,1),{Qt::ItemDataRole::CheckStateRole});
+	}
+	if(type==2)
+	{
+		memset(solo,0,sizeof(solo));
+		for(int i=0;i<16;++i)
+			qmpMainWindow::getInstance()->getPlayer()->setSolo(i,0);
+		emit dataChanged(index(0,2),index(15,2),{Qt::ItemDataRole::CheckStateRole});
+	}
+}
+
+qmpDeviceItemDelegate::qmpDeviceItemDelegate(QWidget*parent):QStyledItemDelegate(parent),par(parent)
+{}
+void qmpDeviceItemDelegate::paint(QPainter*painter,const QStyleOptionViewItem&option,const QModelIndex&index)const
+{
+	QStyleOptionViewItem opt;
+	initStyleOption(&opt,index);
+	QStyleOptionComboBox socb;
+	socb.currentText=opt.text;
+	socb.editable=false;
+	socb.rect=option.rect;
+	par->style()->drawComplexControl(QStyle::ComplexControl::CC_ComboBox,&socb,painter);
+	par->style()->drawControl(QStyle::CE_ComboBoxLabel,&socb,painter);
+}
+QSize qmpDeviceItemDelegate::sizeHint(const QStyleOptionViewItem&option,const QModelIndex&index)const
+{
+	QStyleOptionViewItem opt;
+	initStyleOption(&opt,index);
+	QStyleOptionComboBox socb;
+	socb.currentText=opt.text;
+	socb.editable=false;
+	socb.rect=option.rect;
+	QSize sz=par->fontMetrics().size(Qt::TextFlag::TextSingleLine,socb.currentText);
+	return par->style()->sizeFromContents(QStyle::ContentsType::CT_ComboBox,&socb,sz);
+}
+QWidget* qmpDeviceItemDelegate::createEditor(QWidget*parent,const QStyleOptionViewItem&option,const QModelIndex&index)const
+{
+	Q_UNUSED(option)
+	Q_UNUSED(index)
+	QComboBox *cb=new QComboBox(parent);
+	cb->setEditable(false);
+	return cb;
+}
+void qmpDeviceItemDelegate::setEditorData(QWidget*widget,const QModelIndex&index)const
+{
+	/*
+	 * We want to quit editing as soon as the popup of the combobox is closed.
+	 * Unfortunately QTableView does not do that. And I don't feel like sub-classing
+	 * it. So here are some dirty tricks to make it work that way.
+	 */
+	QComboBox *cb=qobject_cast<QComboBox*>(widget);
+	QSignalBlocker sblk(cb);
+	cb->clear();
+	std::vector<std::string> devs=qmpMainWindow::getInstance()->getPlayer()->getMidiOutDevices();
+	for(auto s:devs)
+		cb->addItem(QString::fromStdString(s));
+	cb->setCurrentIndex(qmpMainWindow::getInstance()->getPlayer()->getChannelOutput(index.row()));
+	cb->showPopup();
+	connect(cb,static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),[this,index,cb](int id){
+		QTableView*pv=qobject_cast<QTableView*>(this->parent());
+		qmpMainWindow::getInstance()->getPlayer()->setChannelOutput(index.row(),id);
+		emit pv->model()->dataChanged(index,index,{Qt::DisplayRole});
+		cb->hidePopup();
+	});
+}
+void qmpDeviceItemDelegate::setModelData(QWidget*editor,QAbstractItemModel*model,const QModelIndex&index)const
+{
+	QComboBox *cb=qobject_cast<QComboBox*>(editor);
+	qmpMainWindow::getInstance()->getPlayer()->setChannelOutput(index.row(),cb->currentIndex());
+	emit model->dataChanged(index,index,{Qt::DisplayRole});
+}
+void qmpDeviceItemDelegate::updateEditorGeometry(QWidget*editor,const QStyleOptionViewItem&option,const QModelIndex&index)const
+{
+	Q_UNUSED(index)
+	editor->setGeometry(option.rect);
+}
 
 qmpChannelsWindow::qmpChannelsWindow(QWidget *parent) :
 	QWidget(parent,Qt::Dialog),
 	ui(new Ui::qmpChannelsWindow)
 {
 	ui->setupUi(this);
+	ui->tvChannels->setHorizontalHeader(new QHeaderView(Qt::Orientation::Horizontal));
+	ui->tvChannels->setModel(chmodel=new qmpChannelsModel);
+	ui->tvChannels->setItemDelegateForColumn(3,new qmpDeviceItemDelegate(ui->tvChannels));
+	ui->tvChannels->setAlternatingRowColors(true);
+	ui->tvChannels->setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
+	ui->tvChannels->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeMode::ResizeToContents);
+	ui->tvChannels->horizontalHeader()->setSectionResizeMode(4, QHeaderView::ResizeMode::Stretch);
+	connect(ui->tvChannels,&QTableView::clicked,[this](const QModelIndex&idx){
+		if(idx.column()==1||idx.column()==2)
+			this->chmodel->channelMSClicked(idx);
+		if(idx.column()==3)
+			this->ui->tvChannels->edit(idx);
+		if(idx.column()==5)
+			this->showChannelEditorWindow(idx.row());
+	});
+	connect(ui->tvChannels,&QTableView::activated,[this](const QModelIndex&idx){
+		if(idx.column()==4)
+		{
+			pselectw->show();
+			pselectw->setupWindow(idx.row());
+		}
+	});
 	pselectw=new qmpPresetSelector(this);
 	ceditw=new qmpChannelEditor(this);
 	cha=new QIcon(":/img/ledon.svg");chi=new QIcon(":/img/ledoff.svg");
-	fused=callbacksc=cbcnt=0;
 	eh=qmpMainWindow::getInstance()->getPlayer()->registerEventHandler(
 		[this](const void *ee,void*){
 			const SEvent *e=(const SEvent*)ee;
@@ -22,7 +254,6 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent) :
 				emit this->noteOn();
 		}
 	,nullptr);
-	connect(this,&qmpChannelsWindow::noteOn,this,&qmpChannelsWindow::updateChannelActivity);
 	std::vector<std::string> devs=qmpMainWindow::getInstance()->getPlayer()->getMidiOutDevices();
 	size_t devc=devs.size();
 	//We setup default output here...
@@ -34,50 +265,18 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent) :
 				value("Midi/DefaultOutput","Internal FluidSynth").toString()))
 			qmpSettingsWindow::getDefaultOutWidget()->setCurrentIndex(i);
 	}
-	qmpSettingsWindow::getSettingsIntf()->setValue("Midi/DefaultOutput",
-			qmpSettingsWindow::getDefaultOutWidget()->currentText());
-	qmpSettingsWindow::getSettingsIntf();
-	for(int i=0;i<16;++i)
+	for(int ch=0;ch<16;++ch)
 	{
-		ui->twChannels->setItem(i,0,new QTableWidgetItem());
-		ui->twChannels->item(i,0)->setIcon(*chi);
-		ui->twChannels->item(i,0)->setFlags(ui->twChannels->item(i,0)->flags()^Qt::ItemIsEditable);
-		ui->twChannels->setCellWidget(i,1,new QCheckBox(""));
-		connect(ui->twChannels->cellWidget(i,1),SIGNAL(stateChanged(int)),this,SLOT(channelMSChanged()));
-		ui->twChannels->setCellWidget(i,2,new QCheckBox(""));
-		connect(ui->twChannels->cellWidget(i,2),SIGNAL(stateChanged(int)),this,SLOT(channelMSChanged()));
-		ui->twChannels->setCellWidget(i,3,new QDCComboBox());
-		QDCComboBox *cb=(QDCComboBox*)ui->twChannels->cellWidget(i,3);
-		cb->setID(i);
-		cb->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Fixed);
 		for(size_t j=0;j<devc;++j)
 		{
-			cb->addItem(devs[j].c_str());
 			if(!qmpSettingsWindow::getSettingsIntf()->
 					value("Midi/DefaultOutput","Internal FluidSynth").toString().compare(
 					QString(devs[j].c_str())))
-			{
-				cb->setCurrentIndex(j);
-				changeMidiMapping(i,j);
-			}
+				qmpMainWindow::getInstance()->getPlayer()->setChannelOutput(ch,j);
 		}
-		if(qmpSettingsWindow::getSettingsIntf()->value("Midi/DisableMapping",0).toInt())
-			cb->setEnabled(false);
-		connect(cb,SIGNAL(onChange(int,int)),this,SLOT(changeMidiMapping(int,int)));
-		ui->twChannels->setItem(i,4,new QTableWidgetItem(""));
-		ui->twChannels->item(i,4)->setFlags(Qt::ItemIsEnabled);
-		ui->twChannels->setCellWidget(i,5,new QDCPushButton("..."));
-		((QDCPushButton*)ui->twChannels->cellWidget(i,5))->setID(i);
-		connect(ui->twChannels->cellWidget(i,5),SIGNAL(onClick(int)),this,SLOT(showChannelEditorWindow(int)));
 	}
-	connect(ui->twChannels,SIGNAL(cellDoubleClicked(int,int)),this,SLOT(showPresetWindow(int,int)));
-	ui->twChannels->setColumnWidth(0,24);
-	ui->twChannels->setColumnWidth(1,24);
-	ui->twChannels->setColumnWidth(2,24);
-	ui->twChannels->setColumnWidth(3,192);
-	ui->twChannels->setColumnWidth(4,208);
-	ui->twChannels->setColumnWidth(5,32);
-	ui->twChannels->installEventFilter(this);
+	qmpSettingsWindow::getSettingsIntf()->setValue("Midi/DefaultOutput",
+			qmpSettingsWindow::getDefaultOutWidget()->currentText());
 	qmpMainWindow::getInstance()->registerFunctionality(
 		chnlf=new qmpChannelFunc(this),
 		std::string("Channel"),
@@ -118,82 +317,6 @@ void qmpChannelsWindow::closeEvent(QCloseEvent *event)
 	event->accept();
 }
 
-void qmpChannelsWindow::resetAcitivity()
-{
-	for(int i=0;i<16;++i)ui->twChannels->item(i,0)->setIcon(*chi);
-}
-
-void qmpChannelsWindow::updateChannelActivity()
-{
-	++callbacksc;
-	for(int i=0;i<16;++i)
-	ui->twChannels->item(i,0)->setIcon(
-	qmpMainWindow::getInstance()->getPlayer()->getChstates()[i]?*cha:*chi);
-}
-
-void qmpChannelsWindow::channelWindowsUpdate()
-{
-	if(qmpMainWindow::getInstance()->getPlayer()->isFinished())
-	{
-		for(int i=0;i<16;++i)
-			ui->twChannels->item(i,4)->setText("");
-		connect(this,&qmpChannelsWindow::noteOn,this,&qmpChannelsWindow::updateChannelActivity);
-		fused=0;return;
-	}
-	++cbcnt;
-	if(cbcnt>15)
-	{
-		if(callbacksc>8192)
-		{
-			disconnect(this,&qmpChannelsWindow::noteOn,this,&qmpChannelsWindow::updateChannelActivity);
-			fprintf(stderr,"Fuse!\n");fused=1;
-		}
-		cbcnt=0;
-		callbacksc=0;
-	}
-	for(int i=0;i<16;++i)
-	{
-		char data[128];
-		std::string nm;
-		uint16_t b;uint8_t p;
-		CMidiPlayer *plyr=qmpMainWindow::getInstance()->getPlayer();
-		bool r=plyr->getChannelOutputDevice(i)->getChannelPreset(i,&b,&p,nm);
-		sprintf(data,"%03d:%03d %s",b,p,nm.c_str());
-		if(!r)
-		{
-			nm=plyr->getChannelOutputDevice(i)->getPresetName(plyr->getCC(i,0)<<7|plyr->getCC(i,32),plyr->getCC(i,128));
-			sprintf(data,"%03d:%03d:%03d %s",plyr->getCC(i,0),plyr->getCC(i,32),plyr->getCC(i,128),nm.c_str());
-		}
-		if(fused)
-		{
-			if(strcmp((ui->twChannels->item(i,4))->
-					  text().toStdString().c_str(),data))
-			{
-				connect(this,&qmpChannelsWindow::noteOn,this,&qmpChannelsWindow::updateChannelActivity);
-				fused=0;
-			}
-		}
-		ui->twChannels->item(i,4)->setText(data);
-		ui->twChannels->item(i,0)->setIcon(
-		qmpMainWindow::getInstance()->getPlayer()->getChstates()[i]?*cha:*chi);
-		if(qmpMainWindow::getInstance()->getPlayer()->getChstates()[i])
-			qmpMainWindow::getInstance()->getPlayer()->getChstates()[i]=0;
-	}
-}
-
-void qmpChannelsWindow::channelMSChanged()
-{
-	for(int i=0;i<16;++i)
-	{
-		QCheckBox *m,*s;
-		m=(QCheckBox*)ui->twChannels->cellWidget(i,1);
-		s=(QCheckBox*)ui->twChannels->cellWidget(i,2);
-		if(m->isChecked()&&s->isChecked())s->setChecked(false);
-		qmpMainWindow::getInstance()->getPlayer()->setMute(i,m->isChecked());
-		qmpMainWindow::getInstance()->getPlayer()->setSolo(i,s->isChecked());
-	}
-}
-
 qmpChannelsWindow::~qmpChannelsWindow()
 {
 	qmpMainWindow::getInstance()->unregisterFunctionality("Channel");
@@ -205,50 +328,18 @@ qmpChannelsWindow::~qmpChannelsWindow()
 
 void qmpChannelsWindow::on_pbUnmute_clicked()
 {
-	for(int i=0;i<16;++i)
-	{
-		((QCheckBox*)ui->twChannels->cellWidget(i,1))->setChecked(false);
-		qmpMainWindow::getInstance()->getPlayer()->setMute(i,false);
-	}
+	chmodel->channelMSClearAll(1);
 }
 
 void qmpChannelsWindow::on_pbUnsolo_clicked()
 {
-	for(int i=0;i<16;++i)
-	{
-		((QCheckBox*)ui->twChannels->cellWidget(i,2))->setChecked(false);
-		qmpMainWindow::getInstance()->getPlayer()->setSolo(i,false);
-	}
-}
-
-void qmpChannelsWindow::showPresetWindow(int chid,int col)
-{
-	if(col!=4)return;
-	pselectw->show();
-	pselectw->setupWindow(chid);
+	chmodel->channelMSClearAll(2);
 }
 
 void qmpChannelsWindow::showChannelEditorWindow(int chid)
 {
 	ceditw->show();
 	ceditw->setupWindow(chid);
-}
-
-void qmpChannelsWindow::changeMidiMapping(int chid,int idx)
-{
-	qmpMainWindow::getInstance()->getPlayer()->setChannelOutput(chid,idx);
-}
-
-bool qmpChannelsWindow::eventFilter(QObject *o,QEvent *e)
-{
-	if(e->type()==QEvent::KeyPress&&ui->twChannels->currentColumn()==4)
-	{
-		QKeyEvent *ke=static_cast<QKeyEvent*>(e);
-		if(ke->key()!=Qt::Key_Enter&&ke->key()!=Qt::Key_Return)return false;
-		showPresetWindow(ui->twChannels->currentRow(),4);
-		return true;
-	}
-	return false;
 }
 
 qmpChannelFunc::qmpChannelFunc(qmpChannelsWindow *par)

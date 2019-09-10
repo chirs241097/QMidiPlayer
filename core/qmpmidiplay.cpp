@@ -22,6 +22,8 @@ bool CMidiPlayer::processEvent(const SEvent *e)
 	for(auto i=event_handlers.begin();i!=event_handlers.end();++i)
 		i->second.first((void*)e,i->second.second);
 	uint8_t ch=e->type&0x0F;
+	if((e->type&0xF0)<0xF0)
+		levtt[ch]=std::chrono::system_clock::now();
 	switch(e->type&0xF0)
 	{
 		case 0x80://Note off
@@ -29,7 +31,6 @@ bool CMidiPlayer::processEvent(const SEvent *e)
 		case 0x90://Note on
 			if((mute>>ch)&1&&e->p2)return false;//muted
 			if(solo&&!((solo>>ch)&1)&&e->p2)return false;//excluded by solo flags
-			if(e->p2)chstate[ch]=1;
 		return true;
 		case 0xB0://CC
 			if(e->p1==100)rpnid[ch]=e->p2;
@@ -505,7 +506,8 @@ void CMidiPlayer::setChannelOutput(int ch,int outid)
 		dold.dev->onUnmapped(ch,--dold.refcnt);
 	}
 }
-uint8_t* CMidiPlayer::getChstates(){return chstate;}
+const std::chrono::system_clock::time_point* CMidiPlayer::getLastEventTS()
+{return levtt;}
 int CMidiPlayer::setEventHandlerCB(ICallBack *cb,void *userdata)
 {
 	for(int i=0;i<16;++i)

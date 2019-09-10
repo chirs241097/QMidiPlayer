@@ -64,7 +64,7 @@ class CMidiPlayer
 		uint16_t mute,solo;
 		double ftime;
 		bool sendSysEx,waitvoice;
-		uint8_t chstate[16],chstatus[16][130];//0..127: cc 128: pc
+		uint8_t chstatus[16][130];//0..127: cc 128: pc
 		qmpMidiOutFluid* internalFluid;
 		uint32_t ctempo,ctsn,ctsd,divs,cks;
 		double dpt;//time per tick
@@ -76,6 +76,7 @@ class CMidiPlayer
 		//playback correction
 		uint32_t ttick;
 		std::chrono::high_resolution_clock::time_point ttime;
+		std::chrono::system_clock::time_point levtt[16];
 		struct SMidiDev
 		{
 			std::string name;
@@ -155,7 +156,7 @@ class CMidiPlayer
 		int getChannelOutput(int ch);
 		qmpMidiOutDevice* getChannelOutputDevice(int ch);
 		void setChannelOutput(int ch,int outid);
-		uint8_t* getChstates();
+		const std::chrono::system_clock::time_point* getLastEventTS();
 		int setEventHandlerCB(ICallBack *cb,void *userdata);
 		void unsetEventHandlerCB(int id);
 		int setEventReaderCB(ICallBack *cb,void *userdata);

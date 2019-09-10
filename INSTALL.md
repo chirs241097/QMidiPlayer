@@ -5,7 +5,7 @@ Dependencies:
 
 > libfluidsynth 2.x, Qt5, Qt quick controls(lite version) and RtMidi.
 
-C++11 is _required_ to build the project.
+C++14 is _required_ to build the project.
 
 To build the default visualization plugin, you need the latest SMELT library
 (along with all its dependencies), which can be found

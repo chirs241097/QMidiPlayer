@@ -219,7 +219,6 @@ void qmpMainWindow::updateWidgets()
 			timer->stop();stopped=true;playing=false;
 			invokeCallback("main.stop",nullptr);
 			setFuncEnabled("Render",stopped);setFuncEnabled("ReloadSynth",stopped);
-			chnlw->resetAcitivity();
 			player->playerDeinit();playerTh->join();
 			delete playerTh;playerTh=nullptr;
 			player->playerPanic(true);
@@ -408,7 +407,7 @@ void qmpMainWindow::on_pbPlayPause_clicked()
 	{
 		if(!playing)
 		{
-			player->playerPanic();chnlw->resetAcitivity();
+			player->playerPanic();
 			offset=ui->hsTimer->value()/100.*player->getFtime();
 		}
 		else
@@ -487,7 +486,7 @@ void qmpMainWindow::on_pbStop_clicked()
 		invokeCallback("main.stop",nullptr);
 		player->playerDeinit();
 		setFuncEnabled("Render",stopped);setFuncEnabled("ReloadSynth",stopped);
-		player->playerPanic(true);chnlw->resetAcitivity();
+		player->playerPanic(true);
 		if(playerTh){playerTh->join();delete playerTh;playerTh=nullptr;}
 		chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
 		ui->pbPlayPause->setIcon(QIcon(getThemedIcon(":/img/play.svg")));

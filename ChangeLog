@@ -1,3 +1,12 @@
+2019-09-10 0.8.7 indev
+We refactorin', eh? Hell yeah.
+
+(Almost) Completely rewritten qmpChannelsWindow, one of the oldest
+component, now with a dedicated data model.
+Removed dumb design (CMidiPlayer::getChstates).
+Now QMidiPlayer requires C++14 to build.
+More refactoring like this coming up soon.
+
 2019-07-01 0.8.7 indev
 Actually send initialization sequence to external devices.
 
