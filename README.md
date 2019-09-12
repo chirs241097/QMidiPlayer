@@ -4,14 +4,14 @@ A cross-platform midi file player based on libfluidsynth and Qt.
 [Project homepage](https://chrisoft.org/QMidiPlayer/)
 
 Features:
-* Channel mute/solo
-* Editing channel parameters on-the-fly
-* Playlists
-* Editing synthesizer effects
-* Rendering midi to wave file (currently fluidsynth only)
-* Visualization using SMELT (experimental Windows version now available)
-* MIDI mapping (RtMidi and plugins)
-* Plugin interface for extending the player easily
+- Channel mute/solo
+- Editing channel parameters on-the-fly
+- Playlists
+- Editing synthesizer effects
+- Rendering midi to wave file (currently fluidsynth only)
+- Visualization using SMELT (experimental Windows version now available)
+- MIDI mapping (RtMidi and plugins)
+- Plugin interface for extending the player easily
 
 Tested on Debian sid and Windows Vista~10.
 

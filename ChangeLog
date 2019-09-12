@@ -1,3 +1,13 @@
+2019-09-13 0.8.7 indev
+CMake. It's happening.
+
+Added a new build system based on CMake.
+Minor code cleanups.
+
+This probably breaks building with QMake on multiple
+platforms. And of course the new CMake support isn't tested
+thoroughly. But it's finally happening.
+
 2019-09-10 0.8.7 indev
 We refactorin', eh? Hell yeah.
 

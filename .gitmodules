@@ -1,0 +1,3 @@
+[submodule "visualization/SMELT"]
+	path = visualization/SMELT
+	url = https://github.com/BearKidsTeam/SMELT.git

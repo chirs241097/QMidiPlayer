@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <deque>
 #include <vector>
-#include RT_MIDI_H
+#include "rtmidi/RtMidi.h"
 #include "qmpmidioutrtmidi.hpp"
 
 void split(std::string s,char c,std::deque<std::string>& v)

@@ -118,7 +118,6 @@ void qmpMainWindow::init()
 	pmgr->scanPlugins();settingsw->updatePluginList(pmgr);pmgr->initPlugins();
 	ui->vsMasterVol->setValue(qmpSettingsWindow::getSettingsIntf()->value("Audio/Gain",50).toInt());
 	connect(timer,SIGNAL(timeout()),this,SLOT(updateWidgets()));
-	connect(timer,SIGNAL(timeout()),chnlw,SLOT(channelWindowsUpdate()));
 	connect(timer,SIGNAL(timeout()),infow,SLOT(updateInfo()));
 	ui->pbNext->setIcon(QIcon(getThemedIcon(":/img/next.svg")));
 	ui->pbPrev->setIcon(QIcon(getThemedIcon(":/img/prev.svg")));

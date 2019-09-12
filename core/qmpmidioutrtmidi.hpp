@@ -4,7 +4,7 @@
 #include <vector>
 #define QMP_MAIN
 #include "../include/qmpcorepublic.hpp"
-#include RT_MIDI_H
+#include "rtmidi/RtMidi.h"
 struct qmpDeviceInitializer
 {
 	CMidiTrack initseq;
