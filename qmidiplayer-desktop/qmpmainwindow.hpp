@@ -14,6 +14,7 @@
 #include <QSlider>
 #include <QPointer>
 #include <QApplication>
+#include <QCommandLineParser>
 #include <thread>
 #include <chrono>
 #include <future>
@@ -60,14 +61,10 @@ class QReflectiveAction:public QAction
 		std::string reflt;
 	signals:
 		void onClick(std::string s);
-	private slots:
-		void triggerslot(){
-			emit(onClick(reflt));
-		}
 	public:
 		explicit QReflectiveAction(const QIcon& icon,const QString& text,const std::string& ref):
 		QAction(icon,text,nullptr),reflt(ref){
-			connect(this,SIGNAL(triggered(bool)),this,SLOT(triggerslot()));
+			connect(this,&QAction::triggered,std::bind(&QReflectiveAction::onClick,this,reflt));
 		}
 };
 
@@ -78,14 +75,10 @@ class QReflectivePushButton:public QPushButton
 		std::string reflt;
 	signals:
 		void onClick(std::string s);
-	private slots:
-		void clickslot(){
-			emit(onClick(reflt));
-		}
 	public:
 		explicit QReflectivePushButton(const QIcon& icon,const QString& text,const std::string& ref):
 		QPushButton(icon,""),reflt(ref){
-			connect(this,SIGNAL(clicked(bool)),this,SLOT(clickslot()));
+			connect(this,&QPushButton::clicked,std::bind(&QReflectivePushButton::onClick,this,reflt));
 			setToolTip(text);
 		}
 };
@@ -141,7 +134,7 @@ class qmpMainWindow:public QMainWindow
 	Q_OBJECT
 
 	public:
-		explicit qmpMainWindow(QWidget *parent = 0);
+		explicit qmpMainWindow(QCommandLineParser *clp,QWidget *parent=nullptr);
 		void init();
 		void closeEvent(QCloseEvent *event);
 		void dropEvent(QDropEvent *event);
@@ -195,7 +188,7 @@ class qmpMainWindow:public QMainWindow
 	private:
 		Ui::qmpMainWindow *ui;
 		QTimer *timer;
-		bool playing,stopped,dragging,fin,havemidi;
+		bool playing,stopped,dragging,fin;
 		std::thread *playerTh=nullptr;
 		std::thread *renderTh=nullptr;
 		std::chrono::steady_clock::time_point st;
@@ -217,6 +210,7 @@ class qmpMainWindow:public QMainWindow
 		qmpReloadSynthFunc* reloadsynf;
 		std::vector<std::string> enabled_buttons,enabled_actions;
 		std::vector<QString> argfiles;
+		QCommandLineParser *clp;
 
 		void onfnChanged();
 		void playerSetup(IFluidSettings *fs);

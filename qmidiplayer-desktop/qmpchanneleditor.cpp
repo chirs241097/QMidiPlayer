@@ -81,13 +81,13 @@ void qmpChannelEditor::showEvent(QShowEvent *e)
 	knobpressed=0;
 	setupWindow();
 	connectSlots();
-	connect(qmpMainWindow::getInstance()->getTimer(),SIGNAL(timeout()),this,SLOT(setupWindow()));
+	updconn=connect(qmpMainWindow::getInstance()->getTimer(),&QTimer::timeout,std::bind(&qmpChannelEditor::setupWindow,this,-1));
 	e->accept();
 }
 void qmpChannelEditor::closeEvent(QCloseEvent *e)
 {
 	disconnectSlots();
-	disconnect(qmpMainWindow::getInstance()->getTimer(),SIGNAL(timeout()),this,SLOT(setupWindow()));
+	disconnect(updconn);
 	e->accept();
 }
 
@@ -106,92 +106,98 @@ void qmpChannelEditor::on_pbChRight_clicked()
 }
 
 void qmpChannelEditor::commonPressed()
-{disconnect(qmpMainWindow::getInstance()->getTimer(),SIGNAL(timeout()),this,SLOT(setupWindow()));knobpressed=1;}
+{
+	disconnect(updconn);
+	knobpressed=1;
+}
 void qmpChannelEditor::commonReleased()
-{connect(qmpMainWindow::getInstance()->getTimer(),SIGNAL(timeout()),this,SLOT(setupWindow()));sendCC();knobpressed=0;}
+{
+	updconn=connect(qmpMainWindow::getInstance()->getTimer(),&QTimer::timeout,std::bind(&qmpChannelEditor::setupWindow,this,-1));
+	sendCC();knobpressed=0;
+}
 void qmpChannelEditor::commonChanged()
 {if(knobpressed){sendCC();setupWindow();}}
 
 void qmpChannelEditor::connectSlots()
 {
-	connect(ui->dCut,SIGNAL(sliderPressed()),this,SLOT(commonPressed()));
-	connect(ui->dReso,SIGNAL(sliderPressed()),this,SLOT(commonPressed()));
-	connect(ui->dReverb,SIGNAL(sliderPressed()),this,SLOT(commonPressed()));
-	connect(ui->dChorus,SIGNAL(sliderPressed()),this,SLOT(commonPressed()));
-	connect(ui->dVol,SIGNAL(sliderPressed()),this,SLOT(commonPressed()));
-	connect(ui->dPan,SIGNAL(sliderPressed()),this,SLOT(commonPressed()));
-	connect(ui->dAttack,SIGNAL(sliderPressed()),this,SLOT(commonPressed()));
-	connect(ui->dDecay,SIGNAL(sliderPressed()),this,SLOT(commonPressed()));
-	connect(ui->dRelease,SIGNAL(sliderPressed()),this,SLOT(commonPressed()));
-	connect(ui->dRate,SIGNAL(sliderPressed()),this,SLOT(commonPressed()));
-	connect(ui->dDepth,SIGNAL(sliderPressed()),this,SLOT(commonPressed()));
-	connect(ui->dDelay,SIGNAL(sliderPressed()),this,SLOT(commonPressed()));
+	connect(ui->dCut,&QDial::sliderPressed,this,&qmpChannelEditor::commonPressed);
+	connect(ui->dReso,&QDial::sliderPressed,this,&qmpChannelEditor::commonPressed);
+	connect(ui->dReverb,&QDial::sliderPressed,this,&qmpChannelEditor::commonPressed);
+	connect(ui->dChorus,&QDial::sliderPressed,this,&qmpChannelEditor::commonPressed);
+	connect(ui->dVol,&QDial::sliderPressed,this,&qmpChannelEditor::commonPressed);
+	connect(ui->dPan,&QDial::sliderPressed,this,&qmpChannelEditor::commonPressed);
+	connect(ui->dAttack,&QDial::sliderPressed,this,&qmpChannelEditor::commonPressed);
+	connect(ui->dDecay,&QDial::sliderPressed,this,&qmpChannelEditor::commonPressed);
+	connect(ui->dRelease,&QDial::sliderPressed,this,&qmpChannelEditor::commonPressed);
+	connect(ui->dRate,&QDial::sliderPressed,this,&qmpChannelEditor::commonPressed);
+	connect(ui->dDepth,&QDial::sliderPressed,this,&qmpChannelEditor::commonPressed);
+	connect(ui->dDelay,&QDial::sliderPressed,this,&qmpChannelEditor::commonPressed);
 
-	connect(ui->dCut,SIGNAL(sliderReleased()),this,SLOT(commonReleased()));
-	connect(ui->dReso,SIGNAL(sliderReleased()),this,SLOT(commonReleased()));
-	connect(ui->dReverb,SIGNAL(sliderReleased()),this,SLOT(commonReleased()));
-	connect(ui->dChorus,SIGNAL(sliderReleased()),this,SLOT(commonReleased()));
-	connect(ui->dVol,SIGNAL(sliderReleased()),this,SLOT(commonReleased()));
-	connect(ui->dPan,SIGNAL(sliderReleased()),this,SLOT(commonReleased()));
-	connect(ui->dAttack,SIGNAL(sliderReleased()),this,SLOT(commonReleased()));
-	connect(ui->dDecay,SIGNAL(sliderReleased()),this,SLOT(commonReleased()));
-	connect(ui->dRelease,SIGNAL(sliderReleased()),this,SLOT(commonReleased()));
-	connect(ui->dRate,SIGNAL(sliderReleased()),this,SLOT(commonReleased()));
-	connect(ui->dDepth,SIGNAL(sliderReleased()),this,SLOT(commonReleased()));
-	connect(ui->dDelay,SIGNAL(sliderReleased()),this,SLOT(commonReleased()));
+	connect(ui->dCut,&QDial::sliderReleased,this,&qmpChannelEditor::commonReleased);
+	connect(ui->dReso,&QDial::sliderReleased,this,&qmpChannelEditor::commonReleased);
+	connect(ui->dReverb,&QDial::sliderReleased,this,&qmpChannelEditor::commonReleased);
+	connect(ui->dChorus,&QDial::sliderReleased,this,&qmpChannelEditor::commonReleased);
+	connect(ui->dVol,&QDial::sliderReleased,this,&qmpChannelEditor::commonReleased);
+	connect(ui->dPan,&QDial::sliderReleased,this,&qmpChannelEditor::commonReleased);
+	connect(ui->dAttack,&QDial::sliderReleased,this,&qmpChannelEditor::commonReleased);
+	connect(ui->dDecay,&QDial::sliderReleased,this,&qmpChannelEditor::commonReleased);
+	connect(ui->dRelease,&QDial::sliderReleased,this,&qmpChannelEditor::commonReleased);
+	connect(ui->dRate,&QDial::sliderReleased,this,&qmpChannelEditor::commonReleased);
+	connect(ui->dDepth,&QDial::sliderReleased,this,&qmpChannelEditor::commonReleased);
+	connect(ui->dDelay,&QDial::sliderReleased,this,&qmpChannelEditor::commonReleased);
 
-	connect(ui->dCut,SIGNAL(valueChanged(int)),this,SLOT(commonChanged()));
-	connect(ui->dReso,SIGNAL(valueChanged(int)),this,SLOT(commonChanged()));
-	connect(ui->dReverb,SIGNAL(valueChanged(int)),this,SLOT(commonChanged()));
-	connect(ui->dChorus,SIGNAL(valueChanged(int)),this,SLOT(commonChanged()));
-	connect(ui->dVol,SIGNAL(valueChanged(int)),this,SLOT(commonChanged()));
-	connect(ui->dPan,SIGNAL(valueChanged(int)),this,SLOT(commonChanged()));
-	connect(ui->dAttack,SIGNAL(valueChanged(int)),this,SLOT(commonChanged()));
-	connect(ui->dDecay,SIGNAL(valueChanged(int)),this,SLOT(commonChanged()));
-	connect(ui->dRelease,SIGNAL(valueChanged(int)),this,SLOT(commonChanged()));
-	connect(ui->dRate,SIGNAL(valueChanged(int)),this,SLOT(commonChanged()));
-	connect(ui->dDepth,SIGNAL(valueChanged(int)),this,SLOT(commonChanged()));
-	connect(ui->dDelay,SIGNAL(valueChanged(int)),this,SLOT(commonChanged()));
+	connect(ui->dCut,&QDial::valueChanged,this,&qmpChannelEditor::commonChanged);
+	connect(ui->dReso,&QDial::valueChanged,this,&qmpChannelEditor::commonChanged);
+	connect(ui->dReverb,&QDial::valueChanged,this,&qmpChannelEditor::commonChanged);
+	connect(ui->dChorus,&QDial::valueChanged,this,&qmpChannelEditor::commonChanged);
+	connect(ui->dVol,&QDial::valueChanged,this,&qmpChannelEditor::commonChanged);
+	connect(ui->dPan,&QDial::valueChanged,this,&qmpChannelEditor::commonChanged);
+	connect(ui->dAttack,&QDial::valueChanged,this,&qmpChannelEditor::commonChanged);
+	connect(ui->dDecay,&QDial::valueChanged,this,&qmpChannelEditor::commonChanged);
+	connect(ui->dRelease,&QDial::valueChanged,this,&qmpChannelEditor::commonChanged);
+	connect(ui->dRate,&QDial::valueChanged,this,&qmpChannelEditor::commonChanged);
+	connect(ui->dDepth,&QDial::valueChanged,this,&qmpChannelEditor::commonChanged);
+	connect(ui->dDelay,&QDial::valueChanged,this,&qmpChannelEditor::commonChanged);
 }
 
 void qmpChannelEditor::disconnectSlots()
 {
-	disconnect(ui->dCut,SIGNAL(sliderPressed()),this,SLOT(commonPressed()));
-	disconnect(ui->dReso,SIGNAL(sliderPressed()),this,SLOT(commonPressed()));
-	disconnect(ui->dReverb,SIGNAL(sliderPressed()),this,SLOT(commonPressed()));
-	disconnect(ui->dChorus,SIGNAL(sliderPressed()),this,SLOT(commonPressed()));
-	disconnect(ui->dVol,SIGNAL(sliderPressed()),this,SLOT(commonPressed()));
-	disconnect(ui->dPan,SIGNAL(sliderPressed()),this,SLOT(commonPressed()));
-	disconnect(ui->dAttack,SIGNAL(sliderPressed()),this,SLOT(commonPressed()));
-	disconnect(ui->dDecay,SIGNAL(sliderPressed()),this,SLOT(commonPressed()));
-	disconnect(ui->dRelease,SIGNAL(sliderPressed()),this,SLOT(commonPressed()));
-	disconnect(ui->dRate,SIGNAL(sliderPressed()),this,SLOT(commonPressed()));
-	disconnect(ui->dDepth,SIGNAL(sliderPressed()),this,SLOT(commonPressed()));
-	disconnect(ui->dDelay,SIGNAL(sliderPressed()),this,SLOT(commonPressed()));
+	disconnect(ui->dCut,&QDial::sliderPressed,this,&qmpChannelEditor::commonPressed);
+	disconnect(ui->dReso,&QDial::sliderPressed,this,&qmpChannelEditor::commonPressed);
+	disconnect(ui->dReverb,&QDial::sliderPressed,this,&qmpChannelEditor::commonPressed);
+	disconnect(ui->dChorus,&QDial::sliderPressed,this,&qmpChannelEditor::commonPressed);
+	disconnect(ui->dVol,&QDial::sliderPressed,this,&qmpChannelEditor::commonPressed);
+	disconnect(ui->dPan,&QDial::sliderPressed,this,&qmpChannelEditor::commonPressed);
+	disconnect(ui->dAttack,&QDial::sliderPressed,this,&qmpChannelEditor::commonPressed);
+	disconnect(ui->dDecay,&QDial::sliderPressed,this,&qmpChannelEditor::commonPressed);
+	disconnect(ui->dRelease,&QDial::sliderPressed,this,&qmpChannelEditor::commonPressed);
+	disconnect(ui->dRate,&QDial::sliderPressed,this,&qmpChannelEditor::commonPressed);
+	disconnect(ui->dDepth,&QDial::sliderPressed,this,&qmpChannelEditor::commonPressed);
+	disconnect(ui->dDelay,&QDial::sliderPressed,this,&qmpChannelEditor::commonPressed);
 
-	disconnect(ui->dCut,SIGNAL(sliderReleased()),this,SLOT(commonReleased()));
-	disconnect(ui->dReso,SIGNAL(sliderReleased()),this,SLOT(commonReleased()));
-	disconnect(ui->dReverb,SIGNAL(sliderReleased()),this,SLOT(commonReleased()));
-	disconnect(ui->dChorus,SIGNAL(sliderReleased()),this,SLOT(commonReleased()));
-	disconnect(ui->dVol,SIGNAL(sliderReleased()),this,SLOT(commonReleased()));
-	disconnect(ui->dPan,SIGNAL(sliderReleased()),this,SLOT(commonReleased()));
-	disconnect(ui->dAttack,SIGNAL(sliderReleased()),this,SLOT(commonReleased()));
-	disconnect(ui->dDecay,SIGNAL(sliderReleased()),this,SLOT(commonReleased()));
-	disconnect(ui->dRelease,SIGNAL(sliderReleased()),this,SLOT(commonReleased()));
-	disconnect(ui->dRate,SIGNAL(sliderReleased()),this,SLOT(commonReleased()));
-	disconnect(ui->dDepth,SIGNAL(sliderReleased()),this,SLOT(commonReleased()));
-	disconnect(ui->dDelay,SIGNAL(sliderReleased()),this,SLOT(commonReleased()));
+	disconnect(ui->dCut,&QDial::sliderReleased,this,&qmpChannelEditor::commonReleased);
+	disconnect(ui->dReso,&QDial::sliderReleased,this,&qmpChannelEditor::commonReleased);
+	disconnect(ui->dReverb,&QDial::sliderReleased,this,&qmpChannelEditor::commonReleased);
+	disconnect(ui->dChorus,&QDial::sliderReleased,this,&qmpChannelEditor::commonReleased);
+	disconnect(ui->dVol,&QDial::sliderReleased,this,&qmpChannelEditor::commonReleased);
+	disconnect(ui->dPan,&QDial::sliderReleased,this,&qmpChannelEditor::commonReleased);
+	disconnect(ui->dAttack,&QDial::sliderReleased,this,&qmpChannelEditor::commonReleased);
+	disconnect(ui->dDecay,&QDial::sliderReleased,this,&qmpChannelEditor::commonReleased);
+	disconnect(ui->dRelease,&QDial::sliderReleased,this,&qmpChannelEditor::commonReleased);
+	disconnect(ui->dRate,&QDial::sliderReleased,this,&qmpChannelEditor::commonReleased);
+	disconnect(ui->dDepth,&QDial::sliderReleased,this,&qmpChannelEditor::commonReleased);
+	disconnect(ui->dDelay,&QDial::sliderReleased,this,&qmpChannelEditor::commonReleased);
 
-	disconnect(ui->dCut,SIGNAL(valueChanged(int)),this,SLOT(commonChanged()));
-	disconnect(ui->dReso,SIGNAL(valueChanged(int)),this,SLOT(commonChanged()));
-	disconnect(ui->dReverb,SIGNAL(valueChanged(int)),this,SLOT(commonChanged()));
-	disconnect(ui->dChorus,SIGNAL(valueChanged(int)),this,SLOT(commonChanged()));
-	disconnect(ui->dVol,SIGNAL(valueChanged(int)),this,SLOT(commonChanged()));
-	disconnect(ui->dPan,SIGNAL(valueChanged(int)),this,SLOT(commonChanged()));
-	disconnect(ui->dAttack,SIGNAL(valueChanged(int)),this,SLOT(commonChanged()));
-	disconnect(ui->dDecay,SIGNAL(valueChanged(int)),this,SLOT(commonChanged()));
-	disconnect(ui->dRelease,SIGNAL(valueChanged(int)),this,SLOT(commonChanged()));
-	disconnect(ui->dRate,SIGNAL(valueChanged(int)),this,SLOT(commonChanged()));
-	disconnect(ui->dDepth,SIGNAL(valueChanged(int)),this,SLOT(commonChanged()));
-	disconnect(ui->dDelay,SIGNAL(valueChanged(int)),this,SLOT(commonChanged()));
+	disconnect(ui->dCut,&QDial::valueChanged,this,&qmpChannelEditor::commonChanged);
+	disconnect(ui->dReso,&QDial::valueChanged,this,&qmpChannelEditor::commonChanged);
+	disconnect(ui->dReverb,&QDial::valueChanged,this,&qmpChannelEditor::commonChanged);
+	disconnect(ui->dChorus,&QDial::valueChanged,this,&qmpChannelEditor::commonChanged);
+	disconnect(ui->dVol,&QDial::valueChanged,this,&qmpChannelEditor::commonChanged);
+	disconnect(ui->dPan,&QDial::valueChanged,this,&qmpChannelEditor::commonChanged);
+	disconnect(ui->dAttack,&QDial::valueChanged,this,&qmpChannelEditor::commonChanged);
+	disconnect(ui->dDecay,&QDial::valueChanged,this,&qmpChannelEditor::commonChanged);
+	disconnect(ui->dRelease,&QDial::valueChanged,this,&qmpChannelEditor::commonChanged);
+	disconnect(ui->dRate,&QDial::valueChanged,this,&qmpChannelEditor::commonChanged);
+	disconnect(ui->dDepth,&QDial::valueChanged,this,&qmpChannelEditor::commonChanged);
+	disconnect(ui->dDelay,&QDial::valueChanged,this,&qmpChannelEditor::commonChanged);
 }

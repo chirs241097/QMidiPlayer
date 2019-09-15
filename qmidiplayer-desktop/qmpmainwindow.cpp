@@ -28,9 +28,10 @@ char* wcsto8bit(const wchar_t* s)
 
 qmpMainWindow* qmpMainWindow::ref=nullptr;
 
-qmpMainWindow::qmpMainWindow(QWidget *parent) :
+qmpMainWindow::qmpMainWindow(QCommandLineParser *_clp,QWidget *parent):
 	QMainWindow(parent),
-	ui(new Ui::qmpMainWindow)
+	ui(new Ui::qmpMainWindow),
+	clp(_clp)
 {
 	ui->setupUi(this);
 	ui->lbCurPoly->setText("00000");ui->lbMaxPoly->setText("00000");
@@ -38,7 +39,7 @@ qmpMainWindow::qmpMainWindow(QWidget *parent) :
 	setButtonHeight(ui->pbNext,36);setButtonHeight(ui->pbPlayPause,36);setButtonHeight(ui->pbAdd,36);
 	setButtonHeight(ui->pbPrev,36);setButtonHeight(ui->pbSettings,36);setButtonHeight(ui->pbStop,36);
 	playing=false;stopped=true;dragging=false;fin=false;
-	settingsw=new qmpSettingsWindow(this);pmgr=new qmpPluginManager();
+	settingsw=new qmpSettingsWindow(this);
 	player=nullptr;timer=nullptr;fluidrenderer=nullptr;
 }
 
@@ -107,7 +108,7 @@ void qmpMainWindow::init()
 	timer=new QTimer(this);
 	renderf=new qmpRenderFunc(this);
 	panicf=new qmpPanicFunc(this);
-	if(havemidi)
+	if(argfiles.size())
 	{
 		plistw->emptyList();
 		for(auto&i:argfiles)plistw->insertItem(i);
@@ -115,49 +116,34 @@ void qmpMainWindow::init()
 	registerFunctionality(renderf,"Render",tr("Render to wave").toStdString(),getThemedIconc(":/img/render.svg"),0,false);
 	registerFunctionality(panicf,"Panic",tr("Panic").toStdString(),getThemedIconc(":/img/panic.svg"),0,false);
 	registerFunctionality(reloadsynf,"ReloadSynth",tr("Restart fluidsynth").toStdString(),getThemedIconc(":/img/repeat-base.svg"),0,false);
-	pmgr->scanPlugins();settingsw->updatePluginList(pmgr);pmgr->initPlugins();
+	pmgr=new qmpPluginManager();
+	const QStringList &qpp=clp->values("plugin");
+	std::vector<std::string> pp;
+	for(auto s:qpp)
+		pp.push_back(s.toStdString());
+	pmgr->scanPlugins(pp);
+	settingsw->updatePluginList(pmgr);pmgr->initPlugins();
 	ui->vsMasterVol->setValue(qmpSettingsWindow::getSettingsIntf()->value("Audio/Gain",50).toInt());
-	connect(timer,SIGNAL(timeout()),this,SLOT(updateWidgets()));
-	connect(timer,SIGNAL(timeout()),infow,SLOT(updateInfo()));
+	connect(timer,&QTimer::timeout,this,&qmpMainWindow::updateWidgets);
+	connect(timer,&QTimer::timeout,infow,&qmpInfoWindow::updateInfo);
 	ui->pbNext->setIcon(QIcon(getThemedIcon(":/img/next.svg")));
 	ui->pbPrev->setIcon(QIcon(getThemedIcon(":/img/prev.svg")));
 	ui->pbPlayPause->setIcon(QIcon(getThemedIcon(":/img/play.svg")));
 	ui->pbStop->setIcon(QIcon(getThemedIcon(":/img/stop.svg")));
 	ui->pbSettings->setIcon(QIcon(getThemedIcon(":/img/settings.svg")));
 	ui->pbAdd->setIcon(QIcon(getThemedIcon(":/img/open.svg")));
-	if(havemidi)on_pbPlayPause_clicked();
+	if(argfiles.size())on_pbPlayPause_clicked();
 	setupWidget();settingsw->verifySF();
 }
 
 int qmpMainWindow::parseArgs()
 {
-	bool loadfolder=false;havemidi=false;
-	QStringList args=QApplication::arguments();
-	for(int i=1;i<args.size();++i)
+	bool loadfolder=clp->isSet("load-all-files");
+	const QStringList &args=clp->positionalArguments();
+	for(int i=0;i<args.size();++i)
 	{
-		if(args.at(i).at(0)=='-')
-		{
-			if(args.at(i)==QString("--help"))
-			{
-				printf("Usage: %s [Options] [Midi Files]\n",args.at(0).toStdString().c_str());
-				printf("Possible options are: \n");
-				printf("  -l, --load-all-files  Load all files from the same folder.\n");
-				printf("  --help                Show this help and exit.\n");
-				printf("  --version             Show this version information and exit.\n");
-				return 1;
-			}
-			if(args.at(i)==QString("--version"))
-			{
-				printf("QMidiPlayer %s\n",APP_VERSION);
-				return 1;
-			}
-			if(args.at(i)==QString("-l")||args.at(i)==QString("--load-all-files"))
-				loadfolder=true;
-		}
-		else
 		if(QFileInfo(args.at(i)).exists())
 		{
-			if(!havemidi)havemidi=true;
 			if(loadfolder||qmpSettingsWindow::getSettingsIntf()->value("Behavior/LoadFolder",0).toInt())
 			{
 				QDirIterator di(QFileInfo(args.at(i)).absolutePath());
@@ -665,7 +651,7 @@ void qmpMainWindow::setupWidget()
 		pb->setIconSize(QSize(16,16));
 		ui->buttonwidget->layout()->addWidget(pb);
 		mfunc[enabled_buttons[i]].setAssignedControl(pb);
-		connect(pb,SIGNAL(onClick(std::string)),this,SLOT(funcReflector(std::string)));
+		connect(pb,&QReflectivePushButton::onClick,this,&qmpMainWindow::funcReflector);
 	}
 	for(unsigned i=0;i<enabled_actions.size();++i)
 	{
@@ -677,7 +663,7 @@ void qmpMainWindow::setupWidget()
 		);
 		ui->lbFileName->addAction(a);
 		mfunc[enabled_actions[i]].setAssignedControl(a);
-		connect(a,SIGNAL(onClick(std::string)),this,SLOT(funcReflector(std::string)));
+		connect(a,&QReflectiveAction::onClick,this,&qmpMainWindow::funcReflector);
 	}
 	ui->buttonwidget->layout()->setAlignment(Qt::AlignLeft);
 }

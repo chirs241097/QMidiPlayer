@@ -21,7 +21,7 @@ class qmpPluginManager
 		qmpPluginManager();
 		~qmpPluginManager();
 		std::vector<qmpPlugin> *getPlugins();
-		void scanPlugins();
+		void scanPlugins(const std::vector<std::string> &pp);
 		void initPlugins();
 		void deinitPlugins();
 };

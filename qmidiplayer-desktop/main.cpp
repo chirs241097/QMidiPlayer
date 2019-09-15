@@ -20,13 +20,17 @@
 #include <QStyle>
 #include <QTranslator>
 #include <QLibraryInfo>
+#include <QCommandLineParser>
 
 int main(int argc,char **argv)
 {
 	QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+	QCoreApplication::setApplicationName("qmidiplayer");
+	QCoreApplication::setApplicationVersion(APP_VERSION);
 	if(!qgetenv("QT_SCALE_FACTOR").length()&&!qgetenv("QT_SCREEN_SCALE_FACTORS").length())
 	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 	QApplication a(argc,argv);
+
 	QTranslator qtTranslator;
 	qtTranslator.load("qt_"+QLocale::system().name(),
 					  QLibraryInfo::location(QLibraryInfo::TranslationsPath));
@@ -34,7 +38,17 @@ int main(int argc,char **argv)
 	QTranslator qmpTranslator;
 	qmpTranslator.load("qmp_"+QLocale::system().name());
 	a.installTranslator(&qmpTranslator);
-	qmpMainWindow w;
+
+	QCommandLineParser clp;
+	clp.setApplicationDescription("A cross-platform MIDI player.");
+	clp.addHelpOption();
+	clp.addVersionOption();
+	clp.addPositionalArgument("file",QCoreApplication::translate("main","midi files to play (optional)."),"[files...]");
+	clp.addOption(QCommandLineOption("plugin",QCoreApplication::translate("main","Load a plugin from <plugin library>."),"plugin library"));
+	clp.addOption(QCommandLineOption({"l","load-all-files"},QCoreApplication::translate("main","Load all files from the same folder.")));
+	clp.process(a);
+
+	qmpMainWindow w(&clp);
 	if(w.parseArgs()==1)return 0;
 	w.init();
 

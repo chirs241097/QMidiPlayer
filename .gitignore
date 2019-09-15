@@ -1,4 +1,5 @@
 # User configuration
+*.txt.user
 *.pro.user
 build/
 

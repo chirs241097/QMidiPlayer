@@ -36,6 +36,7 @@ class qmpChannelEditor:public QDialog
 		void sendCC();
 		void connectSlots();
 		void disconnectSlots();
+		QMetaObject::Connection updconn;
 		QCommonStyle* styl;
 };
 

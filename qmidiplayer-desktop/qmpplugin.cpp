@@ -49,10 +49,10 @@ void qmpPluginManager::scanPlugins()
 	}
 }
 #else
-void qmpPluginManager::scanPlugins()
+void qmpPluginManager::scanPlugins(const std::vector<std::string> &pp)
 {
 	QDirIterator *dir;
-	std::vector<std::string> cpluginpaths;
+	std::vector<std::string> cpluginpaths(pp);
 #ifdef QMP_BUILD_UNIX_PACKAGE
 	dir=new QDirIterator("/usr/lib/qmidiplayer/");
 	while(dir->hasNext())

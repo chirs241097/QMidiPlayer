@@ -22,7 +22,7 @@ qmpSettingsWindow::qmpSettingsWindow(QWidget *parent) :
 	ui(new Ui::qmpSettingsWindow)
 {
 	ui->setupUi(this);customOptions.clear();customOptPages.clear();
-	connect(this,SIGNAL(dialogClosing()),parent,SLOT(dialogClosed()));
+	connect(this,&qmpSettingsWindow::dialogClosing,(qmpMainWindow*)parent,&qmpMainWindow::dialogClosed);
 	settings=new QSettings(QDir::homePath()+QString("/.config/qmprc"),QSettings::IniFormat);
 	settingsInit();outwidget=ui->cbOutputDevice;
 	ui->pbAdd->setIcon(QIcon(getThemedIcon(":/img/add.svg")));
@@ -732,7 +732,7 @@ QFileEdit::QFileEdit(QWidget *par):QWidget(par)
 	tb=new QToolButton(this);
 	tb->setText("...");
 	layout->addWidget(tb);
-	connect(tb,SIGNAL(clicked()),this,SLOT(chooseFile()));
+	connect(tb,&QToolButton::clicked,this,&QFileEdit::chooseFile);
 }
 QString QFileEdit::text(){return le->text();}
 void QFileEdit::setText(const QString& s){le->setText(s);}

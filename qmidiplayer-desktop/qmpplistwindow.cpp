@@ -20,7 +20,7 @@ qmpPlistWindow::qmpPlistWindow(QWidget *parent) :
 	setButtonHeight(ui->pbClear,36);setButtonHeight(ui->pbLoad,36);
 	setButtonHeight(ui->pbRemove,36);setButtonHeight(ui->pbRepeat,36);
 	setButtonHeight(ui->pbSave,36);setButtonHeight(ui->pbShuffle,36);
-	connect(this,SIGNAL(selectionChanging()),parent,SLOT(selectionChanged()));
+	connect(this,&qmpPlistWindow::selectionChanging,(qmpMainWindow*)parent,&qmpMainWindow::selectionChanged);
 	repeat=0;shuffle=0;
 	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/RestorePlaylist","").toInt())
 	{
