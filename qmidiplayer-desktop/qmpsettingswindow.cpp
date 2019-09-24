@@ -4,6 +4,7 @@
 #include <QDir>
 #include <QMessageBox>
 #include <QDesktopWidget>
+#include <QStandardPaths>
 #include "qmpsettingswindow.hpp"
 #include "ui_qmpsettingswindow.h"
 #include "qmpmainwindow.hpp"
@@ -23,7 +24,7 @@ qmpSettingsWindow::qmpSettingsWindow(QWidget *parent) :
 {
 	ui->setupUi(this);customOptions.clear();customOptPages.clear();
 	connect(this,&qmpSettingsWindow::dialogClosing,(qmpMainWindow*)parent,&qmpMainWindow::dialogClosed);
-	settings=new QSettings(QDir::homePath()+QString("/.config/qmprc"),QSettings::IniFormat);
+	settings=new QSettings(QStandardPaths::writableLocation(QStandardPaths::StandardLocation::ConfigLocation)+QString("/qmprc"),QSettings::IniFormat);
 	settingsInit();outwidget=ui->cbOutputDevice;
 	ui->pbAdd->setIcon(QIcon(getThemedIcon(":/img/add.svg")));
 	ui->pbRemove->setIcon(QIcon(getThemedIcon(":/img/remove.svg")));

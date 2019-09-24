@@ -1,3 +1,8 @@
+2019-09-25 0.8.7 indev
+Use QStandardPaths.
+
+RIP Windows users.
+
 2019-09-16 0.8.7 indev
 Use QCommandLineParser to parse arguments.
 
