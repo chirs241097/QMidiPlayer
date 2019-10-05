@@ -3,6 +3,7 @@ set(qmpdesktop_SOURCES
     qmpchanneleditor.hpp
     qmpchannelswindow.hpp
     qmpcustomizewindow.hpp
+    qmpdeviceprioritydialog.hpp
     qmpdevpropdialog.hpp
     qmpefxwindow.hpp
     qmphelpwindow.hpp
@@ -17,6 +18,7 @@ set(qmpdesktop_SOURCES
     qmpchanneleditor.cpp
     qmpchannelswindow.cpp
     qmpcustomizewindow.cpp
+    qmpdeviceprioritydialog.cpp
     qmpdevpropdialog.cpp
     qmpefxwindow.cpp
     qmphelpwindow.cpp
@@ -29,6 +31,7 @@ set(qmpdesktop_SOURCES
     qmpchanneleditor.ui
     qmpchannelswindow.ui
     qmpcustomizewindow.ui
+    qmpdeviceprioritydialog.ui
     qmpdevpropdialog.ui
     qmpefxwindow.ui
     qmphelpwindow.ui

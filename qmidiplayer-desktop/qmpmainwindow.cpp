@@ -52,9 +52,8 @@ qmpMainWindow::~qmpMainWindow()
 		delete a[i];
 	}
 	pmgr->deinitPlugins();
-	std::vector<std::pair<qmpMidiOutRtMidi*,std::string>> rtdev=rtmididev->getDevices();
+	auto rtdev=qmpRtMidiManager::getDevices();
 	for(auto &i:rtdev)player->unregisterMidiOutDevice(i.second);
-	rtmididev->deleteDevices();
 	delete pmgr;
 	if(timer)delete timer;
 	delete helpw;helpw=nullptr;
@@ -83,9 +82,7 @@ void qmpMainWindow::init()
 		[this]
 		{
 			player=new CMidiPlayer();
-			rtmididev=new qmpRtMidiManager();
-			rtmididev->createDevices();
-			std::vector<std::pair<qmpMidiOutRtMidi*,std::string>> rtdev=rtmididev->getDevices();
+			auto rtdev=qmpRtMidiManager::getDevices();
 			for(auto &i:rtdev)
 			{
 				player->registerMidiOutDevice(i.first,i.second);
@@ -133,7 +130,7 @@ void qmpMainWindow::init()
 	ui->pbSettings->setIcon(QIcon(getThemedIcon(":/img/settings.svg")));
 	ui->pbAdd->setIcon(QIcon(getThemedIcon(":/img/open.svg")));
 	if(argfiles.size())on_pbPlayPause_clicked();
-	setupWidget();settingsw->verifySF();
+	setupWidget();settingsw->postInit();
 }
 
 int qmpMainWindow::parseArgs()

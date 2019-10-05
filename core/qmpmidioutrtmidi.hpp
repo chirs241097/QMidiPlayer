@@ -48,11 +48,8 @@ public:
 class qmpRtMidiManager
 {
 	private:
-		static RtMidiOut* dummy;
-		std::vector<std::pair<qmpMidiOutRtMidi*,std::string>> devices;
+		static std::vector<std::pair<qmpMidiOutRtMidi*,std::string>> devices;
 	public:
-		void createDevices();
-		void deleteDevices();
-		std::vector<std::pair<qmpMidiOutRtMidi*,std::string>> getDevices();
+		static std::vector<std::pair<qmpMidiOutRtMidi*,std::string>> getDevices();
 };
 #endif // QMPMIDIMAPPERS_H

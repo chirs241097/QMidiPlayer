@@ -312,26 +312,19 @@ void qmpMidiOutRtMidi::setInitializerFile(const char* path)
 	devinit=qmpDeviceInitializer::parse(path);
 }
 
-RtMidiOut* qmpRtMidiManager::dummy=nullptr;
-void qmpRtMidiManager::createDevices()
+std::vector<std::pair<qmpMidiOutRtMidi*,std::string>> qmpRtMidiManager::devices;
+std::vector<std::pair<qmpMidiOutRtMidi*,std::string>> qmpRtMidiManager::getDevices()
 {
+	if(devices.size())return devices;
+	RtMidiOut *dummy;
 	try{dummy=new RtMidiOut();}
 	catch(RtMidiError &e)
 	{
 		printf("Failed to initialize the dummy device: %s\n",e.what());
-		dummy=nullptr;return;
+		return{};
 	}
 	for(unsigned i=0;i<dummy->getPortCount();++i)
 	devices.push_back(std::make_pair(new qmpMidiOutRtMidi(i),dummy->getPortName(i)));
-}
-void qmpRtMidiManager::deleteDevices()
-{
-	for(size_t i=0;i<devices.size();++i)
-		delete devices[i].first;
-	devices.clear();
 	delete dummy;
-}
-std::vector<std::pair<qmpMidiOutRtMidi*,std::string>> qmpRtMidiManager::getDevices()
-{
 	return devices;
 }

@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <functional>
+#include <set>
 #include <QCheckBox>
 #include <QPushButton>
 #include <QComboBox>
@@ -256,27 +257,23 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent) :
 	,nullptr);
 	std::vector<std::string> devs=qmpMainWindow::getInstance()->getPlayer()->getMidiOutDevices();
 	size_t devc=devs.size();
-	//We setup default output here...
-	//Pretty strange...
-	for(size_t i=0;i<devc;++i)
-	{
-		qmpSettingsWindow::getDefaultOutWidget()->addItem(devs[i].c_str());
-		if(!QString(devs[i].c_str()).compare(qmpSettingsWindow::getSettingsIntf()->
-				value("Midi/DefaultOutput","Internal FluidSynth").toString()))
-			qmpSettingsWindow::getDefaultOutWidget()->setCurrentIndex(i);
-	}
+	std::set<std::string> devset;
+	for(auto dev:devs)devset.insert(dev);
+	std::string selecteddev;
+	for(auto setdev:qmpSettingsWindow::getSettingsIntf()->value("Midi/DevicePriority",QList<QVariant>{"Internal FluidSynth"}).toList())
+		if(devset.find(setdev.toString().toStdString())!=devset.end())
+		{
+			selecteddev=setdev.toString().toStdString();
+			break;
+		}
 	for(int ch=0;ch<16;++ch)
 	{
 		for(size_t j=0;j<devc;++j)
 		{
-			if(!qmpSettingsWindow::getSettingsIntf()->
-					value("Midi/DefaultOutput","Internal FluidSynth").toString().compare(
-					QString(devs[j].c_str())))
+			if(selecteddev==devs[j])
 				qmpMainWindow::getInstance()->getPlayer()->setChannelOutput(ch,j);
 		}
 	}
-	qmpSettingsWindow::getSettingsIntf()->setValue("Midi/DefaultOutput",
-			qmpSettingsWindow::getDefaultOutWidget()->currentText());
 	qmpMainWindow::getInstance()->registerFunctionality(
 		chnlf=new qmpChannelFunc(this),
 		std::string("Channel"),

@@ -1,3 +1,4 @@
+#include <set>
 #include <QLineEdit>
 #include <QToolButton>
 #include <QFileDialog>
@@ -6,11 +7,11 @@
 #include <QDesktopWidget>
 #include <QStandardPaths>
 #include "qmpsettingswindow.hpp"
+#include "qmpdeviceprioritydialog.hpp"
 #include "ui_qmpsettingswindow.h"
 #include "qmpmainwindow.hpp"
 
 QSettings* qmpSettingsWindow::settings=nullptr;
-QComboBox* qmpSettingsWindow::outwidget=nullptr;
 
 void qmpFluidForEachOpt(void* data,const char*,const char* option)
 {
@@ -25,13 +26,14 @@ qmpSettingsWindow::qmpSettingsWindow(QWidget *parent) :
 	ui->setupUi(this);customOptions.clear();customOptPages.clear();
 	connect(this,&qmpSettingsWindow::dialogClosing,(qmpMainWindow*)parent,&qmpMainWindow::dialogClosed);
 	settings=new QSettings(QStandardPaths::writableLocation(QStandardPaths::StandardLocation::ConfigLocation)+QString("/qmprc"),QSettings::IniFormat);
-	settingsInit();outwidget=ui->cbOutputDevice;
+	settingsInit();
 	ui->pbAdd->setIcon(QIcon(getThemedIcon(":/img/add.svg")));
 	ui->pbRemove->setIcon(QIcon(getThemedIcon(":/img/remove.svg")));
 	ui->pbDown->setIcon(QIcon(getThemedIcon(":/img/down.svg")));
 	ui->pbUp->setIcon(QIcon(getThemedIcon(":/img/up.svg")));
 	cw=new qmpCustomizeWindow(this);
 	dps=new qmpDevPropDialog(this);
+	devpriod=new qmpDevicePriorityDialog(this);
 }
 
 qmpSettingsWindow::~qmpSettingsWindow()
@@ -56,7 +58,6 @@ void qmpSettingsWindow::hideEvent(QHideEvent *event)
 
 
 QTableWidget* qmpSettingsWindow::getSFWidget(){return ui->twSoundfont;}
-QComboBox* qmpSettingsWindow::getDefaultOutWidget(){return outwidget;}
 
 void qmpSettingsWindow::on_buttonBox_accepted()
 {
@@ -74,8 +75,6 @@ void qmpSettingsWindow::on_buttonBox_rejected()
 void qmpSettingsWindow::settingsInit()
 {
 	fluid_settings_t *fsettings=new_fluid_settings();
-
-	settings->setValue("Midi/DefaultOutput",settings->value("Midi/DefaultOutput","Internal FluidSynth"));
 
 	settings->setValue("Midi/DisableMapping",settings->value("Midi/DisableMapping",0));
 	ui->cbDisableMapping->setChecked(settings->value("Midi/DisableMapping",0).toInt());
@@ -208,8 +207,6 @@ void qmpSettingsWindow::settingsInit()
 
 void qmpSettingsWindow::settingsUpdate()
 {
-	settings->setValue("Midi/DefaultOutput",ui->cbOutputDevice->currentText());
-
 	settings->setValue("Midi/DisableMapping",ui->cbDisableMapping->isChecked()?1:0);
 
 	settings->setValue("Midi/SendSysEx",ui->cbSendSysx->isChecked()?1:0);
@@ -376,24 +373,35 @@ void qmpSettingsWindow::updatePluginList(qmpPluginManager *pmgr)
 	ui->twPluginList->setColumnWidth(3,128);
 }
 
-void qmpSettingsWindow::verifySF()
+void qmpSettingsWindow::postInit()
 {
 	int sf=0;
 	for(int i=0;i<ui->twSoundfont->rowCount();++i)
 	if(((QCheckBox*)ui->twSoundfont->cellWidget(i,0))->isChecked())++sf;
-	if(settings->value("Midi/DefaultOutput","Internal FluidSynth").toString()=="Internal FluidSynth"&&!sf)
+	std::string selecteddev;
+	std::vector<std::string> devs=qmpMainWindow::getInstance()->getPlayer()->getMidiOutDevices();
+	std::set<std::string> devset;
+	for(auto dev:devs)devset.insert(dev);
+	for(auto setdev:qmpSettingsWindow::getSettingsIntf()->value("Midi/DevicePriority",QList<QVariant>{"Internal FluidSynth"}).toList())
+		if(devset.find(setdev.toString().toStdString())!=devset.end())
+		{
+			selecteddev=setdev.toString().toStdString();
+			break;
+		}
+	if(selecteddev=="Internal FluidSynth"&&!sf)
 	{
 		// blmark: show dialog at the current screen which user using now.
 		int curMonitor = QApplication::desktop()->screenNumber(this);
 		if(QMessageBox::question(QDesktopWidget().screen(curMonitor),//this,
 		tr("No soundfont loaded"),
-		tr("Internal fluidsynth was chosen as the default output but it has no soundfont set. "
+		tr("Internal fluidsynth is the only available MIDI output but it has no soundfont set. "
 		   "Would you like to setup soundfonts now? You may have to reload the internal synth afterwards."))==QMessageBox::Yes)
 		{
 			show();
 			ui->tabWidget->setCurrentWidget(ui->tab_3);
 		}
 	}
+	devpriod->setupRegisteredDevices();
 }
 
 void qmpSettingsWindow::updateCustomOptions()
@@ -746,4 +754,9 @@ void QFileEdit::chooseFile()
 void qmpSettingsWindow::on_pbExtDevSetup_clicked()
 {
 	dps->launch();
+}
+
+void qmpSettingsWindow::on_pbDevPrio_clicked()
+{
+	devpriod->show();
 }

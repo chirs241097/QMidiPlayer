@@ -194,7 +194,6 @@ class qmpMainWindow:public QMainWindow
 		std::chrono::steady_clock::time_point st;
 		double offset;
 		CMidiPlayer *player;
-		qmpRtMidiManager *rtmididev;
 		qmpFileRendererFluid *fluidrenderer;
 		qmpPluginManager *pmgr;
 		QPointer<qmpPlistWindow> plistw;

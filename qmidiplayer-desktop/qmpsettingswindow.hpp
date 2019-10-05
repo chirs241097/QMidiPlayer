@@ -79,6 +79,8 @@ class QHexSpinBox:public QSpinBox
 		{return *reinterpret_cast<int*>(&u);}
 };
 
+class qmpDevicePriorityDialog;
+
 class qmpSettingsWindow:public QDialog
 {
 	Q_OBJECT
@@ -109,7 +111,7 @@ class qmpSettingsWindow:public QDialog
 		void registerOptionEnumInt(std::string tab,std::string desc,std::string key,std::vector<std::string> options,int defaultval);
 		int getOptionEnumInt(std::string key);
 		void setOptionEnumInt(std::string key,int val);
-		void verifySF();
+		void postInit();
 	signals:
 		void dialogClosing();
 
@@ -133,6 +135,8 @@ class qmpSettingsWindow:public QDialog
 
 		void on_pbExtDevSetup_clicked();
 
+		void on_pbDevPrio_clicked();
+
 	private:
 		Ui::qmpSettingsWindow *ui;
 		void settingsUpdate();
@@ -141,11 +145,10 @@ class qmpSettingsWindow:public QDialog
 		void updateCustomOptions();
 		qmpCustomizeWindow *cw;
 		qmpDevPropDialog *dps;
+		qmpDevicePriorityDialog *devpriod;
 		static QSettings *settings;
-		static QComboBox* outwidget;
 	public:
 		static QSettings* getSettingsIntf(){return settings;}
-		static QComboBox* getDefaultOutWidget();
 };
 
 #endif // QMPSETTINGSWINDOW_H
