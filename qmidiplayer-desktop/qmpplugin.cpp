@@ -23,7 +23,9 @@ std::string wstr2str(std::wstring s)
 void qmpPluginManager::scanPlugins(const std::vector<std::string> &pp)
 {
 	QDirIterator *dir;
-	std::vector<std::wstring> cpluginpaths(pp);
+	std::vector<std::wstring> cpluginpaths;
+	std::wstring_convert<std::codecvt_utf8<wchar_t>,wchar_t> wsc;
+	for(auto p:pp)cpluginpaths.push_back(wsc.from_bytes(p));
 	dir=new QDirIterator(QCoreApplication::applicationDirPath()+"/plugins/");
 	while(dir->hasNext())
 	{
