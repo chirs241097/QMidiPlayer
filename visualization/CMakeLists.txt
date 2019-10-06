@@ -27,10 +27,10 @@ add_library(visualization MODULE
 )
 
 target_link_libraries(visualization
-    ${FREETYPE_LIBRARIES}
-    ${ZLIB_LIBRARIES}
     smeltext
     smelt
+    ${FREETYPE_LIBRARIES}
+    ${ZLIB_LIBRARIES}
     ${IL_LIBRARIES}
     glfw
     ${GLEW_LIBRARIES}

@@ -20,10 +20,10 @@ std::string wstr2str(std::wstring s)
 	std::wstring_convert<std::codecvt_utf8<wchar_t>,wchar_t> wsc;
 	return wsc.to_bytes(s);
 }
-void qmpPluginManager::scanPlugins()
+void qmpPluginManager::scanPlugins(const std::vector<std::string> &pp)
 {
 	QDirIterator *dir;
-	std::vector<std::wstring> cpluginpaths;
+	std::vector<std::wstring> cpluginpaths(pp);
 	dir=new QDirIterator(QCoreApplication::applicationDirPath()+"/plugins/");
 	while(dir->hasNext())
 	{
