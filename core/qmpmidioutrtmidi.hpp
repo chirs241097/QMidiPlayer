@@ -4,7 +4,6 @@
 #include <vector>
 #define QMP_MAIN
 #include "../include/qmpcorepublic.hpp"
-#include "rtmidi/RtMidi.h"
 struct qmpDeviceInitializer
 {
 	CMidiTrack initseq;
@@ -18,6 +17,8 @@ struct qmpDeviceInitializer
 
 	static qmpDeviceInitializer* parse(const char* path);
 };
+
+class RtMidiOut;
 class qmpMidiOutRtMidi:public qmpMidiOutDevice
 {
 private:
@@ -45,6 +46,7 @@ public:
 
 	void setInitializerFile(const char* path);
 };
+
 class qmpRtMidiManager
 {
 	private:
