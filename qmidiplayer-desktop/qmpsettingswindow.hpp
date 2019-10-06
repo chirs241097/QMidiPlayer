@@ -86,12 +86,11 @@ class qmpSettingsWindow:public QDialog
 	Q_OBJECT
 
 	public:
-		explicit qmpSettingsWindow(QWidget *parent=0);
+		explicit qmpSettingsWindow(QWidget *parent=nullptr);
 		~qmpSettingsWindow();
 		void closeEvent(QCloseEvent *event);
 		void hideEvent(QHideEvent *event);
 		void settingsInit();
-		QTableWidget *getSFWidget();
 		void updatePluginList(qmpPluginManager *pmgr);
 		void registerOptionInt(std::string tab,std::string desc,std::string key,int min,int max,int defaultval);
 		int getOptionInt(std::string key);

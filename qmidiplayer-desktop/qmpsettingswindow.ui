@@ -474,6 +474,12 @@
          <property name="dragDropMode">
           <enum>QAbstractItemView::InternalMove</enum>
          </property>
+         <property name="selectionMode">
+          <enum>QAbstractItemView::SingleSelection</enum>
+         </property>
+         <property name="selectionBehavior">
+          <enum>QAbstractItemView::SelectRows</enum>
+         </property>
          <column>
           <property name="text">
            <string>E</string>

@@ -56,9 +56,6 @@ void qmpSettingsWindow::hideEvent(QHideEvent *event)
 	event->accept();
 }
 
-
-QTableWidget* qmpSettingsWindow::getSFWidget(){return ui->twSoundfont;}
-
 void qmpSettingsWindow::on_buttonBox_accepted()
 {
 	settingsUpdate();
@@ -166,19 +163,24 @@ void qmpSettingsWindow::settingsInit()
 	settings->setValue("Audio/BankSelect",ui->cbBSMode->currentText());
 	settings->setValue("Audio/Gain",settings->value("Audio/Gain",50));
 
-	int sfc=settings->value("SoundFonts/SFCount",0).toInt();
-	ui->twSoundfont->clear();for(int i=1;i<=sfc;++i)
+	QList<QVariant> sflist=settings->value("Audio/SoundFonts",QList<QVariant>{}).toList();
+	ui->twSoundfont->clear();
+	for(int i=0;i<sflist.size();++i)
 	{
-		ui->twSoundfont->insertRow(i-1);
-		ui->twSoundfont->setItem(i-1,1,new QTableWidgetItem(settings->value("SoundFonts/SF"+QString::number(i),"").toString()));
-		ui->twSoundfont->setCellWidget(i-1,0,new QCheckBox(""));
-		((QCheckBox*)ui->twSoundfont->cellWidget(i-1,0))->setChecked(settings->value("SoundFonts/SF"+QString::number(i)+"Enabled",1).toInt());
+		ui->twSoundfont->insertRow(i);
+		QTableWidgetItem *sfn,*sfe;
+		QString sf=sflist[i].toString();
+		bool enabled=!sf.startsWith('#');
+		if(!enabled)sf=sf.mid(1);
+		ui->twSoundfont->setItem(i,1,sfn=new QTableWidgetItem(sf));
+		ui->twSoundfont->setItem(i,0,sfe=new QTableWidgetItem());
+		sfn->setFlags(Qt::ItemFlag::ItemIsEnabled|Qt::ItemFlag::ItemIsSelectable);
+		sfe->setFlags(Qt::ItemFlag::ItemIsEnabled|Qt::ItemFlag::ItemIsSelectable|Qt::ItemFlag::ItemIsUserCheckable);
+		sfe->setCheckState(enabled?Qt::CheckState::Checked:Qt::CheckState::Unchecked);
 	}
-	ui->twSoundfont->setColumnWidth(0,22);
-	ui->twSoundfont->setColumnWidth(1,400);
-	QStringList qs;qs.push_back("E");qs.push_back("Path");
+	ui->twSoundfont->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeMode::ResizeToContents);
+	QStringList qs{"E","Path"};
 	ui->twSoundfont->setHorizontalHeaderLabels(qs);
-	settings->setValue("SoundFonts/SFCount",sfc);
 
 	settings->setValue("Behavior/RestorePlaylist",settings->value("Behavior/RestorePlaylist",0));
 	ui->cbRestorePlaylist->setChecked(settings->value("Behavior/RestorePlaylist",0).toInt());
@@ -233,13 +235,14 @@ void qmpSettingsWindow::settingsUpdate()
 
 	settings->setValue("Audio/BankSelect",ui->cbBSMode->currentText());
 
-	settings->setValue("SoundFonts/SFCount",ui->twSoundfont->rowCount());
-
+	QList<QVariant> sflist;
 	for(int i=0;i<ui->twSoundfont->rowCount();++i)
 	{
-		settings->setValue("SoundFonts/SF"+QString::number(i+1),ui->twSoundfont->item(i,1)->text());
-		settings->setValue("SoundFonts/SF"+QString::number(i+1)+"Enabled",int(((QCheckBox*)ui->twSoundfont->cellWidget(i,0))->isChecked()));
+		QString sfs=ui->twSoundfont->item(i,1)->text();
+		if(ui->twSoundfont->item(i,0)->checkState()==Qt::CheckState::Unchecked)sfs="#"+sfs;
+		sflist.push_back(sfs);
 	}
+	settings->setValue("Audio/SoundFonts",sflist);
 
 	settings->setValue("Behavior/RestorePlaylist",ui->cbRestorePlaylist->isChecked()?1:0);
 
@@ -305,8 +308,11 @@ void qmpSettingsWindow::on_pbAdd_clicked()
 	QStringList sl=QFileDialog::getOpenFileNames(this,"Add File","","SoundFont files (*.sf2)");
 	for(int i=0;i<sl.size();++i){
 		ui->twSoundfont->insertRow(ui->twSoundfont->rowCount());
-		ui->twSoundfont->setItem(ui->twSoundfont->rowCount()-1,1,new QTableWidgetItem(sl.at(i)));
-		ui->twSoundfont->setCellWidget(ui->twSoundfont->rowCount()-1,0,new QCheckBox(""));
+		QTableWidgetItem *sfn,*sfe;
+		ui->twSoundfont->setItem(ui->twSoundfont->rowCount()-1,1,sfn=new QTableWidgetItem(sl[i]));
+		ui->twSoundfont->setItem(ui->twSoundfont->rowCount()-1,0,sfe=new QTableWidgetItem());
+		sfn->setFlags(Qt::ItemFlag::ItemIsEnabled|Qt::ItemFlag::ItemIsSelectable);
+		sfe->setFlags(Qt::ItemFlag::ItemIsEnabled|Qt::ItemFlag::ItemIsSelectable|Qt::ItemFlag::ItemIsUserCheckable);
 	}
 }
 
@@ -323,11 +329,10 @@ void qmpSettingsWindow::on_pbUp_clicked()
 {
 	int cid=ui->twSoundfont->currentRow();if(!cid)return;
 	QTableWidgetItem *ci=ui->twSoundfont->takeItem(cid,1);
-	bool e=((QCheckBox*)ui->twSoundfont->cellWidget(cid,0))->isChecked();
+	QTableWidgetItem *ce=ui->twSoundfont->takeItem(cid,0);
 	ui->twSoundfont->removeRow(cid);
 	ui->twSoundfont->insertRow(cid-1);
-	ui->twSoundfont->setCellWidget(cid-1,0,new QCheckBox(""));
-	((QCheckBox*)ui->twSoundfont->cellWidget(cid-1,0))->setChecked(e);
+	ui->twSoundfont->setItem(cid-1,0,ce);
 	ui->twSoundfont->setItem(cid-1,1,ci);
 	ui->twSoundfont->setCurrentCell(cid-1,1);
 }
@@ -336,11 +341,10 @@ void qmpSettingsWindow::on_pbDown_clicked()
 {
 	int cid=ui->twSoundfont->currentRow();if(cid==ui->twSoundfont->rowCount()-1)return;
 	QTableWidgetItem *ci=ui->twSoundfont->takeItem(cid,1);
-	bool e=((QCheckBox*)ui->twSoundfont->cellWidget(cid,0))->isChecked();
+	QTableWidgetItem *ce=ui->twSoundfont->takeItem(cid,0);
 	ui->twSoundfont->removeRow(cid);
 	ui->twSoundfont->insertRow(cid+1);
-	ui->twSoundfont->setCellWidget(cid+1,0,new QCheckBox(""));
-	((QCheckBox*)ui->twSoundfont->cellWidget(cid+1,0))->setChecked(e);
+	ui->twSoundfont->setItem(cid+1,0,ce);
 	ui->twSoundfont->setItem(cid+1,1,ci);
 	ui->twSoundfont->setCurrentCell(cid+1,1);
 }
@@ -377,7 +381,7 @@ void qmpSettingsWindow::postInit()
 {
 	int sf=0;
 	for(int i=0;i<ui->twSoundfont->rowCount();++i)
-	if(((QCheckBox*)ui->twSoundfont->cellWidget(i,0))->isChecked())++sf;
+	if(ui->twSoundfont->item(i,0)->checkState()==Qt::CheckState::Checked)++sf;
 	std::string selecteddev;
 	std::vector<std::string> devs=qmpMainWindow::getInstance()->getPlayer()->getMidiOutDevices();
 	std::set<std::string> devset;

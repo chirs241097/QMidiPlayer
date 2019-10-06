@@ -325,15 +325,17 @@ void qmpMainWindow::playerSetup(IFluidSettings* fs)
 }
 void qmpMainWindow::loadSoundFont(IFluidSettings *fs)
 {
-	for(int i=settingsw->getSFWidget()->rowCount()-1;i>=0;--i)
+	QList<QVariant> sflist=settingsw->getSettingsIntf()->value("Audio/SoundFonts",QList<QVariant>{}).toList();
+	for(auto i=sflist.rbegin();i!=sflist.rend();++i)
 	{
-		if(!((QCheckBox*)settingsw->getSFWidget()->cellWidget(i,0))->isChecked())continue;
+		if(i->toString().startsWith('#'))continue;
+		QString sf=i->toString();
 #ifdef _WIN32
-		char* c=wcsto8bit(settingsw->getSFWidget()->item(i,1)->text().toStdWString().c_str());
+		char* c=wcsto8bit(sf.toStdWString().c_str());
 		fs->loadSFont(c);
 		free(c);
 #else
-		fs->loadSFont(settingsw->getSFWidget()->item(i,1)->text().toStdString().c_str());
+		fs->loadSFont(sf.toStdString().c_str());
 #endif
 	}
 }
