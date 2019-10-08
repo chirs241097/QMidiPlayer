@@ -37,7 +37,6 @@ void qmpDevicePriorityDialog::setupRegisteredDevices()
 		e->setEditable(false);
 		e->setCheckState(Qt::CheckState::Checked);
 		QStandardItem *a=new QStandardItem;
-		a->setEnabled(false);
 		a->setText(sconn.find(dev.toString().toStdString())!=sconn.end()?"Connected":"Disconnected");
 		a->setEditable(false);
 		QStandardItem *devn=new QStandardItem(dev.toString());
@@ -53,7 +52,6 @@ void qmpDevicePriorityDialog::setupRegisteredDevices()
 		e->setEditable(false);
 		e->setCheckState(Qt::CheckState::Unchecked);
 		QStandardItem *a=new QStandardItem;
-		a->setEnabled(false);
 		a->setText("Connected");
 		a->setEditable(false);
 		QStandardItem *devn=new QStandardItem(QString::fromStdString(dev));

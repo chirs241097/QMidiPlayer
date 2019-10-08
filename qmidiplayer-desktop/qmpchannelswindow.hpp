@@ -40,6 +40,7 @@ class qmpChannelsModel:public QAbstractTableModel
 		int rowCount(const QModelIndex&parent=QModelIndex())const override;
 		QModelIndex parent(const QModelIndex&child)const override;
 		QVariant data(const QModelIndex&index,int role=Qt::ItemDataRole::DisplayRole)const override;
+		bool setData(const QModelIndex &index,const QVariant &value,int role=Qt::EditRole)override;
 		QVariant headerData(int section,Qt::Orientation orientation,int role=Qt::ItemDataRole::DisplayRole)const override;
 		Qt::ItemFlags flags(const QModelIndex&idx)const override;
 	public slots:
@@ -56,7 +57,7 @@ class qmpDeviceItemDelegate:public QStyledItemDelegate
 {
 	Q_OBJECT
 	public:
-		explicit qmpDeviceItemDelegate(QWidget*parent=nullptr);
+		explicit qmpDeviceItemDelegate(bool ignoreInternal=false,QWidget*parent=nullptr);
 		void paint(QPainter*painter,const QStyleOptionViewItem&option,const QModelIndex&index)const override;
 		QSize sizeHint(const QStyleOptionViewItem&option,const QModelIndex&index)const override;
 		QWidget* createEditor(QWidget*parent,const QStyleOptionViewItem&option,const QModelIndex&index)const override;
@@ -65,6 +66,7 @@ class qmpDeviceItemDelegate:public QStyledItemDelegate
 		void updateEditorGeometry(QWidget*editor,const QStyleOptionViewItem&option,const QModelIndex&index)const override;
 	private:
 		QWidget *par;
+		bool nofs;
 };
 
 class qmpChannelsWindow:public QWidget

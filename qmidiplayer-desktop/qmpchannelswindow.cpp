@@ -95,6 +95,20 @@ QVariant qmpChannelsModel::data(const QModelIndex&index,int role)const
 	}
 	return QVariant();
 }
+bool qmpChannelsModel::setData(const QModelIndex&index,const QVariant&value,int role)
+{
+	if(index.column()==3)
+	{
+		if(role!=Qt::ItemDataRole::DisplayRole)return false;
+		std::vector<std::string> dsv=CMidiPlayer::getInstance()->getMidiOutDevices();
+		int idx=std::find(dsv.begin(),dsv.end(),value.toString().toStdString())-dsv.begin();
+		if(idx==CMidiPlayer::getInstance()->getChannelOutput(index.row()))return false;
+		CMidiPlayer::getInstance()->setChannelOutput(index.row(),idx);
+		emit dataChanged(index,index,{Qt::DisplayRole});
+		return true;
+	}
+	return false;
+}
 QVariant qmpChannelsModel::headerData(int section,Qt::Orientation orientation,int role)const
 {
 	if(role!=Qt::ItemDataRole::DisplayRole)return QVariant();
@@ -152,8 +166,8 @@ void qmpChannelsModel::channelMSClearAll(int type)
 	}
 }
 
-qmpDeviceItemDelegate::qmpDeviceItemDelegate(QWidget*parent):QStyledItemDelegate(parent),par(parent)
-{}
+qmpDeviceItemDelegate::qmpDeviceItemDelegate(bool ignoreInternal,QWidget*parent):
+	QStyledItemDelegate(parent),par(parent),nofs(ignoreInternal){}
 void qmpDeviceItemDelegate::paint(QPainter*painter,const QStyleOptionViewItem&option,const QModelIndex&index)const
 {
 	QStyleOptionViewItem opt;
@@ -162,6 +176,7 @@ void qmpDeviceItemDelegate::paint(QPainter*painter,const QStyleOptionViewItem&op
 	socb.currentText=opt.text;
 	socb.editable=false;
 	socb.rect=option.rect;
+	socb.state=opt.state;
 	par->style()->drawComplexControl(QStyle::ComplexControl::CC_ComboBox,&socb,painter);
 	par->style()->drawControl(QStyle::CE_ComboBoxLabel,&socb,painter);
 }
@@ -182,6 +197,10 @@ QWidget* qmpDeviceItemDelegate::createEditor(QWidget*parent,const QStyleOptionVi
 	Q_UNUSED(index)
 	QComboBox *cb=new QComboBox(parent);
 	cb->setEditable(false);
+	connect(cb,static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),this,[index,cb](int){
+		const_cast<QAbstractItemModel*>(index.model())->setData(index,cb->currentText(),Qt::ItemDataRole::DisplayRole);
+		cb->hidePopup();
+	});
 	return cb;
 }
 void qmpDeviceItemDelegate::setEditorData(QWidget*widget,const QModelIndex&index)const
@@ -196,21 +215,15 @@ void qmpDeviceItemDelegate::setEditorData(QWidget*widget,const QModelIndex&index
 	cb->clear();
 	std::vector<std::string> devs=qmpMainWindow::getInstance()->getPlayer()->getMidiOutDevices();
 	for(auto s:devs)
-		cb->addItem(QString::fromStdString(s));
-	cb->setCurrentIndex(qmpMainWindow::getInstance()->getPlayer()->getChannelOutput(index.row()));
+		if(!nofs||(nofs&&s!="Internal FluidSynth"))
+			cb->addItem(QString::fromStdString(s));
+	cb->setCurrentText(index.data().toString());
 	cb->showPopup();
-	connect(cb,static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),[this,index,cb](int id){
-		QTableView*pv=qobject_cast<QTableView*>(this->parent());
-		qmpMainWindow::getInstance()->getPlayer()->setChannelOutput(index.row(),id);
-		emit pv->model()->dataChanged(index,index,{Qt::DisplayRole});
-		cb->hidePopup();
-	});
 }
 void qmpDeviceItemDelegate::setModelData(QWidget*editor,QAbstractItemModel*model,const QModelIndex&index)const
 {
 	QComboBox *cb=qobject_cast<QComboBox*>(editor);
-	qmpMainWindow::getInstance()->getPlayer()->setChannelOutput(index.row(),cb->currentIndex());
-	emit model->dataChanged(index,index,{Qt::DisplayRole});
+	model->setData(index,cb->currentText(),Qt::ItemDataRole::DisplayRole);
 }
 void qmpDeviceItemDelegate::updateEditorGeometry(QWidget*editor,const QStyleOptionViewItem&option,const QModelIndex&index)const
 {
@@ -225,7 +238,7 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent) :
 	ui->setupUi(this);
 	ui->tvChannels->setHorizontalHeader(new QHeaderView(Qt::Orientation::Horizontal));
 	ui->tvChannels->setModel(chmodel=new qmpChannelsModel);
-	ui->tvChannels->setItemDelegateForColumn(3,new qmpDeviceItemDelegate(ui->tvChannels));
+	ui->tvChannels->setItemDelegateForColumn(3,new qmpDeviceItemDelegate(false,ui->tvChannels));
 	ui->tvChannels->setAlternatingRowColors(true);
 	ui->tvChannels->setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
 	ui->tvChannels->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeMode::ResizeToContents);

@@ -113,4 +113,4 @@ void qmpMidiFmtPlugin::deinit()
 const char* qmpMidiFmtPlugin::pluginGetName()
 {return "QMidiPlayer extra midi formats plugin";}
 const char* qmpMidiFmtPlugin::pluginGetVersion()
-{return "0.8.6";}
+{return "0.8.7";}

@@ -3,10 +3,10 @@
 #include <QLabel>
 #include <QFileDialog>
 #include <QTableWidgetItem>
-#include <QCheckBox>
 #include "qmpdevpropdialog.hpp"
 #include "qmpmainwindow.hpp"
 #include "qmpsettingswindow.hpp"
+#include "qmpchannelswindow.hpp"
 #include "ui_qmpdevpropdialog.h"
 
 qmpDevPropDialog::qmpDevPropDialog(QWidget *parent) :
@@ -14,6 +14,19 @@ qmpDevPropDialog::qmpDevPropDialog(QWidget *parent) :
 	ui(new Ui::qmpDevPropDialog)
 {
 	ui->setupUi(this);
+	ui->twProps->setItemDelegateForColumn(0,new qmpDeviceItemDelegate(true,ui->twProps));
+	ui->twProps->setEditTriggers(QAbstractItemView::EditTrigger::NoEditTriggers);
+	connect(ui->twProps,&QTableWidget::cellClicked,[this](int r,int c){
+		if(c!=0)return;
+		this->ui->twProps->edit(ui->twProps->model()->index(r,c));
+	});
+	connect(ui->twProps,&QTableWidget::cellChanged,this,[this](int r,int c){
+		if(c!=0)return;
+		QString connst("Disconnected");
+		for(auto&ds:qmpMainWindow::getInstance()->getPlayer()->getMidiOutDevices())
+			if(ui->twProps->item(r,c)->text()==QString::fromStdString(ds)){connst="Connected";break;}
+		ui->twProps->item(r,1)->setText(connst);
+	});
 }
 
 qmpDevPropDialog::~qmpDevPropDialog()
@@ -48,10 +61,10 @@ void qmpDevPropDialog::setupRow(const QString&dn,const QString&din)
 	int r;
 	ui->twProps->insertRow(r=ui->twProps->rowCount());
 	ui->twProps->setRowHeight(r,32);
-	QComboBox *cb;
-	ui->twProps->setCellWidget(r,0,cb=new QComboBox);
-	for(auto&s:qmpMainWindow::getInstance()->getPlayer()->getMidiOutDevices())
-	if(s!="Internal FluidSynth")cb->addItem(QString::fromStdString(s));
+	QTableWidgetItem *cbx=new QTableWidgetItem;
+	ui->twProps->setItem(r,1,cbx);
+	QTableWidgetItem *cb;
+	ui->twProps->setItem(r,0,cb=new QTableWidgetItem);
 	QWidget *fw=new QWidget;
 	QLabel *lb;QPushButton *pb;
 	fw->setLayout(new QHBoxLayout);
@@ -61,29 +74,19 @@ void qmpDevPropDialog::setupRow(const QString&dn,const QString&din)
 	fw->layout()->addWidget(pb=new QPushButton);
 	pb->setText("...");
 	pb->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
-	QCheckBox *cbx;
-	ui->twProps->setCellWidget(r,1,cbx=new QCheckBox);
-	cbx->setEnabled(false);
-	cbx->setChecked(false);
+	cbx->setFlags(Qt::ItemFlag::ItemIsEnabled|Qt::ItemFlag::ItemIsSelectable);
+	cbx->setText("Disconnected");
 	ui->twProps->setCellWidget(r,2,fw);
 	ui->twProps->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeMode::ResizeToContents);
-	connect(cb,&QComboBox::currentTextChanged,this,[this,r](const QString&s){
-		bool conn=false;
-		for(auto&ds:qmpMainWindow::getInstance()->getPlayer()->getMidiOutDevices())
-			if(s==QString::fromStdString(ds)){conn=true;break;}
-		((QCheckBox*)ui->twProps->cellWidget(r,1))->setChecked(conn);
-	});
 	if(dn.length())
 	{
-		cb->setCurrentText(dn);
-		if(cb->currentText()!=dn)
-		{
-			cb->setEditable(true);
-			cb->setCurrentText(dn);
-			cb->setEnabled(false);
-		}
+		cb->setText(dn);
+		cb->setFlags(cb->flags()|Qt::ItemFlag::ItemIsEditable);
+		std::vector<std::string> dsv=CMidiPlayer::getInstance()->getMidiOutDevices();
+		if(std::find(dsv.begin(),dsv.end(),dn.toStdString())==dsv.end())
+			cb->setFlags(cb->flags()&(~Qt::ItemFlag::ItemIsEnabled));
+		else cb->setFlags(cb->flags()|Qt::ItemFlag::ItemIsEnabled);
 	}
-	emit cb->currentTextChanged(cb->currentText());
 	connect(pb,&QPushButton::clicked,this,[this,lb,fw]{
 		lb->setText(QFileDialog::getOpenFileUrl(this,"Select Device Initialization File",QUrl()).path());
 		fw->setProperty("fn",lb->text());
@@ -97,7 +100,7 @@ void qmpDevPropDialog::on_buttonBox_accepted()
 	s->remove("");
 	for(int i=0;i<ui->twProps->rowCount();++i)
 	{
-		s->setValue(((QComboBox*)ui->twProps->cellWidget(i,0))->currentText(),
+		s->setValue(ui->twProps->item(i,0)->text(),
 					ui->twProps->cellWidget(i,2)->property("fn").toString());
 	}
 	s->endGroup();

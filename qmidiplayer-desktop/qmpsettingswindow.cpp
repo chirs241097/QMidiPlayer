@@ -288,7 +288,7 @@ void qmpSettingsWindow::settingsUpdate()
 	for(int i=0;i<ui->twPluginList->rowCount();++i)
 		settings->setValue(
 		QString("PluginSwitch/")+ui->twPluginList->item(i,1)->text(),
-		((QCheckBox*)ui->twPluginList->cellWidget(i,0))->isChecked()?1:0);
+		ui->twPluginList->item(i,0)->checkState()==Qt::CheckState::Checked?1:0);
 	updateCustomOptions();
 	settings->sync();
 }
@@ -360,11 +360,12 @@ void qmpSettingsWindow::updatePluginList(qmpPluginManager *pmgr)
 	for(unsigned i=0;i<plugins->size();++i)
 	{
 		ui->twPluginList->insertRow(i);
-		ui->twPluginList->setCellWidget(i,0,new QCheckBox(""));
-		if(settings->value(QString("PluginSwitch/")+QString(plugins->at(i).name.c_str()),1).toInt())
-		{((QCheckBox*)ui->twPluginList->cellWidget(i,0))->setChecked(true);plugins->at(i).enabled=true;}
-		else
-		{((QCheckBox*)ui->twPluginList->cellWidget(i,0))->setChecked(false);plugins->at(i).enabled=false;}
+		QTableWidgetItem *icb;
+		ui->twPluginList->setItem(i,0,icb=new QTableWidgetItem());
+		bool enabled=settings->value(QString("PluginSwitch/")+QString(plugins->at(i).name.c_str()),1).toInt();
+		icb->setCheckState(enabled?Qt::CheckState::Checked:Qt::CheckState::Unchecked);
+		icb->setFlags(Qt::ItemFlag::ItemIsEnabled|Qt::ItemFlag::ItemIsSelectable|Qt::ItemFlag::ItemIsUserCheckable);
+		plugins->at(i).enabled=enabled;
 		ui->twPluginList->setItem(i,1,new QTableWidgetItem(plugins->at(i).name.c_str()));
 		ui->twPluginList->setItem(i,2,new QTableWidgetItem(plugins->at(i).version.c_str()));
 		ui->twPluginList->setItem(i,3,new QTableWidgetItem(plugins->at(i).path.c_str()));
