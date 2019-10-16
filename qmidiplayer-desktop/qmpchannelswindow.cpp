@@ -177,8 +177,8 @@ void qmpDeviceItemDelegate::paint(QPainter*painter,const QStyleOptionViewItem&op
 	socb.editable=false;
 	socb.rect=option.rect;
 	socb.state=opt.state;
-	par->style()->drawComplexControl(QStyle::ComplexControl::CC_ComboBox,&socb,painter);
-	par->style()->drawControl(QStyle::CE_ComboBoxLabel,&socb,painter);
+	par->style()->drawComplexControl(QStyle::ComplexControl::CC_ComboBox,&socb,painter,option.widget);
+	par->style()->drawControl(QStyle::CE_ComboBoxLabel,&socb,painter,option.widget);
 }
 QSize qmpDeviceItemDelegate::sizeHint(const QStyleOptionViewItem&option,const QModelIndex&index)const
 {
@@ -189,7 +189,7 @@ QSize qmpDeviceItemDelegate::sizeHint(const QStyleOptionViewItem&option,const QM
 	socb.editable=false;
 	socb.rect=option.rect;
 	QSize sz=par->fontMetrics().size(Qt::TextFlag::TextSingleLine,socb.currentText);
-	return par->style()->sizeFromContents(QStyle::ContentsType::CT_ComboBox,&socb,sz);
+	return par->style()->sizeFromContents(QStyle::ContentsType::CT_ComboBox,&socb,sz,option.widget);
 }
 QWidget* qmpDeviceItemDelegate::createEditor(QWidget*parent,const QStyleOptionViewItem&option,const QModelIndex&index)const
 {
