@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <chrono>
 #include <unordered_map>
+#include <tuple>
 #include <utility>
 #include <vector>
 #define QMP_MAIN
@@ -91,7 +92,7 @@ class CMidiPlayer
 		void* eventHandlerCBuserdata[16];
 		void* eventReaderCBuserdata[16];
 		void* fileReadFinishCBuserdata[16];
-		std::unordered_map<int,std::pair<callback_t,void*>> event_handlers;
+		std::unordered_map<int,std::tuple<callback_t,void*,bool>> event_handlers;
 		std::unordered_map<int,std::pair<callback_t,void*>> event_read_handlers;
 		std::unordered_map<int,std::pair<callback_t,void*>> file_read_finish_hooks;
 		int event_handlers_id,event_read_handlers_id,file_read_finish_hooks_id;
@@ -163,7 +164,7 @@ class CMidiPlayer
 		void unsetEventReaderCB(int id);
 		int setFileReadFinishedCB(ICallBack *cb,void *userdata);
 		void unsetFileReadFinishedCB(int id);
-		int registerEventHandler(callback_t cb,void *userdata);
+		int registerEventHandler(callback_t cb,void *userdata,bool post);
 		void unregisterEventHandler(int id);
 		int registerEventReadHandler(callback_t cb,void *userdata);
 		void unregisterEventReadHandler(int id);

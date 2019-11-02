@@ -20,7 +20,8 @@ bool CMidiPlayer::processEvent(const SEvent *e)
 	for(int i=0;i<16;++i)if(eventHandlerCB[i])
 		eventHandlerCB[i]->callBack((void*)&fe,eventHandlerCBuserdata[i]);
 	for(auto i=event_handlers.begin();i!=event_handlers.end();++i)
-		i->second.first((void*)e,i->second.second);
+		if(!std::get<2>(i->second))
+			std::get<0>(i->second)((void*)e,std::get<1>(i->second));
 	uint8_t ch=e->type&0x0F;
 	if((e->type&0xF0)<0xF0)
 		levtt[ch]=std::chrono::system_clock::now();
@@ -195,11 +196,16 @@ void CMidiPlayer::playEvents()
 			//fprintf(stderr,"@ tick %u, dtime %.6fus",getTick(),_dt/1000.);
 		}
 		for(;!tcstop&&midiReaders&&tceptr<ecnt&&ct==getEvent(tceptr)->time;++tceptr)
+		{
 			if(processEvent(getEvent(tceptr)))
 			{
 				SEvent* e=getEvent(tceptr);
 				mididev[mappedoutput[e->type&0x0F]].dev->basicMessage(e->type,e->p1,e->p2);
 			}
+			for(auto i=event_handlers.begin();i!=event_handlers.end();++i)
+				if(std::get<2>(i->second))
+					std::get<0>(i->second)((void*)getEvent(tceptr),std::get<1>(i->second));
+		}
 		if(tcstop||!midiReaders||tceptr>=ecnt)break;
 		high_resolution_clock::time_point a=high_resolution_clock::now();
 		auto sendtime=a-b;
@@ -553,10 +559,10 @@ int CMidiPlayer::setFileReadFinishedCB(ICallBack *cb,void *userdata)
 }
 void CMidiPlayer::unsetFileReadFinishedCB(int id)
 {fileReadFinishCB[id]=nullptr;fileReadFinishCBuserdata[id]=nullptr;}
-int CMidiPlayer::registerEventHandler(callback_t cb,void *userdata)
+int CMidiPlayer::registerEventHandler(callback_t cb,void *userdata,bool post)
 {
 	int ret;
-	event_handlers[ret=event_handlers_id++]=std::make_pair(cb,userdata);
+	event_handlers[ret=event_handlers_id++]=std::make_tuple(cb,userdata,post);
 	return ret;
 }
 void CMidiPlayer::unregisterEventHandler(int id)

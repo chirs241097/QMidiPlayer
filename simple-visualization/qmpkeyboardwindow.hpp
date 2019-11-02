@@ -2,15 +2,17 @@
 #define QMPKEYBOARDWINDOW_HPP
 
 #include "../include/qmpcorepublic.hpp"
-#include "qmppianowidget.hpp"
 
 #include <QWidget>
 
+class QLabel;
+class qmpPianoWidget;
 class qmpKeyboardWindow:public QWidget
 {
 	Q_OBJECT
 	private:
 		qmpPianoWidget *pw[16];
+		QLabel *lb[16];
 		qmpPluginAPI *api;
 		int eh;
 	public:

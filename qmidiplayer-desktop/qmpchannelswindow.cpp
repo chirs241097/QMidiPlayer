@@ -22,7 +22,7 @@ qmpChannelsModel::qmpChannelsModel(QObject*parent):QAbstractTableModel(parent)
 				QMetaObject::invokeMethod(this, &qmpChannelsModel::updateChannelActivity, Qt::ConnectionType::QueuedConnection);
 			}
 		}
-	,nullptr);
+	,nullptr,false);
 	QTimer*t=new QTimer(this);
 	t->setInterval(500);
 	t->setSingleShot(false);
@@ -267,7 +267,7 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent) :
 			if((e->type&0xF0)==0x90&&e->p2>0&&(e->flags&0x01))
 				emit this->noteOn();
 		}
-	,nullptr);
+	,nullptr,false);
 	std::vector<std::string> devs=qmpMainWindow::getInstance()->getPlayer()->getMidiOutDevices();
 	size_t devc=devs.size();
 	std::set<std::string> devset;

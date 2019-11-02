@@ -179,7 +179,13 @@ std::string qmpPluginAPI::getChannelPresetString(int ch)
 	std::string nm;
 	if(qmw&&qmw->getPlayer())
 	{
-		qmw->getPlayer()->getChannelOutputDevice(ch)->getChannelPreset(ch,&b,&p,nm);
+		int r=qmw->getPlayer()->getChannelOutputDevice(ch)->getChannelPreset(ch,&b,&p,nm);
+		if(!r)
+		{
+			b=qmw->getPlayer()->getCC(ch,0)<<7|qmw->getPlayer()->getCC(ch,32);
+			p=qmw->getPlayer()->getCC(ch,128);
+			nm=qmw->getPlayer()->getChannelOutputDevice(ch)->getPresetName(b,p);
+		}
 		snprintf(ret,320,"%03d:%03d %s",b,p,nm.c_str());
 	}
 	return std::string(ret);
@@ -223,8 +229,8 @@ void qmpPluginAPI::registerFileReader(qmpFileReader* reader,std::string name)
 {qmw->getPlayer()->registerReader(reader,name);}
 void qmpPluginAPI::unregisterFileReader(std::string name)
 {qmw->getPlayer()->unregisterReader(name);}
-int qmpPluginAPI::registerEventHandler(callback_t cb,void *userdata)
-{return qmw->getPlayer()->registerEventHandler(cb,userdata);}
+int qmpPluginAPI::registerEventHandler(callback_t cb,void *userdata,bool post)
+{return qmw->getPlayer()->registerEventHandler(cb,userdata,post);}
 void qmpPluginAPI::unregisterEventHandler(int id)
 {qmw->getPlayer()->unregisterEventHandler(id);}
 int qmpPluginAPI::registerEventReadHandler(callback_t cb,void *userdata)

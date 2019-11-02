@@ -169,7 +169,7 @@ class qmpPluginAPI
 		virtual void unregisterEventHandlerIntf(int intfhandle);
 		virtual int registerFileReadFinishedHandlerIntf(ICallBack* cb,void* userdata);
 		virtual void unregisterFileReadFinishedHandlerIntf(int intfhandle);
-		virtual int registerEventHandler(callback_t cb,void *userdata);
+		virtual int registerEventHandler(callback_t cb,void *userdata,bool post=false);
 		virtual void unregisterEventHandler(int id);
 		virtual int registerEventReadHandler(callback_t cb,void *userdata);
 		virtual void unregisterEventReadHandler(int id);
