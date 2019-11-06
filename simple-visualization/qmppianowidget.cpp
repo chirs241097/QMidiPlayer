@@ -5,6 +5,10 @@
 qmpPianoWidget::qmpPianoWidget(QWidget *parent) : QWidget(parent)
 {
 	memset(keystates,0,sizeof(keystates));
+	QPalette p=palette();
+	p.setColor(QPalette::ColorRole::Highlight,0xff66cc);
+	p.setColor(QPalette::ColorRole::Base,0x66ccff);
+	setPalette(p);
 }
 void qmpPianoWidget::setKeyState(int key,bool state)
 {
@@ -21,13 +25,32 @@ QSize qmpPianoWidget::minimumSizeHint()const
 	return QSize(320,22);
 }
 
+bool qmpPianoWidget::hasHeightForWidth()const
+{
+	return true;
+}
+
+int qmpPianoWidget::heightForWidth(int w)const
+{
+	return w*22/320;
+}
+
 void qmpPianoWidget::paintEvent(QPaintEvent *event)
 {
 	Q_UNUSED(event)
 	for(int i=0;i<128;++i)
 	{
 		QRectF r=getKeyRect(i);
-		paintKey(r,QColor(keystates[i]?0xff66cc:0x66ccff));
+		QColor activeColor=palette().color(QPalette::ColorRole::Highlight);
+		QColor inactiveColor=palette().color(QPalette::ColorRole::Base);
+		if(i/12%2)
+		{
+			if(inactiveColor.valueF()>0.5)
+				inactiveColor=inactiveColor.darker(112);
+			else
+				inactiveColor=inactiveColor.lighter(112);
+		}
+		paintKey(r,keystates[i]?activeColor:inactiveColor);
 	}
 }
 

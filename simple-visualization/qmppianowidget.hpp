@@ -12,6 +12,8 @@ class qmpPianoWidget : public QWidget
 		void setKeyState(int key,bool state);
 		void reset();
 		QSize minimumSizeHint()const override;
+		bool hasHeightForWidth()const override;
+		int heightForWidth(int w)const override;
 
 	protected:
 		void paintEvent(QPaintEvent *event)override;

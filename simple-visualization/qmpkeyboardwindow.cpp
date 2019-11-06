@@ -16,6 +16,10 @@ qmpKeyboardWindow::qmpKeyboardWindow(qmpPluginAPI *_api,QWidget *parent):
 		grid->addWidget(lb[ch]=new QLabel,ch,0);
 		grid->addWidget(pw[ch]=new qmpPianoWidget(this),ch,1);
 		pw[ch]->setSizePolicy(QSizePolicy::Policy::Expanding,QSizePolicy::Policy::Preferred);
+		QPalette p=palette();
+		p.setColor(QPalette::ColorRole::Highlight,api->getOptionUint("Keyboard/acolor"+std::to_string(ch)));
+		p.setColor(QPalette::ColorRole::Base,api->getOptionUint("Keyboard/bcolor"+std::to_string(ch)));
+		pw[ch]->setPalette(p);
 	}
 	hide();
 	eh=api->registerEventHandler(

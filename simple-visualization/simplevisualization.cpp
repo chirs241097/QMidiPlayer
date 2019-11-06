@@ -7,6 +7,11 @@ void qmpSimpleVisualization::close(){p->close();}
 void qmpSimpleVisualization::init()
 {
 	api->registerFunctionality(this,"Keyboard","Keyboard",api->isDarkTheme()?":/img/visualization_i.svg":":/img/visualization.svg",0,true);
+	for(int i=0;i<16;++i)
+	{
+		api->registerOptionUint("","","Keyboard/acolor"+std::to_string(i),0,0xffffff,0xffff66cc);
+		api->registerOptionUint("","","Keyboard/bcolor"+std::to_string(i),0,0xffffff,0xff66ccff);
+	}
 	p=new qmpKeyboardWindow(api,(QWidget*)api->getMainWindow());
 	uihs=api->registerUIHook("main.stop",[this](const void*,void*){this->p->resetAll();},nullptr);
 }
