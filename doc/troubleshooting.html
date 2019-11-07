@@ -41,7 +41,12 @@
 		<h3>3. MIDI timing is messed up.</h3>
 		<p>
 			This is a known issue under Windows. Try decreasing audio buffer size and
-			increasing audio buffer count.
+			increasing audio buffer count. Also make sure you are not using shitty cabling
+			if you are using external synthesizers.
+		</p>
+		<p>
+			Also also, if you overload your computer (fluidsynth) or synthesizer too much,
+			don't expect the timing would still keep up!
 		</p>
 		<h3>4. Some files cannot be played.</h3>
 		<h3>5. Some soundfonts cannot be loaded.</h3>
@@ -59,7 +64,7 @@
 		</p>
 		<h3>8. Bank selecting is incorrect for external devices.</h3>
 		<p>
-			Bank selecting to external devices is sent in raw format. The midi
+			Bank selecting messages are sent to external devices directly. The midi
 			file may be incompatible with your device.
 		</p>
 		<h3>9. 3D visualization is upsidedown/rotated/black/blinking.</h3>
@@ -73,9 +78,28 @@
 			Devices/drivers reported to have this issue:
 			<ul>
 				<li>Intel HD 5500 found in i5-5200U / official Windows driver</li>
-				<li>Unknown low-end AMD card / official Windows driver</li>
-				<li>Raspberry Pi 2 VC4 / Full KMS OpenGL (GLX)</li>
+				<li>Unknown low-end AMD Oland GPU / official Windows driver</li>
+				<li>Raspberry Pi 2 &amp; 3 VC4 / Full KMS OpenGL (GLX)</li>
 			</ul>
+		</p>
+		<h3>10. External devices connected but does not show up.</h3>
+		<p>
+			Always connect your device <b>before</b> launching QMidiPlayer and make
+			sure it is not used by another application.
+			If it still refuses to work, make sure your device is working within
+			some other MIDI applications. If it doesn't, try reinstalling the driver,
+			checking the cables ... even turning it off and on again?
+		</p>
+		<p>
+			If it works in programs other than QMidiPlayer however, you're probably
+			facing a new bug in QMidiPlayer.
+		</p>
+		<h3>11. Tweaking the values in channel editor does nothing.</h3>
+		<p>
+			It depends. Sound modules from different vendors accept different sets
+			of controller messages. As for fluidsynth, it relies on the modulation
+			matrix of the soundfont. Sadly most of the soundfonts floating around
+			on the Internet do not have modulation matrix declared.
 		</p>
 	</div>
 </body>

@@ -24,15 +24,11 @@
 	</div>
 	<div id="content">
 	<h1>Settings Dialog</h1>
-	Settings are stored in $HOME/.config/qmprc<br>
-	For Windows users, $HOME refers to X:\Users\&lt;your user name&gt;\.config, where X is the system drive of your
-	Windows installation.<br>
-	Options with one asterisk will be applied after restarting QMidiPlayer.<br>
+	Options with one asterisk will be applied after QMidiPlayer is restarted.<br>
 	Options with two asterisks will be applied after the internal fluidsynth is restarted.<br>
 	Other options are applied immediately.<br>
-	<img src="../img/options1.png"><br>
+	<img src="../img/options1.png" width="440"><br>
 	<ul>
-		<li>Default Output Device*: specify the default midi device to use.</li>
 		<li>Disable Midi Mapping*: only use the default output device.</li>
 		<li>Send SysEx: whether to send system exclusive messages or not.</li>
 		<li>Wait for remaining voices before stopping:<br>
@@ -40,8 +36,13 @@
 		Otherwise it will stop immediately after the last event is sent.
 		</li>
 		<li>Text encoding: text encoding used in the midi file.</li>
+		<li>Select MIDI output devices*: Choose the MIDI devices to use for default device selection.<br>
+		When QMidiPlayer starts, selected devices will be examined from top to bottom, the first connected
+		one will be chosen as the default output device.
+		</li>
+		<li>External MIDI output device setup*: set initialzation file for external MIDI devices.</li>
 	</ul>
-	<img src="../img/options2.png"><br>
+	<img src="../img/options2.png" width="440"><br>
 	<ul>
 		<li>Audio Driver**: specify the audio backend used by the internal synthesizer.</li>
 		<li>Audio Buffer Size**: Size per buffer used by the fluidsynth engine. Increase if experiencing audio interruption, decrease if audio is laggy or messed up.</li>
@@ -58,11 +59,12 @@
 		</li>
 		<li>(Fallback) Bank Select Mode: the default bank select mode.</li>
 	</ul>
-	<img src="../img/options3.png"><br>
-	You can manage soundfont used by the internal fluidsynth engine here.<br>
+	<img src="../img/options3.png" width="440"><br>
+	You can manage a list of soundfonts used by the internal fluidsynth engine here. Unchecked
+	soundfonts will not be used.<br>
 	If multiple soundfonts provide instruments with the same bank numbers and preset numbers,
 	the preset provided by the top most soundfont will be used.<br>
-	<img src="../img/options4.png"><br>
+	<img src="../img/options4.png" width="440"><br>
 	<ul>
 		<li>Restore last playlist on startup*: If checked and QMidiPlayer is started without files
 		to open, the playlist from the last session will be used instead of an empty playlist.</li>
@@ -77,7 +79,7 @@
 		<li>Customize toolbar: customize the functionalities shown in the main window.</li>
 		<li>Customize actions: customize the functionalities shown in the file action menu.</li>
 	</ul>
-	<img src="../img/options5.png"><br>
+	<img src="../img/options5.png" width="440"><br>
 	Plugin manager. View details of plugins, enable or disable them here.<br>
 	Enabled plugin list is applied after a restart.<br>
 	Plugin scanning follows the order below:

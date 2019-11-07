@@ -24,18 +24,22 @@
 	</div>
 	<div id="content">
 	<h1>Main Window</h1>
-	<img src="../img/mainw.png"><br>
-	<ul>
-		<li>1. Now playing. Right clicking here will bring up the <a href="#fileop"> file operation menu</a>.</li>
-		<li>2. Playing control slider. The total playing time is estimated and isn't 100% accurate.</li>
-		<li>3. Playing control buttons. Self-explanatory.</li>
-		<li>4. Settings button. Read the Settings section for details.</li>
-		<li>5. Dialog toggle buttons.</li>
-		<li>6. Master gain slider.</li>
-		<li>7. Polyphone indicator.</li>
-		<li>8. <s>It's me!</s></li>
-	</ul>
+	<img src="../img/mainw.png" width="480"><br>
+	<ol>
+		<li>Now playing. Right clicking here will bring up the <a href="#fileop">action menu</a>.</li>
+		<li>Seeking slider. Song length is estimated and may not be 100% accurate.</li>
+		<li>Playback control buttons. Self-explanatory.</li>
+		<li>Open file.</li>
+		<li>Settings button. Refer to the <a href="optionsdialog.html">Settings section</a> for details.</li>
+		<li>Dialog buttons. You can configure this section in settings.</li>
+		<li>FluidSynth master gain slider.</li>
+		<li>FluidSynth polyphony indicator.</li>
+		<li>A dumb button.</li>
+	</ol>
 	<h3><a name="fileop">File operation menu</a></h3>
+	<p>
+	Note that actual actions in this menu can be configured in settings.
+	</p>
 	<ul>
 		<li>File Information.<br>
 		Click an item in this dialog to copy its content.
@@ -48,9 +52,8 @@
 		<li>Panic.<br>
 		If somehow the player messed up, use this action to turn off all the notes.
 		<li>Restart fluidsynth.<br>
-		It's not possible to use this action unless the player is stopped.<br>
-		Applies settings and restart the internel fluidsynth engine when "single fluidsynth instance"
-		is enabled.
+		This action can only be used when no file is being played.<br>
+		Applies settings and restart the internel fluidsynth engine.
 		</li>
 	</ul>
 	<br><a href="index.html">Return</a>

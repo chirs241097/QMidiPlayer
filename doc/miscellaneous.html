@@ -30,14 +30,7 @@
 			<li><a href="#contact">Contact the author</a></li>
 		</ul>
 		<h3 id="build">Building QMidiPlayer from source</h3>
-		Building QMidiPlayer from source is as easy as any other qmake projects.<br>
-		1. Get the dependencies.<br>
-		Currently QMidiPlayer depends on these libraries:<br>
-		<pre style="background-color:#eee;padding:0.2em;">qt5, libfluidsynth(FluidSynth), librtmidi(RtMidi)</pre>
-		If you want to build the lite version as well, you need several QML core modules.<br>
-		Get the libraries for your platform, open the project with Qt Creator, configure and hit Build!
-		(You may also use the qmake-make way).<br>
-		Please note that QMidiPlayer <i>requires</i> C++11 to build.
+		Checkout <code>INSTALL.md</code> in the project root directory.
 		<h3 id="ms">Roadmap/Milestones</h3>
 		<ul>
 			<li>0.5.x  Basic functionality</li>
@@ -46,6 +39,7 @@
 			<li>0.7.8  Plugin interface, UI refactoring</li>
 			<li>0.8.x  Visualization (the default visualization plugin).</li>
 			<li>0.8.5+ File reader plugin API, event filter/modifier API. </li>
+			<li>0.8.7  Better external MIDI device support. Simple visualization. </li>
 			<li>0.9.x  API Stablization. Revive lite version.</li>
 			<li>1.x+   Translation, documentation, Maintaince only.</li>
 		</ul>
@@ -56,7 +50,7 @@
 		Visual Studio 2015 Runtime Library</a>.
 		</p>
 		<p>
-		Nighly builds are compiled with MSVC2017 (using Qt MSVC2015 x86, though). So you need two runtime libraries
+		(Older) Nighly builds are compiled with MSVC2017 (using Qt MSVC2015 x86, though). So you need two runtime libraries
 		to run it. Damn.
 		</p>
 		<p>
@@ -75,18 +69,22 @@
 		<h4>3. On what platform(s) do you develop this project?</h4>
 		<p>
 		Major platforms used:
-        <ul>
-            <li>Debian GNU/Linux unstable(sid) amd64 on custom machine (i7-2960XM, 16GB RAM, GTX960, X9SCV-QV4)</li>
-            <li>Arch Linux amd64 on a Lenovo ThinkPad X1 yoga 1st Gen. (i7-6600U, 16GB RAM, HD520)</li>
-        </ul>
-        Platforms for building the Windows version:
-        <ul>
-            <li>Windows 10 Insider Pro on the ThinkPad X1 yoga mentioned above.</li>
-        </ul>
+		<ul>
+		<li>Debian GNU/Linux unstable(sid) amd64 on custom machine (i7-2960XM, 16GB RAM, GTX960, X9SCV-QV4)</li>
+		<li>Arch Linux amd64 on a Lenovo ThinkPad X1 yoga 1st Gen. (i7-6600U, 16GB RAM, HD520)</li>
+		</ul>
+		Platforms for building the Windows version:
+		<ul>
+		<li>Windows 10 Insider Pro on the ThinkPad X1 yoga mentioned above.</li>
+		</ul>
 		</p>
 		<h4>4. The code is full of shit and has no comment at all!</h4>
 		<p>
 		I know. I got pissed off for that everytime.
+		</p>
+		<h4>5. Do you have any plan to release binaries for macOS?</h4>
+		<p>
+		No.
 		</p>
 		<h3 id="contact">Contact the author</h3>
 		<p>
