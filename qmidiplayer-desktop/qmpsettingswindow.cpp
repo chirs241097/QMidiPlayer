@@ -4,7 +4,6 @@
 #include <QFileDialog>
 #include <QDir>
 #include <QMessageBox>
-#include <QDesktopWidget>
 #include <QStandardPaths>
 #include "qmpsettingswindow.hpp"
 #include "qmpdeviceprioritydialog.hpp"
@@ -395,9 +394,7 @@ void qmpSettingsWindow::postInit()
 		}
 	if(selecteddev=="Internal FluidSynth"&&!sf)
 	{
-		// blmark: show dialog at the current screen which user using now.
-		int curMonitor = QApplication::desktop()->screenNumber(this);
-		if(QMessageBox::question(QDesktopWidget().screen(curMonitor),//this,
+		if(QMessageBox::question(this,
 		tr("No soundfont loaded"),
 		tr("Internal fluidsynth is the only available MIDI output but it has no soundfont set. "
 		   "Would you like to setup soundfonts now? You may have to reload the internal synth afterwards."))==QMessageBox::Yes)
