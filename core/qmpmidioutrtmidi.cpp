@@ -201,7 +201,7 @@ void qmpMidiOutRtMidi::basicMessage(uint8_t type,uint8_t p1,uint8_t p2)
 	msg.push_back(p2);
 	outport->sendMessage(&msg);
 }
-void qmpMidiOutRtMidi::extendedMessage(uint8_t length,const char *data)
+void qmpMidiOutRtMidi::extendedMessage(uint32_t length,const char *data)
 {
 	if(!outport||!outport->isPortOpen())return;
 	std::vector<unsigned char>msg(data,data+length);

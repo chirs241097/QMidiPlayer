@@ -10,6 +10,7 @@ class qmpSimpleVisualization:public qmpPluginIntf,public qmpFuncBaseIntf
 		qmpPluginAPI* api;
 		qmpKeyboardWindow *p;
 		int uihs;
+		int uihsk;
 	public:
 		qmpSimpleVisualization(qmpPluginAPI* _api);
 		void show();

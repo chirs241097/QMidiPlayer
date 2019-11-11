@@ -31,7 +31,7 @@ public:
 	void deviceInit();
 	void deviceDeinit();
 	void basicMessage(uint8_t type,uint8_t p1,uint8_t p2);
-	void extendedMessage(uint8_t length,const char *data);
+	void extendedMessage(uint32_t length,const char *data);
 	void rpnMessage(uint8_t ch,uint16_t type,uint16_t val);
 	void nrpnMessage(uint8_t ch,uint16_t type,uint16_t val);
 	void panic(uint8_t ch);

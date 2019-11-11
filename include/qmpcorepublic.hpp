@@ -87,7 +87,7 @@ class qmpMidiOutDevice
 		virtual void deviceInit()=0;
 		virtual void deviceDeinit()=0;
 		virtual void basicMessage(uint8_t type,uint8_t p1,uint8_t p2)=0;
-		virtual void extendedMessage(uint8_t length,const char* data)=0;
+		virtual void extendedMessage(uint32_t length,const char* data)=0;
 		virtual void rpnMessage(uint8_t ch,uint16_t type,uint16_t val)=0;
 		virtual void nrpnMessage(uint8_t ch,uint16_t type,uint16_t val)=0;
 		virtual void panic(uint8_t ch)=0;

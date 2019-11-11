@@ -413,6 +413,7 @@ void qmpMainWindow::on_hsTimer_sliderPressed()
 void qmpMainWindow::on_hsTimer_sliderReleased()
 {
 	dragging=false;
+	invokeCallback("main.seek",nullptr);
 	if(playing)
 	{
 		if(ui->hsTimer->value()==100){on_pbNext_clicked();return;}
@@ -437,6 +438,7 @@ void qmpMainWindow::playerSeek(uint32_t percentage)
 {
 	if(percentage>100)percentage=100;
 	if(percentage<0)percentage=0;
+	invokeCallback("main.seek",nullptr);
 	if(playing)
 	{
 		if(percentage==100){on_pbNext_clicked();return;}

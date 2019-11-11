@@ -147,7 +147,7 @@ int CSMFReader::read_event()//returns 0 if End of Track encountered
 				str=new char[len+8];
 				if((type&0x0F)==0x00)
 				{
-					str[0]=0xF0;++len;
+					str[0]=char(0xF0);++len;
 					size_t sz=fread(str+1,1,len-1,f);
 					if(sz<len-1)error(1,"Unexpected EOF");
 				}
@@ -156,7 +156,7 @@ int CSMFReader::read_event()//returns 0 if End of Track encountered
 					size_t sz=fread(str,1,len,f);
 					if(sz<len)error(1,"Unexpected EOF");
 				}
-				curTrack->appendEvent(SEvent(curid,curt,type,len,0,str));
+				curTrack->appendEvent(SEvent(curid,curt,type,0,0,std::string(str,len)));
 				if(!strcmp(str,GM1SysX))ret->std=1;
 				if(!strcmp(str,GM2SysX))ret->std=2;
 				if(!strcmp(str,GSSysEx))ret->std=3;

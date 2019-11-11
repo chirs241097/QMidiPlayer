@@ -93,7 +93,7 @@ bool CMidiPlayer::processEvent(const SEvent *e)
 			if(((e->type&0x0F)==0x00||(e->type&0x0F)==07)&&sendSysEx)
 				for(auto& i:mididev)
 					if(i.refcnt)
-						i.dev->extendedMessage(e->p1,e->str.c_str());
+						i.dev->extendedMessage(uint32_t(e->str.length()),e->str.c_str());
 		return false;
 	}
 	return false;

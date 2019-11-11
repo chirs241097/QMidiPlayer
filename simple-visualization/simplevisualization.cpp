@@ -14,12 +14,14 @@ void qmpSimpleVisualization::init()
 	}
 	p=new qmpKeyboardWindow(api,(QWidget*)api->getMainWindow());
 	uihs=api->registerUIHook("main.stop",[this](const void*,void*){this->p->resetAll();},nullptr);
+	uihsk=api->registerUIHook("main.seek",[this](const void*,void*){this->p->resetAll();},nullptr);
 }
 void qmpSimpleVisualization::deinit()
 {
 	if(!api)return;close();
 	api->unregisterFunctionality("Keyboard");
 	api->unregisterUIHook("main.stop",uihs);
+	api->unregisterUIHook("main.seek",uihsk);
 	delete p;
 }
 const char* qmpSimpleVisualization::pluginGetName()

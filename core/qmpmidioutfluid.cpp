@@ -69,10 +69,10 @@ void qmpMidiOutFluid::basicMessage(uint8_t type,uint8_t p1,uint8_t p2)
 		break;
 	}
 }
-void qmpMidiOutFluid::extendedMessage(uint8_t length,const char *data)
+void qmpMidiOutFluid::extendedMessage(uint32_t length,const char *data)
 {
 	int rlen=0;
-	fluid_synth_sysex(synth,data,length,nullptr,&rlen,nullptr,0);
+	fluid_synth_sysex(synth,data,int(length),nullptr,&rlen,nullptr,0);
 }
 void qmpMidiOutFluid::rpnMessage(uint8_t ch,uint16_t type,uint16_t val)
 {
