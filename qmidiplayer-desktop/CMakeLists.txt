@@ -43,6 +43,13 @@ set(qmpdesktop_SOURCES
     resources.qrc
 )
 
+if(WIN32)
+    set(qmpdesktop_SOURCES
+        ${qmpdesktop_SOURCES}
+        qmidiplayer.rc
+    )
+endif(WIN32)
+
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)

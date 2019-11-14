@@ -21,9 +21,15 @@
 #include <QTranslator>
 #include <QLibraryInfo>
 #include <QCommandLineParser>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 int main(int argc,char **argv)
 {
+#ifdef _WIN32
+	FreeConsole();
+#endif
 	QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 	QCoreApplication::setApplicationName("qmidiplayer");
 	QCoreApplication::setApplicationVersion(APP_VERSION);
