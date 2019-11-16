@@ -27,9 +27,6 @@
 
 int main(int argc,char **argv)
 {
-#ifdef _WIN32
-	FreeConsole();
-#endif
 	QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 	QCoreApplication::setApplicationName("qmidiplayer");
 	QCoreApplication::setApplicationVersion(APP_VERSION);
@@ -52,7 +49,15 @@ int main(int argc,char **argv)
 	clp.addPositionalArgument("file",QCoreApplication::translate("main","midi files to play (optional)."),"[files...]");
 	clp.addOption(QCommandLineOption("plugin",QCoreApplication::translate("main","Load a plugin from <plugin library>."),"plugin library"));
 	clp.addOption(QCommandLineOption({"l","load-all-files"},QCoreApplication::translate("main","Load all files from the same folder.")));
+#ifdef _WIN32
+	clp.addOption(QCommandLineOption("keep-console",QCoreApplication::translate("main","Keep console window open.")));
+#endif
 	clp.process(a);
+
+#ifdef _WIN32
+	if(!clp.isSet("keep-console"))
+		FreeConsole();
+#endif
 
 	qmpMainWindow w(&clp);
 	if(w.parseArgs()==1)return 0;

@@ -21,7 +21,7 @@ qmpDevPropDialog::qmpDevPropDialog(QWidget *parent) :
 			this->ui->twProps->edit(ui->twProps->model()->index(r,c));
 		if(c==3)
 		{
-			QString p=QFileDialog::getOpenFileUrl(this,"Select Device Initialization File",QUrl()).path();
+			QString p=QFileDialog::getOpenFileUrl(this,"Select Device Initialization File",QUrl()).toLocalFile();
 			if(p.length())this->ui->twProps->item(r,2)->setText(p);
 		}
 	});

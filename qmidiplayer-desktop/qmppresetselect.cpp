@@ -27,7 +27,6 @@ void qmpPresetSelector::showEvent(QShowEvent *e)
 void qmpPresetSelector::setupWindow(int chid)
 {
 	CMidiPlayer *plyr=qmpMainWindow::getInstance()->getPlayer();
-	if(!plyr->fluid()->getSFCount())return;
 	ch=chid;int r;char name[256];
 	uint16_t b;uint8_t p;
 	std::string pstname;

@@ -26,13 +26,15 @@ qmpDeviceInitializer* qmpDeviceInitializer::parse(const char* path)
 {
 	qmpDeviceInitializer *ret=new qmpDeviceInitializer();
 	ret->initseq.eventList.clear();
-	FILE* f=fopen(path, "r");
-	if(!f)return nullptr;
 
 	bool st_inmapping=false;
 	char buf[1024];
 	int ln=0;
 	int cmsb=-1,clsb=-1;
+
+#define err(e) {delete ret;return fprintf(stderr,"line %d: %s",ln,e),nullptr;}
+	FILE* f=fopen(path,"r");
+	if(!f)err("file not found")
 
 	//writing such a bad parser makes me want my money for
 	//the credits from "compiler principles" back...
@@ -45,7 +47,6 @@ qmpDeviceInitializer* qmpDeviceInitializer::parse(const char* path)
 		(x<0||x>0xff)&&(x=-1);
 		return r==1?x:-1;
 	};
-#define err(e) {delete ret;return fprintf(stderr,"line %d: %s",ln,e),nullptr;}
 	while(fgets(buf,1024,f))
 	{
 		++ln;
@@ -232,17 +233,13 @@ void qmpMidiOutRtMidi::reset(uint8_t ch)
 	if(ch==0xFF)
 	{
 		if(devinit)
-		{
 			for(auto&msg:devinit->initseq.eventList)
 			{
 				if((msg.type&0xF0)==0xF0)
 					extendedMessage(msg.str.length(),msg.str.data());
 				else
-				{
 					basicMessage(msg.type,msg.p1,msg.p2);
-				}
 			}
-		}
 	}
 	else
 	{
