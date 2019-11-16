@@ -23,10 +23,10 @@ Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Midi player based on Qt and fluidsynth.
 
-Package: qmidiplayer-lite
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: Midi player based on Qt and fluidsynth (Lite version).
+#Package: qmidiplayer-lite
+#Architecture: any
+#Depends: ${shlibs:Depends}, ${misc:Depends}
+#Description: Midi player based on Qt and fluidsynth (Lite version).
 
 Package: qmidiplayer-plugin-visualization
 Architecture: any
@@ -37,3 +37,8 @@ Package: qmidiplayer-plugin-midifmt
 Architecture: any
 Depends: qmidiplayer, ${shlibs:Depends}, ${misc:Depends}
 Description: Extra midi formats support for QMidiPlayer.
+
+Package: qmidiplayer-plugin-keyboard
+Architecture: any
+Depends: qmidiplayer, ${shlibs:Depends}, ${misc:Depends}
+Description: Simple keyboard visualization plugin for QMidiPlayer.

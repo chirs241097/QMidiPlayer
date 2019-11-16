@@ -36,3 +36,5 @@ target_link_libraries(visualization
     ${GLEW_LIBRARIES}
     OpenGL::GL
 )
+
+install(TARGETS visualization LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/qmidiplayer/)

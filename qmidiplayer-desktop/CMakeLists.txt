@@ -73,3 +73,14 @@ target_link_libraries(qmidiplayer
     ${CMAKE_THREAD_LIBS_INIT}
     ${CMAKE_DL_LIBS}
 )
+
+install(TARGETS qmidiplayer)
+
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/doc DESTINATION ${CMAKE_INSTALL_PREFIX}/share/qmidiplayer)
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/img DESTINATION ${CMAKE_INSTALL_PREFIX}/share/qmidiplayer FILES_MATCHING PATTERN "*.png")
+install(FILES qmidiplayer.appdata.xml DESTINATION ${CMAKE_INSTALL_PREFIX}/share/appdata)
+install(FILES qmidiplayer.desktop DESTINATION ${CMAKE_INSTALL_PREFIX}/share/applications)
+install(FILES ${PROJECT_SOURCE_DIR}/img/qmidiplyr.png DESTINATION ${CMAKE_INSTALL_PREFIX}/share/icons/hicolor/64x64/apps)
+install(FILES ${PROJECT_SOURCE_DIR}/img/qmidiplyr.svg DESTINATION ${CMAKE_INSTALL_PREFIX}/share/icons/hicolor/scalable/apps)
+install(FILES menu/qmidiplayer DESTINATION ${CMAKE_INSTALL_PREFIX}/share/menu)
+install(FILES qmidiplayer.mime DESTINATION ${CMAKE_INSTALL_PREFIX}/share/mime/packages)

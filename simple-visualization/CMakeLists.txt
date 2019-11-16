@@ -20,3 +20,5 @@ add_library(simple-visualization MODULE
 target_link_libraries(simple-visualization
     Qt5::Widgets
 )
+
+install(TARGETS simple-visualization LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/qmidiplayer/)
