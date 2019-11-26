@@ -453,7 +453,7 @@ bool CMidiPlayer::getChannelMask(int ch)
 int CMidiPlayer::getCC(int ch,int id)
 {
 	if(chstatus[ch][id]==0xff)
-		return getChannelOutputDevice(ch)->getInitialCCValue(id);
+		return getChannelOutputDevice(ch)->getInitialCCValue(uint8_t(id),uint8_t(ch));
 	return chstatus[ch][id];
 }
 void CMidiPlayer::setCC(int ch,int id,int val)

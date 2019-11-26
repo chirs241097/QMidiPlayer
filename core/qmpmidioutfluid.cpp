@@ -156,7 +156,7 @@ bool qmpMidiOutFluid::getChannelPreset(int ch,uint16_t *bank,uint8_t *preset,std
 	presetname=fluid_preset_get_name(chpreset);
 	return true;
 }
-uint8_t qmpMidiOutFluid::getInitialCCValue(uint8_t cc)
+uint8_t qmpMidiOutFluid::getInitialCCValue(uint8_t cc,uint8_t)
 {
 	switch(cc)
 	{

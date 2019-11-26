@@ -44,7 +44,7 @@ class qmpMidiOutFluid:public qmpMidiOutDevice,public IFluidSettings
 		std::vector<std::pair<uint8_t,std::string>> getPresets(uint16_t bank);
 		std::string getPresetName(uint16_t bank,uint8_t preset);
 		bool getChannelPreset(int ch,uint16_t *bank,uint8_t *preset,std::string &presetname);
-		uint8_t getInitialCCValue(uint8_t cc);
+		uint8_t getInitialCCValue(uint8_t cc,uint8_t ch);
 		//FluidSynth specific stuff
 		void setOptStr(const char* opt,const char* val);
 		void setOptInt(const char* opt,int val);

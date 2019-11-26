@@ -98,7 +98,7 @@ class qmpMidiOutDevice
 		virtual std::vector<std::pair<uint8_t,std::string>> getPresets(uint16_t bank)=0;
 		virtual std::string getPresetName(uint16_t bank,uint8_t preset)=0;
 		virtual bool getChannelPreset(int ch,uint16_t *bank,uint8_t *preset,std::string &presetname)=0;
-		virtual uint8_t getInitialCCValue(uint8_t cc)=0;
+		virtual uint8_t getInitialCCValue(uint8_t cc,uint8_t ch)=0;
 		virtual ~qmpMidiOutDevice(){}
 };
 //Main plugin interface.

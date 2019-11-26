@@ -26,6 +26,7 @@ qmpDeviceInitializer* qmpDeviceInitializer::parse(const char* path)
 {
 	qmpDeviceInitializer *ret=new qmpDeviceInitializer();
 	ret->initseq.eventList.clear();
+	memset(ret->sinitv,0xFF,sizeof(ret->sinitv));
 
 	bool st_inmapping=false;
 	char buf[1024];
@@ -90,6 +91,8 @@ qmpDeviceInitializer* qmpDeviceInitializer::parse(const char* path)
 		}
 		else if(tok.front()=="C")
 		{
+			if(st_inmapping)
+				err("invalid command")
 			if(tok.size()!=4)err("invalid control")
 			int ch=hh2d(tok[1].c_str());
 			int cc=hh2d(tok[2].c_str());
@@ -118,6 +121,8 @@ qmpDeviceInitializer* qmpDeviceInitializer::parse(const char* path)
 		}
 		else if(tok.front()=="IV")
 		{
+			if(st_inmapping)
+				err("invalid command")
 			int ci=0;
 			tok.pop_front();
 			for(auto&tk:tok)
@@ -133,6 +138,15 @@ qmpDeviceInitializer* qmpDeviceInitializer::parse(const char* path)
 					ret->initv[ci++]=(uint8_t)v;
 				}
 			}
+		}
+		else if(tok.front()=="SIV")
+		{
+			if(st_inmapping)
+				err("invalid command")
+			int ch=hh2d(tok[1].c_str());
+			int cc=hh2d(tok[2].c_str());
+			int cv=hh2d(tok[3].c_str());
+			ret->sinitv[ch][cc]=uint8_t(cv);
 		}
 		else if(st_inmapping)
 		{
@@ -298,9 +312,11 @@ bool qmpMidiOutRtMidi::getChannelPreset(int ch,uint16_t *bank,uint8_t *preset,st
 	//This ain't a state-tracking device
 	return false;
 }
-uint8_t qmpMidiOutRtMidi::getInitialCCValue(uint8_t cc)
+uint8_t qmpMidiOutRtMidi::getInitialCCValue(uint8_t cc,uint8_t ch)
 {
-	if(!devinit)return 0;//Nope!
+	if(!devinit||cc>=130)return 0;//Nope!
+	if(ch<16&&devinit->sinitv[ch][cc]!=0xFF)
+		return devinit->sinitv[ch][cc];
 	return devinit->initv[cc];
 }
 void qmpMidiOutRtMidi::setInitializerFile(const char* path)

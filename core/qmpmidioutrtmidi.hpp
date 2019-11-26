@@ -14,6 +14,7 @@ struct qmpDeviceInitializer
 	};
 	std::unordered_map<uint16_t,BankStore> banks;
 	uint8_t initv[130];
+	uint8_t sinitv[16][130];
 
 	static qmpDeviceInitializer* parse(const char* path);
 };
@@ -42,7 +43,7 @@ public:
 	std::vector<std::pair<uint8_t,std::string>> getPresets(uint16_t bank);
 	std::string getPresetName(uint16_t bank,uint8_t preset);
 	bool getChannelPreset(int ch,uint16_t *bank,uint8_t *preset,std::string &presetname);
-	uint8_t getInitialCCValue(uint8_t cc);
+	uint8_t getInitialCCValue(uint8_t cc,uint8_t ch);
 
 	void setInitializerFile(const char* path);
 };
