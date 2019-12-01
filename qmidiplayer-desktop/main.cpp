@@ -22,11 +22,16 @@
 #include <QLibraryInfo>
 #include <QCommandLineParser>
 #ifdef _WIN32
+#include <cstdio>
 #include <windows.h>
 #endif
 
 int main(int argc,char **argv)
 {
+#ifdef _WIN32
+	if(!LoadLibraryA("libbacktrace.dll"))
+		fputs("Failed to load backtrace library. Stack trace will not be printed if unhandled exception occurs.\n",stderr);
+#endif
 	QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 	QCoreApplication::setApplicationName("qmidiplayer");
 	QCoreApplication::setApplicationVersion(APP_VERSION);
