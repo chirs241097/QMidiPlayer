@@ -2,6 +2,7 @@
 #include <QGridLayout>
 #include <QCloseEvent>
 #include <QLabel>
+#include <QFontDatabase>
 #include "qmppianowidget.hpp"
 #include "qmpkeyboardwindow.hpp"
 
@@ -15,6 +16,7 @@ qmpKeyboardWindow::qmpKeyboardWindow(qmpPluginAPI *_api,QWidget *parent):
 	{
 		grid->addWidget(lb[ch]=new QLabel,ch,0);
 		grid->addWidget(pw[ch]=new qmpPianoWidget(this),ch,1);
+		lb[ch]->setFont(QFontDatabase::systemFont(QFontDatabase::SystemFont::FixedFont));
 		pw[ch]->setSizePolicy(QSizePolicy::Policy::Expanding,QSizePolicy::Policy::Preferred);
 		QPalette p=palette();
 		p.setColor(QPalette::ColorRole::Highlight,api->getOptionUint("Keyboard/acolor"+std::to_string(ch)));
@@ -33,11 +35,11 @@ qmpKeyboardWindow::qmpKeyboardWindow(qmpPluginAPI *_api,QWidget *parent):
 			if((e->type&0xF0)==0xB0||(e->type&0xF0)==0xC0)
 			lb[ch]->setText(
 				QString::fromStdString(api->getChannelPresetString(ch))+
-				QString("\nch:%1 v:%2 p:%3 e:%4")
-						.arg(QString::number(ch+1))
-						.arg(QString::number(api->getChannelCC(ch,0x7)))
-						.arg(QString::number(api->getChannelCC(ch,0xa)))
-						.arg(QString::number(api->getChannelCC(ch,0xb))));
+				QString("\nch:%1 v:0x%2 p:0x%3 e:0x%4")
+						.arg(ch+1,2,10,QChar('0'))
+						.arg(api->getChannelCC(ch,0x7),2,16,QChar('0'))
+						.arg(api->getChannelCC(ch,0xa),2,16,QChar('0'))
+						.arg(api->getChannelCC(ch,0xb),2,16,QChar('0')));
 		}
 	,nullptr,true);
 	connect(this,&qmpKeyboardWindow::keystateupdated,this,&qmpKeyboardWindow::onkeystatesupdate);
@@ -60,10 +62,10 @@ void qmpKeyboardWindow::resetAll()
 		pw[ch]->reset();
 		lb[ch]->setText(
 			QString::fromStdString(api->getChannelPresetString(ch))+
-			QString("\nch:%1 v:%2 p:%3 e:%4")
-					.arg(QString::number(ch+1))
-					.arg(QString::number(api->getChannelCC(ch,0x7)))
-					.arg(QString::number(api->getChannelCC(ch,0xa)))
-					.arg(QString::number(api->getChannelCC(ch,0xb))));
+			QString("\nch:%1 v:0x%2 p:0x%3 e:0x%4")
+					.arg(ch+1,2,10,QChar('0'))
+					.arg(api->getChannelCC(ch,0x7),2,16,QChar('0'))
+					.arg(api->getChannelCC(ch,0xa),2,16,QChar('0'))
+					.arg(api->getChannelCC(ch,0xb),2,16,QChar('0')));
 	}
 }
