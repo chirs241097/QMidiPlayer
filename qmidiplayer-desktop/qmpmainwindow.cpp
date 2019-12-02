@@ -625,10 +625,9 @@ void qmpMainWindow::setupWidget()
 	i->second.setAssignedControl((QReflectiveAction*)nullptr),
 	i->second.setAssignedControl((QReflectivePushButton*)nullptr);
 	QList<QWidget*>w=ui->buttonwidget->findChildren<QWidget*>("",Qt::FindDirectChildrenOnly);
-	for(unsigned i=0;i<w.size();++i)
-	delete w[i];
+	qDeleteAll(w);
 	QList<QAction*>a=ui->lbFileName->actions();
-	for(unsigned i=0;i<a.size();++i)
+	for(int i=0;i<a.size();++i)
 	{
 		ui->lbFileName->removeAction(a[i]);
 		delete a[i];

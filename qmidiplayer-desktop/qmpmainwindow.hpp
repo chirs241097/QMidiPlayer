@@ -86,12 +86,12 @@ class QReflectivePushButton:public QPushButton
 class qmpFuncPrivate
 {
 	private:
-		qmpFuncBaseIntf* _i;
+		qmpFuncBaseIntf* _i=nullptr;
 		QIcon _icon;
 		std::string des;
 		bool _checkable,checked;
-		QReflectiveAction* asgna;
-		QReflectivePushButton* asgnb;
+		QReflectiveAction* asgna=nullptr;
+		QReflectivePushButton* asgnb=nullptr;
 	public:
 		qmpFuncPrivate(){}
 		qmpFuncPrivate(qmpFuncBaseIntf* i,std::string _desc,const char* icon,int iconlen,bool checkable);

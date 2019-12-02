@@ -44,6 +44,7 @@ void qmpCustomizeWindow::launch(int w)
 	std::set<std::string> s;
 	for(auto i=v.begin();i!=v.end();++i)
 	{
+		if(m.find(*i)==m.end())continue;
 		s.insert(*i);
 		QListWidgetItem* it=new QListWidgetItem(
 			m[*i].icon(),
