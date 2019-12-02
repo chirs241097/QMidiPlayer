@@ -101,6 +101,68 @@
 			matrix of the soundfont. Sadly most of the soundfonts floating around
 			on the Internet do not have modulation matrix declared.
 		</p>
+		<h3>12. I've got an issue not mentioned above. How do I report it?</h3>
+		<p>
+			Please use the <a href="https://github.com/chirs241097/QMidiPlayer/issues">GitHub issue tracker</a>.
+			When you're reporting an issue, please provide the following details about your issue:
+		</p>
+		<ul>
+		<li>Steps to reproduce the issue.</li>
+		<li>What behavior you are expecting.</li>
+		<li>What actually happened.</li>
+		</ul>
+		<p>
+			If the issue is about a crash, providing a relevant back trace will help
+			tremendously. For Windows users, you may run QMidiPlayer in console with the
+			<code>--keep-console</code> argument, try to reproduce the crash, and take
+			all output in the console, which may look like this:
+			<pre style="max-height:300px;overflow:scroll;">
+C:\Users\chrisoft\Software\qmidiplayer-0.8.7-dev-x86_64-w64>qmidiplayer.exe --keep-console
+Loaded plugin: C:/Users/chrisoft/Software/qmidiplayer-0.8.7-dev-x86_64-w64/plugins/libmidifmt-plugin.dll
+Loaded plugin: C:/Users/chrisoft/Software/qmidiplayer-0.8.7-dev-x86_64-w64/plugins/libsampleplugin.dll
+Hello world from plugin init!
+Loaded plugin: C:/Users/chrisoft/Software/qmidiplayer-0.8.7-dev-x86_64-w64/plugins/libvisualization.dll
+Unhandled exception occured at 0x0041df59: access violation.
+The data at memory address 0x000001d8 could not be read.
+0x0041df59 in _ZN13qmpMainWindow13funcReflectorENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE at /home/chrisoft/builder/QMidiPlayer/qmidiplayer-desktop/qmpmainwindow.cpp:695 from C:\Users\chrisoft\Software\qmidiplayer-0.8.7-dev-x86_64-w64\qmidiplayer.exe
+0x0046e0b1 in _ZN9QtPrivate11FunctorCallINS_11IndexesListIJLi0EEEENS_4ListIJNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEEEEvM13qmpMainWindowFvS9_EE4callESD_PSB_PPv at /home/chrisoft/builder/QMidiPlayer/build/qmidiplayer-desktop/../../../mxe/usr/x86_64-w64-mingw32.shared/qt5/include/QtCore/qobjectdefs_impl.h:152 from C:\Users\chrisoft\Software\qmidiplayer-0.8.7-dev-x86_64-w64\qmidiplayer.exe
+0x66953b40 from C:\Users\chrisoft\Software\qmidiplayer-0.8.7-dev-x86_64-w64\Qt5Core.dll in ZN11QMetaObject8activateEP7QObjectiiPPv (No symbols)
+0x004018f7 in _ZN21QReflectivePushButton7onClickENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE at /home/chrisoft/builder/QMidiPlayer/build/qmidiplayer-desktop/qmidiplayer_autogen/EWIEGA46WW/moc_qmpmainwindow.cpp:316 from C:\Users\chrisoft\Software\qmidiplayer-0.8.7-dev-x86_64-w64\qmidiplayer.exe
+0x0046e4af in _ZNKSt12_Mem_fn_baseIM21QReflectivePushButtonFvNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEELb1EEclIJRS6_EvEEvPS0_DpOT_ at /home/chrisoft/builder/mxe/usr/lib/gcc/x86_64-w64-mingw32.shared/5.5.0/include/c++/functional:600 from C:\Users\chrisoft\Software\qmidiplayer-0.8.7-dev-x86_64-w64\qmidiplayer.exe
+0x66953b40 from C:\Users\chrisoft\Software\qmidiplayer-0.8.7-dev-x86_64-w64\Qt5Core.dll in ZN11QMetaObject8activateEP7QObjectiiPPv (No symbols)
+0x024e5f81 from C:\Users\chrisoft\Software\qmidiplayer-0.8.7-dev-x86_64-w64\Qt5Widgets.dll in ZN15QAbstractButton7toggledEb (No symbols)
+0x024e7c2d from C:\Users\chrisoft\Software\qmidiplayer-0.8.7-dev-x86_64-w64\Qt5Widgets.dll in ZN15QAbstractButton13keyPressEventEP9QKeyEvent (No symbols)
+0x024e7d85 from C:\Users\chrisoft\Software\qmidiplayer-0.8.7-dev-x86_64-w64\Qt5Widgets.dll in ZN15QAbstractButton17mouseReleaseEventEP11QMouseEvent (No symbols)
+0x02445368 from C:\Users\chrisoft\Software\qmidiplayer-0.8.7-dev-x86_64-w64\Qt5Widgets.dll in ZN7QWidget5eventEP6QEvent (No symbols)
+0x02407adc from C:\Users\chrisoft\Software\qmidiplayer-0.8.7-dev-x86_64-w64\Qt5Widgets.dll in ZN19QApplicationPrivate13notify_helperEP7QObjectP6QEvent (No symbols)
+0x0240f543 from C:\Users\chrisoft\Software\qmidiplayer-0.8.7-dev-x86_64-w64\Qt5Widgets.dll in ZN12QApplication6notifyEP7QObjectP6QEvent (No symbols)
+0x66928bca from C:\Users\chrisoft\Software\qmidiplayer-0.8.7-dev-x86_64-w64\Qt5Core.dll in ZN16QCoreApplication20sendSpontaneousEventEP7QObjectP6QEvent (No symbols)
+0x0240ddba from C:\Users\chrisoft\Software\qmidiplayer-0.8.7-dev-x86_64-w64\Qt5Widgets.dll in ZN19QApplicationPrivate14sendMouseEventEP7QWidgetP11QMouseEventS1_S1_PS1_R8QPointerIS0_Ebb (No symbols)
+0x0245b335 from C:\Users\chrisoft\Software\qmidiplayer-0.8.7-dev-x86_64-w64\Qt5Widgets.dll in ZN14QDesktopWidget11qt_metacallEN11QMetaObject4CallEiPPv (No symbols)
+0x0245e0c0 from C:\Users\chrisoft\Software\qmidiplayer-0.8.7-dev-x86_64-w64\Qt5Widgets.dll in ZN14QDesktopWidget11qt_metacallEN11QMetaObject4CallEiPPv (No symbols)
+0x02407adc from C:\Users\chrisoft\Software\qmidiplayer-0.8.7-dev-x86_64-w64\Qt5Widgets.dll in ZN19QApplicationPrivate13notify_helperEP7QObjectP6QEvent (No symbols)
+0x0240e9e3 from C:\Users\chrisoft\Software\qmidiplayer-0.8.7-dev-x86_64-w64\Qt5Widgets.dll in ZN12QApplication6notifyEP7QObjectP6QEvent (No symbols)
+0x66928bca from C:\Users\chrisoft\Software\qmidiplayer-0.8.7-dev-x86_64-w64\Qt5Core.dll in ZN16QCoreApplication20sendSpontaneousEventEP7QObjectP6QEvent (No symbols)
+0x01ebea5e from C:\Users\chrisoft\Software\qmidiplayer-0.8.7-dev-x86_64-w64\Qt5Gui.dll in ZN22QGuiApplicationPrivate17processMouseEventEPN29QWindowSystemInterfacePrivate10MouseEventE (No symbols)
+0x01ebfec5 from C:\Users\chrisoft\Software\qmidiplayer-0.8.7-dev-x86_64-w64\Qt5Gui.dll in ZN22QGuiApplicationPrivate24processWindowSystemEventEPN29QWindowSystemInterfacePrivate17WindowSystemEventE (No symbols)
+0x01ea10de from C:\Users\chrisoft\Software\qmidiplayer-0.8.7-dev-x86_64-w64\Qt5Gui.dll in ZN22QWindowSystemInterface22sendWindowSystemEventsE6QFlagsIN10QEventLoop17ProcessEventsFlagEE (No symbols)
+0x66981db6 from C:\Users\chrisoft\Software\qmidiplayer-0.8.7-dev-x86_64-w64\Qt5Core.dll in ZN28QEventDispatcherWin32Private14sendTimerEventEi (No symbols)
+0x6b75e108 from [unknown module] in CallWindowProcW (No symbols)
+0x6b75db49 from [unknown module] in DispatchMessageW (No symbols)
+0x6698110a from C:\Users\chrisoft\Software\qmidiplayer-0.8.7-dev-x86_64-w64\Qt5Core.dll in ZN21QEventDispatcherWin3213processEventsE6QFlagsIN10QEventLoop17ProcessEventsFlagEE (No symbols)
+0x6dd362e5 from C:\Users\chrisoft\Software\qmidiplayer-0.8.7-dev-x86_64-w64\platforms\qwindows.dll in qt_plugin_instance (No symbols)
+0x66926bb4 from C:\Users\chrisoft\Software\qmidiplayer-0.8.7-dev-x86_64-w64\Qt5Core.dll in ZN10QEventLoop4execE6QFlagsINS_17ProcessEventsFlagEE (No symbols)
+0x669303ce from C:\Users\chrisoft\Software\qmidiplayer-0.8.7-dev-x86_64-w64\Qt5Core.dll in ZN16QCoreApplication4execEv (No symbols)
+0x00476f30 in main at /home/chrisoft/builder/QMidiPlayer/qmidiplayer-desktop/main.cpp:71 from C:\Users\chrisoft\Software\qmidiplayer-0.8.7-dev-x86_64-w64\qmidiplayer.exe
+0x004013bd in __tmainCRTStartup at /home/chrisoft/builder/mxe/tmp-gcc-x86_64-w64-mingw32.shared/gcc-5.5.0.build_.crt/../gcc-5.5.0.build_/mingw-w64-v6.0.0/mingw-w64-crt/crt/crtexe.c:341 from C:\Users\chrisoft\Software\qmidiplayer-0.8.7-dev-x86_64-w64\qmidiplayer.exe
+0x004014fb in mainCRTStartup at /home/chrisoft/builder/mxe/tmp-gcc-x86_64-w64-mingw32.shared/gcc-5.5.0.build_.crt/../gcc-5.5.0.build_/mingw-w64-v6.0.0/mingw-w64-crt/crt/crtexe.c:225 from C:\Users\chrisoft\Software\qmidiplayer-0.8.7-dev-x86_64-w64\qmidiplayer.exe
+0x69bf6fd4 from [unknown module] in BaseThreadInitThunk (No symbols)
+0x6b97cf31 from [unknown module] in RtlUserThreadStart (No symbols)
+			</pre>
+			Append that to your issue report (make sure it doesn't contain any personal stuff first).
+			For Linux users, you usually already have a coredump for the crash. Please refer to the
+			documentation of your distribution for how to take a back trace from that coredump.
+		</p>
 	</div>
 </body>
 </html>
