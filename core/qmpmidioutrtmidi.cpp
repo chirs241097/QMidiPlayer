@@ -197,7 +197,7 @@ void qmpMidiOutRtMidi::deviceInit()
 	}
 	catch(RtMidiError &e)
 	{
-		printf("Cannot create RtMidi Output instance: %s\n",e.what());
+		fprintf(stderr,"Cannot create RtMidi Output instance: %s\n",e.what());
 		outport=nullptr;
 	}
 }
@@ -214,13 +214,27 @@ void qmpMidiOutRtMidi::basicMessage(uint8_t type,uint8_t p1,uint8_t p2)
 	msg.push_back(p1);
 	if(((type&0xF0)!=0xC0)&&((type&0xF0)!=0xD0))
 	msg.push_back(p2);
-	outport->sendMessage(&msg);
+	try
+	{
+		outport->sendMessage(&msg);
+	}
+	catch(RtMidiError &e)
+	{
+		fprintf(stderr,"Failed to send midi message: %s\n",e.what());
+	}
 }
 void qmpMidiOutRtMidi::extendedMessage(uint32_t length,const char *data)
 {
 	if(!outport||!outport->isPortOpen())return;
 	std::vector<unsigned char>msg(data,data+length);
-	outport->sendMessage(&msg);
+	try
+	{
+		outport->sendMessage(&msg);
+	}
+	catch(RtMidiError &e)
+	{
+		fprintf(stderr,"Failed to send midi message: %s\n",e.what());
+	}
 }
 void qmpMidiOutRtMidi::rpnMessage(uint8_t ch,uint16_t type,uint16_t val)
 {
@@ -271,7 +285,7 @@ void qmpMidiOutRtMidi::onMapped(uint8_t,int)
 	}
 	catch(RtMidiError &e)
 	{
-		printf("Device initialization failure: %s\n",e.what());
+		fprintf(stderr,"Device initialization failure: %s\n",e.what());
 	}
 
 }
@@ -333,7 +347,7 @@ std::vector<std::pair<qmpMidiOutRtMidi*,std::string>> qmpRtMidiManager::getDevic
 	try{dummy=new RtMidiOut();}
 	catch(RtMidiError &e)
 	{
-		printf("Failed to initialize the dummy device: %s\n",e.what());
+		fprintf(stderr,"Failed to initialize the dummy device: %s\n",e.what());
 		return{};
 	}
 	for(unsigned i=0;i<dummy->getPortCount();++i)

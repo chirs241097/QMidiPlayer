@@ -30,18 +30,18 @@
 		To use the visualization, click the Visualization button in the main window.<br>
 		The visualization plugin adds two new option tabs.
 		<h3>Controls</h3>
-<pre>
-   forward
-      |                              ↱Hold left mouse button and drag:
-   up |  down                       ┌──┬──┐     Adjust viewport.
-   ↓  ↓  ↓                          │  │  │
-   Q  W  E  R←reset viewport        ├──┴──┤
-   A  S  D                          │     │
-   ↑  ↑  ↑                          │     │
-left  |  right        ←  →          │     │
-      |          Seek left/right    └─────┘
-   backward   (Hold shift to seek 5% instead of 1%)
-</pre>
+		<ul>
+		<li>W: move camera forward</li>
+		<li>A: move camera left</li>
+		<li>S: move camera backward</li>
+		<li>D: move camera right</li>
+		<li>Q: move camera up</li>
+		<li>E: move camera down</li>
+		<li>Left arrow key: seek backward 1%</li>
+		<li>Right arrow key: seek forward 1%</li>
+		<li>Shift: seed 5% instead of 1%</li>
+		<li>Left mouse button: hold and drag to orient the camera</li>
+		</ul>
 		<h3>Options</h3>
 		The options listed here are applied after closing and reopening the visualization.
 		<ul>
@@ -70,8 +70,8 @@ left  |  right        ←  →          │     │
 					<li>Save Viewport: Restore last camera configuration when the visualization is started.</li>
 					<li>Window Width/Height: Change the window size. If the size equals to your screen size, the visualization will start in fullscreen mode.</li>
 					<li>FPS: FPS limit of the visualization.</li>
-					<li>Supersampling: Supersample anti-aliasing. 1 means no SSAA.</li>
-					<li>Multisampling: Multisample anti-aliasing. 0 means no MSAA.</li>
+					<li>Supersampling: Supersample anti-aliasing for the 3D visualization scene. 1 means no SSAA.</li>
+					<li>Multisampling: Multisample anti-aliasing for the 3D visualization scene. 0 means no MSAA.</li>
 					<li>FOV: Field of view.</li>
 					<li>OSD Position: Change position of the on screen display, or simply disable it.</li>
 					<li>Font size: Change font size used by the visualization. Useful for HiDPI screens.</li>

@@ -65,12 +65,12 @@ void qmpPluginManager::scanPlugins(const std::vector<std::string> &pp)
 	}
 	delete dir;
 #endif
-	dir=new QDirIterator("./");
+	dir=new QDirIterator(QCoreApplication::applicationDirPath()+"/plugins/");
 	while(dir->hasNext())
 	{
 		dir->next();
 		if(dir->fileInfo().suffix()=="so")
-			cpluginpaths.push_back(std::string("./")+dir->fileName().toStdString());
+			cpluginpaths.push_back(QCoreApplication::applicationDirPath().toStdString()+std::string("/plugins/")+dir->fileName().toStdString());
 	}
 	delete dir;
 	for(unsigned i=0;i<cpluginpaths.size();++i)
@@ -114,7 +114,7 @@ void qmpPluginManager::initPlugins()
 	for(unsigned i=0;i<plugins.size();++i)
 	{
 		if(!plugins[i].enabled)continue;
-		printf("Loaded plugin: %s\n",plugins[i].path.c_str());
+		fprintf(stderr,"Loaded plugin: %s\n",plugins[i].path.c_str());
 		plugins[i].pinterface->init();plugins[i].initialized=true;
 	}
 }

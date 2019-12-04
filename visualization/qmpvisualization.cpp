@@ -115,18 +115,18 @@ void qmpVisualization::showThread()
 	if(!font.loadTTF("/usr/share/fonts/truetype/freefont/FreeMono.ttf",fontsize))
 	if(!font.loadTTF("/usr/share/fonts/gnu-free/FreeMono.otf",fontsize))
 	if(!font.loadTTF((std::string(getenv("windir")?getenv("windir"):"")+"/Fonts/cour.ttf").c_str(),fontsize))
-	printf("W: Font load failed.\n");
+	fprintf(stderr,"W: Font load failed.\n");
 	if(!api->getOptionString("Visualization/font2").length()||!fonthdpi.loadTTF(api->getOptionString("Visualization/font2").c_str(),180))
 	if(!fonthdpi.loadTTF("/usr/share/fonts/truetype/freefont/FreeMono.ttf",180))
 	if(!fonthdpi.loadTTF("/usr/share/fonts/gnu-free/FreeMono.otf",180))
 	if(!fonthdpi.loadTTF((std::string(getenv("windir")?getenv("windir"):"")+"/Fonts/cour.ttf").c_str(),180))
-	printf("W: Font load failed.\n");
+	fprintf(stderr,"W: Font load failed.\n");
 	if(!api->getOptionString("Visualization/font1").length()||!font2.loadTTF(api->getOptionString("Visualization/font1").c_str(),fontsize))
 	if(!font2.loadTTF("/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",fontsize))
 	if(!font2.loadTTF("/usr/share/fonts/wenquanyi/wqy-microhei/wqy-microhei.ttc",fontsize))
 	if(!font2.loadTTF((std::string(getenv("windir")?getenv("windir"):"")+"/Fonts/msyh.ttc").c_str(),fontsize))
 	if(!font2.loadTTF((std::string(getenv("windir")?getenv("windir"):"")+"/Fonts/segoeui.ttf").c_str(),fontsize))
-	printf("W: Font load failed.\n");
+	fprintf(stderr,"W: Font load failed.\n");
 	if(horizontal)
 	{
 		pos[0]=-20;pos[1]=45;pos[2]=0;
