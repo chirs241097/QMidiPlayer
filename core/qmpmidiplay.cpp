@@ -450,7 +450,7 @@ void CMidiPlayer::setSolo(int ch,bool s)
 {setBit(solo,ch,s?1:0);}
 bool CMidiPlayer::getChannelMask(int ch)
 {return((mute>>ch)&1)||(solo&&!((solo>>ch)&1));}
-int CMidiPlayer::getCC(int ch,int id)
+uint16_t CMidiPlayer::getCC(int ch,int id)
 {
 	if(chstatus[ch][id]==0xff)
 		return getChannelOutputDevice(ch)->getInitialCCValue(uint8_t(id),uint8_t(ch));

@@ -84,6 +84,7 @@ void qmpPresetSelector::on_pbOk_clicked()
 		plyr->setChannelPreset(ch,(ui->spCustomMSB->value()<<7)|ui->spCustomLSB->value(),ui->spCustomPC->value());
 		else
 		{
+			if(!ui->lwBankSelect->currentItem()||!ui->lwPresetSelect->currentItem())return (void)close();
 			int b=ui->lwBankSelect->currentItem()->text().split(' ').first().toInt();
 			int p=ui->lwPresetSelect->currentItem()->text().split(' ').first().toInt();
 			plyr->setChannelPreset(ch,b,p);

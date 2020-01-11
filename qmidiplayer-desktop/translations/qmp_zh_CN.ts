@@ -12,27 +12,27 @@
 <context>
     <name>main</name>
     <message>
-        <location filename="../main.cpp" line="51"/>
+        <location filename="../main.cpp" line="59"/>
         <source>A cross-platform MIDI player.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="54"/>
+        <location filename="../main.cpp" line="62"/>
         <source>midi files to play (optional).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="55"/>
+        <location filename="../main.cpp" line="63"/>
         <source>Load a plugin from &lt;plugin library&gt;.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="56"/>
+        <location filename="../main.cpp" line="64"/>
         <source>Load all files from the same folder.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../main.cpp" line="58"/>
+        <location filename="../main.cpp" line="66"/>
         <source>Keep console window open.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -163,6 +163,81 @@
         <location filename="../qmpchanneleditor.cpp" line="26"/>
         <source>Channel Parameter Editor - Channel #%1</source>
         <translation type="unfinished">通道参数编辑器 通道#%1</translation>
+    </message>
+    <message>
+        <location filename="../qmpchanneleditor.cpp" line="47"/>
+        <source>C</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qmpchanneleditor.cpp" line="48"/>
+        <source>L%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qmpchanneleditor.cpp" line="49"/>
+        <source>R%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qmpchanneleditor.cpp" line="51"/>
+        <source>Vol.</source>
+        <translation type="unfinished">音量</translation>
+    </message>
+    <message>
+        <location filename="../qmpchanneleditor.cpp" line="52"/>
+        <source>Rev.</source>
+        <translation type="unfinished">混响</translation>
+    </message>
+    <message>
+        <location filename="../qmpchanneleditor.cpp" line="53"/>
+        <source>Chr.</source>
+        <translation type="unfinished">合奏</translation>
+    </message>
+    <message>
+        <location filename="../qmpchanneleditor.cpp" line="54"/>
+        <source>Res.</source>
+        <translation type="unfinished">共鸣</translation>
+    </message>
+    <message>
+        <location filename="../qmpchanneleditor.cpp" line="55"/>
+        <source>Cut.</source>
+        <translation type="unfinished">截止</translation>
+    </message>
+    <message>
+        <location filename="../qmpchanneleditor.cpp" line="56"/>
+        <source>Atk.</source>
+        <translation type="unfinished">上升</translation>
+    </message>
+    <message>
+        <location filename="../qmpchanneleditor.cpp" line="57"/>
+        <source>Dec.</source>
+        <translation type="unfinished">衰减</translation>
+    </message>
+    <message>
+        <location filename="../qmpchanneleditor.cpp" line="58"/>
+        <source>Rel.</source>
+        <translation type="unfinished">余韵</translation>
+    </message>
+    <message>
+        <location filename="../qmpchanneleditor.cpp" line="59"/>
+        <source>Rate</source>
+        <translation type="unfinished">频率</translation>
+    </message>
+    <message>
+        <location filename="../qmpchanneleditor.cpp" line="60"/>
+        <source>Dep.</source>
+        <translation type="unfinished">振幅</translation>
+    </message>
+    <message>
+        <location filename="../qmpchanneleditor.cpp" line="61"/>
+        <source>Del.</source>
+        <translation type="unfinished">延迟</translation>
+    </message>
+    <message>
+        <location filename="../qmpchanneleditor.cpp" line="62"/>
+        <source>Pan.</source>
+        <translation type="unfinished">位置</translation>
     </message>
 </context>
 <context>

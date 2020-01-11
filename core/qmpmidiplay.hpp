@@ -146,7 +146,7 @@ class CMidiPlayer
 		void setMute(int ch,bool m);
 		void setSolo(int ch,bool s);
 		bool getChannelMask(int ch);
-		int getCC(int ch,int id);
+		uint16_t getCC(int ch,int id);
 		void setCC(int ch,int id,int val);
 
 		qmpMidiOutFluid* fluid();

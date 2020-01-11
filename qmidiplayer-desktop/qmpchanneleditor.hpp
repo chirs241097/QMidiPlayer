@@ -10,12 +10,13 @@ namespace Ui {
 	class qmpChannelEditor;
 }
 
+class QDial;
 class qmpChannelEditor:public QDialog
 {
 	Q_OBJECT
 
 	public:
-		explicit qmpChannelEditor(QWidget *parent=0);
+		explicit qmpChannelEditor(QWidget *parent=nullptr);
 		~qmpChannelEditor();
 	protected:
 		void showEvent(QShowEvent *e);
@@ -36,6 +37,7 @@ class qmpChannelEditor:public QDialog
 		void sendCC();
 		void connectSlots();
 		void disconnectSlots();
+		QList<QDial*> dials;
 		QMetaObject::Connection updconn;
 		QCommonStyle* styl;
 };
