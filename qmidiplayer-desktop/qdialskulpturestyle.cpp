@@ -134,27 +134,23 @@ paintDialBase(QPainter *painter, const QStyleOption *option)
 		dial_color = option->palette.color(QPalette::Window);
 	}
 	qreal t = option->state & QStyle::State_Enabled ? 2.0 : 1.5;
-	if (1) {
-		// ###: work around Qt 4.3.0 bug? (this works for 4.3.1)
-		QConicalGradient border_gradient(r.center(), angle);
-		border_gradient.setColorAt(0.0, dial_color.lighter(120));
-		border_gradient.setColorAt(0.2, dial_color);
-		border_gradient.setColorAt(0.5, dial_color.darker(130));
-		border_gradient.setColorAt(0.8, dial_color);
-		border_gradient.setColorAt(1.0, dial_color.lighter(120));
-		painter->setPen(QPen(border_gradient, t));
-	} else {
-		painter->setPen(QPen(Qt::red, t));
-	}
+	// ###: work around Qt 4.3.0 bug? (this works for 4.3.1)
+	QConicalGradient border_gradient(r.center(), angle);
+	border_gradient.setColorAt(0.0, dial_color.lighter(120));
+	border_gradient.setColorAt(0.2, dial_color);
+	border_gradient.setColorAt(0.5, dial_color.darker(130));
+	border_gradient.setColorAt(0.8, dial_color);
+	border_gradient.setColorAt(1.0, dial_color.lighter(120));
+	painter->setPen(QPen(border_gradient, t));
 #if 0
 	QLinearGradient dial_gradient(r.topLeft(), r.bottomLeft());
 	dial_gradient.setColorAt(0.0, dial_color.darker(105));
 	dial_gradient.setColorAt(0.5, dial_color.lighter(102));
 	dial_gradient.setColorAt(1.0, dial_color.lighter(105));
 #elif 1
-			  QLinearGradient dial_gradient(option->direction == Qt::LeftToRight ? r.topLeft() : r.topRight(), option->direction == Qt::LeftToRight ? r.bottomRight() : r.bottomLeft());
+	QLinearGradient dial_gradient(option->direction == Qt::LeftToRight ? r.topLeft() : r.topRight(), option->direction == Qt::LeftToRight ? r.bottomRight() : r.bottomLeft());
 //  QLinearGradient dial_gradient(r.topLeft(), r.bottomLeft());
-	if (true || option->state & QStyle::State_Enabled) {
+	if (option->state & QStyle::State_Enabled) {
 #if 1
 		dial_gradient.setColorAt(0.0, dial_color.darker(106));
 		dial_gradient.setColorAt(1.0, dial_color.lighter(104));
@@ -213,7 +209,11 @@ paintCachedDialBase(QPainter *painter, const QStyleOptionSlider *option)
 			state &= ~(QStyle::State_MouseOver | QStyle::State_HasFocus | QStyle::State_KeyboardFocusChange);
 		}
 	//  state &= ~(QStyle::State_HasFocus);
-		pixmapName.sprintf("scp-qdb-%x-%x-%llx-%x", state, option->direction, option->palette.cacheKey(), d);
+		pixmapName = QString("scp-qdb-%1-%2-%3-%4")
+						.arg(state, 0, 16)
+						.arg(option->direction, 0, 16)
+						.arg(option->palette.cacheKey(), 0, 16)
+						.arg(d, 0, 16);
 	}
 	paintIndicatorCached(painter, option, paintDialBase, useCache, pixmapName);
 }
@@ -356,18 +356,23 @@ paintCachedGrip(QPainter *painter, const QStyleOption *option)
 		useCache = false;
 	}
 	if (useCache) {
-		uint state = uint(option->state) & (QStyle::State_Enabled | QStyle::State_On | QStyle::State_MouseOver | QStyle::State_Sunken | QStyle::State_HasFocus);
+		QStyle::State state = option->state & (QStyle::State_Enabled | QStyle::State_On | QStyle::State_MouseOver | QStyle::State_Sunken | QStyle::State_HasFocus);
 		if (!(state & QStyle::State_Enabled)) {
 			state &= ~(QStyle::State_MouseOver | QStyle::State_HasFocus);
 		}
 		state &= ~(QStyle::State_HasFocus);
-				QByteArray colorName = option->palette.color(QPalette::Button).name().toLatin1();
-				pixmapName.sprintf("scp-isg-%x-%x-%s-%x-%x", state, option->direction, colorName.constData(), option->rect.width(), option->rect.height());
+		QByteArray colorName = option->palette.color(QPalette::Button).name().toLatin1();
+		pixmapName = QString("scp-isg-%1-%2-%3-%4-%5")
+						.arg(state, 0, 16)
+						.arg(option->direction, 0, 16)
+						.arg(QString(colorName))
+						.arg(option->rect.width(), 0, 16)
+						.arg(option->rect.height(), 0, 16);
 	}
 	paintIndicatorCached(painter,option,
 		[=](QPainter *painter,const QStyleOption *option){
 			QStyleOption opt(*option);
-			opt.rect.moveTo(0,0);
+			opt.rect.moveTo(0, 0);
 			paintGrip(painter,&opt);
 		},
 	useCache,pixmapName);

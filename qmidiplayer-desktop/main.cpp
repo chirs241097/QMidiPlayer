@@ -44,11 +44,19 @@ int main(int argc,char **argv)
 					  QLibraryInfo::location(QLibraryInfo::TranslationsPath));
 	a.installTranslator(&qtTranslator);
 	QTranslator qmpTranslator;
-	qmpTranslator.load("qmp_"+QLocale::system().name());
+#ifndef NON_PORTABLE
+	qmpTranslator.load("qmp_"+QLocale::system().name(),
+					   QCoreApplication::applicationDirPath()+"/translations/");
+#else
+#define strify(s) #s
+	qmpTranslator.load("qmp_"+QLocale::system().name(),
+					   QString(strify(INSTALL_PREFIX))+"/share/qmidiplayer/translations");
+#undef strify
+#endif
 	a.installTranslator(&qmpTranslator);
 
 	QCommandLineParser clp;
-	clp.setApplicationDescription("A cross-platform MIDI player.");
+	clp.setApplicationDescription(QCoreApplication::translate("main","A cross-platform MIDI player."));
 	clp.addHelpOption();
 	clp.addVersionOption();
 	clp.addPositionalArgument("file",QCoreApplication::translate("main","midi files to play (optional)."),"[files...]");

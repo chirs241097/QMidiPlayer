@@ -221,7 +221,7 @@ uint32_t CSMFReader::read_chunk(int is_header)
 	else
 		if(strncmp(hdr,"MTrk",4))
 		{
-			error(0,"Wrong track chunk header. Ignoring the whole chunk");
+			error(0,"Wrong track chunk header. Ignoring the entire chunk.");
 			uint32_t chnklen=read_u32();fseek(f,chnklen,SEEK_CUR);return 0;
 		}
 		else return read_track(),1;

@@ -6,8 +6,6 @@
 #ifndef BUILD_MACHINE
 #define BUILD_MACHINE UNKNOWN
 #endif
-#define ss(s) #s
-#define sss(s) ss(s)
 
 namespace Ui {
 	class qmpHelpWindow;

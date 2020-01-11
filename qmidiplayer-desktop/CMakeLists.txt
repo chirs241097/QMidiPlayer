@@ -60,6 +60,9 @@ include_directories(${PROJECT_SOURCE_DIR}/include/)
 
 cmake_host_system_information(RESULT build_host QUERY HOSTNAME)
 add_definitions(-DBUILD_MACHINE=${build_host})
+if(UNIX AND NOT BUILD_PORTABLE)
+	add_definitions(-DNON_PORTABLE -DINSTALL_PREFIX=${CMAKE_INSTALL_PREFIX})
+endif()
 
 add_executable(qmidiplayer
     ${qmpdesktop_SOURCES}
@@ -74,6 +77,10 @@ target_link_libraries(qmidiplayer
     ${CMAKE_DL_LIBS}
 )
 
+file(GLOB qmpdesktop_TS_FILES translations/*.ts)
+qt5_create_translation(qmpdesktop_QM_FILES ${qmpdesktop_SOURCES} ${qmpdesktop_TS_FILES})
+add_custom_target(translations ALL DEPENDS ${qmpdesktop_QM_FILES})
+
 install(TARGETS qmidiplayer)
 
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/doc DESTINATION ${CMAKE_INSTALL_PREFIX}/share/qmidiplayer)
@@ -84,3 +91,4 @@ install(FILES ${PROJECT_SOURCE_DIR}/img/qmidiplyr.png DESTINATION ${CMAKE_INSTAL
 install(FILES ${PROJECT_SOURCE_DIR}/img/qmidiplyr.svg DESTINATION ${CMAKE_INSTALL_PREFIX}/share/icons/hicolor/scalable/apps)
 install(FILES menu/qmidiplayer DESTINATION ${CMAKE_INSTALL_PREFIX}/share/menu)
 install(FILES qmidiplayer.mime DESTINATION ${CMAKE_INSTALL_PREFIX}/share/mime/packages)
+install(FILES ${qmpdesktop_QM_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/share/qmidiplayer/translations)
