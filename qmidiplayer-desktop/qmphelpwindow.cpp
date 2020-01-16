@@ -1,7 +1,6 @@
 #include <fluidsynth.h>
 #include "qmphelpwindow.hpp"
 #include "ui_qmphelpwindow.h"
-#define strify(s) #s
 
 static const char *months="JanFebMarAprMayJunJulAugSepOctNovDec";
 std::string parseDate(const char *date)
@@ -39,7 +38,7 @@ void qmpHelpWindow::on_textBrowser_sourceChanged(const QUrl &src)
 		s.replace("RT_FLUIDSYNTH_VERSION",fluid_version_str());
 		s.replace("APP_VERSION",APP_VERSION);
 		s.replace("BUILD_DATE",parseDate(__DATE__).c_str());
-		s.replace("BUILD_MACHINE",strify(BUILD_MACHINE));
+		s.replace("BUILD_MACHINE",QT_STRINGIFY(BUILD_MACHINE));
 		ui->textBrowser->setHtml(s);
 	}
 }

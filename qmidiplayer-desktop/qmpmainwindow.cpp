@@ -413,7 +413,6 @@ void qmpMainWindow::on_hsTimer_sliderPressed()
 void qmpMainWindow::on_hsTimer_sliderReleased()
 {
 	dragging=false;
-	invokeCallback("main.seek",nullptr);
 	if(playing)
 	{
 		if(ui->hsTimer->value()==100){on_pbNext_clicked();return;}
@@ -431,6 +430,7 @@ void qmpMainWindow::on_hsTimer_sliderReleased()
 		sprintf(ts,"%02d:%02d",(int)(offset)/60,(int)(offset)%60);
 		ui->lbCurTime->setText(ts);
 	}
+	invokeCallback("main.seek",nullptr);
 }
 
 uint32_t qmpMainWindow::getPlaybackPercentage(){return ui->hsTimer->value();}

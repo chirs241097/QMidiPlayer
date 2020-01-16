@@ -186,8 +186,15 @@ void CMidiPlayer::playEvents()
 	ttick=getEvent(0)->time;ttime=std::chrono::high_resolution_clock::now();
 	for(ct=getEvent(0)->time;tceptr<ecnt;)
 	{
-		while(tcpaused)std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		using namespace std::chrono;
+		while(tcpaused)std::this_thread::sleep_for(milliseconds(100));
+		if(resumed){
+			resumed=false;
+			ct=getEvent(tceptr)->time;
+			ttick=getTick();
+			ttime=high_resolution_clock::now();
+			continue;
+		}
 		high_resolution_clock::time_point b=high_resolution_clock::now();
 		if(getTick()-_lrtick>divs){
 			_lrtick=getTick();
@@ -209,14 +216,11 @@ void CMidiPlayer::playEvents()
 		if(tcstop||!midiReaders||tceptr>=ecnt)break;
 		high_resolution_clock::time_point a=high_resolution_clock::now();
 		auto sendtime=a-b;
-		if(resumed){resumed=false;
-		ttick=getTick();ttime=high_resolution_clock::now();
-		}
-		else
 		if(sendtime.count()<(getEvent(tceptr)->time-ct)*dpt)
 		{
 			double ns_sleep=(getEvent(tceptr)->time-ct)*dpt-sendtime.count();
 			double correction=(getTick()-ttick)*dpt-(b-ttime).count();
+			if(correction>0)correction=0;
 #ifdef _WIN32
 			w32usleep((uint64_t)(((getEvent(tceptr)->time-ct)*dpt-sendtime.count())/1000));
 #else

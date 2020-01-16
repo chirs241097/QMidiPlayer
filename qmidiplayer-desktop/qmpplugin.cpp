@@ -56,9 +56,7 @@ void qmpPluginManager::scanPlugins(const std::vector<std::string> &pp)
 	QDirIterator *dir;
 	std::vector<std::string> cpluginpaths(pp);
 #ifdef NON_PORTABLE
-#define strify(s) #s
-	QString pdir=QString(strify(INSTALL_PREFIX))+"/lib/qmidiplayer/";
-#undef strify
+	QString pdir=QString(QT_STRINGIFY(INSTALL_PREFIX))+"/lib/qmidiplayer/";
 	dir=new QDirIterator(pdir);
 	while(dir->hasNext())
 	{
