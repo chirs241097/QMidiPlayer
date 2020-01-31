@@ -40,7 +40,11 @@
 		When QMidiPlayer starts, selected devices will be examined from top to bottom, the first connected
 		one will be chosen as the default output device.
 		</li>
-		<li>External MIDI output device setup*: set initialzation file for external MIDI devices.</li>
+		<li>External MIDI output device setup*: set initialzation file for external MIDI devices.
+		Initialzation file may contain a short, device-specific MIDI sequence to initialize the device
+		which is sent before a file begins to play, and may also provide information about the device
+		(instrument preset names, initialzation data etc.) to enhance the user experience.
+		</li>
 	</ul>
 	<img src="../img/options2.png" width="440"><br>
 	<ul>

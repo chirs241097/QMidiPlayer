@@ -77,6 +77,7 @@ void qmpChannelEditor::sendCC()
 	player->setCC(ch,76,ui->dRate->value());
 	player->setCC(ch,77,ui->dDepth->value());
 	player->setCC(ch,78,ui->dDelay->value());
+	qmpMainWindow::getInstance()->invokeCallback("channel.ccchange",nullptr);
 }
 
 void qmpChannelEditor::showEvent(QShowEvent *e)

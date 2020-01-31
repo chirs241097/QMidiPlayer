@@ -13,8 +13,11 @@ void qmpSimpleVisualization::init()
 		api->registerOptionUint("","","Keyboard/bcolor"+std::to_string(i),0,0xffffff,0xff66ccff);
 	}
 	p=new qmpKeyboardWindow(api,(QWidget*)api->getMainWindow());
-	uihs=api->registerUIHook("main.stop",[this](const void*,void*){this->p->resetAll();},nullptr);
-	uihsk=api->registerUIHook("main.seek",[this](const void*,void*){this->p->resetAll();},nullptr);
+	auto refreshfn=[this](const void*,void*){this->p->resetAll();};
+	uihs=api->registerUIHook("main.stop",refreshfn,nullptr);
+	uihsk=api->registerUIHook("main.seek",refreshfn,nullptr);
+	uihsk=api->registerUIHook("preset.set",refreshfn,nullptr);
+	uihsk=api->registerUIHook("channel.ccchange",refreshfn,nullptr);
 }
 void qmpSimpleVisualization::deinit()
 {

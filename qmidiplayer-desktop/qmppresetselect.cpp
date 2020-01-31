@@ -102,6 +102,7 @@ void qmpPresetSelector::on_pbOk_clicked()
 		else if(s=="CC#0")b<<=7;
 		plyr->setChannelPreset(ch,b,p);
 	}
+	qmpMainWindow::getInstance()->invokeCallback("preset.set",nullptr);
 	close();
 }
 
