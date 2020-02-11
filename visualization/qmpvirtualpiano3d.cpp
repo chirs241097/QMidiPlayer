@@ -52,7 +52,7 @@ void qmpVirtualPiano3D::buildKeys()
 {
 	wkcf=new smEntity3D();wkeb=new smEntity3D();wkd=new smEntity3D();
 	wkg=new smEntity3D();wka=new smEntity3D();bk=new smEntity3D();
-	wkcf->addVerices(19,
+	wkcf->addVertices(19,
 		makeVertex(-WK_TALWIDTH/2,0,WK_HEIGHT,0xFFFFFFFF,0,0),
 		makeVertex(-WK_TALWIDTH/2+WK_PREWIDTH,0,WK_HEIGHT,0xFFFFFFFF,0,0),
 		makeVertex(-WK_TALWIDTH/2+WK_PREWIDTH,WK_PRELEN,WK_HEIGHT,0xFFFFFFFF,0,0),
@@ -78,7 +78,7 @@ void qmpVirtualPiano3D::buildKeys()
 		9,10,15, 10,15,16, 10,11,17, 10,16,17,
 		11,12,18, 11,17,18, 18,12,13, 12,13,7);
 
-	wkeb->addVerices(19,
+	wkeb->addVertices(19,
 		makeVertex( WK_TALWIDTH/2,0,WK_HEIGHT,0xFFFFFFFF,0,0),
 		makeVertex( WK_TALWIDTH/2-WK_PREWIDTH,0,WK_HEIGHT,0xFFFFFFFF,0,0),
 		makeVertex( WK_TALWIDTH/2-WK_PREWIDTH,WK_PRELEN,WK_HEIGHT,0xFFFFFFFF,0,0),
@@ -104,7 +104,7 @@ void qmpVirtualPiano3D::buildKeys()
 		9,10,15, 10,15,16, 10,11,17, 10,16,17,
 		11,12,18, 11,17,18, 18,12,13, 12,13,7);
 
-	wkd->addVerices(24,
+	wkd->addVertices(24,
 		makeVertex(-WK_TALWIDTH/2+(WK_TALWIDTH-WK_PREWIDTH)/2,0,WK_HEIGHT,0xFFFFFFFF,0,0),
 		makeVertex( WK_TALWIDTH/2-(WK_TALWIDTH-WK_PREWIDTH)/2,0,WK_HEIGHT,0xFFFFFFFF,0,0),
 		makeVertex( WK_TALWIDTH/2-(WK_TALWIDTH-WK_PREWIDTH)/2,WK_PRELEN,WK_HEIGHT,0xFFFFFFFF,0,0),
@@ -136,7 +136,7 @@ void qmpVirtualPiano3D::buildKeys()
 		13,14,21, 13,20,21, 14,15,21, 15,21,22,
 		15,11,22, 11,22,23, 11,23,8, 23,16,8);
 
-	wkg->addVerices(24,
+	wkg->addVertices(24,
 		makeVertex(-WK_TALWIDTH/2+WK_WING+WK_TALWIDTH/12,0,WK_HEIGHT,0xFFFFFFFF,0,0),
 		makeVertex(-WK_TALWIDTH/2+WK_WING+WK_TALWIDTH/12+WK_PREWIDTH,0,WK_HEIGHT,0xFFFFFFFF,0,0),
 		makeVertex(-WK_TALWIDTH/2+WK_WING+WK_TALWIDTH/12+WK_PREWIDTH,WK_PRELEN,WK_HEIGHT,0xFFFFFFFF,0,0),
@@ -168,7 +168,7 @@ void qmpVirtualPiano3D::buildKeys()
 		13,14,21, 13,20,21, 14,15,21, 15,21,22,
 		15,11,22, 11,22,23, 11,23,8, 23,16,8);
 
-	wka->addVerices(24,
+	wka->addVertices(24,
 		makeVertex(WK_TALWIDTH/2-WK_WING-WK_TALWIDTH/24-WK_PREWIDTH,0,WK_HEIGHT,0xFFFFFFFF,0,0),
 		makeVertex(WK_TALWIDTH/2-WK_WING-WK_TALWIDTH/24,0,WK_HEIGHT,0xFFFFFFFF,0,0),
 		makeVertex(WK_TALWIDTH/2-WK_WING-WK_TALWIDTH/24,WK_PRELEN,WK_HEIGHT,0xFFFFFFFF,0,0),
@@ -200,7 +200,7 @@ void qmpVirtualPiano3D::buildKeys()
 		13,14,21, 13,20,21, 14,15,21, 15,21,22,
 		15,11,22, 11,22,23, 11,23,8, 23,16,8);
 
-	bk->addVerices(10,
+	bk->addVertices(10,
 		makeVertex(-BK_WIDTH/2,0,BK_HEIGHT+BK_BOTTOM,0xFF000000,0,0),
 		makeVertex( BK_WIDTH/2,0,BK_HEIGHT+BK_BOTTOM,0xFF000000,0,0),
 		makeVertex( BK_WIDTH/2,BK_PRELEN,BK_HEIGHT+BK_BOTTOM,0xFF000000,0,0),

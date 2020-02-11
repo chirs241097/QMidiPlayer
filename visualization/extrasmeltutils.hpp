@@ -13,10 +13,13 @@ class smEntity3D
 		std::vector<WORD> indices;
 	public:
 		smEntity3D(){vertices.clear();indices.clear();}
-		~smEntity3D(){vertices.clear();indices.clear();}
-		void addVerices(int n,...);
-		void addIndices(int n,...);
-		static smEntity3D cube(smvec3d tl,smvec3d br,DWORD color);
+		void addVertices(size_t n,...);
+		void addIndices(size_t n,...);
+		smVertex vertex(size_t idx)const;
+		WORD index(size_t idx)const;
+		void setVertex(size_t idx,smVertex v);
+		void setIndex(size_t idx,WORD i);
+		static smEntity3D cube(smvec3d tl,smvec3d br,DWORD color,int faces=63);
 };
 class smEntity3DBuffer
 {

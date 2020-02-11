@@ -44,7 +44,7 @@ class qmpVisualization:public qmpPluginIntf,public qmpFuncBaseIntf
 		std::vector<std::pair<uint32_t,uint32_t>>tspool;
 		int traveld[16][128];bool notestatus[16][128],lastnotestatus[16][128];
 		int spectra[16][128],spectrar[16][128];
-		void drawCube(smvec3d a,smvec3d b,DWORD col,SMTEX tex);
+		void drawCube(smvec3d a,smvec3d b,DWORD col,SMTEX tex,int faces=63);
 		void showThread();
 		void pushNoteOn(uint32_t tc,uint32_t ch,uint32_t key,uint32_t vel);
 		void pushNoteOff(uint32_t tc,uint32_t ch,uint32_t key);

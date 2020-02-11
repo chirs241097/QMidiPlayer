@@ -274,26 +274,26 @@ void qmpVisualization::updateVisualization3D()
 		if(fabs((double)pool[i]->tcs-ctk)*lpt<viewdist*2||fabs((double)pool[i]->tce-ctk)*lpt<viewdist*2)
 		{
 			if(pool[i]->ch==999){
-				if(!horizontal&&stairpiano){
-					for(int ch=0;ch<16;++ch){
-						smvec3d a(0.63*(-80)+.1,(stairpiano?(56-ch*7.):(64-ch*8.))-1,((double)pool[i]->tce+1-ctk)*lpt+(stairpiano&&showpiano&&!horizontal)*ch*2.);
-						smvec3d b(0.63*80+.7,(stairpiano?(56-ch*7.):(64-ch*8.))+4,((double)pool[i]->tcs-ctk)*lpt+(stairpiano&&showpiano&&!horizontal)*ch*2.);
-						if(horizontal){
-							a=smvec3d(((double)pool[i]->tcs-ctk)*lpt-20,(16-ch*2.),0.63*(-64)+.1);
-							b=smvec3d(((double)pool[i]->tce+1-ctk)*lpt-20,(16-ch*2.)+.4,0.63*64+.7);
-						}
-						if(showmeasure)drawCube(a,b,0x80808080,0);
+				smvec3d a(0.63*(-64)+.1-10,(stairpiano?(56-0*7.):(64-0*8.))+10,((double)pool[i]->tcs-ctk)*lpt-minnotelength*.005);
+				smvec3d b(0.63*64+.7+10,(stairpiano?(56-15*7.):(64-15*8.))+.4-10,((double)pool[i]->tcs-ctk)*lpt+minnotelength*.005);
+				if(horizontal){
+					a=smvec3d(((double)pool[i]->tcs-ctk)*lpt-20-minnotelength*.001,(16- 0*2.)+2.4,0.63*(-64)+.1);
+					b=smvec3d(((double)pool[i]->tcs-ctk)*lpt-20+minnotelength*.001,(16-15*2.)+0.4,0.63*64+.7);
+				}
+				smMatrix I;I.loadIdentity();
+				smEntity3D c=smEntity3D::cube(a,b,0xFF000000,horizontal?51:60);
+				if(stairpiano&&showpiano&&!horizontal)
+				{
+					std::vector<size_t> il={2,3,6,7};
+					for(size_t ti:il)
+					{
+						smVertex t=c.vertex(ti);
+						t.z+=30;
+						c.setVertex(ti,t);
 					}
 				}
-				else{
-					smvec3d a(0.63*(-64)+.1,(stairpiano?(56-0*7.):(64-0*8.)),((double)pool[i]->tce+1-ctk)*lpt+(stairpiano&&showpiano&&!horizontal)*0*2.);
-					smvec3d b(0.63*64+.7,(stairpiano?(56-15*7.):(64-15*8.))+.4,((double)pool[i]->tcs-ctk)*lpt+(stairpiano&&showpiano&&!horizontal)*15*2.);
-					if(horizontal){
-						a=smvec3d(((double)pool[i]->tcs-ctk)*lpt-20,(16-0*2.),0.63*(-64)+.1);
-						b=smvec3d(((double)pool[i]->tce+1-ctk)*lpt-20,(16-15*2.)+.4,0.63*64+.7);
-					}
-					if(showmeasure)drawCube(a,b,0x80808080,0);
-				}
+				if(showmeasure)
+					nebuf->addTransformedEntity(&c,I,smvec3d(0,0,0));
 				continue;
 			}
 			if(api->getChannelMask(pool[i]->ch))continue;
@@ -707,13 +707,13 @@ bool qmpVisualization::update()
 	return shouldclose;
 }
 
-void qmpVisualization::drawCube(smvec3d a,smvec3d b,DWORD col,SMTEX tex)
+void qmpVisualization::drawCube(smvec3d a,smvec3d b,DWORD col,SMTEX tex,int faces)
 {
 	smQuad q;q.blend=BLEND_ALPHABLEND;
 	q.tex=tex;for(int i=0;i<4;++i)q.v[i].col=col;
 	if(noteappearance==1)
 	{
-		smMatrix I;I.loadIdentity();smEntity3D c=smEntity3D::cube(a,b,col);
+		smMatrix I;I.loadIdentity();smEntity3D c=smEntity3D::cube(a,b,col,faces);
 		nebuf->addTransformedEntity(&c,I,smvec3d(0,0,0));
 	}
 	else

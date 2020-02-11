@@ -8,7 +8,7 @@ SMELT* smParticle::sm=nullptr;
 SMELT* smParticleSystem::sm=nullptr;
 smVertex makeVertex(float x,float y,float z,DWORD color,float tx,float ty)
 {smVertex v;v.x=x;v.y=y;v.z=z;v.col=color;v.tx=tx;v.ty=ty;return v;}
-void smEntity3D::addVerices(int n,...)
+void smEntity3D::addVertices(size_t n,...)
 {
 	va_list vl;va_start(vl,n);
 	for(int i=0;i<n;++i)
@@ -18,7 +18,7 @@ void smEntity3D::addVerices(int n,...)
 	}
 	va_end(vl);
 }
-void smEntity3D::addIndices(int n,...)
+void smEntity3D::addIndices(size_t n,...)
 {
 	va_list vl;va_start(vl,n);
 	for(int i=0;i<n;++i)
@@ -28,19 +28,45 @@ void smEntity3D::addIndices(int n,...)
 	}
 	va_end(vl);
 }
-smEntity3D smEntity3D::cube(smvec3d a,smvec3d b,DWORD color)
+smVertex smEntity3D::vertex(size_t idx)const
 {
-	//a: top left corner b: bottom right corner
+	if(idx>0&&idx<vertices.size())return vertices[idx];
+	return smVertex();
+}
+WORD smEntity3D::index(size_t idx)const
+{
+	if(idx>0&&idx<indices.size())return indices[idx];
+	return 0;
+}
+void smEntity3D::setVertex(size_t idx,smVertex v)
+{
+	if(idx>0&&idx<vertices.size())vertices[idx]=v;
+}
+void smEntity3D::setIndex(size_t idx,WORD i)
+{
+	if(idx>0&&idx<indices.size())indices[idx]=i;
+}
+
+smEntity3D smEntity3D::cube(smvec3d a,smvec3d b,DWORD color,int faces)
+{
 	smEntity3D ret;
-	ret.addVerices(8,
+	ret.addVertices(8,
 		makeVertex(a.x,a.y,a.z,color,0,0),makeVertex(b.x,a.y,a.z,color,0,0),
 		makeVertex(b.x,b.y,a.z,color,0,0),makeVertex(a.x,b.y,a.z,color,0,0),
 		makeVertex(a.x,a.y,b.z,color,0,0),makeVertex(b.x,a.y,b.z,color,0,0),
 		makeVertex(b.x,b.y,b.z,color,0,0),makeVertex(a.x,b.y,b.z,color,0,0));
-	ret.addIndices(36,
-		0,1,3,1,2,3, 4,5,7,5,6,7,
-		0,3,7,0,4,7, 1,2,6,1,5,6,
-		2,3,7,2,6,7, 0,1,4,1,4,5);
+	if(faces&0x1)//a.z
+		ret.addIndices(6, 0,1,3, 1,2,3);
+	if(faces&0x2)//b.z
+		ret.addIndices(6, 4,5,7, 5,6,7);
+	if(faces&0x4)//a.x
+		ret.addIndices(6, 0,3,7, 0,4,7);
+	if(faces&0x8)//b.x
+		ret.addIndices(6, 1,2,6, 1,5,6);
+	if(faces&0x10)//a.y
+		ret.addIndices(6, 0,1,4, 1,4,5);
+	if(faces&0x20)//b.y
+		ret.addIndices(6, 2,3,7, 2,6,7);
 	return ret;
 }
 smEntity3DBuffer::smEntity3DBuffer()
