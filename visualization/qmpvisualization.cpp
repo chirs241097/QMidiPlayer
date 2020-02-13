@@ -18,13 +18,13 @@ const wchar_t* minors=L"abebbbf c g d a e b f#c#g#d#a#";
 const wchar_t* majors=L"CbGbDbAbEbBbF C G D A E B F#C#";
 double fpoffsets[]={1,18,28,50,55,82,98,109,130,137,161,164,191};
 double froffsets[]={0,18,33,50,65,82,98,113,130,145,161,176,191};
-DWORD iccolors[]={0XFFFF0000,0XFFFF8000,0XFFFFBF00,0XFFFFFF00,
-				  0XFFBFFF00,0XFF80FF00,0XFF00FF00,0XFF00FFBF,
-				  0XFF00FFFF,0XFF333333,0XFF00BFFF,0XFF007FFF,
+DWORD iccolors[]={0XFFFF0000,0XFFFF8000,0XFFFFBF00,0XFFF0F000,
+				  0XFFB2EE00,0XFF80FF00,0XFF00FF00,0XFF00EEB2,
+				  0XFF00EEEE,0XFF333333,0XFF00BFFF,0XFF007FFF,
 				  0XFF0000FF,0XFF7F00FF,0XFFBF00FF,0XFFFF00BF};
-DWORD accolors[]={0XFFFF9999,0XFFFFCC99,0XFFFFEE99,0XFFFFFF99,
-				  0XFFEEFF99,0XFFCCFF99,0XFF99FF99,0XFF99FFCC,
-				  0XFF99FFFF,0XFF999999,0XFF99EEFF,0XFF99CCFF,
+DWORD accolors[]={0XFFFF9999,0XFFFFCC99,0XFFFFF4D4,0XFFFFFFDD,
+				  0XFFF0FFC2,0XFFDDFFBB,0XFFBBFFBB,0XFFAAFFEA,
+				  0XFFBBFFFF,0XFF999999,0XFF99EEFF,0XFF99CCFF,
 				  0XFF9999FF,0XFFCC99FF,0XFFEE99FF,0XFFFF99EE};
 
 std::set<BYTE> sustaininst={16,17,18,19,20,21,22,23,
@@ -329,7 +329,10 @@ void qmpVisualization::updateVisualization3D()
 					spectra[pool[i]->ch][pool[i]->key]=pool[i]->vel*(api->getChannelCC(pool[i]->ch,7)/127.);
 			}
 			else
-			drawCube(a,b,SETA(isnoteon?accolors[pool[i]->ch]:iccolors[pool[i]->ch],int(pool[i]->vel*1.6+(isnoteon?52:32))),0);
+			{
+				smColor col=smColor::fromHWColor(isnoteon?accolors[pool[i]->ch]:iccolors[pool[i]->ch]);
+				drawCube(a,b,col.lighter(37+pool[i]->vel/2).toHWColor(),0);
+			}
 		}
 	}
 	if(usespectrum&&playing)

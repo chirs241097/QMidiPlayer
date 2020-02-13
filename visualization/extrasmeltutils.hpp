@@ -1,3 +1,8 @@
+//Extra utilities for SMELT
+//Chris Xiong, 2016-2020
+//License: LGPL v3
+//This file contains staging extensions for SMELT,
+//which will be moved into SMELT once they are mature.
 #ifndef EXTRASMELTUTILS_H
 #define EXTRASMELTUTILS_H
 #include <ctime>
@@ -5,6 +10,7 @@
 #include <smelt.hpp>
 #include <smmath.hpp>
 #include <smrandom.hpp>
+#define EPSF 1e-6f
 class smEntity3D
 {
 	friend class smEntity3DBuffer;
@@ -33,6 +39,38 @@ class smEntity3DBuffer
 		void addTransformedEntity(smEntity3D *entity,smMatrix t,smvec3d p);
 		void drawBatch();
 
+};
+class smColor
+{
+	private:
+		float r,g,b,h,s,v,a;
+		void update_rgb();
+		void update_hsv();
+	public:
+		smColor();
+		void clamp(bool hsv);
+		float alpha()const;
+		float red()const;
+		float green()const;
+		float blue()const;
+		float hue()const;
+		float saturation()const;
+		float hslSaturation()const;
+		float value()const;
+		float lightness()const;
+		void setAlpha(float alpha);
+		void setRed(float red);
+		void setGreen(float green);
+		void setBlue(float blue);
+		void setHue(float hue);
+		void setSaturation(float saturation);
+		void setHSLSaturation(float saturation);
+		void setValue(float value);
+		void setLightness(float lightness);
+		smColor lighter(int factor);
+		smColor darker(int factor);
+		uint32_t toHWColor();
+		static smColor fromHWColor(uint32_t color);
 };
 class smPSEmissionPositionGenerator
 {

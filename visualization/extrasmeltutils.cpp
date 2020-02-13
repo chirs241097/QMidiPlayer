@@ -196,3 +196,174 @@ void smParticleSystem::updatePS()
 }
 void smParticleSystem::renderPS()
 {for(unsigned i=0;i<particles.size();++i)particles[i]->render();}
+
+smColor::smColor()
+{r=g=b=h=s=v=a=0;}
+
+void smColor::update_rgb()
+{
+	auto f=[this](float n){
+		float k=fmodf(n+6.0f*this->h,6.0f);
+		return this->v-this->v*this->s*max(0.0f,min(1.0f,min(k,4.0f-k)));
+	};
+	r=f(5);
+	g=f(3);
+	b=f(1);
+}
+void smColor::update_hsv()
+{
+	v=max(r,max(g,b));
+	float vm=min(r,min(g,b));
+	float chroma=v-vm;
+	if(v-vm<EPSF)h=0;
+	else if(v-r<EPSF)h=(0.0f+(g-b)/chroma)/6.0f;
+	else if(v-g<EPSF)h=(2.0f+(b-r)/chroma)/6.0f;
+	else if(v-b<EPSF)h=(4.0f+(r-g)/chroma)/6.0f;
+	if(v<EPSF)s=0;else s=chroma/v;
+}
+
+void smColor::clamp(bool hsv)
+{
+	if(hsv)
+	{
+		h=min(1.0f,max(0.0f,h));
+		s=min(1.0f,max(0.0f,s));
+		v=min(1.0f,max(0.0f,v));
+		update_rgb();
+	}
+	else
+	{
+		r=min(1.0f,max(0.0f,r));
+		g=min(1.0f,max(0.0f,g));
+		b=min(1.0f,max(0.0f,b));
+		update_hsv();
+	}
+}
+float smColor::alpha()const
+{return a;}
+float smColor::red()const
+{return r;}
+float smColor::green()const
+{return g;}
+float smColor::blue()const
+{return b;}
+float smColor::hue()const
+{return h;}
+float smColor::saturation()const
+{return s;}
+float smColor::hslSaturation()const
+{
+	float l=lightness();
+	if(fabsf(l)<EPSF||fabsf(l-1)<EPSF)return 0;
+	return (v-l)/min(l,1-l);
+}
+float smColor::value()const
+{return v;}
+float smColor::lightness()const
+{return v-v*s/2;}
+
+void smColor::setAlpha(float alpha)
+{a=alpha;}
+void smColor::setRed(float red)
+{
+	if(fabsf(r-red)>EPSF)
+	{
+		r=red;
+		update_hsv();
+	}
+}
+void smColor::setGreen(float green)
+{
+	if(fabsf(g-green)>EPSF)
+	{
+		g=green;
+		update_hsv();
+	}
+}
+void smColor::setBlue(float blue)
+{
+	if(fabsf(b-blue)>EPSF)
+	{
+		b=blue;
+		update_hsv();
+	}
+}
+void smColor::setHue(float hue)
+{
+	if(fabsf(h-hue)>EPSF)
+	{
+		h=hue;
+		update_rgb();
+	}
+}
+void smColor::setSaturation(float saturation)
+{
+	if(fabsf(s-saturation)>EPSF)
+	{
+		s=saturation;
+		update_rgb();
+	}
+}
+void smColor::setHSLSaturation(float saturation)
+{
+	float ss=hslSaturation();
+	float l=lightness();
+	if(fabsf(ss-saturation)>EPSF)
+	{
+		ss=saturation;
+		v=l+ss*min(l,1-l);
+		if(v<EPSF)s=0;
+		else s=2-2*l/v;
+		update_rgb();
+	}
+}
+void smColor::setValue(float value)
+{
+	if(fabsf(v-value)>EPSF)
+	{
+		v=value;
+		update_rgb();
+	}
+}
+void smColor::setLightness(float lightness)
+{
+	float ss=hslSaturation();
+	float l=this->lightness();
+	if(fabsf(l-lightness)>EPSF)
+	{
+		l=lightness;
+		v=l+ss*min(l,1-l);
+		if(v<EPSF)s=0;
+		else s=2-2*l/v;
+		update_rgb();
+	}
+}
+smColor smColor::lighter(int factor)
+{
+	smColor ret(*this);
+	ret.setValue(v*(factor/100.0f));
+	ret.clamp(true);
+	return ret;
+}
+smColor smColor::darker(int factor)
+{
+	smColor ret(*this);
+	ret.setValue(factor?(v/(factor/100.0f)):1.);
+	ret.clamp(true);
+	return ret;
+}
+
+uint32_t smColor::toHWColor()
+{
+	return RGBA(r*255,g*255,b*255,a*255);
+}
+smColor smColor::fromHWColor(uint32_t color)
+{
+	smColor ret;
+	ret.r=GETR(color)/255.0f;
+	ret.g=GETG(color)/255.0f;
+	ret.b=GETB(color)/255.0f;
+	ret.a=GETA(color)/255.0f;
+	ret.update_hsv();
+	return ret;
+}
