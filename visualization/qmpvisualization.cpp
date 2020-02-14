@@ -108,7 +108,7 @@ void qmpVisualization::showThread()
 	}else memset(pss,0,sizeof(pss));
 	if(showpiano&&!horizontal)for(int i=0;i<16;++i)p3d[i]=new qmpVirtualPiano3D();
 	memset(traveld,0,sizeof(traveld));
-	if(noteappearance==1)nebuf=new smEntity3DBuffer();else nebuf=nullptr;
+	nebuf=new smEntity3DBuffer();
 	tdscn=sm->smTargetCreate(wwidth*wsupersample,wheight*wsupersample,wmultisample);
 	tdparticles=sm->smTargetCreate(wwidth*wsupersample,wheight*wsupersample,wmultisample);
 	if(!api->getOptionString("Visualization/font2").length()||!font.loadTTF(api->getOptionString("Visualization/font2").c_str(),fontsize))
@@ -167,7 +167,7 @@ void qmpVisualization::close()
 
 	if(showpiano&&!horizontal)for(int i=0;i<16;++i)delete p3d[i];
 	if(showparticle&&!horizontal)for(int i=0;i>16;++i)for(int j=0;j<128;++j){delete pss[i][j];pss[i][j]=0;}
-	if(noteappearance==1)delete nebuf;
+	delete nebuf;
 	if(savevp)
 	{
 		api->setOptionDouble("Visualization/px",pos[0]);
@@ -356,7 +356,7 @@ void qmpVisualization::updateVisualization3D()
 			drawCube(a,b,SETA(iccolors[i],204),0);
 		}
 	}
-	if(noteappearance)nebuf->drawBatch();
+	nebuf->drawBatch();
 	if(showpiano&&!horizontal)
 	for(int i=0;i<16;++i)
 	{
