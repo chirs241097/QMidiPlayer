@@ -8,7 +8,9 @@ set(visualization_SOURCES
 )
 
 if(WIN32)
-    list(APPEND visualization_SOURCES visualization.rc)
+    get_filename_component(CURRENT_SUBPROJECT ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+    configure_file("visualization.rc.in" "visualization.rc" @ONLY)
+    list(APPEND visualization_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/visualization.rc)
 endif(WIN32)
 
 set(BUILD_DUMB ON)

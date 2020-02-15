@@ -44,7 +44,9 @@ set(qmpdesktop_SOURCES
 )
 
 if(WIN32)
-    list(APPEND qmpdesktop_SOURCES qmidiplayer.rc)
+    get_filename_component(CURRENT_SUBPROJECT ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+    configure_file("qmidiplayer.rc.in" "qmidiplayer.rc" @ONLY)
+    list(APPEND qmpdesktop_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/qmidiplayer.rc)
 endif(WIN32)
 
 set(CMAKE_AUTOMOC ON)

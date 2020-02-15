@@ -8,7 +8,9 @@ set(simple-visualization_SOURCES
 )
 
 if(WIN32)
-    list(APPEND simple-visualization_SOURCES simple-visualization.rc)
+    get_filename_component(CURRENT_SUBPROJECT ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+    configure_file("simple-visualization.rc.in" "simple-visualization.rc" @ONLY)
+    list(APPEND simple-visualization_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/simple-visualization.rc)
 endif(WIN32)
 
 set(CMAKE_AUTOMOC ON)
