@@ -30,4 +30,4 @@ void qmpSimpleVisualization::deinit()
 const char* qmpSimpleVisualization::pluginGetName()
 {return "QMidiPlayer Simple Visualization Plugin";}
 const char* qmpSimpleVisualization::pluginGetVersion()
-{return "0.8.7";}
+{return PLUGIN_VERSION;}

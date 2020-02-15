@@ -38,7 +38,7 @@ class qmpVisualization:public qmpPluginIntf,public qmpFuncBaseIntf
 		float pos[3],rot[3],lastx,lasty;
 		uint32_t ctc,ctk,elb;
 		double etps;
-		bool shouldclose,playing;
+		bool shouldclose,playing,debug;
 		int herh,heh,hfrf;
 		int uihb,uihs,uihp,uihr;
 		std::vector<std::pair<uint32_t,uint32_t>>tspool;

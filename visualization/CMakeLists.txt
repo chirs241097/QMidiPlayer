@@ -7,6 +7,10 @@ set(visualization_SOURCES
     qmpvisualization.cpp
 )
 
+if(WIN32)
+    list(APPEND visualization_SOURCES visualization.rc)
+endif(WIN32)
+
 set(BUILD_DUMB ON)
 set(BUILD_EXAMPLE OFF)
 add_subdirectory(SMELT)

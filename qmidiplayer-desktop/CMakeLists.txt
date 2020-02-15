@@ -44,10 +44,7 @@ set(qmpdesktop_SOURCES
 )
 
 if(WIN32)
-    set(qmpdesktop_SOURCES
-        ${qmpdesktop_SOURCES}
-        qmidiplayer.rc
-    )
+    list(APPEND qmpdesktop_SOURCES qmidiplayer.rc)
 endif(WIN32)
 
 set(CMAKE_AUTOMOC ON)

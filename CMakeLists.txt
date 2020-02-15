@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10.0)
 
-project(QMidiPlayer C CXX)
+project(QMidiPlayer VERSION 0.8.7 LANGUAGES C CXX)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -21,6 +21,12 @@ endif()
 if(UNIX)
 	option(BUILD_PORTABLE "Instruct the built binary not to search system directories" OFF)
 endif()
+
+add_definitions(-DAPP_VERSION=\"${PROJECT_VERSION}\")
+add_definitions(-DPLUGIN_VERSION=\"${PROJECT_VERSION}\")
+add_definitions(-DRC_VER_MAJOR=${PROJECT_VERSION_MAJOR})
+add_definitions(-DRC_VER_MINOR=${PROJECT_VERSION_MINOR})
+add_definitions(-DRC_VER_PATCH=${PROJECT_VERSION_PATCH})
 
 add_subdirectory(core)
 add_subdirectory(qmidiplayer-desktop)

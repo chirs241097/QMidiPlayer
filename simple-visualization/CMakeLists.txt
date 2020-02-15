@@ -7,6 +7,10 @@ set(simple-visualization_SOURCES
     simplevisualization.cpp
 )
 
+if(WIN32)
+    list(APPEND simple-visualization_SOURCES simple-visualization.rc)
+endif(WIN32)
+
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)

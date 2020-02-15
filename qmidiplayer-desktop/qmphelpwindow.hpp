@@ -2,7 +2,6 @@
 #define QMPHELPWINDOW_H
 
 #include <QDialog>
-#define APP_VERSION "0.8.7"
 #ifndef BUILD_MACHINE
 #define BUILD_MACHINE UNKNOWN
 #endif

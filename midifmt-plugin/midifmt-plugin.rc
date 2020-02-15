@@ -1,18 +1,16 @@
-IDI_ICON1	ICON		"../img/qmidiplayer.ico"
 1		VERSIONINFO
 FILEVERSION	RC_VER_MAJOR,RC_VER_MINOR,RC_VER_PATCH,0
 PRODUCTVERSION	RC_VER_MAJOR,RC_VER_MINOR,RC_VER_PATCH,0
-FILETYPE	VFT_APP
+FILETYPE	VFT_DLL
 BEGIN
 	BLOCK "StringFileInfo"
 	BEGIN
 		BLOCK "040904E4""
 		BEGIN
-			VALUE "FileDescription",	"QMidiPlayer"
+			VALUE "FileDescription",	"QMidiPlayer extra MIDI format support plugin"
 			VALUE "FileVersion",		APP_VERSION
-			VALUE "ProductName",		"QMidiPlayer"
+			VALUE "ProductName",		"QMidiPlayer extra MIDI format support plugin"
 			VALUE "ProductVersion",		APP_VERSION
 		END
 	END
 END
-1		RT_MANIFEST	"qmidiplayer.exe.xml"

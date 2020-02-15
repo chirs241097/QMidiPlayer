@@ -137,6 +137,7 @@ void qmpVisualization::showThread()
 		pos[0]=0;pos[1]=120;pos[2]=70;
 		rot[0]=0;rot[1]=75;rot[2]=90;
 	}
+	debug=false;
 	ctk=api->getCurrentTimeStamp();
 	if(savevp)
 	{
@@ -624,6 +625,8 @@ bool qmpVisualization::update()
 		api->playerSeek(api->getCurrentPlaybackPercentage()+(sm->smGetKeyState(SMK_SHIFT)?5:1));
 	if(sm->smGetKeyState(SMK_LEFT)==SMKST_HIT)
 		api->playerSeek(api->getCurrentPlaybackPercentage()-(sm->smGetKeyState(SMK_SHIFT)?5:1));
+	if(sm->smGetKeyState(SMK_B)==SMKST_HIT)
+		debug^=1;
 	if(playing)ctk+=1e6/api->getRawTempo()*api->getDivision()*sm->smGetDelta();
 	if(!flat)
 		updateVisualization3D();
@@ -658,7 +661,10 @@ bool qmpVisualization::update()
 	if(osdpos==4){sm->smRenderEnd();return shouldclose;}
 	int t,r;t=api->getKeySig();r=(int8_t)((t>>8)&0xFF)+7;t&=0xFF;
 	std::wstring ts(t?minors:majors);ts=ts.substr(2*r,2);
-	int step=int(1.25*fontsize),xp=(osdpos&1)?wwidth-step-1:1,yp=osdpos<2?wheight-step*5-4:step+4,align=osdpos&1?ALIGN_RIGHT:ALIGN_LEFT;
+	int step=int(1.33*fontsize);
+	int xp=(osdpos&1)?wwidth-step-1:1;
+	int yp=osdpos<2?wheight-step*5-4:step+4;
+	int align=osdpos&1?ALIGN_RIGHT:ALIGN_LEFT;
 	font2.updateString(L"Title: %ls",api->getWTitle().c_str());
 	font2.render(xp,yp,0.5,0xFFFFFFFF,align);
 	font2.render(xp-1,yp-1,0.5,0xFF000000,align);
@@ -677,6 +683,26 @@ bool qmpVisualization::update()
 	font.updateString(L"FPS: %.2f",sm->smGetFPS());
 	font.render(xp,yp+=step,0.5,0xFFFFFFFF,align);
 	font.render(xp-1,yp-1,0.5,0xFF000000,align);
+	if(debug)
+	{
+		int dosdpos=(osdpos+1)%4;
+		xp=(dosdpos&1)?wwidth-step-1:1;
+		yp=dosdpos<2?wheight-step*5-4:step+4;
+		align=dosdpos&1?ALIGN_RIGHT:ALIGN_LEFT;
+		std::string tstr;
+		tstr=std::string(sm->smGetOSInfo());
+		font.updateString(L"OS: %ls",std::wstring({std::begin(tstr),std::end(tstr)}).c_str());
+		font.render(xp,yp,0.5,0xFFFFFFFF,align);
+		font.render(xp-1,yp-1,0.5,0xFF000000,align);
+		tstr=std::string(sm->smGetCPUModel());
+		font.updateString(L"CPU: %ls",std::wstring({std::begin(tstr),std::end(tstr)}).c_str());
+		font.render(xp,yp+=step,0.5,0xFFFFFFFF,align);
+		font.render(xp-1,yp-1,0.5,0xFF000000,align);
+		tstr=std::string(sm->smGetDispDriver());
+		font.updateString(L"Display: %ls",std::wstring({std::begin(tstr),std::end(tstr)}).c_str());
+		font.render(xp,yp+=3*step,0.5,0xFFFFFFFF,align);
+		font.render(xp-1,yp-1,0.5,0xFF000000,align);
+	}
 	sm->smRenderEnd();
 	return shouldclose;
 }
@@ -845,7 +871,7 @@ void qmpVisualization::deinit()
 const char* qmpVisualization::pluginGetName()
 {return "QMidiPlayer Default Visualization Plugin";}
 const char* qmpVisualization::pluginGetVersion()
-{return "0.8.7";}
+{return PLUGIN_VERSION;}
 
 void qmpVisualization::pushNoteOn(uint32_t tc,uint32_t ch,uint32_t key,uint32_t vel)
 {
