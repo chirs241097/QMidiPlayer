@@ -1,11 +1,26 @@
 #include "qmpsettings.hpp"
+#include <QFile>
 #include <QStandardPaths>
+
+#define QMP_CONFIGURATION_FILE_REV 1
 
 QSettings* qmpSettings::settings=nullptr;
 qmpSettings::qmpSettings()
 {
 	qRegisterMetaTypeStreamOperators<QPair<QString,QString>>();
-	settings=new QSettings(QStandardPaths::writableLocation(QStandardPaths::StandardLocation::ConfigLocation)+QString("/qmprc"),QSettings::IniFormat);
+	QString confpath=QStandardPaths::writableLocation(QStandardPaths::StandardLocation::ConfigLocation)+QString("/qmprc");
+	settings=new QSettings(confpath,QSettings::IniFormat);
+	if(settings->value("ConfigurationFileRevision").toInt()!=QMP_CONFIGURATION_FILE_REV&&
+		QFile::exists(confpath))
+	{
+		qWarning("Your current configuration file is not compatible with this version of QMidiPlayer. "
+				 "QMidiPlayer will start with its default configuration. A backup of the old configuration "
+				 "is automatically saved as qmprc.old.");
+		QFile::remove(confpath+".old");
+		QFile::copy(confpath,confpath+".old");
+		settings->clear();
+		settings->setValue("ConfigurationFileRevision",QMP_CONFIGURATION_FILE_REV);
+	}
 }
 
 qmpSettings::~qmpSettings()
