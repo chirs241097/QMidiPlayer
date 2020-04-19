@@ -297,6 +297,8 @@ CMidiPlayer::CMidiPlayer()
 	memset(mappedoutput,0,sizeof(mappedoutput));
 	mididev[0].refcnt=16;
 	memset(chstatus,0,sizeof(chstatus));
+	for(int i=0;i<16;++i)
+		memset(chstatus[i],0xff,128*sizeof(uint8_t));
 #ifdef _WIN32
 	QueryPerformanceFrequency((LARGE_INTEGER*)&pf);
 #endif
@@ -359,9 +361,7 @@ void CMidiPlayer::playerInit()
 	sendSysEx=true;memset(rpnid,0xFF,sizeof(rpnid));memset(rpnval,0xFF,sizeof(rpnval));
 	memset(chstatus,0,sizeof(chstatus));
 	for(int i=0;i<16;++i)
-	{
 		memset(chstatus[i],0xff,128*sizeof(uint8_t));
-	}
 }
 void CMidiPlayer::playerDeinit()
 {
@@ -423,6 +423,11 @@ void CMidiPlayer::setTCpaused(uint32_t ps){tcpaused=ps;}
 uint32_t CMidiPlayer::isFinished(){return finished;}
 void CMidiPlayer::setResumed(){resumed=true;}
 void CMidiPlayer::setWaitVoice(bool wv){waitvoice=wv;}
+
+void CMidiPlayer::registerFluidOptions(qmpPluginAPI *coreapi)
+{
+	internalFluid->registerOptions(coreapi);
+}
 
 void CMidiPlayer::setChannelPreset(int ch,int b,int p)
 {
@@ -506,9 +511,16 @@ void CMidiPlayer::setChannelOutput(int ch,int outid)
 	SMidiDev& dnew=mididev[outid];
 	dnew.dev->onMapped(ch,++dnew.refcnt);
 	for(int i=0;i<124;++i)
-	if(i!=6&&i!=38&&i!=100&&i!=101)//avoid sending RPN/NRPN
-	dnew.dev->basicMessage(0xB0|ch,i,chstatus[ch][i]);
-	dnew.dev->basicMessage(0xC0|ch,chstatus[ch][128],0);
+	{
+		if(i!=6&&i!=38&&i!=100&&i!=101)//avoid sending RPN/NRPN
+		{
+			unsigned st=chstatus[ch][i];
+			if(!~st)
+				st=dnew.dev->getInitialCCValue(i,ch);
+			dnew.dev->basicMessage(0xB0|ch,i,chstatus[ch][i]);
+		}
+	}
+	dnew.dev->basicMessage(0xC0|ch,~chstatus[ch][128]?chstatus[ch][128]:dnew.dev->getInitialCCValue(128,ch),0);
 	mappedoutput[ch]=outid;
 	if(~origoutput)
 	{

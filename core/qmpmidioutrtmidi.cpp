@@ -194,6 +194,7 @@ void qmpMidiOutRtMidi::deviceInit()
 	try
 	{
 		outport=new RtMidiOut();
+		reset(0xFF);
 	}
 	catch(RtMidiError &e)
 	{
@@ -337,6 +338,7 @@ void qmpMidiOutRtMidi::setInitializerFile(const char* path)
 {
 	if(devinit)delete devinit;
 	devinit=qmpDeviceInitializer::parse(path);
+	reset(0xFF);
 }
 
 std::vector<std::pair<qmpMidiOutRtMidi*,std::string>> qmpRtMidiManager::devices;
