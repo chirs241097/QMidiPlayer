@@ -21,15 +21,19 @@ qmpDevPropDialog::qmpDevPropDialog(QWidget *parent) :
 			this->ui->twProps->edit(ui->twProps->model()->index(r,c));
 		if(c==3)
 		{
-			QString p=QFileDialog::getOpenFileUrl(this,"Select Device Initialization File",QUrl()).toLocalFile();
+			QString p=QFileDialog::getOpenFileUrl(this,tr("Select Device Initialization File"),QUrl()).toLocalFile();
 			if(p.length())this->ui->twProps->item(r,2)->setText(p);
 		}
 	});
 	connect(ui->twProps,&QTableWidget::cellChanged,this,[this](int r,int c){
 		if(c!=0)return;
-		QString connst("Disconnected");
+		QString connst(tr("Disconnected"));
 		for(auto&ds:qmpMainWindow::getInstance()->getPlayer()->getMidiOutDevices())
-			if(ui->twProps->item(r,c)->text()==QString::fromStdString(ds)){connst="Connected";break;}
+			if(ui->twProps->item(r,c)->text()==QString::fromStdString(ds))
+			{
+				connst=tr("Connected");
+				break;
+			}
 		ui->twProps->item(r,1)->setText(connst);
 	});
 }
@@ -39,16 +43,31 @@ qmpDevPropDialog::~qmpDevPropDialog()
 	delete ui;
 }
 
-void qmpDevPropDialog::launch()
+void qmpDevPropDialog::load(void *data)
 {
-	QSettings *s=qmpSettingsWindow::getSettingsIntf();
+	QList<QVariant> lst=static_cast<QVariant*>(data)->toList();
 	ui->twProps->clearContents();
 	ui->twProps->setRowCount(0);
-	s->beginGroup("DevInit");
-	for(auto&k:s->allKeys())
-		setupRow(k,s->value(k).toString());
-	s->endGroup();
-	show();
+	for(auto&i:lst)
+	{
+		QPair<QString,QString> p=i.value<QPair<QString,QString>>();
+		setupRow(p.first,p.second);
+	}
+}
+
+void *qmpDevPropDialog::save()
+{
+	QList<QVariant> ret;
+	for(int i=0;i<ui->twProps->rowCount();++i)
+	{
+		QPair<QString,QString> p
+		{
+			ui->twProps->item(i,0)->text(),
+			ui->twProps->item(i,2)->text()
+		};
+		ret.push_back(QVariant::fromValue(p));
+	}
+	return new QVariant(ret);
 }
 
 void qmpDevPropDialog::on_pbAdd_clicked()
@@ -74,7 +93,7 @@ void qmpDevPropDialog::setupRow(const QString&dn,const QString&din)
 	ui->twProps->setItem(r,3,new QTableWidgetItem("..."));
 	if(din.length())ui->twProps->item(r,2)->setText(din);
 	cbx->setFlags(Qt::ItemFlag::ItemIsEnabled|Qt::ItemFlag::ItemIsSelectable);
-	cbx->setText("Disconnected");
+	cbx->setText(tr("Disconnected"));
 	ui->twProps->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeMode::ResizeToContents);
 	if(dn.length())
 	{
@@ -89,14 +108,10 @@ void qmpDevPropDialog::setupRow(const QString&dn,const QString&din)
 
 void qmpDevPropDialog::on_buttonBox_accepted()
 {
-	QSettings *s=qmpSettingsWindow::getSettingsIntf();
-	s->beginGroup("DevInit");
-	s->remove("");
-	for(int i=0;i<ui->twProps->rowCount();++i)
-	{
-		s->setValue(ui->twProps->item(i,0)->text(),
-					ui->twProps->item(i,2)->text());
-	}
-	s->endGroup();
-	s->sync();
+	accept();
+}
+
+void qmpDevPropDialog::on_buttonBox_rejected()
+{
+	reject();
 }

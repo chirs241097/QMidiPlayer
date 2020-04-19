@@ -20,6 +20,7 @@ namespace Ui {
 }
 
 class qmpChannelsWindow;
+class qmpMainWindow;
 
 class qmpChannelFunc:public qmpFuncBaseIntf
 {
@@ -78,6 +79,7 @@ class qmpChannelsWindow:public QWidget
 		~qmpChannelsWindow();
 		void showEvent(QShowEvent *event);
 		void closeEvent(QCloseEvent *event);
+		void selectDefaultDevice();
 	public slots:
 		void showChannelEditorWindow(int chid);
 		void on_pbUnmute_clicked();
@@ -87,6 +89,7 @@ class qmpChannelsWindow:public QWidget
 		void noteOn();
 
 	private:
+		qmpMainWindow* mainwindow;
 		Ui::qmpChannelsWindow *ui;
 		qmpPresetSelector *pselectw;
 		qmpChannelEditor *ceditw;

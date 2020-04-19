@@ -16,7 +16,6 @@ qmpDevicePriorityDialog::qmpDevicePriorityDialog(QWidget *parent) :
 	ui->tvDevices->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeMode::ResizeToContents);
 	ui->tvDevices->setSelectionBehavior(QAbstractItemView::SelectionBehavior::SelectRows);
 	model->setHorizontalHeaderLabels({"E","Device","Connected?"});
-	setdevs=qmpSettingsWindow::getSettingsIntf()->value("Midi/DevicePriority",QList<QVariant>{"Internal FluidSynth"}).toList();
 }
 
 qmpDevicePriorityDialog::~qmpDevicePriorityDialog()
@@ -30,6 +29,7 @@ void qmpDevicePriorityDialog::setupRegisteredDevices()
 	auto conndevs=CMidiPlayer::getInstance()->getMidiOutDevices();
 	for(auto dev:conndevs)
 		sconn.insert(dev);
+	model->removeRows(0,model->rowCount());
 	for(auto dev:setdevs)
 	{
 		QStandardItem *e=new QStandardItem;
@@ -60,6 +60,21 @@ void qmpDevicePriorityDialog::setupRegisteredDevices()
 	}
 }
 
+void qmpDevicePriorityDialog::load(void *data)
+{
+	setdevs=static_cast<QVariant*>(data)->toList();
+	setupRegisteredDevices();
+}
+
+void *qmpDevicePriorityDialog::save()
+{
+	QList<QVariant> ret;
+	for(int i=0;i<model->rowCount();++i)
+		if(model->item(i,0)->checkState()==Qt::CheckState::Checked)
+			ret.push_back(model->item(i,1)->text());
+	return new QVariant(ret);
+}
+
 void qmpDevicePriorityDialog::on_pbUp_clicked()
 {
 	const QModelIndex &idx=ui->tvDevices->selectionModel()->currentIndex();
@@ -88,9 +103,10 @@ void qmpDevicePriorityDialog::on_pbDown_clicked()
 
 void qmpDevicePriorityDialog::on_buttonBox_accepted()
 {
-	QList<QVariant> setdevs;
-	for(int i=0;i<model->rowCount();++i)
-		if(model->item(i,0)->checkState()==Qt::CheckState::Checked)
-			setdevs.push_back(model->item(i,1)->text());
-	qmpSettingsWindow::getSettingsIntf()->setValue("Midi/DevicePriority",setdevs);
+	accept();
+}
+
+void qmpDevicePriorityDialog::on_buttonBox_rejected()
+{
+	reject();
 }

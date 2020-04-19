@@ -9,12 +9,13 @@ class qmpDevPropDialog;
 
 class qmpDevPropDialog : public QDialog
 {
-		Q_OBJECT
+	Q_OBJECT
 
 	public:
 		explicit qmpDevPropDialog(QWidget *parent = nullptr);
-		void launch();
 		~qmpDevPropDialog();
+		void load(void* data);
+		void* save();
 
 	private slots:
 		void on_pbAdd_clicked();
@@ -22,6 +23,8 @@ class qmpDevPropDialog : public QDialog
 		void on_pbRemove_clicked();
 
 		void on_buttonBox_accepted();
+
+		void on_buttonBox_rejected();
 
 	private:
 		Ui::qmpDevPropDialog *ui;

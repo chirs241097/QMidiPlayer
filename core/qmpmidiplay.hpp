@@ -125,6 +125,7 @@ class CMidiPlayer
 		uint32_t isFinished();
 		void setResumed();
 		void setWaitVoice(bool wv);
+		void registerFluidOptions(qmpPluginAPI *coreapi);
 
 		double getFtime();
 		void getCurrentTimeSignature(int *n,int *d);

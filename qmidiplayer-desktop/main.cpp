@@ -37,6 +37,7 @@ int main(int argc,char **argv)
 	QCoreApplication::setApplicationVersion(APP_VERSION);
 	if(!qgetenv("QT_SCALE_FACTOR").length()&&!qgetenv("QT_SCREEN_SCALE_FACTORS").length())
 	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+	qSetMessagePattern("%{time} @ %{file} : %{line}, in %{function} : %{message}");
 	QApplication a(argc,argv);
 
 	QTranslator qtTranslator;

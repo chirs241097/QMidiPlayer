@@ -13,6 +13,7 @@ set(qmpdesktop_SOURCES
     qmpplugin.hpp
     qmppresetselect.hpp
     qmpsettingswindow.hpp
+    qmpsettings.hpp
     main.cpp
     qdialskulpturestyle.cpp
     qmpchanneleditor.cpp
@@ -28,6 +29,7 @@ set(qmpdesktop_SOURCES
     qmpplugin.cpp
     qmppresetselect.cpp
     qmpsettingswindow.cpp
+    qmpsettings.cpp
     qmpchanneleditor.ui
     qmpchannelswindow.ui
     qmpcustomizewindow.ui

@@ -141,7 +141,7 @@ class qmpMainWindow:public QMainWindow
 		void dragEnterEvent(QDragEnterEvent *event);
 		~qmpMainWindow();
 		CMidiPlayer* getPlayer(){return player;}
-		qmpSettingsWindow* getSettingsWindow(){return settingsw;}
+		qmpSettings* getSettings(){return settings.get();}
 		QTimer* getTimer(){return timer;}
 		bool isFinalizing(){return fin;}
 		QString getFileName();
@@ -163,7 +163,6 @@ class qmpMainWindow:public QMainWindow
 		void reloadSynth();
 		void setupWidget();
 		void invokeCallback(std::string cat,void *callerdat);
-		std::vector<std::string>& getWidgets(int w);
 		std::map<std::string,qmpFuncPrivate>& getFunc();
 
 	private slots:
@@ -200,8 +199,9 @@ class qmpMainWindow:public QMainWindow
 		QPointer<qmpChannelsWindow> chnlw;
 		QPointer<qmpEfxWindow> efxw;
 		QPointer<qmpInfoWindow> infow;
-		QPointer<qmpSettingsWindow> settingsw;
 		QPointer<qmpHelpWindow> helpw;
+		std::unique_ptr<qmpSettings> settings;
+		QPointer<qmpSettingsWindow> settingsw;
 		std::map<std::string,qmpFuncPrivate> mfunc;
 		std::unordered_map<std::string,std::map<int,std::pair<qmpCallBack,void*>>> muicb;
 		qmpRenderFunc* renderf;
@@ -215,6 +215,8 @@ class qmpMainWindow:public QMainWindow
 		void playerSetup(IFluidSettings *fs);
 		void loadSoundFont(IFluidSettings *fs);
 		int loadFile(QString fns);
+		void registerMidiOptions();
+		void registerBehaviorOptions();
 
 	private:
 		static qmpMainWindow* ref;

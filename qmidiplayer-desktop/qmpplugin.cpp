@@ -9,9 +9,8 @@
 #include "qmpplugin.hpp"
 #include "qmpmainwindow.hpp"
 #include "qmpsettingswindow.hpp"
-qmpPluginAPI* pluginAPI;
-qmpMainWindow* qmw;
-qmpSettingsWindow* qsw;
+qmpPluginAPI* qmpPluginManager::pluginAPI=nullptr;
+qmpMainWindow* qmpPluginManager::mainwindow=nullptr;
 #ifdef _WIN32
 #include <codecvt>
 #include <locale>
@@ -93,8 +92,7 @@ void qmpPluginManager::scanPlugins(const std::vector<std::string> &pp)
 #endif
 qmpPluginManager::qmpPluginManager()
 {
-	qmw=qmpMainWindow::getInstance();
-	qsw=qmw->getSettingsWindow();
+	mainwindow=qmpMainWindow::getInstance();
 	pluginAPI=new qmpPluginAPI();
 }
 qmpPluginManager::~qmpPluginManager()
@@ -104,7 +102,7 @@ qmpPluginManager::~qmpPluginManager()
 		if(plugins[i].initialized)plugins[i].pinterface->deinit();
 		delete plugins[i].pinterface;
 	}
-	qmw=nullptr;qsw=nullptr;delete pluginAPI;
+	mainwindow=nullptr;delete pluginAPI;
 }
 std::vector<qmpPlugin> *qmpPluginManager::getPlugins()
 {
@@ -130,6 +128,7 @@ void qmpPluginManager::deinitPlugins()
 
 qmpPluginAPI::~qmpPluginAPI(){}
 
+#define qmw qmpPluginManager::mainwindow
 uint32_t qmpPluginAPI::getDivision()
 {return qmw&&qmw->getPlayer()?qmw->getPlayer()->getDivision():0;}
 uint32_t qmpPluginAPI::getRawTempo()
@@ -244,26 +243,26 @@ void qmpPluginAPI::unregisterFileReadFinishHook(int id)
 {qmw->getPlayer()->unregisterFileReadFinishHook(id);}
 
 void qmpPluginAPI::registerOptionInt(std::string tab,std::string desc,std::string key,int min,int max,int defaultval)
-{qsw->registerOptionInt(tab,desc,key,min,max,defaultval);}
-int qmpPluginAPI::getOptionInt(std::string key){return qsw->getOptionInt(key);}
-void qmpPluginAPI::setOptionInt(std::string key,int val){qsw->setOptionInt(key,val);}
+{qmw->getSettings()->registerOptionInt(tab,desc,key,min,max,defaultval);}
+int qmpPluginAPI::getOptionInt(std::string key){return qmw->getSettings()->getOptionInt(key);}
+void qmpPluginAPI::setOptionInt(std::string key,int val){qmw->getSettings()->setOptionInt(key,val);}
 void qmpPluginAPI::registerOptionUint(std::string tab,std::string desc,std::string key,unsigned min,unsigned max,unsigned defaultval)
-{qsw->registerOptionUint(tab,desc,key,min,max,defaultval);}
-unsigned qmpPluginAPI::getOptionUint(std::string key){return qsw->getOptionUint(key);}
-void qmpPluginAPI::setOptionUint(std::string key,unsigned val){qsw->setOptionUint(key,val);}
+{qmw->getSettings()->registerOptionUint(tab,desc,key,min,max,defaultval);}
+unsigned qmpPluginAPI::getOptionUint(std::string key){return qmw->getSettings()->getOptionUint(key);}
+void qmpPluginAPI::setOptionUint(std::string key,unsigned val){qmw->getSettings()->setOptionUint(key,val);}
 void qmpPluginAPI::registerOptionBool(std::string tab,std::string desc,std::string key,bool defaultval)
-{qsw->registerOptionBool(tab,desc,key,defaultval);}
-bool qmpPluginAPI::getOptionBool(std::string key){return qsw->getOptionBool(key);}
-void qmpPluginAPI::setOptionBool(std::string key,bool val){qsw->setOptionBool(key,val);}
+{qmw->getSettings()->registerOptionBool(tab,desc,key,defaultval);}
+bool qmpPluginAPI::getOptionBool(std::string key){return qmw->getSettings()->getOptionBool(key);}
+void qmpPluginAPI::setOptionBool(std::string key,bool val){qmw->getSettings()->setOptionBool(key,val);}
 void qmpPluginAPI::registerOptionDouble(std::string tab,std::string desc,std::string key,double min,double max,double defaultval)
-{qsw->registerOptionDouble(tab,desc,key,min,max,defaultval);}
-double qmpPluginAPI::getOptionDouble(std::string key){return qsw->getOptionDouble(key);}
-void qmpPluginAPI::setOptionDouble(std::string key,double val){qsw->setOptionDouble(key,val);}
+{qmw->getSettings()->registerOptionDouble(tab,desc,key,min,max,defaultval);}
+double qmpPluginAPI::getOptionDouble(std::string key){return qmw->getSettings()->getOptionDouble(key);}
+void qmpPluginAPI::setOptionDouble(std::string key,double val){qmw->getSettings()->setOptionDouble(key,val);}
 void qmpPluginAPI::registerOptionString(std::string tab,std::string desc,std::string key,std::string defaultval,bool ispath)
-{qsw->registerOptionString(tab,desc,key,defaultval,ispath);}
-std::string qmpPluginAPI::getOptionString(std::string key){return qsw->getOptionString(key);}
-void qmpPluginAPI::setOptionString(std::string key,std::string val){return qsw->setOptionString(key,val);}
+{qmw->getSettings()->registerOptionString(tab,desc,key,defaultval,ispath);}
+std::string qmpPluginAPI::getOptionString(std::string key){return qmw->getSettings()->getOptionString(key);}
+void qmpPluginAPI::setOptionString(std::string key,std::string val){return qmw->getSettings()->setOptionString(key,val);}
 void qmpPluginAPI::registerOptionEnumInt(std::string tab,std::string desc,std::string key,std::vector<std::string> options,int defaultval)
-{qsw->registerOptionEnumInt(tab,desc,key,options,defaultval);}
-int qmpPluginAPI::getOptionEnumInt(std::string key){return qsw->getOptionEnumInt(key);}
-void qmpPluginAPI::setOptionEnumInt(std::string key,int val){return qsw->setOptionEnumInt(key,val);}
+{qmw->getSettings()->registerOptionEnumInt(tab,desc,key,options,defaultval);}
+int qmpPluginAPI::getOptionEnumInt(std::string key){return qmw->getSettings()->getOptionEnumInt(key);}
+void qmpPluginAPI::setOptionEnumInt(std::string key,int val){return qmw->getSettings()->setOptionEnumInt(key,val);}

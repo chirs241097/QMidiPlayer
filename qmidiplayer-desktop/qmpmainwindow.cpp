@@ -39,7 +39,8 @@ qmpMainWindow::qmpMainWindow(QCommandLineParser *_clp,QWidget *parent):
 	setButtonHeight(ui->pbNext,36);setButtonHeight(ui->pbPlayPause,36);setButtonHeight(ui->pbAdd,36);
 	setButtonHeight(ui->pbPrev,36);setButtonHeight(ui->pbSettings,36);setButtonHeight(ui->pbStop,36);
 	playing=false;stopped=true;dragging=false;fin=false;
-	settingsw=new qmpSettingsWindow(this);
+	settings.reset(new qmpSettings());
+	settingsw=new qmpSettingsWindow(settings.get(),this);
 	player=nullptr;timer=nullptr;fluidrenderer=nullptr;
 }
 
@@ -71,31 +72,32 @@ qmpMainWindow::~qmpMainWindow()
 
 void qmpMainWindow::init()
 {
-	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus",0).toInt())
-	{
-		QRect g=qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/MainW",QRect(-999,-999,999,999)).toRect();
-		if(g!=QRect(-999,-999,999,999))setGeometry(g);
-	}show();
-
+	show();
 	ui->centralWidget->setEnabled(false);
+
+	pmgr=new qmpPluginManager();
+	registerMidiOptions();
+
 	std::future<void> f=std::async(std::launch::async,
 		[this]
 		{
 			player=new CMidiPlayer();
+			reloadsynf=new qmpReloadSynthFunc(this);
+			player->registerFluidOptions(pmgr->pluginAPI);
+			playerSetup(player->fluid());
+			player->fluid()->deviceInit();
+			loadSoundFont(player->fluid());
 			auto rtdev=qmpRtMidiManager::getDevices();
 			for(auto &i:rtdev)
-			{
 				player->registerMidiOutDevice(i.first,i.second);
-				QString di=qmpSettingsWindow::getSettingsIntf()->value(QString("DevInit/%1").arg(QString::fromStdString(i.second)),"").toString();
-				if(di.length())i.first->setInitializerFile(di.toUtf8().data());
-			}
-			reloadsynf=new qmpReloadSynthFunc(this);
-			playerSetup(player->fluid());player->fluid()->deviceInit();
-			loadSoundFont(player->fluid());
 		}
 	);
 	while(f.wait_for(std::chrono::milliseconds(100))==std::future_status::timeout);
 	ui->centralWidget->setEnabled(true);
+
+	settingsw->registerSoundFontOption();
+	registerBehaviorOptions();
+	settingsw->registerCustomizeWidgetOptions();
 
 	plistw=new qmpPlistWindow(this);
 	chnlw=new qmpChannelsWindow(this);
@@ -110,17 +112,45 @@ void qmpMainWindow::init()
 		plistw->emptyList();
 		for(auto&i:argfiles)plistw->insertItem(i);
 	}
+
+	if(settings->getOptionBool("Behavior/DialogStatus"))
+	{
+		QRect g=settings->getOptionRaw("DialogStatus/MainW",QRect(-999,-999,999,999)).toRect();
+		if(g!=QRect(-999,-999,999,999))setGeometry(g);
+	}
+
 	registerFunctionality(renderf,"Render",tr("Render to wave").toStdString(),getThemedIconc(":/img/render.svg"),0,false);
 	registerFunctionality(panicf,"Panic",tr("Panic").toStdString(),getThemedIconc(":/img/panic.svg"),0,false);
 	registerFunctionality(reloadsynf,"ReloadSynth",tr("Restart fluidsynth").toStdString(),getThemedIconc(":/img/repeat-base.svg"),0,false);
-	pmgr=new qmpPluginManager();
 	const QStringList &qpp=clp->values("plugin");
 	std::vector<std::string> pp;
 	for(auto s:qpp)
 		pp.push_back(s.toStdString());
 	pmgr->scanPlugins(pp);
-	settingsw->updatePluginList(pmgr);pmgr->initPlugins();
-	ui->vsMasterVol->setValue(qmpSettingsWindow::getSettingsIntf()->value("Audio/Gain",50).toInt());
+	settingsw->registerPluginOption(pmgr);
+	settingsw->updatePluginList(pmgr);
+	pmgr->initPlugins();
+
+	settingsw->registerExtraMidiOptions();
+
+	QVariant* dinif_v=static_cast<QVariant*>(settings->getOptionCustom("Midi/DeviceInitializationFiles"));
+	QList<QVariant> devinif_list=dinif_v->toList();
+	delete dinif_v;
+	QMap<QString,QString> devinif_map;
+	for(auto &i:devinif_list)
+	{
+		QPair<QString,QString> p=i.value<QPair<QString,QString>>();
+		devinif_map[p.first]=p.second;
+	}
+	auto rtdev=qmpRtMidiManager::getDevices();
+	for(auto &i:rtdev)
+	{
+		if(devinif_map.contains(QString(i.second.c_str())))
+			i.first->setInitializerFile(devinif_map[QString(i.second.c_str())].toStdString().c_str());
+	}
+	chnlw->selectDefaultDevice();
+
+	ui->vsMasterVol->setValue(settings->getOptionRaw("Audio/Gain",50).toInt());
 	connect(timer,&QTimer::timeout,this,&qmpMainWindow::updateWidgets);
 	connect(timer,&QTimer::timeout,infow,&qmpInfoWindow::updateInfo);
 	ui->pbNext->setIcon(QIcon(getThemedIcon(":/img/next.svg")));
@@ -141,7 +171,7 @@ int qmpMainWindow::parseArgs()
 	{
 		if(QFileInfo(args.at(i)).exists())
 		{
-			if(loadfolder||qmpSettingsWindow::getSettingsIntf()->value("Behavior/LoadFolder",0).toInt())
+			if(loadfolder||settings->getOptionBool("Behavior/LoadFolder"))
 			{
 				QDirIterator di(QFileInfo(args.at(i)).absolutePath());
 				while(di.hasNext())
@@ -159,9 +189,9 @@ int qmpMainWindow::parseArgs()
 
 void qmpMainWindow::closeEvent(QCloseEvent *event)
 {
-	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
+	if(settings->getOptionBool("Behavior/DialogStatus"))
 	{
-		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/MainW",geometry());
+		settings->setOptionRaw("DialogStatus/MainW",geometry());
 	}
 	on_pbStop_clicked();fin=true;
 	for(auto i=mfunc.begin();i!=mfunc.end();++i)
@@ -261,7 +291,7 @@ void qmpMainWindow::switchTrack(QString s)
 	player->playerInit();
 	invokeCallback("main.start",nullptr);
 	player->fluid()->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
-	player->setWaitVoice(qmpSettingsWindow::getSettingsIntf()->value("Midi/WaitVoice",1).toInt());
+	player->setWaitVoice(settings->getOptionBool("Midi/WaitVoice"));
 	playerTh=new std::thread(&CMidiPlayer::playerThread,player);
 #ifdef _WIN32
 	SetThreadPriority((void*)playerTh->native_handle(),THREAD_PRIORITY_TIME_CRITICAL);
@@ -271,61 +301,51 @@ void qmpMainWindow::switchTrack(QString s)
 }
 std::string qmpMainWindow::getTitle()
 {
-	if(!qmpSettingsWindow::getSettingsIntf())return "";
-	if(qmpSettingsWindow::getSettingsIntf()->value("Midi/TextEncoding","").toString()
-		=="Unicode")return std::string(player->getTitle());
+	if(settings->getOptionEnumIntOptName("Midi/TextEncoding")=="Unicode")
+		return std::string(player->getTitle());
 	return QTextCodec::codecForName(
-				qmpSettingsWindow::getSettingsIntf()->value("Midi/TextEncoding","").
-				toString().toStdString().c_str())->
+				settings->getOptionEnumIntOptName("Midi/TextEncoding").c_str())->
 			toUnicode(player->getTitle()).toStdString();
 }
 std::wstring qmpMainWindow::getWTitle()
 {
-	if(!qmpSettingsWindow::getSettingsIntf())return L"";
-	if(qmpSettingsWindow::getSettingsIntf()->value("Midi/TextEncoding","").toString()
-		=="Unicode")return QString(player->getTitle()).toStdWString();
+	if(settings->getOptionEnumIntOptName("Midi/TextEncoding")=="Unicode")
+		return QString(player->getTitle()).toStdWString();
 	return QTextCodec::codecForName(
-				qmpSettingsWindow::getSettingsIntf()->value("Midi/TextEncoding","").
-				toString().toStdString().c_str())->
+				settings->getOptionEnumIntOptName("Midi/TextEncoding").c_str())->
 			toUnicode(player->getTitle()).toStdWString();
 }
 
 void qmpMainWindow::playerSetup(IFluidSettings* fs)
 {
-	QSettings* settings=qmpSettingsWindow::getSettingsIntf();
-	fs->setOptStr("audio.driver",settings->value("Audio/Driver","").toString().toStdString().c_str());
-	fs->setOptInt("audio.period-size",settings->value("Audio/BufSize","").toInt());
-	fs->setOptInt("audio.periods",settings->value("Audio/BufCnt","").toInt());
-	fs->setOptStr("audio.sample-format",settings->value("Audio/Format","").toString().toStdString().c_str());
-	fs->setOptNum("synth.sample-rate",settings->value("Audio/Frequency","").toInt());
-	fs->setOptInt("synth.polyphony",settings->value("Audio/Polyphony","").toInt());
-	fs->setOptInt("synth.cpu-cores",settings->value("Audio/Threads","").toInt());
-	char bsmode[4];
-	if(settings->value("Audio/AutoBS",1).toInt()&&player->getFileStandard())
+	fs->setOptStr("audio.driver",settings->getOptionEnumIntOptName("FluidSynth/AudioDriver").c_str());
+	fs->setOptInt("audio.period-size",settings->getOptionInt("FluidSynth/BufSize"));
+	fs->setOptInt("audio.periods",settings->getOptionInt("FluidSynth/BufCnt"));
+	fs->setOptStr("audio.sample-format",settings->getOptionEnumIntOptName("FluidSynth/SampleFormat").c_str());
+	fs->setOptNum("synth.sample-rate",settings->getOptionInt("FluidSynth/SampleRate"));
+	fs->setOptInt("synth.polyphony",settings->getOptionInt("FluidSynth/Polyphony"));
+	fs->setOptInt("synth.cpu-cores",settings->getOptionInt("FluidSynth/Threads"));
+	std::string bsmode;
+	if(settings->getOptionBool("FluidSynth/AutoBS")&&player->getFileStandard())
 		switch(player->getFileStandard())
 		{
-			case 1:strcpy(bsmode,"gm");break;
-			case 2:strcpy(bsmode,"mma");break;
-			case 3:strcpy(bsmode,"gs");break;
-			case 4:strcpy(bsmode,"xg");break;
+			case 1:bsmode="gm";break;
+			case 2:bsmode="mma";break;
+			case 3:bsmode="gs";break;
+			case 4:bsmode="xg";break;
 		}
 	else
 	{
-		if(settings->value("Audio/BankSelect","CC#0").toString()==QString("Ignored"))
-			strcpy(bsmode,"gm");
-		if(settings->value("Audio/BankSelect","CC#0").toString()==QString("CC#0"))
-			strcpy(bsmode,"gs");
-		if(settings->value("Audio/BankSelect","CC#0").toString()==QString("CC#32"))
-			strcpy(bsmode,"xg");
-		if(settings->value("Audio/BankSelect","CC#0").toString()==QString("CC#0*128+CC#32"))
-			strcpy(bsmode,"mma");
+		bsmode=settings->getOptionEnumIntOptName("FluidSynth/BankSelect");
+		std::transform(bsmode.begin(),bsmode.end(),bsmode.begin(),[](char i){return tolower(i);});
 	}
-	fs->setOptStr("synth.midi-bank-select",bsmode);
-	player->sendSysX(settings->value("Midi/SendSysEx",1).toInt());
+	fs->setOptStr("synth.midi-bank-select",bsmode.c_str());
+	player->sendSysX(settings->getOptionBool("Midi/SendSysEx"));
 }
 void qmpMainWindow::loadSoundFont(IFluidSettings *fs)
 {
-	QList<QVariant> sflist=settingsw->getSettingsIntf()->value("Audio/SoundFonts",QList<QVariant>{}).toList();
+	QVariant *data=static_cast<QVariant*>(settings->getOptionCustom("FluidSynth/SoundFonts"));
+	QList<QVariant> sflist=data->toList();
 	for(auto i=sflist.rbegin();i!=sflist.rend();++i)
 	{
 		if(i->toString().startsWith('#'))continue;
@@ -338,6 +358,7 @@ void qmpMainWindow::loadSoundFont(IFluidSettings *fs)
 		fs->loadSFont(sf.toStdString().c_str());
 #endif
 	}
+	delete data;
 }
 int qmpMainWindow::loadFile(QString fns)
 {
@@ -355,6 +376,23 @@ int qmpMainWindow::loadFile(QString fns)
 	free(c);
 #endif
 	return ret;
+}
+
+void qmpMainWindow::registerMidiOptions()
+{
+	settings->registerOptionBool("MIDI","Disable MIDI Mapping","Midi/DisableMapping",false);
+	settings->registerOptionBool("MIDI","Send system exclusive messages","Midi/SendSysEx",true);
+	settings->registerOptionBool("MIDI","Wait for remaining voice before stopping","Midi/WaitVoice",true);
+	settings->registerOptionEnumInt("MIDI","Text encoding","Midi/TextEncoding",{"Unicode","Big5","Big5-HKSCS","CP949","EUC-JP","EUC-KR","GB18030","KOI8-R","KOI8-U","Macintosh","Shift-JIS"},0);
+}
+
+void qmpMainWindow::registerBehaviorOptions()
+{
+	settings->registerOptionBool("Behavior","Restore last playlist on startup","Behavior/RestorePlaylist",false);
+	settings->registerOptionBool("Behavior","Add files in the same folder to playlist","Behavior/LoadFolder",false);
+	settings->registerOptionBool("Behavior","Save dialog status","Behavior/DialogStatus",false);
+	settings->registerOptionBool("Behavior","Show labels beside icon in toolbar buttons","Behavior/ShowButtonLabel",false);
+	settings->registerOptionEnumInt("Behavior","Icon Theme","Behavior/IconTheme",{"Auto","Dark","Light"},0);
 }
 
 void qmpMainWindow::on_pbPlayPause_clicked()
@@ -378,7 +416,7 @@ void qmpMainWindow::on_pbPlayPause_clicked()
 		player->playerInit();
 		invokeCallback("main.start",nullptr);
 		player->fluid()->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
-		player->setWaitVoice(qmpSettingsWindow::getSettingsIntf()->value("Midi/WaitVoice",1).toInt());
+		player->setWaitVoice(settings->getOptionBool("Midi/WaitVoice"));
 		playerTh=new std::thread(&CMidiPlayer::playerThread,player);
 #ifdef _WIN32
 			SetThreadPriority((void*)playerTh->native_handle(),THREAD_PRIORITY_TIME_CRITICAL);
@@ -461,7 +499,7 @@ void qmpMainWindow::playerSeek(uint32_t percentage)
 void qmpMainWindow::on_vsMasterVol_valueChanged()
 {
 	if(!stopped)player->fluid()->setGain(ui->vsMasterVol->value()/250.);
-	qmpSettingsWindow::getSettingsIntf()->setValue("Audio/Gain",ui->vsMasterVol->value());
+	settings->setOptionRaw("Audio/Gain",ui->vsMasterVol->value());
 }
 
 void qmpMainWindow::on_pbStop_clicked()
@@ -567,11 +605,11 @@ void qmpMainWindow::setFuncEnabled(std::string name,bool enable)
 
 bool qmpMainWindow::isDarkTheme()
 {
-	if(!qmpSettingsWindow::getSettingsIntf()->value("Behavior/IconTheme",0).toInt())
+	if(!settings->getOptionEnumInt("Behavior/IconTheme"))
 	{
 		return ui->centralWidget->palette().color(QPalette::Background).lightness()<128;
 	}
-	else return 2-qmpSettingsWindow::getSettingsIntf()->value("Behavior/IconTheme",0).toInt();
+	else return 2-settings->getOptionEnumInt("Behavior/IconTheme");
 }
 
 void qmpMainWindow::startRender()
@@ -614,16 +652,26 @@ void qmpMainWindow::reloadSynth()
 	ui->centralWidget->setEnabled(true);
 }
 
-std::vector<std::string>& qmpMainWindow::getWidgets(int w)
-{return w?enabled_actions:enabled_buttons;}
 std::map<std::string,qmpFuncPrivate>& qmpMainWindow::getFunc()
 {return mfunc;}
 
 void qmpMainWindow::setupWidget()
 {
 	for(auto i=mfunc.begin();i!=mfunc.end();++i)
-	i->second.setAssignedControl((QReflectiveAction*)nullptr),
-	i->second.setAssignedControl((QReflectivePushButton*)nullptr);
+	{
+		i->second.setAssignedControl(static_cast<QReflectiveAction*>(nullptr));
+		i->second.setAssignedControl(static_cast<QReflectivePushButton*>(nullptr));
+	}
+	QVariant *v=static_cast<QVariant*>(settings->getOptionCustom("Behavior/Toolbar"));
+	enabled_buttons.clear();
+	for(auto i:v->toList())
+		enabled_buttons.push_back(i.toString().toStdString());
+	delete v;
+	v=static_cast<QVariant*>(settings->getOptionCustom("Behavior/Actions"));
+	enabled_actions.clear();
+	for(auto i:v->toList())
+		enabled_actions.push_back(i.toString().toStdString());
+	delete v;
 	QList<QWidget*>w=ui->buttonwidget->findChildren<QWidget*>("",Qt::FindDirectChildrenOnly);
 	qDeleteAll(w);
 	QList<QAction*>a=ui->lbFileName->actions();
@@ -641,7 +689,8 @@ void qmpMainWindow::setupWidget()
 			enabled_buttons[i]
 		);
 		setButtonHeight(pb,32);
-		if(getSettingsWindow()->getSettingsIntf()->value("Behavior/ShowButtonLabel",0).toInt())
+		//!!TODO
+		if(settings->getOptionBool("Behavior/ShowButtonLabel"))
 		{
 			pb->setText(tr(mfunc[enabled_buttons[i]].desc().c_str()));
 			pb->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Fixed);

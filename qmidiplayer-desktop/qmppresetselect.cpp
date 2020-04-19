@@ -95,11 +95,11 @@ void qmpPresetSelector::on_pbOk_clicked()
 		int b,p;
 		b=ui->lwBankSelect->currentItem()->text().toInt();
 		p=ui->lwPresetSelect->currentItem()->text().split(' ').first().toInt();
-		QString s=qmpSettingsWindow::getSettingsIntf()->value("Audio/BankSelect","CC#0").toString();
-		if(s=="CC#32"){
+		std::string s=qmpMainWindow::getInstance()->getSettings()->getOptionEnumIntOptName("FluidSynth/BankSelect");
+		if(s=="XG"){
 			if(b==128)b=127<<7;
 		}
-		else if(s=="CC#0")b<<=7;
+		else if(s=="GS")b<<=7;
 		plyr->setChannelPreset(ch,b,p);
 	}
 	qmpMainWindow::getInstance()->invokeCallback("preset.set",nullptr);

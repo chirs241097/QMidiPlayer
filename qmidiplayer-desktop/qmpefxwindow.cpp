@@ -12,19 +12,19 @@ qmpEfxWindow::qmpEfxWindow(QWidget *parent) :
 	QList<QDial*> dials=findChildren<QDial*>();
 	for(int i=0;i<dials.count();++i)
 		dials.at(i)->setStyle(styl);
-	QSettings *settings=qmpSettingsWindow::getSettingsIntf();
-	ui->cbEnabledC->setChecked(settings->value("Effects/ChorusEnabled",1).toInt());
-	ui->cbEnabledR->setChecked(settings->value("Effects/ReverbEnabled",1).toInt());
-	rr=settings->value("Effects/ReverbRoom",0.2).toDouble();
-	rd=settings->value("Effects/ReverbDamp",0.0).toDouble();
-	rw=settings->value("Effects/ReverbWidth",0.5).toDouble();
-	rl=settings->value("Effects/ReverbLevel",0.9).toDouble();
+	qmpSettings *settings=qmpMainWindow::getInstance()->getSettings();
+	ui->cbEnabledC->setChecked(settings->getOptionRaw("Effects/ChorusEnabled",1).toInt());
+	ui->cbEnabledR->setChecked(settings->getOptionRaw("Effects/ReverbEnabled",1).toInt());
+	rr=settings->getOptionRaw("Effects/ReverbRoom",0.2).toDouble();
+	rd=settings->getOptionRaw("Effects/ReverbDamp",0.0).toDouble();
+	rw=settings->getOptionRaw("Effects/ReverbWidth",0.5).toDouble();
+	rl=settings->getOptionRaw("Effects/ReverbLevel",0.9).toDouble();
 
-	cfb=settings->value("Effects/ChorusFeedbk",3).toInt();
-	cl=settings->value("Effects/ChorusLevel",2.0).toDouble();
-	cr=settings->value("Effects/ChorusRate",0.3).toDouble();
-	cd=settings->value("Effects/ChorusDepth",8.0).toDouble();
-	ct=settings->value("Effects/ChorusType",FLUID_CHORUS_MOD_SINE).toInt();
+	cfb=settings->getOptionRaw("Effects/ChorusFeedbk",3).toInt();
+	cl=settings->getOptionRaw("Effects/ChorusLevel",2.0).toDouble();
+	cr=settings->getOptionRaw("Effects/ChorusRate",0.3).toDouble();
+	cd=settings->getOptionRaw("Effects/ChorusDepth",8.0).toDouble();
+	ct=settings->getOptionRaw("Effects/ChorusType",FLUID_CHORUS_MOD_SINE).toInt();
 	qmpMainWindow::getInstance()->registerFunctionality(
 		efxf=new qmpEfxFunc(this),
 		std::string("Effects"),
@@ -33,9 +33,9 @@ qmpEfxWindow::qmpEfxWindow(QWidget *parent) :
 		0,
 		true
 	);
-	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/EfxW",QRect(-999,-999,999,999)).toRect()!=QRect(-999,-999,999,999))
-		setGeometry(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/EfxW",QRect(-999,-999,999,999)).toRect());
-	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/EfxWShown",0).toInt())
+	if(settings->getOptionRaw("DialogStatus/EfxW",QRect(-999,-999,999,999)).toRect()!=QRect(-999,-999,999,999))
+		setGeometry(settings->getOptionRaw("DialogStatus/EfxW",QRect(-999,-999,999,999)).toRect());
+	if(settings->getOptionRaw("DialogStatus/EfxWShown",0).toInt())
 	{show();qmpMainWindow::getInstance()->setFuncState("Effects",true);}
 }
 
@@ -49,14 +49,15 @@ qmpEfxWindow::~qmpEfxWindow()
 
 void qmpEfxWindow::closeEvent(QCloseEvent *event)
 {
-	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
+	qmpSettings *settings=qmpMainWindow::getInstance()->getSettings();
+	if(settings->getOptionBool("Behavior/DialogStatus"))
 	{
-		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/EfxW",geometry());
+		settings->setOptionRaw("DialogStatus/EfxW",geometry());
 	}
 	setVisible(false);
-	if(!qmpMainWindow::getInstance()->isFinalizing()&&qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
+	if(!qmpMainWindow::getInstance()->isFinalizing()&&settings->getOptionBool("Behavior/DialogStatus"))
 	{
-		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/EfxWShown",0);
+		settings->setOptionRaw("DialogStatus/EfxWShown",0);
 	}
 	qmpMainWindow::getInstance()->setFuncState("Effects",false);
 	event->accept();
@@ -83,11 +84,12 @@ void qmpEfxWindow::showEvent(QShowEvent *event)
 	if(ct==FLUID_CHORUS_MOD_SINE)ui->rbSine->setChecked(true),ui->rbTriangle->setChecked(false);
 	if(ct==FLUID_CHORUS_MOD_TRIANGLE)ui->rbSine->setChecked(false),ui->rbTriangle->setChecked(true);
 	initialized=true;
-	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/EfxW",QRect(-999,-999,999,999)).toRect()!=QRect(-999,-999,999,999))
-		setGeometry(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/EfxW",QRect(-999,-999,999,999)).toRect());
-	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
+	qmpSettings *settings=qmpMainWindow::getInstance()->getSettings();
+	if(settings->getOptionRaw("DialogStatus/EfxW",QRect(-999,-999,999,999)).toRect()!=QRect(-999,-999,999,999))
+		setGeometry(settings->getOptionRaw("DialogStatus/EfxW",QRect(-999,-999,999,999)).toRect());
+	if(settings->getOptionBool("Behavior/DialogStatus"))
 	{
-		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/EfxWShown",1);
+		settings->setOptionRaw("DialogStatus/EfxWShown",1);
 	}
 	event->accept();
 }
@@ -105,19 +107,19 @@ void qmpEfxWindow::sendEfxChange(void *_fs)
 	fs->setReverbPara(ui->cbEnabledR->isChecked()?1:0,rr,rd,rw,rl);
 	fs->setChorusPara(ui->cbEnabledC->isChecked()?1:0,cfb,cl,cr,cd,ct);
 
-	QSettings *settings=qmpSettingsWindow::getSettingsIntf();
-	settings->setValue("Effects/ChorusEnabled",ui->cbEnabledC->isChecked()?1:0);
-	settings->setValue("Effects/ReverbEnabled",ui->cbEnabledR->isChecked()?1:0);
-	settings->setValue("Effects/ReverbRoom",rr);
-	settings->setValue("Effects/ReverbDamp",rd);
-	settings->setValue("Effects/ReverbWidth",rw);
-	settings->setValue("Effects/ReverbLevel",rl);
+	qmpSettings *settings=qmpMainWindow::getInstance()->getSettings();
+	settings->setOptionRaw("Effects/ChorusEnabled",ui->cbEnabledC->isChecked()?1:0);
+	settings->setOptionRaw("Effects/ReverbEnabled",ui->cbEnabledR->isChecked()?1:0);
+	settings->setOptionRaw("Effects/ReverbRoom",rr);
+	settings->setOptionRaw("Effects/ReverbDamp",rd);
+	settings->setOptionRaw("Effects/ReverbWidth",rw);
+	settings->setOptionRaw("Effects/ReverbLevel",rl);
 
-	settings->setValue("Effects/ChorusFeedbk",cfb);
-	settings->setValue("Effects/ChorusLevel",cl);
-	settings->setValue("Effects/ChorusRate",cr);
-	settings->setValue("Effects/ChorusDepth",cd);
-	settings->setValue("Effects/ChorusType",ct);
+	settings->setOptionRaw("Effects/ChorusFeedbk",cfb);
+	settings->setOptionRaw("Effects/ChorusLevel",cl);
+	settings->setOptionRaw("Effects/ChorusRate",cr);
+	settings->setOptionRaw("Effects/ChorusDepth",cd);
+	settings->setOptionRaw("Effects/ChorusType",ct);
 }
 
 void qmpEfxWindow::dailValueChange()

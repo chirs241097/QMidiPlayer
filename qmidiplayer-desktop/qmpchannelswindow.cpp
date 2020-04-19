@@ -236,8 +236,9 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent) :
 	ui(new Ui::qmpChannelsWindow)
 {
 	ui->setupUi(this);
+	mainwindow=qmpMainWindow::getInstance();
 	ui->tvChannels->setHorizontalHeader(new QHeaderView(Qt::Orientation::Horizontal));
-	ui->tvChannels->setModel(chmodel=new qmpChannelsModel);
+	ui->tvChannels->setModel(chmodel=new qmpChannelsModel(ui->tvChannels));
 	ui->tvChannels->setItemDelegateForColumn(3,new qmpDeviceItemDelegate(false,ui->tvChannels));
 	ui->tvChannels->setAlternatingRowColors(true);
 	ui->tvChannels->setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
@@ -268,12 +269,57 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent) :
 				emit this->noteOn();
 		}
 	,nullptr,false);
-	std::vector<std::string> devs=qmpMainWindow::getInstance()->getPlayer()->getMidiOutDevices();
+	qmpMainWindow::getInstance()->registerFunctionality(
+		chnlf=new qmpChannelFunc(this),
+		std::string("Channel"),
+		tr("Channel").toStdString(),
+		getThemedIconc(":/img/channel.svg"),
+		0,
+		true
+	);
+	if(mainwindow->getSettings()->getOptionRaw("DialogStatus/ChnlW",QRect(-999,-999,999,999)).toRect()!=QRect(-999,-999,999,999))
+		setGeometry(mainwindow->getSettings()->getOptionRaw("DialogStatus/ChnlW",QRect(-999,-999,999,999)).toRect());
+	if(mainwindow->getSettings()->getOptionRaw("DialogStatus/ChnlWShown",0).toInt())
+	{show();qmpMainWindow::getInstance()->setFuncState("Channel",true);}
+}
+
+void qmpChannelsWindow::showEvent(QShowEvent *event)
+{
+	if(mainwindow->getSettings()->getOptionBool("Behavior/DialogStatus"))
+	{
+		mainwindow->getSettings()->setOptionRaw("DialogStatus/ChnlWShown",1);
+	}
+	if(mainwindow->getSettings()->getOptionRaw("DialogStatus/ChnlW",QRect(-999,-999,999,999)).toRect()!=QRect(-999,-999,999,999))
+		setGeometry(mainwindow->getSettings()->getOptionRaw("DialogStatus/ChnlW",QRect(-999,-999,999,999)).toRect());
+	event->accept();
+}
+
+void qmpChannelsWindow::closeEvent(QCloseEvent *event)
+{
+	if(mainwindow->getSettings()->getOptionBool("Behavior/DialogStatus"))
+	{
+		mainwindow->getSettings()->setOptionRaw("DialogStatus/ChnlW",geometry());
+	}
+	setVisible(false);
+	if(!qmpMainWindow::getInstance()->isFinalizing()&&mainwindow->getSettings()->getOptionBool("Behavior/DialogStatus"))
+	{
+		mainwindow->getSettings()->setOptionRaw("DialogStatus/ChnlWShown",0);
+	}
+	mainwindow->setFuncState("Channel",false);
+	event->accept();
+}
+
+void qmpChannelsWindow::selectDefaultDevice()
+{
+	std::string selecteddev;
+	std::vector<std::string> devs=mainwindow->getPlayer()->getMidiOutDevices();
 	size_t devc=devs.size();
 	std::set<std::string> devset;
 	for(auto dev:devs)devset.insert(dev);
-	std::string selecteddev;
-	for(auto setdev:qmpSettingsWindow::getSettingsIntf()->value("Midi/DevicePriority",QList<QVariant>{"Internal FluidSynth"}).toList())
+	QVariant *devpriov=static_cast<QVariant*>(qmpMainWindow::getInstance()->getSettings()->getOptionCustom("Midi/DevicePriority"));
+	QList<QVariant> devprio=devpriov->toList();
+	delete devpriov;
+	for(auto &setdev:devprio)
 		if(devset.find(setdev.toString().toStdString())!=devset.end())
 		{
 			selecteddev=setdev.toString().toStdString();
@@ -284,53 +330,15 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent) :
 		for(size_t j=0;j<devc;++j)
 		{
 			if(selecteddev==devs[j])
-				qmpMainWindow::getInstance()->getPlayer()->setChannelOutput(ch,j);
+				mainwindow->getPlayer()->setChannelOutput(ch,j);
 		}
 	}
-	qmpMainWindow::getInstance()->registerFunctionality(
-		chnlf=new qmpChannelFunc(this),
-		std::string("Channel"),
-		tr("Channel").toStdString(),
-		getThemedIconc(":/img/channel.svg"),
-		0,
-		true
-	);
-	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/ChnlW",QRect(-999,-999,999,999)).toRect()!=QRect(-999,-999,999,999))
-		setGeometry(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/ChnlW",QRect(-999,-999,999,999)).toRect());
-	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/ChnlWShown",0).toInt())
-	{show();qmpMainWindow::getInstance()->setFuncState("Channel",true);}
-}
-
-void qmpChannelsWindow::showEvent(QShowEvent *event)
-{
-	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
-	{
-		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/ChnlWShown",1);
-	}
-	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/ChnlW",QRect(-999,-999,999,999)).toRect()!=QRect(-999,-999,999,999))
-		setGeometry(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/ChnlW",QRect(-999,-999,999,999)).toRect());
-	event->accept();
-}
-
-void qmpChannelsWindow::closeEvent(QCloseEvent *event)
-{
-	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
-	{
-		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/ChnlW",geometry());
-	}
-	setVisible(false);
-	if(!qmpMainWindow::getInstance()->isFinalizing()&&qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
-	{
-		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/ChnlWShown",0);
-	}
-	qmpMainWindow::getInstance()->setFuncState("Channel",false);
-	event->accept();
 }
 
 qmpChannelsWindow::~qmpChannelsWindow()
 {
-	qmpMainWindow::getInstance()->unregisterFunctionality("Channel");
-	qmpMainWindow::getInstance()->getPlayer()->unregisterEventHandler(eh);
+	mainwindow->unregisterFunctionality("Channel");
+	mainwindow->getPlayer()->unregisterEventHandler(eh);
 	delete chnlf;
 	delete chi;delete cha;
 	delete ui;

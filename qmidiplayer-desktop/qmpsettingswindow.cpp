@@ -1,16 +1,16 @@
-#include <set>
 #include <QLineEdit>
 #include <QToolButton>
 #include <QFileDialog>
 #include <QDir>
 #include <QMessageBox>
 #include <QStandardPaths>
+#include <QHeaderView>
+#include <QCheckBox>
+#include <set>
 #include "qmpsettingswindow.hpp"
 #include "qmpdeviceprioritydialog.hpp"
 #include "ui_qmpsettingswindow.h"
 #include "qmpmainwindow.hpp"
-
-QSettings* qmpSettingsWindow::settings=nullptr;
 
 void qmpFluidForEachOpt(void* data,const char*,const char* option)
 {
@@ -18,34 +18,28 @@ void qmpFluidForEachOpt(void* data,const char*,const char* option)
 	pcb->addItem(option);
 }
 
-qmpSettingsWindow::qmpSettingsWindow(QWidget *parent) :
+qmpSettingsWindow::qmpSettingsWindow(qmpSettings *qmpsettings,QWidget *parent) :
 	QDialog(parent),
 	ui(new Ui::qmpSettingsWindow)
 {
 	ui->setupUi(this);customOptions.clear();customOptPages.clear();
 	connect(this,&qmpSettingsWindow::dialogClosing,(qmpMainWindow*)parent,&qmpMainWindow::dialogClosed);
-	settings=new QSettings(QStandardPaths::writableLocation(QStandardPaths::StandardLocation::ConfigLocation)+QString("/qmprc"),QSettings::IniFormat);
-	settingsInit();
-	ui->pbAdd->setIcon(QIcon(getThemedIcon(":/img/add.svg")));
-	ui->pbRemove->setIcon(QIcon(getThemedIcon(":/img/remove.svg")));
-	ui->pbDown->setIcon(QIcon(getThemedIcon(":/img/down.svg")));
-	ui->pbUp->setIcon(QIcon(getThemedIcon(":/img/up.svg")));
-	cw=new qmpCustomizeWindow(this);
+	settings=qmpsettings;
+	cwt=new qmpCustomizeWindow(this);
+	cwa=new qmpCustomizeWindow(this);
 	dps=new qmpDevPropDialog(this);
 	devpriod=new qmpDevicePriorityDialog(this);
 }
 
 qmpSettingsWindow::~qmpSettingsWindow()
 {
-	delete cw;delete dps;
-	delete settings;settings=nullptr;
 	delete ui;
 }
 
 void qmpSettingsWindow::closeEvent(QCloseEvent *event)
 {
 	setVisible(false);
-	settings->sync();
+	loadOption();
 	emit dialogClosing();
 	event->accept();
 }
@@ -57,336 +51,53 @@ void qmpSettingsWindow::hideEvent(QHideEvent *event)
 
 void qmpSettingsWindow::on_buttonBox_accepted()
 {
-	settingsUpdate();
+	saveOption();
 	qmpMainWindow::getInstance()->setupWidget();
 	emit dialogClosing();
 }
 
 void qmpSettingsWindow::on_buttonBox_rejected()
 {
-	settingsInit();
+	loadOption();
 	emit dialogClosing();
-}
-
-void qmpSettingsWindow::settingsInit()
-{
-	fluid_settings_t *fsettings=new_fluid_settings();
-
-	settings->setValue("Midi/DisableMapping",settings->value("Midi/DisableMapping",0));
-	ui->cbDisableMapping->setChecked(settings->value("Midi/DisableMapping",0).toInt());
-
-	settings->setValue("Midi/SendSysEx",settings->value("Midi/SendSysEx",1));
-	ui->cbSendSysx->setChecked(settings->value("Midi/SendSysEx",1).toInt());
-
-	settings->setValue("Midi/WaitVoice",settings->value("Midi/WaitVoice",1));
-	ui->cbWaitVoice->setChecked(settings->value("Midi/WaitVoice",1).toInt());
-
-	int selected=-1;
-	for(int i=0;i<ui->cbEncoding->count();++i)
-	if(ui->cbEncoding->itemText(i)==settings->value("Midi/TextEncoding","Unicode").toString())
-	{selected=i;break;}
-	if(~selected)ui->cbEncoding->setCurrentIndex(selected);
-	settings->setValue("Midi/TextEncoding",ui->cbEncoding->currentText());
-
-	fluid_settings_foreach_option(fsettings,"audio.driver",(void*)ui->cbAudioDrv,qmpFluidForEachOpt);
-	selected=-1;
-	for(int i=0;i<ui->cbAudioDrv->count();++i)
-	if(ui->cbAudioDrv->itemText(i)==settings->value("Audio/Driver","pulseaudio").toString())
-	{selected=i;break;}
-	if(~selected)ui->cbAudioDrv->setCurrentIndex(selected);
-	settings->setValue("Audio/Driver",ui->cbAudioDrv->currentText());
-
-#ifdef _WIN32
-#define DefBufSize 256
-#else
-#define DefBufSize 128
-#endif
-	selected=-1;
-	for(int i=0;i<ui->cbBufSize->count();++i)
-	if(ui->cbBufSize->itemText(i).toInt()==settings->value("Audio/BufSize",DefBufSize).toInt())
-	{selected=i;break;}
-	if(~selected)ui->cbBufSize->setCurrentIndex(selected);
-	else if(settings->value("Audio/BufSize",DefBufSize).toInt()>=64&&settings->value("Audio/BufSize",DefBufSize).toInt()<=8192)
-		ui->cbBufSize->setCurrentText(settings->value("Audio/BufSize",DefBufSize).toString());
-	else ui->cbBufSize->setCurrentText(QString::number(DefBufSize));
-	settings->setValue("Audio/BufSize",ui->cbBufSize->currentText().toInt());
-#undef DefBufSize
-
-#ifdef _WIN32
-#define DefBufCnt 8
-#else
-#define DefBufCnt 2
-#endif
-	selected=-1;
-	for(int i=0;i<ui->cbBufCnt->count();++i)
-	if(ui->cbBufCnt->itemText(i).toInt()==settings->value("Audio/BufCnt",DefBufCnt).toInt())
-	{selected=i;break;}
-	if(~selected)ui->cbBufCnt->setCurrentIndex(selected);
-	else if(settings->value("Audio/BufCnt",DefBufCnt).toInt()>=2&&settings->value("Audio/BufCnt",DefBufCnt).toInt()<=64)
-		ui->cbBufCnt->setCurrentText(settings->value("Audio/BufCnt",DefBufCnt).toString());
-	else ui->cbBufCnt->setCurrentText(QString::number(DefBufCnt));
-	settings->setValue("Audio/BufCnt",ui->cbBufCnt->currentText().toInt());
-#undef DefBufCnt
-
-	selected=-1;
-	for(int i=0;i<ui->cbFormat->count();++i)
-	if(ui->cbFormat->itemText(i)==settings->value("Audio/Format","16bits").toString())
-	{selected=i;break;}
-	if(~selected)ui->cbFormat->setCurrentIndex(selected);
-	settings->setValue("Audio/Format",ui->cbFormat->currentText());
-
-	selected=-1;
-	for(int i=0;i<ui->cbFrequency->count();++i)
-	if(ui->cbFormat->itemText(i).toInt()==settings->value("Audio/Frequency",48000).toInt())
-	{selected=i;break;}
-	if(~selected)ui->cbFrequency->setCurrentIndex(selected);
-	settings->setValue("Audio/Frequency",ui->cbFrequency->currentText());
-
-	ui->sbPolyphony->setValue(settings->value("Audio/Polyphony",2048).toInt());
-	if(ui->sbPolyphony->value()<1||ui->sbPolyphony->value()>65535)ui->sbPolyphony->setValue(2048);
-	settings->setValue("Audio/Polyphony",ui->sbPolyphony->value());
-
-	ui->sbCPUCores->setValue(settings->value("Audio/Threads",1).toInt());
-	if(ui->sbCPUCores->value()<1||ui->sbCPUCores->value()>256)ui->sbCPUCores->setValue(1);
-	settings->setValue("Audio/Threads",ui->sbCPUCores->value());
-
-	settings->setValue("Audio/AutoBS",settings->value("Audio/AutoBS",1));
-	ui->cbAutoBS->setChecked(settings->value("Audio/AutoBS",1).toInt());
-	ui->lbBSMode->setText(ui->cbAutoBS->isChecked()?"Fallback bank select mode":"Bank select mode");
-
-	selected=-1;
-	for(int i=0;i<ui->cbBSMode->count();++i)
-	if(ui->cbBSMode->itemText(i)==settings->value("Audio/BankSelect","CC#0").toString())
-	{selected=i;break;}
-	if(~selected)ui->cbBSMode->setCurrentIndex(selected);
-	settings->setValue("Audio/BankSelect",ui->cbBSMode->currentText());
-	settings->setValue("Audio/Gain",settings->value("Audio/Gain",50));
-
-	QList<QVariant> sflist=settings->value("Audio/SoundFonts",QList<QVariant>{}).toList();
-	ui->twSoundfont->clear();
-	for(int i=0;i<sflist.size();++i)
-	{
-		ui->twSoundfont->insertRow(i);
-		QTableWidgetItem *sfn,*sfe;
-		QString sf=sflist[i].toString();
-		bool enabled=!sf.startsWith('#');
-		if(!enabled)sf=sf.mid(1);
-		ui->twSoundfont->setItem(i,1,sfn=new QTableWidgetItem(sf));
-		ui->twSoundfont->setItem(i,0,sfe=new QTableWidgetItem());
-		sfn->setFlags(Qt::ItemFlag::ItemIsEnabled|Qt::ItemFlag::ItemIsSelectable);
-		sfe->setFlags(Qt::ItemFlag::ItemIsEnabled|Qt::ItemFlag::ItemIsSelectable|Qt::ItemFlag::ItemIsUserCheckable);
-		sfe->setCheckState(enabled?Qt::CheckState::Checked:Qt::CheckState::Unchecked);
-	}
-	ui->twSoundfont->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeMode::ResizeToContents);
-	QStringList qs{"E","Path"};
-	ui->twSoundfont->setHorizontalHeaderLabels(qs);
-
-	settings->setValue("Behavior/RestorePlaylist",settings->value("Behavior/RestorePlaylist",0));
-	ui->cbRestorePlaylist->setChecked(settings->value("Behavior/RestorePlaylist",0).toInt());
-
-	settings->setValue("Behavior/LoadFolder",settings->value("Behavior/LoadFolder",0));
-	ui->cbLoadFolder->setChecked(settings->value("Behavior/LoadFolder",0).toInt());
-
-	settings->setValue("Behavior/DialogStatus",settings->value("Behavior/DialogStatus",1));
-	ui->cbDialogStatus->setChecked(settings->value("Behavior/DialogStatus",1).toInt());
-
-	settings->setValue("Behavior/SaveEfxParam",settings->value("Behavior/SaveEfxParam",1));
-	ui->cbSaveEfxParam->setChecked(settings->value("Behavior/SaveEfxParam",1).toInt());
-
-	settings->setValue("Behavior/SingleInstance",settings->value("Behavior/SingleInstance",0));
-	ui->cbPersistentfs->setChecked(settings->value("Behavior/SingleInstance",0).toInt());
-
-	settings->setValue("Behavior/ShowButtonLabel",settings->value("Behavior/ShowButtonLabel",0));
-	ui->cbShowLabel->setChecked(settings->value("Behavior/ShowButtonLabel",0).toInt());
-
-	settings->setValue("Behavior/IconTheme",settings->value("Behavior/IconTheme",0));
-	ui->cbIconTheme->setCurrentIndex(settings->value("Behavior/IconTheme",0).toInt());
-
-	settings->sync();
-	delete_fluid_settings(fsettings);
-}
-
-void qmpSettingsWindow::settingsUpdate()
-{
-	settings->setValue("Midi/DisableMapping",ui->cbDisableMapping->isChecked()?1:0);
-
-	settings->setValue("Midi/SendSysEx",ui->cbSendSysx->isChecked()?1:0);
-
-	settings->setValue("Midi/WaitVoice",ui->cbWaitVoice->isChecked()?1:0);
-
-	settings->setValue("Midi/TextEncoding",ui->cbEncoding->currentText());
-
-	settings->setValue("Audio/Driver",ui->cbAudioDrv->currentText());
-
-	settings->setValue("Audio/BufSize",ui->cbBufSize->currentText().toInt());
-
-	settings->setValue("Audio/BufCnt",ui->cbBufCnt->currentText().toInt());
-
-	settings->setValue("Audio/Format",ui->cbFormat->currentText());
-
-	settings->setValue("Audio/Frequency",ui->cbFrequency->currentText());
-
-	settings->setValue("Audio/Polyphony",ui->sbPolyphony->value());
-
-	settings->setValue("Audio/Threads",ui->sbCPUCores->value());
-
-	settings->setValue("Audio/AutoBS",ui->cbAutoBS->isChecked()?1:0);
-
-	settings->setValue("Audio/BankSelect",ui->cbBSMode->currentText());
-
-	QList<QVariant> sflist;
-	for(int i=0;i<ui->twSoundfont->rowCount();++i)
-	{
-		QString sfs=ui->twSoundfont->item(i,1)->text();
-		if(ui->twSoundfont->item(i,0)->checkState()==Qt::CheckState::Unchecked)sfs="#"+sfs;
-		sflist.push_back(sfs);
-	}
-	settings->setValue("Audio/SoundFonts",sflist);
-
-	settings->setValue("Behavior/RestorePlaylist",ui->cbRestorePlaylist->isChecked()?1:0);
-
-	settings->setValue("Behavior/LoadFolder",ui->cbLoadFolder->isChecked()?1:0);
-
-	settings->setValue("Behavior/DialogStatus",ui->cbDialogStatus->isChecked()?1:0);
-
-	settings->setValue("Behavior/SingleInstance",ui->cbPersistentfs->isChecked()?1:0);
-
-	settings->setValue("Behavior/ShowButtonLabel",ui->cbShowLabel->isChecked()?1:0);
-
-	settings->setValue("Behavior/IconTheme",ui->cbIconTheme->currentIndex());
-
-	if(!ui->cbDialogStatus->isChecked())
-	{
-		settings->remove("DialogStatus/MainW");
-		settings->remove("DialogStatus/PListW");
-		settings->remove("DialogStatus/PListWShown");
-		settings->remove("DialogStatus/ChnlW");
-		settings->remove("DialogStatus/ChnlWShown");
-		settings->remove("DialogStatus/EfxW");
-		settings->remove("DialogStatus/EfxWShown");
-		settings->remove("DialogStatus/FileDialogPath");
-	}
-
-	settings->setValue("Behavior/SaveEfxParam",ui->cbSaveEfxParam->isChecked()?1:0);
-	if(!ui->cbSaveEfxParam->isChecked())
-	{
-		settings->remove("Effects/ChorusEnabled");
-		settings->remove("Effects/ReverbEnabled");
-		settings->remove("Effects/ReverbRoom");
-		settings->remove("Effects/ReverbDamp");
-		settings->remove("Effects/ReverbWidth");
-		settings->remove("Effects/ReverbLevel");
-
-		settings->remove("Effects/ChorusFeedbk");
-		settings->remove("Effects/ChorusLevel");
-		settings->remove("Effects/ChorusRate");
-		settings->remove("Effects/ChorusDepth");
-		settings->remove("Effects/ChorusType");
-	}
-
-	for(int i=0;i<ui->twPluginList->rowCount();++i)
-		settings->setValue(
-		QString("PluginSwitch/")+ui->twPluginList->item(i,1)->text(),
-		ui->twPluginList->item(i,0)->checkState()==Qt::CheckState::Checked?1:0);
-	updateCustomOptions();
-	settings->sync();
-}
-
-void qmpSettingsWindow::on_cbBufSize_currentTextChanged(const QString &s)
-{
-	if(s.toInt()<64||s.toInt()>8192)ui->cbBufSize->setCurrentIndex(1);
-}
-
-void qmpSettingsWindow::on_cbBufCnt_currentTextChanged(const QString &s)
-{
-	if(s.toInt()<2||s.toInt()>64)ui->cbBufCnt->setCurrentIndex(1);
-}
-
-void qmpSettingsWindow::on_pbAdd_clicked()
-{
-	QStringList sl=QFileDialog::getOpenFileNames(this,"Add File","","SoundFont files (*.sf2)");
-	for(int i=0;i<sl.size();++i){
-		ui->twSoundfont->insertRow(ui->twSoundfont->rowCount());
-		QTableWidgetItem *sfn,*sfe;
-		ui->twSoundfont->setItem(ui->twSoundfont->rowCount()-1,1,sfn=new QTableWidgetItem(sl[i]));
-		ui->twSoundfont->setItem(ui->twSoundfont->rowCount()-1,0,sfe=new QTableWidgetItem());
-		sfn->setFlags(Qt::ItemFlag::ItemIsEnabled|Qt::ItemFlag::ItemIsSelectable);
-		sfe->setFlags(Qt::ItemFlag::ItemIsEnabled|Qt::ItemFlag::ItemIsSelectable|Qt::ItemFlag::ItemIsUserCheckable);
-	}
-}
-
-void qmpSettingsWindow::on_pbRemove_clicked()
-{
-	QList<QTableWidgetItem*> sl=ui->twSoundfont->selectedItems();
-	for(int i=0;i<sl.size();++i)
-	{
-		ui->twSoundfont->removeRow(ui->twSoundfont->row(sl[i]));
-	}
-}
-
-void qmpSettingsWindow::on_pbUp_clicked()
-{
-	int cid=ui->twSoundfont->currentRow();if(!cid)return;
-	QTableWidgetItem *ci=ui->twSoundfont->takeItem(cid,1);
-	QTableWidgetItem *ce=ui->twSoundfont->takeItem(cid,0);
-	ui->twSoundfont->removeRow(cid);
-	ui->twSoundfont->insertRow(cid-1);
-	ui->twSoundfont->setItem(cid-1,0,ce);
-	ui->twSoundfont->setItem(cid-1,1,ci);
-	ui->twSoundfont->setCurrentCell(cid-1,1);
-}
-
-void qmpSettingsWindow::on_pbDown_clicked()
-{
-	int cid=ui->twSoundfont->currentRow();if(cid==ui->twSoundfont->rowCount()-1)return;
-	QTableWidgetItem *ci=ui->twSoundfont->takeItem(cid,1);
-	QTableWidgetItem *ce=ui->twSoundfont->takeItem(cid,0);
-	ui->twSoundfont->removeRow(cid);
-	ui->twSoundfont->insertRow(cid+1);
-	ui->twSoundfont->setItem(cid+1,0,ce);
-	ui->twSoundfont->setItem(cid+1,1,ci);
-	ui->twSoundfont->setCurrentCell(cid+1,1);
-}
-
-void qmpSettingsWindow::on_cbAutoBS_stateChanged()
-{
-	ui->lbBSMode->setText(ui->cbAutoBS->isChecked()?"Fallback bank select mode":"Bank select mode");
 }
 
 void qmpSettingsWindow::updatePluginList(qmpPluginManager *pmgr)
 {
 	std::vector<qmpPlugin> *plugins=pmgr->getPlugins();
+	QVariant *data=static_cast<QVariant*>(settings->getOptionCustom("DisabledPlugins"));
+	QList<QVariant> disabled_plugins_l=static_cast<QVariant*>(data)->toList();
+	delete data;
+	std::set<std::string> disabled_plugins_s;
+	for(auto &i:disabled_plugins_l)
+		disabled_plugins_s.insert(i.toString().toStdString());
 	for(unsigned i=0;i<plugins->size();++i)
 	{
-		ui->twPluginList->insertRow(i);
-		QTableWidgetItem *icb;
-		ui->twPluginList->setItem(i,0,icb=new QTableWidgetItem());
-		bool enabled=settings->value(QString("PluginSwitch/")+QString(plugins->at(i).name.c_str()),1).toInt();
-		icb->setCheckState(enabled?Qt::CheckState::Checked:Qt::CheckState::Unchecked);
-		icb->setFlags(Qt::ItemFlag::ItemIsEnabled|Qt::ItemFlag::ItemIsSelectable|Qt::ItemFlag::ItemIsUserCheckable);
+		bool enabled=disabled_plugins_s.find(plugins->at(i).name)==disabled_plugins_s.end();
 		plugins->at(i).enabled=enabled;
-		ui->twPluginList->setItem(i,1,new QTableWidgetItem(plugins->at(i).name.c_str()));
-		ui->twPluginList->setItem(i,2,new QTableWidgetItem(plugins->at(i).version.c_str()));
-		ui->twPluginList->setItem(i,3,new QTableWidgetItem(plugins->at(i).path.c_str()));
-		for(int j=1;j<=3;++j)
-		ui->twPluginList->item(i,j)->setFlags(ui->twPluginList->item(i,j)->flags()^Qt::ItemIsEditable);
 	}
-	ui->twPluginList->setColumnWidth(0,22);
-	ui->twPluginList->setColumnWidth(1,192);
-	ui->twPluginList->setColumnWidth(2,64);
-	ui->twPluginList->setColumnWidth(3,128);
 }
 
 void qmpSettingsWindow::postInit()
 {
+	setupWidgets();
 	int sf=0;
-	for(int i=0;i<ui->twSoundfont->rowCount();++i)
-	if(ui->twSoundfont->item(i,0)->checkState()==Qt::CheckState::Checked)++sf;
+	QVariant *data=static_cast<QVariant*>(settings->getOptionCustom("FluidSynth/SoundFonts"));
+	for(auto i:data->toList())
+		if(!i.toString().startsWith('#'))
+		{
+			sf=1;
+			break;
+		}
+	delete data;
 	std::string selecteddev;
 	std::vector<std::string> devs=qmpMainWindow::getInstance()->getPlayer()->getMidiOutDevices();
 	std::set<std::string> devset;
 	for(auto dev:devs)devset.insert(dev);
-	for(auto setdev:qmpSettingsWindow::getSettingsIntf()->value("Midi/DevicePriority",QList<QVariant>{"Internal FluidSynth"}).toList())
+	QVariant *devpriov=static_cast<QVariant*>(qmpMainWindow::getInstance()->getSettings()->getOptionCustom("Midi/DevicePriority"));
+	QList<QVariant> devprio=devpriov->toList();
+	delete devpriov;
+	for(auto &setdev:devprio)
 		if(devset.find(setdev.toString().toStdString())!=devset.end())
 		{
 			selecteddev=setdev.toString().toStdString();
@@ -400,338 +111,458 @@ void qmpSettingsWindow::postInit()
 		   "Would you like to setup soundfonts now? You may have to reload the internal synth afterwards."))==QMessageBox::Yes)
 		{
 			show();
-			ui->tabWidget->setCurrentWidget(ui->tab_3);
+			ui->tabWidget->setCurrentWidget(qobject_cast<QWidget*>(pageForTab("SoundFonts")->parent()));
 		}
 	}
-	devpriod->setupRegisteredDevices();
 }
 
-void qmpSettingsWindow::updateCustomOptions()
+void qmpSettingsWindow::registerCustomizeWidgetOptions()
 {
-	for(auto i=customOptions.begin();i!=customOptions.end();++i)
-	switch(i->second.type)
-	{
-		case 0:
+	QPushButton *pbCustomizeToolbar=new QPushButton(tr("Customize..."));
+	QPushButton *pbCustomizeActions=new QPushButton(tr("Customize..."));
+	QVariant toolbar_def_val=QList<QVariant>({"Channel","Playlist","Effects","Visualization"});
+	QVariant actions_def_val=QList<QVariant>({"FileInfo","Render","Panic","ReloadSynth"});
+	settings->registerOptionCustom("Behavior","Customize toolbar","Behavior/Toolbar",pbCustomizeToolbar,&toolbar_def_val,std::bind(&qmpCustomizeWindow::save,cwt),std::bind(&qmpCustomizeWindow::load,cwt,std::placeholders::_1));
+	settings->registerOptionCustom("Behavior","Customize actions","Behavior/Actions",pbCustomizeActions,&actions_def_val,std::bind(&qmpCustomizeWindow::save,cwa),std::bind(&qmpCustomizeWindow::load,cwa,std::placeholders::_1));
+	connect(pbCustomizeToolbar,&QPushButton::clicked,[this]{loadOption("Behavior/Toolbar");cwt->show();});
+	connect(pbCustomizeActions,&QPushButton::clicked,[this]{loadOption("Behavior/Actions");cwa->show();});
+	connect(cwt,&QDialog::accepted,[this]{saveOption("Behavior/Toolbar");qmpMainWindow::getInstance()->setupWidget();});
+	connect(cwa,&QDialog::accepted,[this]{saveOption("Behavior/Actions");qmpMainWindow::getInstance()->setupWidget();});
+	connect(cwt,&QDialog::rejected,[this]{loadOption("Behavior/Toolbar");});
+	connect(cwa,&QDialog::rejected,[this]{loadOption("Behavior/Actions");});
+	qmpMainWindow::getInstance()->setupWidget();
+}
+
+void qmpSettingsWindow::registerSoundFontOption()
+{
+	QWidget *sfpanel=new QWidget();
+	sfpanel->setLayout(new QVBoxLayout);
+	sfpanel->layout()->setMargin(0);
+	QTableWidget *twsf=new QTableWidget();
+	twsf->setColumnCount(2);
+	twsf->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeMode::ResizeToContents);
+	twsf->setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
+	twsf->setSelectionBehavior(QAbstractItemView::SelectionBehavior::SelectRows);
+	twsf->setHorizontalHeaderLabels({tr("E"),tr("Path")});
+	twsf->setHorizontalScrollMode(QAbstractItemView::ScrollMode::ScrollPerPixel);
+	twsf->setVerticalScrollMode(QAbstractItemView::ScrollMode::ScrollPerPixel);
+	sfpanel->layout()->addWidget(twsf);
+	QWidget *controls=new QWidget();
+	controls->setLayout(new QHBoxLayout);
+	controls->layout()->setMargin(0);
+	QPushButton *pbsfadd=new QPushButton(style()->standardIcon(QStyle::StandardPixmap::SP_DialogOpenButton),QString());
+	QPushButton *pbsfrem=new QPushButton(style()->standardIcon(QStyle::StandardPixmap::SP_DialogDiscardButton),QString());
+	QPushButton *pbsfmup=new QPushButton(style()->standardIcon(QStyle::StandardPixmap::SP_ArrowUp),QString());
+	QPushButton *pbsfmdn=new QPushButton(style()->standardIcon(QStyle::StandardPixmap::SP_ArrowDown),QString());
+	controls->layout()->addWidget(pbsfadd);
+	controls->layout()->addWidget(pbsfrem);
+	controls->layout()->addWidget(pbsfmup);
+	controls->layout()->addWidget(pbsfmdn);
+	sfpanel->layout()->addWidget(controls);
+
+	connect(pbsfadd,&QPushButton::clicked,[twsf,this]{
+		QStringList sl=QFileDialog::getOpenFileNames(this,"Add File","","SoundFont files (*.sf2)");
+		for(int i=0;i<sl.size();++i){
+			twsf->insertRow(twsf->rowCount());
+			QTableWidgetItem *sfn,*sfe;
+			twsf->setItem(twsf->rowCount()-1,1,sfn=new QTableWidgetItem(sl[i]));
+			twsf->setItem(twsf->rowCount()-1,0,sfe=new QTableWidgetItem());
+			sfe->setCheckState(Qt::CheckState::Unchecked);
+			sfn->setFlags(Qt::ItemFlag::ItemIsEnabled|Qt::ItemFlag::ItemIsSelectable);
+			sfe->setFlags(Qt::ItemFlag::ItemIsEnabled|Qt::ItemFlag::ItemIsSelectable|Qt::ItemFlag::ItemIsUserCheckable);
+		}
+	});
+	connect(pbsfrem,&QPushButton::clicked,[twsf]{
+		QList<QTableWidgetItem*> sl=twsf->selectedItems();
+		for(int i=0;i<sl.size();++i)
+			twsf->removeRow(twsf->row(sl[i]));
+	});
+	connect(pbsfmup,&QPushButton::clicked,[twsf]{
+		int cid=twsf->currentRow();if(!cid)return;
+		QTableWidgetItem *ci=twsf->takeItem(cid,1);
+		QTableWidgetItem *ce=twsf->takeItem(cid,0);
+		twsf->removeRow(cid);
+		twsf->insertRow(cid-1);
+		twsf->setItem(cid-1,0,ce);
+		twsf->setItem(cid-1,1,ci);
+		twsf->setCurrentCell(cid-1,1);
+	});
+	connect(pbsfmdn,&QPushButton::clicked,[twsf]{
+		int cid=twsf->currentRow();if(cid==twsf->rowCount()-1)return;
+		QTableWidgetItem *ci=twsf->takeItem(cid,1);
+		QTableWidgetItem *ce=twsf->takeItem(cid,0);
+		twsf->removeRow(cid);
+		twsf->insertRow(cid+1);
+		twsf->setItem(cid+1,0,ce);
+		twsf->setItem(cid+1,1,ci);
+		twsf->setCurrentCell(cid+1,1);
+	});
+
+	QVariant sf_def_val=QList<QVariant>();
+	auto save_func=[twsf]()->void*{
+		QList<QVariant> sflist;
+		for(int i=0;i<twsf->rowCount();++i)
 		{
-			QSpinBox* sb=(QSpinBox*)i->second.widget;if(!i->second.widget)break;
-			settings->setValue(QString(i->first.c_str()),sb->value());
+			QString sfs=twsf->item(i,1)->text();
+			if(twsf->item(i,0)->checkState()==Qt::CheckState::Unchecked)
+				sfs="#"+sfs;
+			sflist.push_back(sfs);
+		}
+		return new QVariant(sflist);
+	};
+	auto load_func=[twsf](void* data){
+		QList<QVariant> sflist=static_cast<QVariant*>(data)->toList();
+		twsf->clearContents();
+		twsf->setRowCount(0);
+		for(int i=0;i<sflist.size();++i)
+		{
+			twsf->insertRow(i);
+			QTableWidgetItem *sfn,*sfe;
+			QString sf=sflist[i].toString();
+			bool enabled=!sf.startsWith('#');
+			if(!enabled)sf=sf.mid(1);
+			twsf->setItem(i,1,sfn=new QTableWidgetItem(sf));
+			twsf->setItem(i,0,sfe=new QTableWidgetItem());
+			sfn->setFlags(Qt::ItemFlag::ItemIsEnabled|Qt::ItemFlag::ItemIsSelectable);
+			sfe->setFlags(Qt::ItemFlag::ItemIsEnabled|Qt::ItemFlag::ItemIsSelectable|Qt::ItemFlag::ItemIsUserCheckable);
+			sfe->setCheckState(enabled?Qt::CheckState::Checked:Qt::CheckState::Unchecked);
+		}
+	};
+	settings->registerOptionCustom("SoundFonts","","FluidSynth/SoundFonts",sfpanel,&sf_def_val,save_func,load_func);
+}
+
+void qmpSettingsWindow::registerPluginOption(qmpPluginManager *pmgr)
+{
+	QTableWidget *twplugins=new QTableWidget();
+	twplugins->setColumnCount(4);
+	twplugins->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeMode::ResizeToContents);
+	twplugins->setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
+	twplugins->setSelectionBehavior(QAbstractItemView::SelectionBehavior::SelectRows);
+	twplugins->setHorizontalHeaderLabels({tr("E"),tr("Plugin Name"),tr("Version"),tr("Path")});
+	twplugins->setHorizontalScrollMode(QAbstractItemView::ScrollMode::ScrollPerPixel);
+	twplugins->setVerticalScrollMode(QAbstractItemView::ScrollMode::ScrollPerPixel);
+	QVariant ep_def_val=QList<QVariant>();
+	auto save_func=[twplugins,this]()->void*{
+		QVariant *data=static_cast<QVariant*>(settings->getOptionCustom("DisabledPlugins"));
+		QList<QVariant> disabled_plugins_ol=static_cast<QVariant*>(data)->toList();
+		delete data;
+		std::set<std::string> disabled_plugins_s;
+		for(auto &i:disabled_plugins_ol)
+			disabled_plugins_s.insert(i.toString().toStdString());
+		for(int i=0;i<twplugins->rowCount();++i)
+		{
+			QString pn=twplugins->item(i,1)->text();
+			if(twplugins->item(i,0)->checkState()==Qt::CheckState::Unchecked)
+				disabled_plugins_s.insert(pn.toStdString());
+			else
+				disabled_plugins_s.erase(pn.toStdString());
+		}
+		QList<QVariant> disabled_plugins;
+		for(auto &i:disabled_plugins_s)
+			disabled_plugins.push_back(QString(i.c_str()));
+		return new QVariant(disabled_plugins);
+	};
+	auto load_func=[twplugins,pmgr](void* data){
+		QList<QVariant> disabled_plugins_l=static_cast<QVariant*>(data)->toList();
+		std::set<std::string> disabled_plugins;
+		for(auto i:disabled_plugins_l)
+			disabled_plugins.insert(i.toString().toStdString());
+
+		twplugins->clearContents();
+		twplugins->setRowCount(0);
+
+		std::vector<qmpPlugin> *plugins=pmgr->getPlugins();
+		for(int i=0;static_cast<size_t>(i)<plugins->size();++i)
+		{
+			twplugins->insertRow(i);
+			qmpPlugin &p=plugins->at(static_cast<size_t>(i));
+			QTableWidgetItem *icb;
+			twplugins->setItem(i,0,icb=new QTableWidgetItem());
+			bool enabled=disabled_plugins.find(p.name)==disabled_plugins.end();
+			icb->setCheckState(enabled?Qt::CheckState::Checked:Qt::CheckState::Unchecked);
+			icb->setFlags(Qt::ItemFlag::ItemIsEnabled|Qt::ItemFlag::ItemIsSelectable|Qt::ItemFlag::ItemIsUserCheckable);
+			twplugins->setItem(i,1,new QTableWidgetItem(p.name.c_str()));
+			twplugins->setItem(i,2,new QTableWidgetItem(p.version.c_str()));
+			twplugins->setItem(i,3,new QTableWidgetItem(p.path.c_str()));
+			for(int j=1;j<=3;++j)
+			twplugins->item(i,j)->setFlags(Qt::ItemFlag::ItemIsEnabled|Qt::ItemFlag::ItemIsSelectable);
+		}
+	};
+	settings->registerOptionCustom("Plugins","","DisabledPlugins",twplugins,&ep_def_val,save_func,load_func);
+}
+
+void qmpSettingsWindow::registerExtraMidiOptions()
+{
+	QPushButton *pbDevPrio=new QPushButton("...");
+	connect(pbDevPrio,&QPushButton::clicked,[this]{loadOption("Midi/DevicePriority");devpriod->show();});
+	connect(devpriod,&QDialog::accepted,[this]{saveOption("Midi/DevicePriority");});
+	connect(devpriod,&QDialog::rejected,[this]{loadOption("Midi/DevicePriority");});
+	QVariant devprio_def_val=QList<QVariant>({"Internal FluidSynth"});
+	settings->registerOptionCustom("MIDI","Select MIDI output devices","Midi/DevicePriority",pbDevPrio,&devprio_def_val,std::bind(&qmpDevicePriorityDialog::save,devpriod),std::bind(&qmpDevicePriorityDialog::load,devpriod,std::placeholders::_1));
+
+	QPushButton *pbDevProp=new QPushButton("...");
+	connect(pbDevProp,&QPushButton::clicked,[this]{loadOption("Midi/DeviceInitializationFiles");dps->show();});
+	connect(dps,&QDialog::accepted,[this]{saveOption("Midi/DeviceInitializationFiles");});
+	connect(dps,&QDialog::rejected,[this]{loadOption("Midi/DeviceInitializationFiles");});
+	QVariant devprop_def_val=QList<QVariant>({});
+	settings->registerOptionCustom("MIDI","External MIDI device setup","Midi/DeviceInitializationFiles",pbDevProp,&devprop_def_val,std::bind(&qmpDevPropDialog::save,dps),std::bind(&qmpDevPropDialog::load,dps,std::placeholders::_1));
+}
+
+void qmpSettingsWindow::saveOption(std::string key)
+{
+	auto save_opt=[this](std::string& key)->QVariant
+	{
+		qmpOption &o=settings->options[key];
+		QVariant ret;
+		switch(o.type)
+		{
+			case qmpOption::ParameterType::parameter_int:
+			{
+				QSpinBox *sb=qobject_cast<QSpinBox*>(o.widget);
+				if(sb)
+					ret=sb->value();
+			}
+			break;
+			case qmpOption::ParameterType::parameter_uint:
+			{
+				QHexSpinBox *sb=qobject_cast<QHexSpinBox*>(o.widget);
+				if(sb)
+				{
+					int val=sb->value();
+					ret=reinterpret_cast<unsigned&>(val);
+				}
+			}
+			break;
+			case qmpOption::ParameterType::parameter_bool:
+			{
+				QCheckBox *cb=qobject_cast<QCheckBox*>(o.widget);
+				if(cb)
+					ret=cb->isChecked();
+			}
+			break;
+			case qmpOption::ParameterType::parameter_double:
+			{
+				QDoubleSpinBox *sb=qobject_cast<QDoubleSpinBox*>(o.widget);
+				if(sb)
+					ret=sb->value();
+			}
+			break;
+			case qmpOption::ParameterType::parameter_str:
+			{
+				QLineEdit *le=qobject_cast<QLineEdit*>(o.widget);
+				if(le)
+					ret=le->text();
+			}
+			break;
+			case qmpOption::ParameterType::parameter_enum:
+			{
+				QComboBox *cb=qobject_cast<QComboBox*>(o.widget);
+				if(cb)
+					ret=cb->currentText();
+			}
+			break;
+			case qmpOption::ParameterType::parameter_url:
+			{
+				QFileEdit *fe=qobject_cast<QFileEdit*>(o.widget);
+				if(fe)
+					ret=fe->text();
+			}
+			break;
+			default:
+				if(o.save_func)
+				{
+					QVariant* var=static_cast<QVariant*>(o.save_func());
+					ret=QVariant(*var);
+					delete var;
+				}
 			break;
 		}
-		case 1:
+		return ret;
+	};
+	if(key.length())
+	{
+		QVariant r=save_opt(key);
+		if(r.isValid())
+			settings->settings->setValue(QString(key.c_str()),r);
+	}
+	else for(std::string& key:settings->optionlist)
+	{
+		QVariant r=save_opt(key);
+		if(r.isValid())
+			settings->settings->setValue(QString(key.c_str()),r);
+	}
+	settings->settings->sync();
+}
+
+void qmpSettingsWindow::loadOption(std::string key)
+{
+	auto load_opt=[this](std::string& key)
+	{
+		qmpOption &o=settings->options[key];
+		switch(o.type)
 		{
-			QHexSpinBox* sb=(QHexSpinBox*)i->second.widget;if(!i->second.widget)break;
-			int v=sb->value();
-			settings->setValue(QString(i->first.c_str()),*reinterpret_cast<unsigned int*>(&v));
+			case qmpOption::ParameterType::parameter_int:
+			{
+				QSpinBox *sb=qobject_cast<QSpinBox*>(o.widget);
+				if(sb)
+					sb->setValue(settings->getOptionInt(key));
+			}
+			break;
+			case qmpOption::ParameterType::parameter_uint:
+			{
+				QHexSpinBox *sb=qobject_cast<QHexSpinBox*>(o.widget);
+				if(sb)
+					sb->setValue(settings->getOptionUint(key));
+			}
+			break;
+			case qmpOption::ParameterType::parameter_bool:
+			{
+				QCheckBox *cb=qobject_cast<QCheckBox*>(o.widget);
+				if(cb)
+					cb->setChecked(settings->getOptionBool(key));
+			}
+			break;
+			case qmpOption::ParameterType::parameter_double:
+			{
+				QDoubleSpinBox *sb=qobject_cast<QDoubleSpinBox*>(o.widget);
+				if(sb)
+					sb->setValue(settings->getOptionDouble(key));
+			}
+			break;
+			case qmpOption::ParameterType::parameter_str:
+			{
+				QLineEdit *le=qobject_cast<QLineEdit*>(o.widget);
+				if(le)
+					le->setText(QString(settings->getOptionString(key).c_str()));
+			}
+			break;
+			case qmpOption::ParameterType::parameter_enum:
+			{
+				QComboBox *cb=qobject_cast<QComboBox*>(o.widget);
+				if(cb)
+					cb->setCurrentIndex(settings->getOptionEnumInt(key));
+			}
+			break;
+			case qmpOption::ParameterType::parameter_url:
+			{
+				QFileEdit *fe=qobject_cast<QFileEdit*>(o.widget);
+				if(fe)
+					fe->setText(QString(settings->getOptionString(key).c_str()));
+			}
+			break;
+			default:
+				if(o.load_func)
+				{
+					void *var=settings->getOptionCustom(key);
+					o.load_func(var);
+					delete static_cast<QVariant*>(var);
+				}
 			break;
 		}
-		case 2:
+	};
+	if(key.length())load_opt(key);
+	else for(std::string& key:settings->optionlist)
+		load_opt(key);
+}
+
+void qmpSettingsWindow::setupWidgets()
+{
+	for(std::string& key:settings->optionlist)
+	{
+		if(!settings->options[key].desc.length()&&settings->options[key].type!=qmpOption::ParameterType::parameter_custom)
+			continue;
+		QWidget *optw=nullptr;
+		qmpOption &o=settings->options[key];
+		switch(o.type)
 		{
-			if(!i->second.widget)break;
-			settings->setValue(QString(i->first.c_str()),((QCheckBox*)i->second.widget)->isChecked()?1:0);
+			case qmpOption::ParameterType::parameter_int:
+			{
+				QSpinBox *sb=new QSpinBox;
+				sb->setMinimum(o.minv.toInt());
+				sb->setMaximum(o.maxv.toInt());
+				sb->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed);
+				optw=sb;
+			}
+			break;
+			case qmpOption::ParameterType::parameter_uint:
+			{
+				QHexSpinBox *sb=new QHexSpinBox;
+				sb->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed);
+				optw=sb;
+			}
+			break;
+			case qmpOption::ParameterType::parameter_bool:
+			{
+				QCheckBox *cb=new QCheckBox(QString(o.desc.c_str()));
+				cb->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+				optw=cb;
+			}
+			break;
+			case qmpOption::ParameterType::parameter_double:
+			{
+				QDoubleSpinBox *sb=new QDoubleSpinBox;
+				sb->setMinimum(o.minv.toDouble());
+				sb->setMaximum(o.maxv.toDouble());
+				sb->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed);
+				optw=sb;
+			}
+			break;
+			case qmpOption::ParameterType::parameter_str:
+			{
+				QLineEdit* te=new QLineEdit();
+				te->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed);
+				optw=te;
+			}
+			break;
+			case qmpOption::ParameterType::parameter_enum:
+			{
+				QComboBox* cb=new QComboBox();
+				for(std::string& item:o.enumlist)cb->addItem(QString(item.c_str()));
+				cb->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed);
+				optw=cb;
+			}
+			break;
+			case qmpOption::ParameterType::parameter_url:
+			{
+				QFileEdit* fe=new QFileEdit();
+				fe->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed);
+				optw=fe;
+			}
+			break;
+			default:
+				optw=o.widget;
 			break;
 		}
-		case 3:
+		o.widget=optw;
+		QGridLayout* page=pageForTab(o.tab);
+		if(o.type==qmpOption::ParameterType::parameter_bool||
+			(o.type==qmpOption::parameter_custom&&!o.desc.length()))
 		{
-			QDoubleSpinBox* sb=(QDoubleSpinBox*)i->second.widget;if(!i->second.widget)break;
-			settings->setValue(QString(i->first.c_str()),sb->value());
-			break;
-		}
-		case 4:
-		{
-			QLineEdit* te=(QLineEdit*)i->second.widget;if(!i->second.widget)break;
-			settings->setValue(QString(i->first.c_str()),te->text());
-			break;
-		}
-		case 5:
-		{
-			QComboBox* cb=(QComboBox*)i->second.widget;if(!i->second.widget)break;
-			settings->setValue(QString(i->first.c_str()),cb->currentIndex());
-			break;
-		}
-		case 6:
-		{
-			QFileEdit* fe=(QFileEdit*)i->second.widget;if(!i->second.widget)break;
-			settings->setValue(QString(i->first.c_str()),fe->text());
-			break;
-		}
-	}
-}
-
-void qmpSettingsWindow::registerOptionInt(std::string tab,std::string desc,std::string key,int min,int max,int defaultval)
-{
-	customOptions[key].widget=nullptr;
-	customOptions[key].desc=desc;
-	customOptions[key].defaultval=defaultval;
-	customOptions[key].minv=min;
-	customOptions[key].maxv=max;
-	customOptions[key].type=0;
-	if(desc.length())
-	{
-		QGridLayout* page=nullptr;
-		if(customOptPages[tab])page=customOptPages[tab];
-		else
-		{
-			QWidget* w=new QWidget;
-			page=new QGridLayout(w);
-			w->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-			ui->tabWidget->addTab(w,QString(tab.c_str()));
-			customOptPages[tab]=page;
-		}
-		QSpinBox* sb=new QSpinBox(page->parentWidget());
-		QLabel* lb=new QLabel(desc.c_str(),page->parentWidget());
-		customOptions[key].widget=sb;
-		sb->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed);
-		lb->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-		int row=page->rowCount();
-		page->addWidget(lb,row,0);
-		page->addWidget(sb,row,1);
-		sb->setMaximum(max);
-		sb->setMinimum(min);
-		sb->setValue(settings->value(QString(key.c_str()),defaultval).toInt());
-	}
-}
-int qmpSettingsWindow::getOptionInt(std::string key)
-{
-	return settings->value(QString(key.c_str()),customOptions[key].defaultval).toInt();
-}
-void qmpSettingsWindow::setOptionInt(std::string key,int val)
-{
-	settings->setValue(QString(key.c_str()),val);
-	if(customOptions[key].widget)
-	((QSpinBox*)customOptions[key].widget)->setValue(val);
-}
-
-void qmpSettingsWindow::registerOptionUint(std::string tab,std::string desc,std::string key,unsigned min,unsigned max,unsigned defaultval)
-{
-	customOptions[key].widget=nullptr;
-	customOptions[key].desc=desc;
-	customOptions[key].defaultval=defaultval;
-	customOptions[key].minv=min;
-	customOptions[key].maxv=max;
-	customOptions[key].type=1;
-	if(desc.length())
-	{
-		QGridLayout* page=nullptr;
-		if(customOptPages[tab])page=customOptPages[tab];
-		else
-		{
-			QWidget* w=new QWidget;
-			page=new QGridLayout(w);
-			w->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-			ui->tabWidget->addTab(w,QString(tab.c_str()));
-			customOptPages[tab]=page;
-		}
-		QHexSpinBox* sb=new QHexSpinBox(page->parentWidget());
-		QLabel* lb=new QLabel(desc.c_str(),page->parentWidget());
-		customOptions[key].widget=sb;
-		sb->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed);
-		lb->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-		int row=page->rowCount();
-		page->addWidget(lb,row,0);
-		page->addWidget(sb,row,1);
-		//sb->setMaximum(i(max));sb->setMinimum(i(min));
-		sb->setValue(settings->value(QString(key.c_str()),defaultval).toUInt());
-	}
-}
-unsigned qmpSettingsWindow::getOptionUint(std::string key)
-{
-	return settings->value(QString(key.c_str()),customOptions[key].defaultval).toUInt();
-}
-void qmpSettingsWindow::setOptionUint(std::string key,unsigned val)
-{
-	settings->setValue(QString(key.c_str()),val);
-	if(customOptions[key].widget)
-	((QHexSpinBox*)customOptions[key].widget)->setValue(val);
-}
-
-void qmpSettingsWindow::registerOptionBool(std::string tab,std::string desc,std::string key,bool defaultval)
-{
-	customOptions[key].widget=nullptr;
-	customOptions[key].desc=desc;
-	customOptions[key].defaultval=defaultval;
-	customOptions[key].type=2;
-	if(desc.length())
-	{
-		QGridLayout* page=nullptr;
-		if(customOptPages[tab])page=customOptPages[tab];
-		else
-		{
-			QWidget* w=new QWidget;
-			page=new QGridLayout(w);
-			w->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-			ui->tabWidget->addTab(w,QString(tab.c_str()));
-			customOptPages[tab]=page;
-		}
-		QCheckBox* cb=new QCheckBox(desc.c_str(),page->parentWidget());
-		customOptions[key].widget=cb;
-		cb->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-		int row=page->rowCount();
-		page->addWidget(cb,row,0,1,2);
-		cb->setChecked(settings->value(QString(key.c_str()),(int)defaultval).toInt());
-	}
-}
-bool qmpSettingsWindow::getOptionBool(std::string key)
-{
-	return settings->value(QString(key.c_str()),(int)customOptions[key].defaultval.toBool()).toInt();
-}
-void qmpSettingsWindow::setOptionBool(std::string key,bool val)
-{
-	settings->setValue(QString(key.c_str()),val?1:0);
-	if(customOptions[key].widget)
-	((QCheckBox*)customOptions[key].widget)->setChecked(val);
-}
-
-void qmpSettingsWindow::registerOptionDouble(std::string tab,std::string desc,std::string key,double min,double max,double defaultval)
-{
-	customOptions[key].widget=nullptr;
-	customOptions[key].desc=desc;
-	customOptions[key].defaultval=defaultval;
-	customOptions[key].minv=min;
-	customOptions[key].maxv=max;
-	customOptions[key].type=3;
-	if(desc.length())
-	{
-		QGridLayout* page=nullptr;
-		if(customOptPages[tab])page=customOptPages[tab];
-		else
-		{
-			QWidget* w=new QWidget;
-			page=new QGridLayout(w);
-			w->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-			ui->tabWidget->addTab(w,QString(tab.c_str()));
-			customOptPages[tab]=page;
-		}
-		QDoubleSpinBox* sb=new QDoubleSpinBox(page->parentWidget());
-		QLabel* lb=new QLabel(desc.c_str(),page->parentWidget());
-		customOptions[key].widget=sb;
-		sb->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed);
-		lb->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-		int row=page->rowCount();
-		page->addWidget(lb,row,0);
-		page->addWidget(sb,row,1);
-		sb->setMaximum(max);
-		sb->setMinimum(min);
-		sb->setValue(settings->value(QString(key.c_str()),defaultval).toDouble());
-	}
-}
-double qmpSettingsWindow::getOptionDouble(std::string key)
-{
-	return settings->value(QString(key.c_str()),customOptions[key].defaultval).toDouble();
-}
-void qmpSettingsWindow::setOptionDouble(std::string key,double val)
-{
-	settings->setValue(QString(key.c_str()),val);
-	if(customOptions[key].widget)
-	((QDoubleSpinBox*)customOptions[key].widget)->setValue(val);
-}
-
-void qmpSettingsWindow::registerOptionString(std::string tab,std::string desc,std::string key,std::string defaultval,bool ispath)
-{
-	customOptions[key].widget=nullptr;
-	customOptions[key].desc=desc;
-	customOptions[key].defaultval=QString(defaultval.c_str());
-	customOptions[key].type=4;
-	if(ispath)customOptions[key].type=6;
-	if(desc.length())
-	{
-		QGridLayout* page=nullptr;
-		if(customOptPages[tab])page=customOptPages[tab];
-		else
-		{
-			QWidget* w=new QWidget;
-			page=new QGridLayout(w);
-			w->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-			ui->tabWidget->addTab(w,QString(tab.c_str()));
-			customOptPages[tab]=page;
-		}
-		int row=page->rowCount();
-		if(ispath)
-		{
-			QFileEdit* fe=new QFileEdit(page->parentWidget());
-			fe->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed);
-			customOptions[key].widget=fe;
-			fe->setText(settings->value(QString(key.c_str()),defaultval.c_str()).toString());
-			page->addWidget(fe,row,1);
+			int row=page->rowCount();
+			page->addWidget(o.widget,row,0,1,2);
 		}
 		else
 		{
-			QLineEdit* te=new QLineEdit(page->parentWidget());
-			te->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed);
-			customOptions[key].widget=te;
-			te->setText(settings->value(QString(key.c_str()),defaultval.c_str()).toString());
-			page->addWidget(te,row,1);
+			QLabel* lb=new QLabel(o.desc.c_str(),page->parentWidget());
+			lb->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+			int row=page->rowCount();
+			page->addWidget(lb,row,0);
+			page->addWidget(o.widget,row,1);
 		}
-		QLabel* lb=new QLabel(desc.c_str(),page->parentWidget());
-		lb->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-		page->addWidget(lb,row,0);
 	}
-}
-std::string qmpSettingsWindow::getOptionString(std::string key)
-{
-	return settings->value(QString(key.c_str()),customOptions[key].defaultval).toString().toStdString();
-}
-void qmpSettingsWindow::setOptionString(std::string key,std::string val)
-{
-	settings->setValue(QString(key.c_str()),QString(val.c_str()));
-	if(customOptions[key].widget)
-	{
-		if(customOptions[key].type==4)
-		((QLineEdit*)customOptions[key].widget)->setText(val.c_str());
-		else if(customOptions[key].type==6)
-		((QFileEdit*)customOptions[key].widget)->setText(val.c_str());
-	}
+	loadOption();
 }
 
-void qmpSettingsWindow::registerOptionEnumInt(std::string tab,std::string desc,std::string key,std::vector<std::string> options,int defaultval)
+QGridLayout* qmpSettingsWindow::pageForTab(std::string tab)
 {
-	customOptions[key].widget=nullptr;
-	customOptions[key].desc=desc;
-	customOptions[key].defaultval=defaultval;
-	customOptions[key].type=5;
-	if(desc.length())
-	{
-		QGridLayout* page=nullptr;
-		if(customOptPages[tab])page=customOptPages[tab];
-		else
-		{
-			QWidget* w=new QWidget;
-			page=new QGridLayout(w);
-			w->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-			ui->tabWidget->addTab(w,QString(tab.c_str()));
-			customOptPages[tab]=page;
-		}
-		QComboBox* sb=new QComboBox(page->parentWidget());
-		QLabel* lb=new QLabel(desc.c_str(),page->parentWidget());
-		customOptions[key].widget=sb;
-		for(unsigned i=0;i<options.size();++i)sb->addItem(options[i].c_str());
-		sb->setCurrentIndex(settings->value(QString(key.c_str()),defaultval).toInt());
-		sb->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed);
-		lb->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-		int row=page->rowCount();
-		page->addWidget(lb,row,0);
-		page->addWidget(sb,row,1);
-
-	}
-}
-int qmpSettingsWindow::getOptionEnumInt(std::string key)
-{
-	return settings->value(QString(key.c_str()),customOptions[key].defaultval).toInt();
-}
-void qmpSettingsWindow::setOptionEnumInt(std::string key,int val)
-{
-	settings->setValue(QString(key.c_str()),val);
-	if(customOptions[key].widget)
-	((QComboBox*)customOptions[key].widget)->setCurrentIndex(val);
-}
-
-void qmpSettingsWindow::on_pbCustomizeTb_clicked()
-{
-	cw->launch(0);
-}
-
-void qmpSettingsWindow::on_pbCustomizeAct_clicked()
-{
-	cw->launch(1);
+	if(customOptPages.find(tab)!=customOptPages.end())
+		return customOptPages[tab];
+	QWidget* w=new QWidget;
+	QGridLayout* page=new QGridLayout(w);
+	w->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+	ui->tabWidget->addTab(w,QString(tab.c_str()));
+	customOptPages[tab]=page;
+	return page;
 }
 
 QFileEdit::QFileEdit(QWidget *par):QWidget(par)
@@ -751,14 +582,4 @@ void QFileEdit::chooseFile()
 {
 	QString s=QFileDialog::getOpenFileName(nullptr,tr("Select a file"),QFileInfo(text()).dir().absolutePath());
 	if(s.length())setText(s);
-}
-
-void qmpSettingsWindow::on_pbExtDevSetup_clicked()
-{
-	dps->launch();
-}
-
-void qmpSettingsWindow::on_pbDevPrio_clicked()
-{
-	devpriod->show();
 }

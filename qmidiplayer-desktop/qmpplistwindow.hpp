@@ -15,6 +15,7 @@ namespace Ui {
 }
 
 class qmpPlistWindow;
+class qmpSettings;
 
 class qmpPlistFunc:public qmpFuncBaseIntf
 {
@@ -65,6 +66,7 @@ class qmpPlistWindow:public QWidget
 		qmpPlistFunc* plistf;
 		Ui::qmpPlistWindow *ui;
 		int shuffle,repeat;//rep 0=off 1=one 2=all
+		qmpSettings* settings;
 };
 
 #endif // QMPPLISTWINDOW_H

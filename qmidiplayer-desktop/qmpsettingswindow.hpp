@@ -12,6 +12,7 @@
 #include <QComboBox>
 #include <QSpinBox>
 #include <QFormLayout>
+#include "qmpsettings.hpp"
 #include "qmpplugin.hpp"
 #include "qmpcustomizewindow.hpp"
 #include "qmpdevpropdialog.hpp"
@@ -19,13 +20,6 @@
 namespace Ui {
 	class qmpSettingsWindow;
 }
-
-struct qmpCustomOption
-{
-	QWidget* widget;
-	std::string desc;int type;
-	QVariant defaultval,minv,maxv;
-};
 
 class QLineEdit;
 class QToolButton;
@@ -60,7 +54,7 @@ class QHexSpinBox:public QSpinBox
 		}
 		int valueFromText(const QString &text)const
 		{
-			return i(text.toUInt(0,16));
+			return i(text.toUInt(nullptr,16));
 		}
 		QValidator::State validate(QString &input,int &pos)const
 		{
@@ -74,9 +68,9 @@ class QHexSpinBox:public QSpinBox
 			return QValidator::Acceptable;
 		}
 		inline unsigned int u(int i)const
-		{return *reinterpret_cast<unsigned int*>(&i);}
+		{return reinterpret_cast<unsigned&>(i);}
 		inline int i(unsigned int u)const
-		{return *reinterpret_cast<int*>(&u);}
+		{return reinterpret_cast<int&>(u);}
 };
 
 class qmpDevicePriorityDialog;
@@ -86,31 +80,16 @@ class qmpSettingsWindow:public QDialog
 	Q_OBJECT
 
 	public:
-		explicit qmpSettingsWindow(QWidget *parent=nullptr);
+		explicit qmpSettingsWindow(qmpSettings *qmpsettings,QWidget *parent=nullptr);
 		~qmpSettingsWindow();
 		void closeEvent(QCloseEvent *event);
 		void hideEvent(QHideEvent *event);
-		void settingsInit();
 		void updatePluginList(qmpPluginManager *pmgr);
-		void registerOptionInt(std::string tab,std::string desc,std::string key,int min,int max,int defaultval);
-		int getOptionInt(std::string key);
-		void setOptionInt(std::string key,int val);
-		void registerOptionUint(std::string tab,std::string desc,std::string key,unsigned min,unsigned max,unsigned defaultval);
-		unsigned getOptionUint(std::string key);
-		void setOptionUint(std::string key,unsigned val);
-		void registerOptionBool(std::string tab,std::string desc,std::string key,bool defaultval);
-		bool getOptionBool(std::string key);
-		void setOptionBool(std::string key,bool val);
-		void registerOptionDouble(std::string tab,std::string desc,std::string key,double min,double max,double defaultval);
-		double getOptionDouble(std::string key);
-		void setOptionDouble(std::string key,double val);
-		void registerOptionString(std::string tab,std::string desc,std::string key,std::string defaultval,bool ispath);
-		std::string getOptionString(std::string key);
-		void setOptionString(std::string key,std::string val);
-		void registerOptionEnumInt(std::string tab,std::string desc,std::string key,std::vector<std::string> options,int defaultval);
-		int getOptionEnumInt(std::string key);
-		void setOptionEnumInt(std::string key,int val);
 		void postInit();
+		void registerCustomizeWidgetOptions();
+		void registerSoundFontOption();
+		void registerPluginOption(qmpPluginManager *pmgr);
+		void registerExtraMidiOptions();
 	signals:
 		void dialogClosing();
 
@@ -118,36 +97,18 @@ class qmpSettingsWindow:public QDialog
 		void on_buttonBox_accepted();
 		void on_buttonBox_rejected();
 
-		void on_cbBufSize_currentTextChanged(const QString &s);
-		void on_cbBufCnt_currentTextChanged(const QString &s);
-
-		void on_pbAdd_clicked();
-		void on_pbRemove_clicked();
-		void on_pbUp_clicked();
-		void on_pbDown_clicked();
-
-		void on_cbAutoBS_stateChanged();
-
-		void on_pbCustomizeTb_clicked();
-
-		void on_pbCustomizeAct_clicked();
-
-		void on_pbExtDevSetup_clicked();
-
-		void on_pbDevPrio_clicked();
-
 	private:
 		Ui::qmpSettingsWindow *ui;
-		void settingsUpdate();
-		std::map<std::string,qmpCustomOption> customOptions;
+		std::map<std::string,qmpOption> customOptions;
 		std::map<std::string,QGridLayout*> customOptPages;
-		void updateCustomOptions();
-		qmpCustomizeWindow *cw;
+		void saveOption(std::string key=std::string());
+		void loadOption(std::string key=std::string());
+		void setupWidgets();
+		QGridLayout* pageForTab(std::string tab);
+		qmpCustomizeWindow *cwt,*cwa;
 		qmpDevPropDialog *dps;
 		qmpDevicePriorityDialog *devpriod;
-		static QSettings *settings;
-	public:
-		static QSettings* getSettingsIntf(){return settings;}
+		qmpSettings *settings;
 };
 
 #endif // QMPSETTINGSWINDOW_H

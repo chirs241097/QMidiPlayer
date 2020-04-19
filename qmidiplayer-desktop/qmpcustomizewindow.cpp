@@ -8,24 +8,11 @@
 #include "qmpcustomizewindow.hpp"
 #include "ui_qmpcustomizewindow.h"
 
-qmpCustomizeWindow::qmpCustomizeWindow(QWidget *parent) :
+qmpCustomizeWindow::qmpCustomizeWindow(QWidget *parent):
 	QDialog(parent),
 	ui(new Ui::qmpCustomizeWindow)
 {
 	ui->setupUi(this);
-	QSettings *s=qmpMainWindow::getInstance()->getSettingsWindow()->getSettingsIntf();
-	QList<QVariant> defa={"FileInfo","Render","Panic","ReloadSynth"};
-	QList<QVariant> defb={"Channel","Playlist","Effects","Visualization"};
-	QList<QVariant> a=s->value("Behavior/Actions",QVariant(defa)).toList();
-	QList<QVariant> b=s->value("Behavior/Toolbar",QVariant(defb)).toList();
-	std::vector<std::string>& v=qmpMainWindow::getInstance()->getWidgets(1);
-	v.clear();
-	for(int i=0;i<a.size();++i)
-	v.push_back(a[i].toString().toStdString());
-	std::vector<std::string>& vv=qmpMainWindow::getInstance()->getWidgets(0);
-	vv.clear();
-	for(int i=0;i<b.size();++i)
-	vv.push_back(b[i].toString().toStdString());
 }
 
 qmpCustomizeWindow::~qmpCustomizeWindow()
@@ -33,13 +20,14 @@ qmpCustomizeWindow::~qmpCustomizeWindow()
 	delete ui;
 }
 
-void qmpCustomizeWindow::launch(int w)
+void qmpCustomizeWindow::load(void *data)
 {
-	show();
 	ui->lwAvail->clear();
 	ui->lwEnabled->clear();
-	ow=w;
-	std::vector<std::string>& v=qmpMainWindow::getInstance()->getWidgets(w);
+	QList<QVariant> list=static_cast<QVariant*>(data)->toList();
+	std::vector<std::string> v;
+	for(auto i:list)
+		v.push_back(i.toString().toStdString());
 	std::map<std::string,qmpFuncPrivate>& m=qmpMainWindow::getInstance()->getFunc();
 	std::set<std::string> s;
 	for(auto i=v.begin();i!=v.end();++i)
@@ -67,6 +55,16 @@ void qmpCustomizeWindow::launch(int w)
 	}
 }
 
+void *qmpCustomizeWindow::save()
+{
+	QList<QVariant> ret;
+	for(int i=0;i<ui->lwEnabled->count();++i)
+	{
+		ret.push_back(QVariant(ui->lwEnabled->item(i)->toolTip()));
+	}
+	return new QVariant(ret);
+}
+
 void qmpCustomizeWindow::on_tbAdd_clicked()
 {
 	if(!ui->lwAvail->currentItem())return;
@@ -82,21 +80,12 @@ void qmpCustomizeWindow::on_tbRemove_clicked()
 
 void qmpCustomizeWindow::on_buttonBox_accepted()
 {
-	std::vector<std::string>& v=qmpMainWindow::getInstance()->getWidgets(ow);
-	v.clear();
-	QList<QVariant> ql;
-	for(int i=0;i<ui->lwEnabled->count();++i)
-	{
-		v.push_back(ui->lwEnabled->item(i)->toolTip().toStdString());
-		ql.push_back(QVariant(ui->lwEnabled->item(i)->toolTip()));
-	}
-	QSettings *s=qmpMainWindow::getInstance()->getSettingsWindow()->getSettingsIntf();
-	s->setValue(ow?"Behavior/Actions":"Behavior/Toolbar",ql);
-	qmpMainWindow::getInstance()->setupWidget();
+	accept();
 	close();
 }
 
 void qmpCustomizeWindow::on_buttonBox_rejected()
 {
+	reject();
 	close();
 }

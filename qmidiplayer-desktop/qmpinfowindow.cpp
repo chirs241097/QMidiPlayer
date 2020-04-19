@@ -47,22 +47,22 @@ void qmpInfoWindow::updateInfo()
 {
 	char str[256];
 	CMidiPlayer* player=qmpMainWindow::getInstance()->getPlayer();
-	QSettings* settings=qmpSettingsWindow::getSettingsIntf();
+	std::string textencoding=qmpMainWindow::getInstance()->getSettings()->getOptionEnumIntOptName("Midi/TextEncoding");
 	ui->lbFileName->setText(QString("File name: ")+qmpMainWindow::getInstance()->getFileName());
 	if(player->getTitle())
 	{
-		if(settings->value("Midi/TextEncoding","").toString()!="Unicode")
+		if(textencoding!="Unicode")
 		ui->lbTitle->setText(QString("Title: ")+
-		QTextCodec::codecForName(settings->value("Midi/TextEncoding","").toString().toStdString().c_str())->toUnicode(player->getTitle()));
+		QTextCodec::codecForName(textencoding.c_str())->toUnicode(player->getTitle()));
 		else
 		ui->lbTitle->setText(QString("Title: ")+player->getTitle());
 	}
 	else ui->lbTitle->setText(QString("Title: "));
 	if(player->getCopyright())
 	{
-		if(settings->value("Midi/TextEncoding","").toString()!="Unicode")
+		if(textencoding!="Unicode")
 		ui->lbCopyright->setText(QString("Copyright: ")+
-		QTextCodec::codecForName(settings->value("Midi/TextEncoding","").toString().toStdString().c_str())->toUnicode(player->getCopyright()));
+		QTextCodec::codecForName(textencoding.c_str())->toUnicode(player->getCopyright()));
 		else
 		ui->lbCopyright->setText(QString("Copyright: ")+player->getCopyright());
 	}

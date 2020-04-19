@@ -12,7 +12,7 @@
 #include "qmpmainwindow.hpp"
 #define setButtonHeight(x,h) {x->setMaximumHeight(h*(logicalDpiY()/96.));x->setMinimumHeight(h*(logicalDpiY()/96.));}
 
-qmpPlistWindow::qmpPlistWindow(QWidget *parent) :
+qmpPlistWindow::qmpPlistWindow(QWidget *parent):
 	QWidget(parent,Qt::Dialog),
 	ui(new Ui::qmpPlistWindow)
 {
@@ -23,12 +23,13 @@ qmpPlistWindow::qmpPlistWindow(QWidget *parent) :
 	setButtonHeight(ui->pbSave,36);setButtonHeight(ui->pbShuffle,36);
 	connect(this,&qmpPlistWindow::selectionChanging,(qmpMainWindow*)parent,&qmpMainWindow::selectionChanged);
 	repeat=0;shuffle=0;
-	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/RestorePlaylist","").toInt())
+	settings=qmpMainWindow::getInstance()->getSettings();
+	if(settings->getOptionBool("Behavior/RestorePlaylist"))
 	{
 		QSettings* plist=new QSettings(QStandardPaths::writableLocation(QStandardPaths::StandardLocation::ConfigLocation)+QString("/qmpplist"),
 									   QSettings::IniFormat);
 		int fc=plist->value("Playlist/FileCount",0).toInt();
-		ui->lwFiles->clear();for(int i=1;i<=fc;++i)
+		ui->lwFiles->clear();for(int i=0;i<fc;++i)
 		ui->lwFiles->addItem(plist->value("Playlist/File"+QString("%1").arg(i,5,10,QChar('0')),"").toString());
 		repeat=plist->value("Playlist/Repeat",0).toInt();
 		shuffle=plist->value("Playlist/Shuffle",0).toInt();
@@ -75,9 +76,9 @@ qmpPlistWindow::qmpPlistWindow(QWidget *parent) :
 		0,
 		true
 	);
-	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/PListW",QRect(-999,-999,999,999)).toRect()!=QRect(-999,-999,999,999))
-		setGeometry(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/PListW",QRect(-999,-999,999,999)).toRect());
-	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/PListWShown",0).toInt())
+	if(settings->getOptionRaw("DialogStatus/PListW",QRect(-999,-999,999,999)).toRect()!=QRect(-999,-999,999,999))
+		setGeometry(settings->getOptionRaw("DialogStatus/PListW",QRect(-999,-999,999,999)).toRect());
+	if(settings->getOptionRaw("DialogStatus/PListWShown",0).toInt())
 	{show();qmpMainWindow::getInstance()->setFuncState("Playlist",true);}
 }
 
@@ -90,35 +91,35 @@ qmpPlistWindow::~qmpPlistWindow()
 
 void qmpPlistWindow::showEvent(QShowEvent *event)
 {
-	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
+	if(settings->getOptionBool("Behavior/DialogStatus"))
 	{
-		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/PListWShown",1);
+		settings->setOptionRaw("DialogStatus/PListWShown",1);
 	}
-	if(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/PListW",QRect(-999,-999,999,999)).toRect()!=QRect(-999,-999,999,999))
-		setGeometry(qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/PListW",QRect(-999,-999,999,999)).toRect());
+	if(settings->getOptionRaw("DialogStatus/PListW",QRect(-999,-999,999,999)).toRect()!=QRect(-999,-999,999,999))
+		setGeometry(settings->getOptionRaw("DialogStatus/PListW",QRect(-999,-999,999,999)).toRect());
 	event->accept();
 }
 
 void qmpPlistWindow::closeEvent(QCloseEvent *event)
 {
-	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
+	if(settings->getOptionBool("Behavior/DialogStatus"))
 	{
-		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/PListW",geometry());
+		settings->setOptionRaw("DialogStatus/PListW",geometry());
 	}
 	setVisible(false);
 	if(!qmpMainWindow::getInstance()->isFinalizing())
 	while(ui->lwFiles->count()>1)delete ui->lwFiles->item(0);
-	if(!qmpMainWindow::getInstance()->isFinalizing()&&qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
+	if(!qmpMainWindow::getInstance()->isFinalizing()&&settings->getOptionBool("Behavior/DialogStatus"))
 	{
-		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/PListWShown",0);
+		settings->setOptionRaw("DialogStatus/PListWShown",0);
 	}
-	if(qmpMainWindow::getInstance()->isFinalizing()&&qmpSettingsWindow::getSettingsIntf()->value("Behavior/RestorePlaylist","").toInt())
+	if(qmpMainWindow::getInstance()->isFinalizing()&&settings->getOptionBool("Behavior/RestorePlaylist"))
 	{
 		QSettings* plist=new QSettings(QStandardPaths::writableLocation(QStandardPaths::StandardLocation::ConfigLocation)+QString("/qmpplist"),
 									   QSettings::IniFormat);
 		plist->setValue("Playlist/FileCount",ui->lwFiles->count());
 		for(int i=0;i<ui->lwFiles->count();++i)
-		plist->setValue("Playlist/File"+QString("%1").arg(i+1,5,10,QChar('0')),ui->lwFiles->item(i)->text());
+		plist->setValue("Playlist/File"+QString("%1").arg(i,5,10,QChar('0')),ui->lwFiles->item(i)->text());
 		plist->setValue("Playlist/Repeat",repeat);
 		plist->setValue("Playlist/Shuffle",shuffle);
 		plist->sync();
@@ -158,16 +159,16 @@ void qmpPlistWindow::insertItems(QStringList il)
 int qmpPlistWindow::on_pbAdd_clicked()
 {
 	QStringList sl;
-	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
-		sl=QFileDialog::getOpenFileNames(this,"Add File",qmpSettingsWindow::getSettingsIntf()->value("DialogStatus/FileDialogPath","").toString(),"Midi files (*.mid *.midi)");
+	if(settings->getOptionBool("Behavior/DialogStatus"))
+		sl=QFileDialog::getOpenFileNames(this,"Add File",settings->getOptionRaw("DialogStatus/FileDialogPath","").toString(),"Midi files (*.mid *.midi)");
 	else
 		sl=QFileDialog::getOpenFileNames(this,"Add File","","Midi files (*.mid *.midi *.rmi)");
 	if(sl.empty())return 0;
 	for(int i=0;i<sl.size();++i)
 		ui->lwFiles->addItem(new QListWidgetItem(sl.at(i)));
 	if(!isVisible())while(ui->lwFiles->count()>1)delete ui->lwFiles->item(0);
-	if(qmpSettingsWindow::getSettingsIntf()->value("Behavior/DialogStatus","").toInt())
-		qmpSettingsWindow::getSettingsIntf()->setValue("DialogStatus/FileDialogPath",
+	if(settings->getOptionBool("Behavior/DialogStatus"))
+		settings->setOptionRaw("DialogStatus/FileDialogPath",
 		QUrl(sl.at(0)).toString(QUrl::RemoveFilename));
 	return 1;
 }
@@ -293,7 +294,7 @@ void qmpPlistWindow::on_pbSave_clicked()
 								   QSettings::IniFormat);
 	plist->setValue("Playlist/FileCount",ui->lwFiles->count());
 	for(int i=0;i<ui->lwFiles->count();++i)
-	plist->setValue("Playlist/File"+QString("%1").arg(i+1,5,10,QChar('0')),ui->lwFiles->item(i)->text());
+	plist->setValue("Playlist/File"+QString("%1").arg(i,5,10,QChar('0')),ui->lwFiles->item(i)->text());
 	plist->setValue("Playlist/Repeat",repeat);
 	plist->setValue("Playlist/Shuffle",shuffle);
 	plist->sync();
@@ -306,7 +307,7 @@ void qmpPlistWindow::on_pbLoad_clicked()
 								   QSettings::IniFormat);
 	int fc=plist->value("Playlist/FileCount",0).toInt();
 	if(!fc){delete plist;return;}
-	ui->lwFiles->clear();for(int i=1;i<=fc;++i)
+	ui->lwFiles->clear();for(int i=0;i<fc;++i)
 	ui->lwFiles->addItem(plist->value("Playlist/File"+QString("%1").arg(i,5,10,QChar('0')),"").toString());
 	repeat=plist->value("Playlist/Repeat",0).toInt();
 	shuffle=plist->value("Playlist/Shuffle",0).toInt();

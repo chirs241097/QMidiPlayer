@@ -12,6 +12,45 @@ qmpMidiOutFluid::~qmpMidiOutFluid()
 	delete_fluid_settings(settings);
 	settings=nullptr;
 }
+
+void qmpMidiOutFluid::registerOptions(qmpPluginAPI *coreapi)
+{
+	default_driver=-1;
+	fluid_settings_t *fsettings=new_fluid_settings();
+	auto insert_driver=[](void* d,const char*,const char* driver)->void{
+		qmpMidiOutFluid *me=static_cast<qmpMidiOutFluid*>(d);
+		me->drivers.push_back(std::string(driver));
+#ifdef WIN32
+		if(std::string(driver)=="waveout")
+#else
+		if(std::string(driver)=="pulseaudio")
+			me->default_driver=static_cast<int>(me->drivers.size()-1);
+#endif
+	};
+	fluid_settings_foreach_option(fsettings,"audio.driver",this,insert_driver);
+	delete_fluid_settings(fsettings);
+	coreapi->registerOptionEnumInt("Audio","Audio Driver","FluidSynth/AudioDriver",drivers,default_driver);
+	coreapi->registerOptionInt("Audio","Audio Buffer Size","FluidSynth/BufSize",64,8192,
+#ifdef WIN32
+		512
+#else
+		64
+#endif
+							   );
+	coreapi->registerOptionInt("Audio","Audio Buffer Count","FluidSynth/BufCnt",2,64,
+#ifdef WIN32
+		8
+#else
+		16
+#endif
+							   );
+	coreapi->registerOptionEnumInt("Audio","Sample Format","FluidSynth/SampleFormat",{"16bits","float"},0);
+	coreapi->registerOptionInt("Audio","Sample Rate","FluidSynth/SampleRate",8000,96000,48000);
+	coreapi->registerOptionInt("Audio","Max Polyphony","FluidSynth/Polyphony",1,65535,256);
+	coreapi->registerOptionInt("Audio","CPU Cores","FluidSynth/Threads",1,256,1);
+	coreapi->registerOptionBool("Audio","Auto Bank Select Mode","FluidSynth/AutoBS",true);
+	coreapi->registerOptionEnumInt("Audio","Bank Select Mode","FluidSynth/BankSelect",{"GM","GS","XG","MMA"},1);
+}
 void qmpMidiOutFluid::deviceInit()
 {
 	synth=new_fluid_synth(settings);

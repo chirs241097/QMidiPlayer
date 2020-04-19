@@ -25,10 +25,14 @@ class qmpMidiOutFluid:public qmpMidiOutDevice,public IFluidSettings
 		fluid_audio_driver_t* adriver;
 		std::vector<std::pair<uint16_t,std::string>> bnk;
 		std::unordered_map<uint16_t,std::vector<std::string>> pst;
+		qmpPluginAPI* coreapi;
+		std::vector<std::string> drivers;
+		int default_driver=-1;
 		void update_preset_list();
 	public:
 		qmpMidiOutFluid();
 		~qmpMidiOutFluid();
+		void registerOptions(qmpPluginAPI *coreapi);
 		void deviceInit();
 		void deviceDeinit();
 		void deviceDeinit(bool freshsettings);
