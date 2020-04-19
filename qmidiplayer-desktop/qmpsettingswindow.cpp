@@ -12,12 +12,6 @@
 #include "ui_qmpsettingswindow.h"
 #include "qmpmainwindow.hpp"
 
-void qmpFluidForEachOpt(void* data,const char*,const char* option)
-{
-	QComboBox *pcb=(QComboBox*)data;
-	pcb->addItem(option);
-}
-
 qmpSettingsWindow::qmpSettingsWindow(qmpSettings *qmpsettings,QWidget *parent) :
 	QDialog(parent),
 	ui(new Ui::qmpSettingsWindow)
