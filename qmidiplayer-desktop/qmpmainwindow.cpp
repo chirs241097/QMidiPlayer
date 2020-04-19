@@ -150,7 +150,7 @@ void qmpMainWindow::init()
 	}
 	chnlw->selectDefaultDevice();
 
-	ui->vsMasterVol->setValue(settings->getOptionRaw("Audio/Gain",50).toInt());
+	ui->vsMasterVol->setValue(settings->getOptionRaw("FluidSynth/Gain",50).toInt());
 	connect(timer,&QTimer::timeout,this,&qmpMainWindow::updateWidgets);
 	connect(timer,&QTimer::timeout,infow,&qmpInfoWindow::updateInfo);
 	ui->pbNext->setIcon(QIcon(getThemedIcon(":/img/next.svg")));
@@ -499,7 +499,7 @@ void qmpMainWindow::playerSeek(uint32_t percentage)
 void qmpMainWindow::on_vsMasterVol_valueChanged()
 {
 	if(!stopped)player->fluid()->setGain(ui->vsMasterVol->value()/250.);
-	settings->setOptionRaw("Audio/Gain",ui->vsMasterVol->value());
+	settings->setOptionRaw("FluidSynth/Gain",ui->vsMasterVol->value());
 }
 
 void qmpMainWindow::on_pbStop_clicked()
