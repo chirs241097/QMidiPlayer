@@ -139,6 +139,7 @@ void qmpVisualization::showThread()
 	}
 	debug=false;
 	ctk=api->getCurrentTimeStamp();
+	lst=std::chrono::steady_clock::now();
 	if(savevp)
 	{
 		pos[0]=api->getOptionDouble("Visualization/px");
@@ -191,7 +192,8 @@ void qmpVisualization::close()
 void qmpVisualization::reset()
 {
 	for(unsigned i=0;i<pool.size();++i)delete pool[i];
-	pool.clear();elb=ctk=0;tspool.clear();
+	pool.clear();elb=ctk=lstk=0;tspool.clear();
+	cts=0x0402;cks=0;ctp=500000;
 	for(int i=0;i<16;++i)for(int j=0;j<128;++j)
 	{
 		if(showparticle&&!horizontal&&pss[i][j])pss[i][j]->stopPS();
@@ -296,6 +298,7 @@ void qmpVisualization::updateVisualization3D()
 					nebuf->addTransformedEntity(&c,I,smvec3d(0,0,0));
 				continue;
 			}
+			if(pool[i]->ch>=996)continue;
 			if(api->getChannelMask(pool[i]->ch))continue;
 			smvec3d a(0.63*((double)pool[i]->key-64)+.1,(stairpiano?(56-pool[i]->ch*7.):(64-pool[i]->ch*8.)),((double)pool[i]->tce-ctk)*lpt+(stairpiano&&showpiano&&!horizontal)*pool[i]->ch*2.);
 			smvec3d b(0.63*((double)pool[i]->key-64)+.7,(stairpiano?(56-pool[i]->ch*7.):(64-pool[i]->ch*8.))+.4,((double)pool[i]->tcs-ctk)*lpt+(stairpiano&&showpiano&&!horizontal)*pool[i]->ch*2.);
@@ -321,8 +324,12 @@ void qmpVisualization::updateVisualization3D()
 				else pss[pool[i]->ch][pool[i]->key]->stopPS();
 			}
 			if(((double)pool[i]->tce-pool[i]->tcs)*lpt<minnotelength*(horizontal?0.0025:0.01))
-			{if(horizontal)a.x=((double)pool[i]->tcs-ctk)*lpt-minnotelength/100.-20;
-			else a.z=((double)pool[i]->tcs-ctk)*lpt-minnotelength/100.+stairpiano*pool[i]->ch*2;}
+			{
+				if(horizontal)
+					a.x=((double)pool[i]->tcs-ctk)*lpt-minnotelength/400.-20;
+				else
+					a.z=((double)pool[i]->tcs-ctk)*lpt-minnotelength/100.+stairpiano*pool[i]->ch*2;
+			}
 			if(usespectrum)
 			{
 				if(notestatus[pool[i]->ch][pool[i]->key]&&!lastnotestatus[pool[i]->ch][pool[i]->key])
@@ -428,6 +435,7 @@ void qmpVisualization::updateVisualization2D()
 				if(showmeasure)sm->smRenderQuad(&nq);
 				continue;
 			}
+			if(pool[i]->ch>=996)continue;
 			if(api->getChannelMask(pool[i]->ch))continue;
 			smvec2d a((froffsets[12]*(pool[i]->key/12)+froffsets[pool[i]->key%12])*wwidth/2048.,((double)pool[i]->tce-ctk)*lpt+wheight-nh);
 			smvec2d b(a.x+notew*0.9,((double)pool[i]->tcs-ctk)*lpt+wheight-nh);
@@ -630,7 +638,16 @@ bool qmpVisualization::update()
 		api->playerSeek(api->getCurrentPlaybackPercentage()-(sm->smGetKeyState(SMK_SHIFT)?5:1));
 	if(sm->smGetKeyState(SMK_B)==SMKST_HIT)
 		debug^=1;
-	if(playing)ctk+=1e6/api->getRawTempo()*api->getDivision()*sm->smGetDelta();
+	if(playing)
+	{
+		if(internal_clock_source)
+		{
+			ctk=1.*lstk/tfps/api->getRawTempo()*api->getDivision();
+			++lstk;
+		}
+		else
+			ctk=lstk+std::chrono::duration_cast<std::chrono::duration<double,std::micro>>(std::chrono::steady_clock::now()-lst).count()/api->getRawTempo()*api->getDivision();
+	}
 	if(!flat)
 		updateVisualization3D();
 	sm->smRenderBegin2D();
@@ -662,8 +679,15 @@ bool qmpVisualization::update()
 		}
 	}
 	if(osdpos==4){sm->smRenderEnd();return shouldclose;}
-	int t,r;t=api->getKeySig();r=(int8_t)((t>>8)&0xFF)+7;t&=0xFF;
-	std::wstring ts(t?minors:majors);ts=ts.substr(2*r,2);
+	for(uint32_t i=elb;i<pool.size();++i)
+	{
+		if(pool[i]->tcs>ctk)break;
+		if(pool[i]->ch==998)cts=pool[i]->key;
+		if(pool[i]->ch==997)cks=pool[i]->key;
+		if(pool[i]->ch==996)ctp=pool[i]->key;
+	}
+	int t,r;t=cks;r=(int8_t)((t>>8)&0xFF)+7;t&=0xFF;
+	std::wstring ts(t?minors:majors,2*r,2);
 	int step=int(1.33*fontsize);
 	int xp=(osdpos&1)?wwidth-step-1:1;
 	int yp=osdpos<2?wheight-step*5-4:step+4;
@@ -671,13 +695,13 @@ bool qmpVisualization::update()
 	font2.updateString(L"Title: %ls",api->getWTitle().c_str());
 	font2.render(xp,yp,0.5,0xFFFFFFFF,align);
 	font2.render(xp-1,yp-1,0.5,0xFF000000,align);
-	font.updateString(L"Time Sig: %d/%d",api->getTimeSig()>>8,1<<(api->getTimeSig()&0xFF));
+	font.updateString(L"Time Sig: %d/%d",cts>>8,1<<(cts&0xFF));
 	font.render(xp,yp+=step,0.5,0xFFFFFFFF,align);
 	font.render(xp-1,yp-1,0.5,0xFF000000,align);
 	font.updateString(L"Key Sig: %ls",ts.c_str());
 	font.render(xp,yp+=step,0.5,0xFFFFFFFF,align);
 	font.render(xp-1,yp-1,0.5,0xFF000000,align);
-	font.updateString(L"Tempo: %.2f",api->getRealTempo());
+	font.updateString(L"Tempo: %.2f",60./(ctp/1e6));
 	font.render(xp,yp+=step,0.5,0xFFFFFFFF,align);
 	font.render(xp-1,yp-1,0.5,0xFF000000,align);
 	font.updateString(L"Current tick: %d",ctk);
@@ -743,6 +767,11 @@ void qmpVisualization::init()
 	uihs=api->registerUIHook("main.stop",[this](const void*,void*){this->stop();},nullptr);
 	uihp=api->registerUIHook("main.pause",[this](const void*,void*){this->pause();},nullptr);
 	uihr=api->registerUIHook("main.reset",[this](const void*,void*){this->reset();},nullptr);
+	uihk=api->registerUIHook("main.seek",[this](const void*,void*){
+		cts=api->getTimeSig();
+		cks=api->getKeySig();
+		ctp=api->getRawTempo();
+	},nullptr);
 	herh=api->registerEventReadHandler(
 		[this](const void *ee,void*){
 			const SEvent* e=(const SEvent*)ee;
@@ -759,7 +788,14 @@ void qmpVisualization::init()
 				break;
 				case 0xF0:
 					if(e->type==0xFF&&e->p1==0x58)
+					{
 						this->tspool.push_back(std::make_pair(e->time,(e->str[0]<<24)|(e->str[1]<<16)));
+						this->pool.push_back(new MidiVisualEvent{e->time,e->time,(e->str[0]&0xffu)<<8|(e->str[1]&0xffu),0,998});
+					}
+					else if(e->type==0xFF&&e->p1==0x59)
+						this->pool.push_back(new MidiVisualEvent{e->time,e->time,(e->str[0]&0xffu)<<8|(e->str[1]&0xffu),0,997});
+					else if(e->type==0xFF&&e->p1==0x51)
+						this->pool.push_back(new MidiVisualEvent{e->time,e->time,(e->str[0]&0xffu)<<16|(e->str[1]&0xffu)<<8|(e->str[2]&0xffu),0,996});
 				break;
 			}
 		}
@@ -771,6 +807,8 @@ void qmpVisualization::init()
 			/*if(abs((int)this->ctk-(int)this->api->getCurrentTimeStamp())>this->api->getDivision()/4)
 				fprintf(stderr,"Visualization: out of sync! %u vs %u ad: %u\n",this->ctk,this->api->getCurrentTimeStamp());*/
 			this->ctk=this->api->getCurrentTimeStamp();
+			this->lstk=this->ctk;
+			this->lst=std::chrono::steady_clock::now();
 		}
 	,nullptr);
 	hfrf=api->registerFileReadFinishHook(
@@ -804,7 +842,7 @@ void qmpVisualization::init()
 	api->registerOptionBool("Visualization-Video","Save Viewport","Visualization/savevp",true);
 	api->registerOptionInt("Visualization-Video","Window Width","Visualization/wwidth",320,3200,800);
 	api->registerOptionInt("Visualization-Video","Window Height","Visualization/wheight",320,3200,600);
-	api->registerOptionInt("Visualization-Video","FPS","Visualization/tfps",5,1000,60);
+	api->registerOptionInt("Visualization-Video","Target FPS","Visualization/tfps",5,1000,60);
 	api->registerOptionInt("Visualization-Video","Supersampling","Visualization/supersampling",1,16,0);
 	api->registerOptionInt("Visualization-Video","Multisampling","Visualization/multisampling",0,16,0);
 	api->registerOptionInt("Visualization-Video","FOV","Visualization/fov",30,180,60);

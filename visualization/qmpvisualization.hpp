@@ -2,6 +2,7 @@
 #define QMPVISUALIZATION_H
 
 #include <stack>
+#include <chrono>
 #include <thread>
 #include <utility>
 #include <vector>
@@ -36,11 +37,14 @@ class qmpVisualization:public qmpPluginIntf,public qmpFuncBaseIntf
 		smParticleSystem* pss[16][128];
 		smPSEmissionPositionGenerator* psepg;
 		float pos[3],rot[3],lastx,lasty;
-		uint32_t ctc,ctk,elb;
+		uint32_t ctc,ctk,elb,lstk;
+		uint32_t cts,cks,ctp;
+		std::chrono::steady_clock::time_point lst;
 		double etps;
 		bool shouldclose,playing,debug;
+		bool internal_clock_source;
 		int herh,heh,hfrf;
-		int uihb,uihs,uihp,uihr;
+		int uihb,uihs,uihp,uihr,uihk;
 		std::vector<std::pair<uint32_t,uint32_t>>tspool;
 		int traveld[16][128];bool notestatus[16][128],lastnotestatus[16][128];
 		int spectra[16][128],spectrar[16][128];
