@@ -37,14 +37,17 @@ class qmpVisualization:public qmpPluginIntf,public qmpFuncBaseIntf
 		smParticleSystem* pss[16][128];
 		smPSEmissionPositionGenerator* psepg;
 		float pos[3],rot[3],lastx,lasty;
-		uint32_t ctc,ctk,elb,lstk;
-		uint32_t cts,cks,ctp;
+		uint32_t ctc,ctk,elb,lstk,cfr;
+		uint32_t cts,cks,ctp,cpbr[16],cpw[16];
+		uint32_t rpnid[16],rpnval[16];
 		std::chrono::steady_clock::time_point lst;
 		double etps;
 		bool shouldclose,playing,debug;
-		bool internal_clock_source;
+		bool rendermode,hidewindow;
 		int herh,heh,hfrf;
 		int uihb,uihs,uihp,uihr,uihk;
+		void(*framecb)(void*,size_t);
+		DWORD* fbcont;
 		std::vector<std::pair<uint32_t,uint32_t>>tspool;
 		int traveld[16][128];bool notestatus[16][128],lastnotestatus[16][128];
 		int spectra[16][128],spectrar[16][128];
@@ -54,6 +57,8 @@ class qmpVisualization:public qmpPluginIntf,public qmpFuncBaseIntf
 		void pushNoteOff(uint32_t tc,uint32_t ch,uint32_t key);
 		void updateVisualization3D();
 		void updateVisualization2D();
+
+		static qmpVisualization* inst;
 	public:
 		qmpVisualization(qmpPluginAPI* _api);
 		~qmpVisualization();
@@ -64,11 +69,14 @@ class qmpVisualization:public qmpPluginIntf,public qmpFuncBaseIntf
 		void stop();
 		void pause();
 		void reset();
+		void switchToRenderMode(void(*frameCallback)(void*,size_t),bool _hidewindow);
 
 		void init();
 		void deinit();
 		const char* pluginGetName();
 		const char* pluginGetVersion();
+
+		static qmpVisualization* instance();
 };
 
 class CMidiVisualHandler:public smHandler
@@ -101,6 +109,11 @@ extern "C"{
 	{return new qmpVisualization(api);}
 	EXPORTSYM const char* qmpPluginGetAPIRev()
 	{return QMP_PLUGIN_API_REV;}
+	EXPORTSYM void switchToRenderMode(void(*frameCallback)(void*,size_t),bool hidewindow)
+	{
+		if(qmpVisualization::instance())
+			qmpVisualization::instance()->switchToRenderMode(frameCallback,hidewindow);
+	}
 }
 
 #endif // QMPVISUALIZATION_H

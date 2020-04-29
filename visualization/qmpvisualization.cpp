@@ -72,7 +72,7 @@ void qmpVisualization::showThread()
 		iccolors[i]=api->getOptionUint("Visualization/chInactiveColor"+std::to_string(i));
 	}
 	sm=smGetInterface(SMELT_APILEVEL);
-	sm->smVidMode(wwidth,wheight,true);
+	sm->smVidMode(wwidth,wheight,true,!hidewindow);
 	sm->smUpdateFunc(h);sm->smQuitFunc(closeh);
 	sm->smWinTitle("QMidiPlayer Visualization");
 	sm->smSetFPS(vsync?FPS_VSYNC:tfps);
@@ -86,6 +86,8 @@ void qmpVisualization::showThread()
 	particletex=sm->smTextureLoad("particle.png");if(!particletex)
 	particletex=sm->smTextureLoad("/usr/share/qmidiplayer/img/particle.png");
 	bgtex=sm->smTextureLoad(api->getOptionString("Visualization/background").c_str());
+	if(rendermode)
+		fbcont=new DWORD[wwidth*wheight];
 	if(showparticle&&!horizontal)
 	{
 		smParticleSystemInfo psinfo;
@@ -178,6 +180,8 @@ void qmpVisualization::close()
 		api->setOptionDouble("Visualization/ry",rot[1]);
 		api->setOptionDouble("Visualization/rz",rot[2]);
 	}
+	if(rendermode)
+		delete[] fbcont;
 	font.releaseTTF();
 	font2.releaseTTF();
 	fonthdpi.releaseTTF();
@@ -192,8 +196,10 @@ void qmpVisualization::close()
 void qmpVisualization::reset()
 {
 	for(unsigned i=0;i<pool.size();++i)delete pool[i];
-	pool.clear();elb=ctk=lstk=0;tspool.clear();
+	pool.clear();elb=ctk=lstk=cfr=0;tspool.clear();
 	cts=0x0402;cks=0;ctp=500000;
+	for(int i=0;i<16;++i)
+	{cpbr[i]=2;cpw[i]=8192;}
 	for(int i=0;i<16;++i)for(int j=0;j<128;++j)
 	{
 		if(showparticle&&!horizontal&&pss[i][j])pss[i][j]->stopPS();
@@ -201,55 +207,65 @@ void qmpVisualization::reset()
 		while(!pendingv[i][j].empty())pendingv[i][j].pop();
 	}
 }
+
+void qmpVisualization::switchToRenderMode(void(*frameCallback)(void*,size_t),bool _hidewindow)
+{
+	rendermode=true;
+	framecb=frameCallback;
+	hidewindow=_hidewindow;
+}
 void qmpVisualization::start(){playing=true;}
 void qmpVisualization::stop(){playing=false;}
 void qmpVisualization::pause(){playing=!playing;}
 void qmpVisualization::updateVisualization3D()
 {
 	smQuad q;
-	if(sm->smGetKeyState(SMK_D))pos[0]+=cos(smMath::deg2rad(rot[2]-90)),pos[1]+=sin(smMath::deg2rad(rot[2]-90));
-	if(sm->smGetKeyState(SMK_A))pos[0]-=cos(smMath::deg2rad(rot[2]-90)),pos[1]-=sin(smMath::deg2rad(rot[2]-90));
-	if(sm->smGetKeyState(SMK_S))pos[0]+=cos(smMath::deg2rad(rot[2])),pos[1]+=sin(smMath::deg2rad(rot[2]));
-	if(sm->smGetKeyState(SMK_W))pos[0]-=cos(smMath::deg2rad(rot[2])),pos[1]-=sin(smMath::deg2rad(rot[2]));
-	if(sm->smGetKeyState(SMK_Q))pos[2]+=1;
-	if(sm->smGetKeyState(SMK_E))pos[2]-=1;
-	if(sm->smGetKeyState(SMK_R))
+	if(!rendermode)
 	{
-		if(horizontal)
+		if(sm->smGetKeyState(SMK_D))pos[0]+=cos(smMath::deg2rad(rot[2]-90)),pos[1]+=sin(smMath::deg2rad(rot[2]-90));
+		if(sm->smGetKeyState(SMK_A))pos[0]-=cos(smMath::deg2rad(rot[2]-90)),pos[1]-=sin(smMath::deg2rad(rot[2]-90));
+		if(sm->smGetKeyState(SMK_S))pos[0]+=cos(smMath::deg2rad(rot[2])),pos[1]+=sin(smMath::deg2rad(rot[2]));
+		if(sm->smGetKeyState(SMK_W))pos[0]-=cos(smMath::deg2rad(rot[2])),pos[1]-=sin(smMath::deg2rad(rot[2]));
+		if(sm->smGetKeyState(SMK_Q))pos[2]+=1;
+		if(sm->smGetKeyState(SMK_E))pos[2]-=1;
+		if(sm->smGetKeyState(SMK_R))
 		{
-			pos[0]=-20;pos[1]=45;pos[2]=0;
-			rot[0]=0;rot[1]=90;rot[2]=90;
+			if(horizontal)
+			{
+				pos[0]=-20;pos[1]=45;pos[2]=0;
+				rot[0]=0;rot[1]=90;rot[2]=90;
+			}
+			else
+			{
+				pos[0]=0;pos[1]=120;pos[2]=70;
+				rot[0]=0;rot[1]=75;rot[2]=90;
+			}
 		}
-		else
+		if(sm->smGetKeyState(SMK_LBUTTON)==SMKST_HIT)
+		sm->smSetMouseGrab(true),sm->smGetMouse2f(&lastx,&lasty);
+		if(sm->smGetKeyState(SMK_LBUTTON)==SMKST_KEEP)
 		{
-			pos[0]=0;pos[1]=120;pos[2]=70;
-			rot[0]=0;rot[1]=75;rot[2]=90;
+			float x,y;
+			sm->smGetMouse2f(&x,&y);
+			rot[1]-=(y-lasty)*0.01;
+			rot[2]+=(x-lastx)*0.01;
+			while(rot[1]>360)rot[1]-=360;
+			while(rot[1]<0)rot[1]+=360;
+			while(rot[2]>360)rot[2]-=360;
+			while(rot[2]<0)rot[2]+=360;
 		}
+		if(sm->smGetKeyState(SMK_LBUTTON)==SMKST_RELEASE)
+		{
+			sm->smSetMouseGrab(false);
+			sm->smSetMouse2f(wwidth/2,wheight/2);
+		}
+		if(sm->smGetKeyState(SMK_I))rot[1]+=1;
+		if(sm->smGetKeyState(SMK_K))rot[1]-=1;
+		if(sm->smGetKeyState(SMK_L))rot[0]+=1;
+		if(sm->smGetKeyState(SMK_J))rot[0]-=1;
+		if(sm->smGetKeyState(SMK_U))rot[2]+=1;
+		if(sm->smGetKeyState(SMK_O))rot[2]-=1;
 	}
-	if(sm->smGetKeyState(SMK_LBUTTON)==SMKST_HIT)
-	sm->smSetMouseGrab(true),sm->smGetMouse2f(&lastx,&lasty);
-	if(sm->smGetKeyState(SMK_LBUTTON)==SMKST_KEEP)
-	{
-		float x,y;
-		sm->smGetMouse2f(&x,&y);
-		rot[1]-=(y-lasty)*0.01;
-		rot[2]+=(x-lastx)*0.01;
-		while(rot[1]>360)rot[1]-=360;
-		while(rot[1]<0)rot[1]+=360;
-		while(rot[2]>360)rot[2]-=360;
-		while(rot[2]<0)rot[2]+=360;
-	}
-	if(sm->smGetKeyState(SMK_LBUTTON)==SMKST_RELEASE)
-	{
-		sm->smSetMouseGrab(false);
-		sm->smSetMouse2f(wwidth/2,wheight/2);
-	}
-	if(sm->smGetKeyState(SMK_I))rot[1]+=1;
-	if(sm->smGetKeyState(SMK_K))rot[1]-=1;
-	if(sm->smGetKeyState(SMK_L))rot[0]+=1;
-	if(sm->smGetKeyState(SMK_J))rot[0]-=1;
-	if(sm->smGetKeyState(SMK_U))rot[2]+=1;
-	if(sm->smGetKeyState(SMK_O))rot[2]-=1;
 	for(int i=0;i<4;++i)
 	{q.v[i].col=chkrtint;q.v[i].z=(showpiano&&!horizontal)?-5:0;}
 	q.tex=chequer;q.blend=BLEND_ALPHABLEND;
@@ -298,21 +314,27 @@ void qmpVisualization::updateVisualization3D()
 					nebuf->addTransformedEntity(&c,I,smvec3d(0,0,0));
 				continue;
 			}
-			if(pool[i]->ch>=996)continue;
+			if(pool[i]->ch>=990)continue;
 			if(api->getChannelMask(pool[i]->ch))continue;
 			smvec3d a(0.63*((double)pool[i]->key-64)+.1,(stairpiano?(56-pool[i]->ch*7.):(64-pool[i]->ch*8.)),((double)pool[i]->tce-ctk)*lpt+(stairpiano&&showpiano&&!horizontal)*pool[i]->ch*2.);
 			smvec3d b(0.63*((double)pool[i]->key-64)+.7,(stairpiano?(56-pool[i]->ch*7.):(64-pool[i]->ch*8.))+.4,((double)pool[i]->tcs-ctk)*lpt+(stairpiano&&showpiano&&!horizontal)*pool[i]->ch*2.);
-			bool isnoteon=pool[i]->tcs<=ctk&&pool[i]->tce>=ctk;if(isnoteon)
-			a.x=0.63*((double)pool[i]->key-64+api->getPitchBend(pool[i]->ch))+.1,
-			b.x=0.63*((double)pool[i]->key-64+api->getPitchBend(pool[i]->ch))+.7;
+			bool isnoteon=pool[i]->tcs<=ctk&&pool[i]->tce>=ctk;
+			double pb=((int)cpw[pool[i]->ch]-8192)/8192.*cpbr[pool[i]->ch];
+			if(isnoteon)
+			{
+				a.x=0.63*((double)pool[i]->key-64+pb)+.1;
+				b.x=0.63*((double)pool[i]->key-64+pb)+.7;
+			}
 			notestatus[pool[i]->ch][pool[i]->key]|=isnoteon;a.x*=1.2;b.x*=1.2;
 			if(horizontal)
 			{
 				a=smvec3d(((double)pool[i]->tcs-ctk)*lpt-20,(16-pool[i]->ch*2.),0.63*((double)pool[i]->key-64)+.1);
 				b=smvec3d(((double)pool[i]->tce-ctk)*lpt-20,(16-pool[i]->ch*2.)+.4,0.63*((double)pool[i]->key-64)+.7);
 				if(isnoteon)
-					a.z=0.63*((double)pool[i]->key-64+api->getPitchBend(pool[i]->ch))+.1,
-					b.z=0.63*((double)pool[i]->key-64+api->getPitchBend(pool[i]->ch))+.7;
+				{
+					a.z=0.63*((double)pool[i]->key-64+pb)+.1;
+					b.z=0.63*((double)pool[i]->key-64+pb)+.7;
+				}
 			}
 			if(showparticle&&!horizontal)
 			{
@@ -354,10 +376,11 @@ void qmpVisualization::updateVisualization3D()
 		else spectrar[i][j]=spectra[i][j];
 		if(spectrar[i][j])
 		{
-			smvec3d a(0.756*((double)j-64+api->getPitchBend(i))+.12,
+			double pb=((int)cpw[i]-8192)/8192.*cpbr[i];
+			smvec3d a(0.756*((double)j-64+pb)+.12,
 					  (stairpiano?(56-i*7.):(64-i*8.)),
 					  spectrar[i][j]*1.2*(1+0.02*sin(sm->smGetTime()*32))+(stairpiano&&showpiano&&!horizontal)*i*2.);
-			smvec3d b(0.756*((double)j-64+api->getPitchBend(i))+.84,
+			smvec3d b(0.756*((double)j-64+pb)+.84,
 					  (stairpiano?(56-i*7.):(64-i*8.))+.4,
 					  (stairpiano&&showpiano&&!horizontal)*i*2.);
 			drawCube(a,b,SETA(iccolors[i],204),0);
@@ -375,7 +398,8 @@ void qmpVisualization::updateVisualization3D()
 			if(traveld[i][j]>0)traveld[i][j]-=2;else traveld[i][j]=0;
 			p3d[i]->setKeyTravelDist(j,traveld[i][j]/10.);
 		}
-		p3d[i]->render(smvec3d(0.756*api->getPitchBend(i),stairpiano?55-i*7:62-i*8,stairpiano*i*2));
+		double pb=((int)cpw[i]-8192)/8192.*cpbr[i];
+		p3d[i]->render(smvec3d(0.756*pb,stairpiano?55-i*7:62-i*8,stairpiano*i*2));
 	}
 	for(int i=0;i<16;++i)
 		if(showlabel)
@@ -435,7 +459,7 @@ void qmpVisualization::updateVisualization2D()
 				if(showmeasure)sm->smRenderQuad(&nq);
 				continue;
 			}
-			if(pool[i]->ch>=996)continue;
+			if(pool[i]->ch>=990)continue;
 			if(api->getChannelMask(pool[i]->ch))continue;
 			smvec2d a((froffsets[12]*(pool[i]->key/12)+froffsets[pool[i]->key%12])*wwidth/2048.,((double)pool[i]->tce-ctk)*lpt+wheight-nh);
 			smvec2d b(a.x+notew*0.9,((double)pool[i]->tcs-ctk)*lpt+wheight-nh);
@@ -444,10 +468,12 @@ void qmpVisualization::updateVisualization2D()
 				a=smvec2d(((double)pool[i]->tce-ctk)*lpt+nh,(froffsets[12]*(pool[i]->key/12)+froffsets[pool[i]->key%12])*wheight/2048.);
 				b=smvec2d(((double)pool[i]->tcs-ctk)*lpt+nh,a.y+notew*0.9);
 			}
-			bool isnoteon=pool[i]->tcs<=ctk&&pool[i]->tce>=ctk;if(isnoteon)
+			bool isnoteon=pool[i]->tcs<=ctk&&pool[i]->tce>=ctk;
+			if(isnoteon)
 			{
-				uint32_t newkey=pool[i]->key+(int)floor(api->getPitchBend(pool[i]->ch));
-				double fpb=api->getPitchBend(pool[i]->ch)-floor(api->getPitchBend(pool[i]->ch));
+				double pb=((int)cpw[pool[i]->ch]-8192)/8192.*cpbr[pool[i]->ch];
+				uint32_t newkey=pool[i]->key+(int)floor(pb);
+				double fpb=pb-floor(pb);
 				if(horizontal)
 				{
 					a.y=(froffsets[12]*(newkey/12)+froffsets[newkey%12])*wheight/2048.+notew*fpb;
@@ -607,8 +633,9 @@ void qmpVisualization::updateVisualization2D()
 		{
 			smvec2d a((froffsets[12]*(j/12)+froffsets[j%12])*wwidth/2048.,spectrar[i][j]/-128.*(wheight-nh)*(1+0.02*sin(sm->smGetTime()*32))+wheight-nh);
 			smvec2d b(a.x+notew*0.9,lpt+wheight-nh);
-			uint32_t newkey=j+(int)floor(api->getPitchBend(i));
-			double fpb=api->getPitchBend(i)-floor(api->getPitchBend(i));
+			double pb=((int)cpw[i]-8192)/8192.*cpbr[i];
+			uint32_t newkey=j+(int)floor(pb);
+			double fpb=pb-floor(pb);
 			if(horizontal)
 			{
 				a=smvec2d(spectrar[i][j]/128.*(wwidth-nh)*(1+0.02*sin(sm->smGetTime()*32))+nh,(froffsets[12]*(j/12)+froffsets[j%12])*wheight/2048.);
@@ -632,18 +659,21 @@ void qmpVisualization::updateVisualization2D()
 bool qmpVisualization::update()
 {
 	smQuad q;
-	if(sm->smGetKeyState(SMK_RIGHT)==SMKST_HIT)
-		api->playerSeek(api->getCurrentPlaybackPercentage()+(sm->smGetKeyState(SMK_SHIFT)?5:1));
-	if(sm->smGetKeyState(SMK_LEFT)==SMKST_HIT)
-		api->playerSeek(api->getCurrentPlaybackPercentage()-(sm->smGetKeyState(SMK_SHIFT)?5:1));
-	if(sm->smGetKeyState(SMK_B)==SMKST_HIT)
-		debug^=1;
+	if(!rendermode)
+	{
+		if(sm->smGetKeyState(SMK_RIGHT)==SMKST_HIT)
+			api->playerSeek(api->getCurrentPlaybackPercentage()+(sm->smGetKeyState(SMK_SHIFT)?5:1));
+		if(sm->smGetKeyState(SMK_LEFT)==SMKST_HIT)
+			api->playerSeek(api->getCurrentPlaybackPercentage()-(sm->smGetKeyState(SMK_SHIFT)?5:1));
+		if(sm->smGetKeyState(SMK_B)==SMKST_HIT)
+			debug^=1;
+	}
 	if(playing)
 	{
-		if(internal_clock_source)
+		if(rendermode)
 		{
-			ctk=1.*lstk/tfps/api->getRawTempo()*api->getDivision();
-			++lstk;
+			ctk=1e6*(cfr)/tfps/ctp*api->getDivision()+lstk;
+			++cfr;
 		}
 		else
 			ctk=lstk+std::chrono::duration_cast<std::chrono::duration<double,std::micro>>(std::chrono::steady_clock::now()-lst).count()/api->getRawTempo()*api->getDivision();
@@ -684,7 +714,17 @@ bool qmpVisualization::update()
 		if(pool[i]->tcs>ctk)break;
 		if(pool[i]->ch==998)cts=pool[i]->key;
 		if(pool[i]->ch==997)cks=pool[i]->key;
-		if(pool[i]->ch==996)ctp=pool[i]->key;
+		if(pool[i]->ch==996)
+		{
+			ctp=pool[i]->key;
+			if(rendermode)
+			{
+				lstk=ctk;
+				cfr=1;
+			}
+		}
+		if(pool[i]->ch==995)cpbr[pool[i]->vel]=pool[i]->key;
+		if(pool[i]->ch==994)cpw[pool[i]->vel]=pool[i]->key;
 	}
 	int t,r;t=cks;r=(int8_t)((t>>8)&0xFF)+7;t&=0xFF;
 	std::wstring ts(t?minors:majors,2*r,2);
@@ -707,9 +747,12 @@ bool qmpVisualization::update()
 	font.updateString(L"Current tick: %d",ctk);
 	font.render(xp,yp+=step,0.5,0xFFFFFFFF,align);
 	font.render(xp-1,yp-1,0.5,0xFF000000,align);
-	font.updateString(L"FPS: %.2f",sm->smGetFPS());
-	font.render(xp,yp+=step,0.5,0xFFFFFFFF,align);
-	font.render(xp-1,yp-1,0.5,0xFF000000,align);
+	if(!rendermode)
+	{
+		font.updateString(L"FPS: %.2f",sm->smGetFPS());
+		font.render(xp,yp+=step,0.5,0xFFFFFFFF,align);
+		font.render(xp-1,yp-1,0.5,0xFF000000,align);
+	}
 	if(debug)
 	{
 		int dosdpos=(osdpos+1)%4;
@@ -726,11 +769,21 @@ bool qmpVisualization::update()
 		font.render(xp,yp+=step,0.5,0xFFFFFFFF,align);
 		font.render(xp-1,yp-1,0.5,0xFF000000,align);
 		tstr=std::string(sm->smGetDispDriver());
-		font.updateString(L"Display: %ls",std::wstring({std::begin(tstr),std::end(tstr)}).c_str());
+		font.updateString(L"Display %ls",std::wstring({std::begin(tstr),std::end(tstr)}).c_str());
 		font.render(xp,yp+=3*step,0.5,0xFFFFFFFF,align);
 		font.render(xp-1,yp-1,0.5,0xFF000000,align);
 	}
 	sm->smRenderEnd();
+	if(rendermode)
+	{
+		if(ctk>api->getMaxTick())
+			framecb(nullptr,0);
+		else
+		{
+			sm->smPixelCopy(0,0,wwidth,wheight,4*wwidth*wheight,fbcont);
+			framecb(fbcont,4*wwidth*wheight);
+		}
+	}
 	return shouldclose;
 }
 
@@ -753,13 +806,27 @@ void qmpVisualization::drawCube(smvec3d a,smvec3d b,DWORD col,SMTEX tex,int face
 	}
 }
 
-qmpVisualization::qmpVisualization(qmpPluginAPI* _api){api=_api;}
-qmpVisualization::~qmpVisualization(){api=nullptr;}
+qmpVisualization* qmpVisualization::inst=nullptr;
+
+qmpVisualization::qmpVisualization(qmpPluginAPI* _api)
+{
+	api=_api;
+	inst=this;
+	rendermode=false;
+}
+qmpVisualization::~qmpVisualization()
+{
+	api=nullptr;
+	inst=nullptr;
+}
 void qmpVisualization::init()
 {
 	h=new CMidiVisualHandler(this);
 	closeh=new CloseHandler(this);
 	rendererTh=nullptr;playing=false;
+	hidewindow=false;
+	memset(rpnid,0xFF,sizeof(rpnid));
+	memset(rpnval,0xFF,sizeof(rpnval));
 	memset(spectra,0,sizeof(spectra));
 	memset(spectrar,0,sizeof(spectrar));
 	api->registerFunctionality(this,"Visualization","Visualization",api->isDarkTheme()?":/img/visualization_i.svg":":/img/visualization.svg",0,true);
@@ -771,6 +838,8 @@ void qmpVisualization::init()
 		cts=api->getTimeSig();
 		cks=api->getKeySig();
 		ctp=api->getRawTempo();
+		for(int i=0;i<16;++i)
+		api->getPitchBendRaw(i,&cpw[i],&cpbr[i]);
 	},nullptr);
 	herh=api->registerEventReadHandler(
 		[this](const void *ee,void*){
@@ -785,6 +854,19 @@ void qmpVisualization::init()
 					this->pushNoteOn(e->time,e->type&0x0F,e->p1,e->p2);
 					else
 					this->pushNoteOff(e->time,e->type&0x0F,e->p1);
+				break;
+				case 0xB0:
+					if(e->p1==100)rpnid[e->type&0x0F]=e->p2;
+					if(e->p1==6)rpnval[e->type&0x0F]=e->p2;
+					if(~rpnid[e->type&0x0F]&&~rpnval[e->type&0x0F])
+					{
+						if(rpnid[e->type&0x0F]==0)
+							this->pool.push_back(new MidiVisualEvent{e->time,e->time,rpnval[e->type&0x0F],e->type&0x0Fu,995});
+						rpnval[e->type&0x0F]=~0u;
+					}
+				break;
+				case 0xE0:
+					this->pool.push_back(new MidiVisualEvent{e->time,e->time,(e->p1|(e->p2<<7))&0x3FFFu,e->type&0x0Fu,994});
 				break;
 				case 0xF0:
 					if(e->type==0xFF&&e->p1==0x58)
@@ -813,6 +895,8 @@ void qmpVisualization::init()
 	,nullptr);
 	hfrf=api->registerFileReadFinishHook(
 		[this](const void*,void*){
+			memset(rpnval,0xFF,sizeof(rpnval));
+			memset(rpnid,0xFF,sizeof(rpnid));
 			std::sort(this->tspool.begin(),this->tspool.end());
 			for(uint32_t tk=0,n=4,s=0;tk<=this->api->getMaxTick();){
 				while(tk<(s>=this->tspool.size()?this->api->getMaxTick():this->tspool[s].first)){
@@ -913,6 +997,9 @@ const char* qmpVisualization::pluginGetName()
 {return "QMidiPlayer Default Visualization Plugin";}
 const char* qmpVisualization::pluginGetVersion()
 {return PLUGIN_VERSION;}
+
+qmpVisualization *qmpVisualization::instance()
+{return inst;}
 
 void qmpVisualization::pushNoteOn(uint32_t tc,uint32_t ch,uint32_t key,uint32_t vel)
 {

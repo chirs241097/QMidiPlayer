@@ -167,6 +167,11 @@ void qmpPluginAPIImpl::playerSeek(uint32_t percentage)
 {if(qmw)qmw->playerSeek(percentage);}
 double qmpPluginAPIImpl::getPitchBend(int ch)
 {return qmw&&qmw->getPlayer()?qmw->getPlayer()->getPitchBend(ch):0;}
+void qmpPluginAPIImpl::getPitchBendRaw(int ch,uint32_t *pb,uint32_t *pbr)
+{
+	if(qmw&&qmw->getPlayer())
+		qmw->getPlayer()->getPitchBendRaw(ch,pb,pbr);
+}
 bool qmpPluginAPIImpl::getChannelMask(int ch)
 {return qmw&&qmw->getPlayer()?qmw->getPlayer()->getChannelMask(ch):false;}
 std::string qmpPluginAPIImpl::getTitle()

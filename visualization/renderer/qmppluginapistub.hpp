@@ -1,25 +1,14 @@
-#ifndef QMPPLUGIN_H
-#define QMPPLUGIN_H
-#define QMP_MAIN
-#include <string>
-#include <vector>
-#define QMP_MAIN
-#include "../include/qmpcorepublic.hpp"
-struct qmpPlugin
-{
-	std::string name,version,path;
-	qmpPluginIntf* pinterface;
-	bool enabled,initialized;
-	qmpPlugin(std::string _n,std::string _v,std::string _p,qmpPluginIntf* _i)
-	{name=_n;version=_v;path=_p;pinterface=_i;enabled=initialized=false;}
-};
-class qmpMainWindow;
-class qmpSettings;
-class qmpPluginAPIImpl:public qmpPluginAPI
+#ifndef QMPPLUGINAPISTUB_HPP
+#define QMPPLUGINAPISTUB_HPP
+
+#include "qmpcorepublic.hpp"
+
+class qmpVisRenderCore;
+class qmpPluginAPIStub:public qmpPluginAPI
 {
 public:
-	qmpPluginAPIImpl();
-	~qmpPluginAPIImpl();
+	qmpPluginAPIStub(qmpVisRenderCore *_core);
+	~qmpPluginAPIStub();
 	uint32_t getDivision();
 	uint32_t getRawTempo();
 	double getRealTempo();
@@ -89,22 +78,8 @@ public:
 	void registerOptionEnumInt(std::string tab,std::string desc,std::string key,std::vector<std::string> options,int defaultval);
 	int getOptionEnumInt(std::string key);
 	void setOptionEnumInt(std::string key,int val);
+private:
+	qmpVisRenderCore* core;
 };
-class qmpPluginManager
-{
-	private:
-		std::vector<qmpPlugin> plugins;
-		static qmpPluginAPIImpl* pluginAPI;
-		static qmpMainWindow* mainwindow;
-		static qmpSettings* settings;
-	public:
-		qmpPluginManager();
-		~qmpPluginManager();
-		std::vector<qmpPlugin> *getPlugins();
-		void scanPlugins(const std::vector<std::string> &pp);
-		void initPlugins();
-		void deinitPlugins();
-	friend class qmpPluginAPIImpl;
-	friend class qmpMainWindow;
-};
-#endif // QMPPLUGIN_H
+
+#endif // QMPPLUGINAPISTUB_HPP

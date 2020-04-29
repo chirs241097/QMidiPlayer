@@ -17,6 +17,8 @@ set(BUILD_DUMB ON)
 set(BUILD_EXAMPLE OFF)
 add_subdirectory(SMELT)
 
+add_subdirectory(renderer)
+
 find_package(glfw3 REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(DevIL REQUIRED)

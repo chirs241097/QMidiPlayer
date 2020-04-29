@@ -106,7 +106,7 @@ void CMidiPlayer::processEventStub(const SEvent *e)
 			if(~rpnid[e->type&0x0F]&&~rpnval[e->type&0x0F])
 			{
 				if(rpnid[e->type&0x0F]==0)ccc[e->type&0x0F][134]=rpnval[e->type&0x0F];
-				rpnid[e->type&0x0F]=rpnval[e->type&0x0F]=-1;
+				rpnval[e->type&0x0F]=-1;
 			}
 			ccc[e->type&0x0F][e->p1]=e->p2;
 		break;
@@ -404,6 +404,11 @@ uint32_t CMidiPlayer::getRawTempo(){return ctempo;}
 uint32_t CMidiPlayer::getDivision(){return divs;}
 uint32_t CMidiPlayer::getMaxTick(){return maxtk;}
 double CMidiPlayer::getPitchBend(int ch){return((int)pbv[ch]-8192)/8192.*pbr[ch];}
+double CMidiPlayer::getPitchBendRaw(int ch,uint32_t *pb,uint32_t *pbr)
+{
+	if(pb)*pb=this->pbv[ch];
+	if(pbr)*pbr=this->pbr[ch];
+}
 uint32_t CMidiPlayer::getTCpaused(){return tcpaused;}
 void CMidiPlayer::setTCpaused(uint32_t ps){tcpaused=ps;}
 uint32_t CMidiPlayer::isFinished(){return finished;}

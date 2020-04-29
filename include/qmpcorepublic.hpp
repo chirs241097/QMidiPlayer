@@ -136,6 +136,7 @@ class qmpPluginAPI
 		virtual int getChannelPreset(int ch)=0;
 		virtual void playerSeek(uint32_t percentage)=0;
 		virtual double getPitchBend(int ch)=0;
+		virtual void getPitchBendRaw(int ch,uint32_t *pb,uint32_t *pbr)=0;
 		virtual bool getChannelMask(int ch)=0;
 		virtual std::string getTitle()=0;
 		virtual std::wstring getWTitle()=0;
