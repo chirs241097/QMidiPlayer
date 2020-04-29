@@ -9,7 +9,7 @@
 #include "qmpplugin.hpp"
 #include "qmpmainwindow.hpp"
 #include "qmpsettingswindow.hpp"
-qmpPluginAPI* qmpPluginManager::pluginAPI=nullptr;
+qmpPluginAPIImpl* qmpPluginManager::pluginAPI=nullptr;
 qmpMainWindow* qmpPluginManager::mainwindow=nullptr;
 #ifdef _WIN32
 #include <codecvt>
@@ -93,7 +93,7 @@ void qmpPluginManager::scanPlugins(const std::vector<std::string> &pp)
 qmpPluginManager::qmpPluginManager()
 {
 	mainwindow=qmpMainWindow::getInstance();
-	pluginAPI=new qmpPluginAPI();
+	pluginAPI=new qmpPluginAPIImpl();
 }
 qmpPluginManager::~qmpPluginManager()
 {
@@ -126,34 +126,34 @@ void qmpPluginManager::deinitPlugins()
 	}
 }
 
-qmpPluginAPI::~qmpPluginAPI(){}
-
+qmpPluginAPIImpl::qmpPluginAPIImpl(){}
+qmpPluginAPIImpl::~qmpPluginAPIImpl(){}
 #define qmw qmpPluginManager::mainwindow
-uint32_t qmpPluginAPI::getDivision()
+uint32_t qmpPluginAPIImpl::getDivision()
 {return qmw&&qmw->getPlayer()?qmw->getPlayer()->getDivision():0;}
-uint32_t qmpPluginAPI::getRawTempo()
+uint32_t qmpPluginAPIImpl::getRawTempo()
 {return qmw&&qmw->getPlayer()?qmw->getPlayer()->getRawTempo():0;}
-double qmpPluginAPI::getRealTempo()
+double qmpPluginAPIImpl::getRealTempo()
 {return qmw&&qmw->getPlayer()?qmw->getPlayer()->getTempo():0;}
-uint32_t qmpPluginAPI::getTimeSig()
+uint32_t qmpPluginAPIImpl::getTimeSig()
 {int n,d=0,t;qmw&&qmw->getPlayer()?qmw->getPlayer()->getCurrentTimeSignature(&n,&t):void(0);for(;t>>=1;++d);return n<<8|d;}
-int qmpPluginAPI::getKeySig()
+int qmpPluginAPIImpl::getKeySig()
 {return qmw&&qmw->getPlayer()?qmw->getPlayer()->getCurrentKeySignature():0;}
-uint32_t qmpPluginAPI::getNoteCount()
+uint32_t qmpPluginAPIImpl::getNoteCount()
 {return qmw&&qmw->getPlayer()?qmw->getPlayer()->getFileNoteCount():0;}
-uint32_t qmpPluginAPI::getMaxTick()
+uint32_t qmpPluginAPIImpl::getMaxTick()
 {return qmw&&qmw->getPlayer()?qmw->getPlayer()->getMaxTick():0;}
-uint32_t qmpPluginAPI::getCurrentPolyphone()
+uint32_t qmpPluginAPIImpl::getCurrentPolyphone()
 {return qmw&&qmw->getPlayer()?qmw->getFluid()->getPolyphone():0;}
-uint32_t qmpPluginAPI::getMaxPolyphone()
+uint32_t qmpPluginAPIImpl::getMaxPolyphone()
 {return qmw&&qmw->getPlayer()?qmw->getFluid()->getMaxPolyphone():0;}
-uint32_t qmpPluginAPI::getCurrentTimeStamp()
+uint32_t qmpPluginAPIImpl::getCurrentTimeStamp()
 {return qmw&&qmw->getPlayer()?qmw->getPlayer()->getTick():0;}
-uint32_t qmpPluginAPI::getCurrentPlaybackPercentage()
+uint32_t qmpPluginAPIImpl::getCurrentPlaybackPercentage()
 {return qmw?qmw->getPlaybackPercentage():0;}
-int qmpPluginAPI::getChannelCC(int ch,int cc)
+int qmpPluginAPIImpl::getChannelCC(int ch,int cc)
 {return qmw&&qmw->getPlayer()?qmw->getPlayer()->getCC(ch,cc):0;}
-int qmpPluginAPI::getChannelPreset(int ch)
+int qmpPluginAPIImpl::getChannelPreset(int ch)
 {
 	uint16_t b;uint8_t p;std::string nm;
 	if(qmw&&qmw->getPlayer())
@@ -163,17 +163,17 @@ int qmpPluginAPI::getChannelPreset(int ch)
 	}
 	return 0;
 }
-void qmpPluginAPI::playerSeek(uint32_t percentage)
+void qmpPluginAPIImpl::playerSeek(uint32_t percentage)
 {if(qmw)qmw->playerSeek(percentage);}
-double qmpPluginAPI::getPitchBend(int ch)
+double qmpPluginAPIImpl::getPitchBend(int ch)
 {return qmw&&qmw->getPlayer()?qmw->getPlayer()->getPitchBend(ch):0;}
-bool qmpPluginAPI::getChannelMask(int ch)
+bool qmpPluginAPIImpl::getChannelMask(int ch)
 {return qmw&&qmw->getPlayer()?qmw->getPlayer()->getChannelMask(ch):false;}
-std::string qmpPluginAPI::getTitle()
+std::string qmpPluginAPIImpl::getTitle()
 {return qmw?qmw->getTitle():"";}
-std::wstring qmpPluginAPI::getWTitle()
+std::wstring qmpPluginAPIImpl::getWTitle()
 {return qmw?qmw->getWTitle():L"";}
-std::string qmpPluginAPI::getChannelPresetString(int ch)
+std::string qmpPluginAPIImpl::getChannelPresetString(int ch)
 {
 	uint16_t b;uint8_t p;char ret[320];ret[0]=0;
 	std::string nm;
@@ -190,79 +190,79 @@ std::string qmpPluginAPI::getChannelPresetString(int ch)
 	}
 	return std::string(ret);
 }
-bool qmpPluginAPI::isDarkTheme(){return qmw?qmw->isDarkTheme():false;}
-void* qmpPluginAPI::getMainWindow(){return (void*)qmw;}
+bool qmpPluginAPIImpl::isDarkTheme(){return qmw?qmw->isDarkTheme():false;}
+void* qmpPluginAPIImpl::getMainWindow(){return (void*)qmw;}
 
-void qmpPluginAPI::discardCurrentEvent(){if(qmw&&qmw->getPlayer())qmw->getPlayer()->discardCurrentEvent();}
-void qmpPluginAPI::commitEventChange(SEvent d){if(qmw&&qmw->getPlayer())qmw->getPlayer()->commitEventChange(d);}
-void qmpPluginAPI::callEventReaderCB(SEvent d){if(qmw&&qmw->getPlayer())qmw->getPlayer()->callEventReaderCB(d);}
-void qmpPluginAPI::setFuncState(std::string name,bool state){if(qmw)qmw->setFuncState(name,state);}
-void qmpPluginAPI::setFuncEnabled(std::string name,bool enable){if(qmw)qmw->setFuncEnabled(name,enable);}
+void qmpPluginAPIImpl::discardCurrentEvent(){if(qmw&&qmw->getPlayer())qmw->getPlayer()->discardCurrentEvent();}
+void qmpPluginAPIImpl::commitEventChange(SEvent d){if(qmw&&qmw->getPlayer())qmw->getPlayer()->commitEventChange(d);}
+void qmpPluginAPIImpl::callEventReaderCB(SEvent d){if(qmw&&qmw->getPlayer())qmw->getPlayer()->callEventReaderCB(d);}
+void qmpPluginAPIImpl::setFuncState(std::string name,bool state){if(qmw)qmw->setFuncState(name,state);}
+void qmpPluginAPIImpl::setFuncEnabled(std::string name,bool enable){if(qmw)qmw->setFuncEnabled(name,enable);}
 
-void qmpPluginAPI::registerMidiOutDevice(qmpMidiOutDevice *dev, std::string name)
+void qmpPluginAPIImpl::registerMidiOutDevice(qmpMidiOutDevice *dev, std::string name)
 {qmw->getPlayer()->registerMidiOutDevice(dev,name);}
-void qmpPluginAPI::unregisterMidiOutDevice(std::string name)
+void qmpPluginAPIImpl::unregisterMidiOutDevice(std::string name)
 {qmw->getPlayer()->unregisterMidiOutDevice(name);}
-int qmpPluginAPI::registerEventHandlerIntf(ICallBack *cb,void *userdata)
+int qmpPluginAPIImpl::registerEventHandlerIntf(ICallBack *cb,void *userdata)
 {return qmw->getPlayer()->setEventHandlerCB(cb,userdata);}
-void qmpPluginAPI::unregisterEventHandlerIntf(int intfhandle)
+void qmpPluginAPIImpl::unregisterEventHandlerIntf(int intfhandle)
 {qmw->getPlayer()->unsetEventHandlerCB(intfhandle);}
-int qmpPluginAPI::registerEventReaderIntf(ICallBack *cb,void *userdata)
+int qmpPluginAPIImpl::registerEventReaderIntf(ICallBack *cb,void *userdata)
 {return qmw->getPlayer()->setEventReaderCB(cb,userdata);}
-void qmpPluginAPI::unregisterEventReaderIntf(int intfhandle)
+void qmpPluginAPIImpl::unregisterEventReaderIntf(int intfhandle)
 {qmw->getPlayer()->unsetEventReaderCB(intfhandle);}
-int qmpPluginAPI::registerUIHook(std::string e,ICallBack* cb,void* userdat)
+int qmpPluginAPIImpl::registerUIHook(std::string e,ICallBack* cb,void* userdat)
 {return qmw->registerUIHook(e,cb,userdat);}
-int qmpPluginAPI::registerUIHook(std::string e,callback_t cb,void* userdat)
+int qmpPluginAPIImpl::registerUIHook(std::string e,callback_t cb,void* userdat)
 {return qmw->registerUIHook(e,cb,userdat);}
-void qmpPluginAPI::unregisterUIHook(std::string e,int hook)
+void qmpPluginAPIImpl::unregisterUIHook(std::string e,int hook)
 {qmw->unregisterUIHook(e,hook);}
-void qmpPluginAPI::registerFunctionality(qmpFuncBaseIntf *i,std::string name,std::string desc,const char *icon,int iconlen,bool checkable)
+void qmpPluginAPIImpl::registerFunctionality(qmpFuncBaseIntf *i,std::string name,std::string desc,const char *icon,int iconlen,bool checkable)
 {qmw->registerFunctionality(i,name,desc,icon,iconlen,checkable);}
-void qmpPluginAPI::unregisterFunctionality(std::string name)
+void qmpPluginAPIImpl::unregisterFunctionality(std::string name)
 {qmw->unregisterFunctionality(name);}
-int qmpPluginAPI::registerFileReadFinishedHandlerIntf(ICallBack* cb,void* userdata)
+int qmpPluginAPIImpl::registerFileReadFinishedHandlerIntf(ICallBack* cb,void* userdata)
 {return qmw->getPlayer()->setFileReadFinishedCB(cb,userdata);}
-void qmpPluginAPI::unregisterFileReadFinishedHandlerIntf(int intfhandle)
+void qmpPluginAPIImpl::unregisterFileReadFinishedHandlerIntf(int intfhandle)
 {qmw->getPlayer()->unsetFileReadFinishedCB(intfhandle);}
-void qmpPluginAPI::registerFileReader(qmpFileReader* reader,std::string name)
+void qmpPluginAPIImpl::registerFileReader(qmpFileReader* reader,std::string name)
 {qmw->getPlayer()->registerReader(reader,name);}
-void qmpPluginAPI::unregisterFileReader(std::string name)
+void qmpPluginAPIImpl::unregisterFileReader(std::string name)
 {qmw->getPlayer()->unregisterReader(name);}
-int qmpPluginAPI::registerEventHandler(callback_t cb,void *userdata,bool post)
+int qmpPluginAPIImpl::registerEventHandler(callback_t cb,void *userdata,bool post)
 {return qmw->getPlayer()->registerEventHandler(cb,userdata,post);}
-void qmpPluginAPI::unregisterEventHandler(int id)
+void qmpPluginAPIImpl::unregisterEventHandler(int id)
 {qmw->getPlayer()->unregisterEventHandler(id);}
-int qmpPluginAPI::registerEventReadHandler(callback_t cb,void *userdata)
+int qmpPluginAPIImpl::registerEventReadHandler(callback_t cb,void *userdata)
 {return qmw->getPlayer()->registerEventReadHandler(cb,userdata);}
-void qmpPluginAPI::unregisterEventReadHandler(int id)
+void qmpPluginAPIImpl::unregisterEventReadHandler(int id)
 {qmw->getPlayer()->unregisterEventReadHandler(id);}
-int qmpPluginAPI::registerFileReadFinishHook(callback_t cb,void *userdata)
+int qmpPluginAPIImpl::registerFileReadFinishHook(callback_t cb,void *userdata)
 {return qmw->getPlayer()->registerFileReadFinishHook(cb,userdata);}
-void qmpPluginAPI::unregisterFileReadFinishHook(int id)
+void qmpPluginAPIImpl::unregisterFileReadFinishHook(int id)
 {qmw->getPlayer()->unregisterFileReadFinishHook(id);}
 
-void qmpPluginAPI::registerOptionInt(std::string tab,std::string desc,std::string key,int min,int max,int defaultval)
+void qmpPluginAPIImpl::registerOptionInt(std::string tab,std::string desc,std::string key,int min,int max,int defaultval)
 {qmw->getSettings()->registerOptionInt(tab,desc,key,min,max,defaultval);}
-int qmpPluginAPI::getOptionInt(std::string key){return qmw->getSettings()->getOptionInt(key);}
-void qmpPluginAPI::setOptionInt(std::string key,int val){qmw->getSettings()->setOptionInt(key,val);}
-void qmpPluginAPI::registerOptionUint(std::string tab,std::string desc,std::string key,unsigned min,unsigned max,unsigned defaultval)
+int qmpPluginAPIImpl::getOptionInt(std::string key){return qmw->getSettings()->getOptionInt(key);}
+void qmpPluginAPIImpl::setOptionInt(std::string key,int val){qmw->getSettings()->setOptionInt(key,val);}
+void qmpPluginAPIImpl::registerOptionUint(std::string tab,std::string desc,std::string key,unsigned min,unsigned max,unsigned defaultval)
 {qmw->getSettings()->registerOptionUint(tab,desc,key,min,max,defaultval);}
-unsigned qmpPluginAPI::getOptionUint(std::string key){return qmw->getSettings()->getOptionUint(key);}
-void qmpPluginAPI::setOptionUint(std::string key,unsigned val){qmw->getSettings()->setOptionUint(key,val);}
-void qmpPluginAPI::registerOptionBool(std::string tab,std::string desc,std::string key,bool defaultval)
+unsigned qmpPluginAPIImpl::getOptionUint(std::string key){return qmw->getSettings()->getOptionUint(key);}
+void qmpPluginAPIImpl::setOptionUint(std::string key,unsigned val){qmw->getSettings()->setOptionUint(key,val);}
+void qmpPluginAPIImpl::registerOptionBool(std::string tab,std::string desc,std::string key,bool defaultval)
 {qmw->getSettings()->registerOptionBool(tab,desc,key,defaultval);}
-bool qmpPluginAPI::getOptionBool(std::string key){return qmw->getSettings()->getOptionBool(key);}
-void qmpPluginAPI::setOptionBool(std::string key,bool val){qmw->getSettings()->setOptionBool(key,val);}
-void qmpPluginAPI::registerOptionDouble(std::string tab,std::string desc,std::string key,double min,double max,double defaultval)
+bool qmpPluginAPIImpl::getOptionBool(std::string key){return qmw->getSettings()->getOptionBool(key);}
+void qmpPluginAPIImpl::setOptionBool(std::string key,bool val){qmw->getSettings()->setOptionBool(key,val);}
+void qmpPluginAPIImpl::registerOptionDouble(std::string tab,std::string desc,std::string key,double min,double max,double defaultval)
 {qmw->getSettings()->registerOptionDouble(tab,desc,key,min,max,defaultval);}
-double qmpPluginAPI::getOptionDouble(std::string key){return qmw->getSettings()->getOptionDouble(key);}
-void qmpPluginAPI::setOptionDouble(std::string key,double val){qmw->getSettings()->setOptionDouble(key,val);}
-void qmpPluginAPI::registerOptionString(std::string tab,std::string desc,std::string key,std::string defaultval,bool ispath)
+double qmpPluginAPIImpl::getOptionDouble(std::string key){return qmw->getSettings()->getOptionDouble(key);}
+void qmpPluginAPIImpl::setOptionDouble(std::string key,double val){qmw->getSettings()->setOptionDouble(key,val);}
+void qmpPluginAPIImpl::registerOptionString(std::string tab,std::string desc,std::string key,std::string defaultval,bool ispath)
 {qmw->getSettings()->registerOptionString(tab,desc,key,defaultval,ispath);}
-std::string qmpPluginAPI::getOptionString(std::string key){return qmw->getSettings()->getOptionString(key);}
-void qmpPluginAPI::setOptionString(std::string key,std::string val){return qmw->getSettings()->setOptionString(key,val);}
-void qmpPluginAPI::registerOptionEnumInt(std::string tab,std::string desc,std::string key,std::vector<std::string> options,int defaultval)
+std::string qmpPluginAPIImpl::getOptionString(std::string key){return qmw->getSettings()->getOptionString(key);}
+void qmpPluginAPIImpl::setOptionString(std::string key,std::string val){return qmw->getSettings()->setOptionString(key,val);}
+void qmpPluginAPIImpl::registerOptionEnumInt(std::string tab,std::string desc,std::string key,std::vector<std::string> options,int defaultval)
 {qmw->getSettings()->registerOptionEnumInt(tab,desc,key,options,defaultval);}
-int qmpPluginAPI::getOptionEnumInt(std::string key){return qmw->getSettings()->getOptionEnumInt(key);}
-void qmpPluginAPI::setOptionEnumInt(std::string key,int val){return qmw->getSettings()->setOptionEnumInt(key,val);}
+int qmpPluginAPIImpl::getOptionEnumInt(std::string key){return qmw->getSettings()->getOptionEnumInt(key);}
+void qmpPluginAPIImpl::setOptionEnumInt(std::string key,int val){return qmw->getSettings()->setOptionEnumInt(key,val);}

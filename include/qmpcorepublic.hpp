@@ -120,84 +120,84 @@ extern "C"{
 class qmpPluginAPI
 {
 	public:
-		virtual ~qmpPluginAPI();
-		virtual uint32_t getDivision();
-		virtual uint32_t getRawTempo();
-		virtual double getRealTempo();
-		virtual uint32_t getTimeSig();
-		virtual int getKeySig();
-		virtual uint32_t getNoteCount();
-		virtual uint32_t getMaxTick();
-		virtual uint32_t getCurrentPolyphone();
-		virtual uint32_t getMaxPolyphone();
-		virtual uint32_t getCurrentTimeStamp();
-		virtual uint32_t getCurrentPlaybackPercentage();
-		virtual int getChannelCC(int ch,int cc);
-		virtual int getChannelPreset(int ch);
-		virtual void playerSeek(uint32_t percentage);
-		virtual double getPitchBend(int ch);
-		virtual bool getChannelMask(int ch);
-		virtual std::string getTitle();
-		virtual std::wstring getWTitle();
-		virtual std::string getChannelPresetString(int ch);
-		virtual bool isDarkTheme();
-		virtual void* getMainWindow();
+		virtual ~qmpPluginAPI(){}
+		virtual uint32_t getDivision()=0;
+		virtual uint32_t getRawTempo()=0;
+		virtual double getRealTempo()=0;
+		virtual uint32_t getTimeSig()=0;
+		virtual int getKeySig()=0;
+		virtual uint32_t getNoteCount()=0;
+		virtual uint32_t getMaxTick()=0;
+		virtual uint32_t getCurrentPolyphone()=0;
+		virtual uint32_t getMaxPolyphone()=0;
+		virtual uint32_t getCurrentTimeStamp()=0;
+		virtual uint32_t getCurrentPlaybackPercentage()=0;
+		virtual int getChannelCC(int ch,int cc)=0;
+		virtual int getChannelPreset(int ch)=0;
+		virtual void playerSeek(uint32_t percentage)=0;
+		virtual double getPitchBend(int ch)=0;
+		virtual bool getChannelMask(int ch)=0;
+		virtual std::string getTitle()=0;
+		virtual std::wstring getWTitle()=0;
+		virtual std::string getChannelPresetString(int ch)=0;
+		virtual bool isDarkTheme()=0;
+		virtual void* getMainWindow()=0;
 
 		//WARNING!!: This function should be called from event reader callbacks only and
 		//it is somehow dangerous -- other plugins might be unaware of the removal of the
 		//event. The design might be modified afterward.
-		virtual void discardCurrentEvent();
+		virtual void discardCurrentEvent()=0;
 		//WARNING!!: This function should be called from event reader callbacks only and
 		//it is somehow dangerous -- other plugins might be unaware of the event change.
 		//The design might be modified afterward.
-		virtual void commitEventChange(SEvent d);
+		virtual void commitEventChange(SEvent d)=0;
 		//This function should be called from a file reader when it has read a new event
-		virtual void callEventReaderCB(SEvent d);
-		virtual void setFuncState(std::string name,bool state);
-		virtual void setFuncEnabled(std::string name,bool enable);
+		virtual void callEventReaderCB(SEvent d)=0;
+		virtual void setFuncState(std::string name,bool state)=0;
+		virtual void setFuncEnabled(std::string name,bool enable)=0;
 
-		virtual void registerFunctionality(qmpFuncBaseIntf* i,std::string name,std::string desc,const char* icon,int iconlen,bool checkable);
-		virtual void unregisterFunctionality(std::string name);
-		virtual int registerUIHook(std::string e,ICallBack* cb,void* userdat);
-		virtual int registerUIHook(std::string e,callback_t cb,void* userdat);
-		virtual void unregisterUIHook(std::string e,int hook);
-		virtual void registerMidiOutDevice(qmpMidiOutDevice* dev,std::string name);
-		virtual void unregisterMidiOutDevice(std::string name);
-		virtual int registerEventReaderIntf(ICallBack* cb,void* userdata);
-		virtual void unregisterEventReaderIntf(int intfhandle);
-		virtual int registerEventHandlerIntf(ICallBack* cb,void* userdata);
-		virtual void unregisterEventHandlerIntf(int intfhandle);
-		virtual int registerFileReadFinishedHandlerIntf(ICallBack* cb,void* userdata);
-		virtual void unregisterFileReadFinishedHandlerIntf(int intfhandle);
-		virtual int registerEventHandler(callback_t cb,void *userdata,bool post=false);
-		virtual void unregisterEventHandler(int id);
-		virtual int registerEventReadHandler(callback_t cb,void *userdata);
-		virtual void unregisterEventReadHandler(int id);
-		virtual int registerFileReadFinishHook(callback_t cb,void *userdata);
-		virtual void unregisterFileReadFinishHook(int id);
-		virtual void registerFileReader(qmpFileReader* reader,std::string name);
-		virtual void unregisterFileReader(std::string name);
+		virtual void registerFunctionality(qmpFuncBaseIntf* i,std::string name,std::string desc,const char* icon,int iconlen,bool checkable)=0;
+		virtual void unregisterFunctionality(std::string name)=0;
+		virtual int registerUIHook(std::string e,ICallBack* cb,void* userdat)=0;
+		virtual int registerUIHook(std::string e,callback_t cb,void* userdat)=0;
+		virtual void unregisterUIHook(std::string e,int hook)=0;
+		virtual void registerMidiOutDevice(qmpMidiOutDevice* dev,std::string name)=0;
+		virtual void unregisterMidiOutDevice(std::string name)=0;
+		virtual int registerEventReaderIntf(ICallBack* cb,void* userdata)=0;
+		virtual void unregisterEventReaderIntf(int intfhandle)=0;
+		virtual int registerEventHandlerIntf(ICallBack* cb,void* userdata)=0;
+		virtual void unregisterEventHandlerIntf(int intfhandle)=0;
+		virtual int registerFileReadFinishedHandlerIntf(ICallBack* cb,void* userdata)=0;
+		virtual void unregisterFileReadFinishedHandlerIntf(int intfhandle)=0;
+		virtual int registerEventHandler(callback_t cb,void *userdata,bool post=false)=0;
+		virtual void unregisterEventHandler(int id)=0;
+		virtual int registerEventReadHandler(callback_t cb,void *userdata)=0;
+		virtual void unregisterEventReadHandler(int id)=0;
+		virtual int registerFileReadFinishHook(callback_t cb,void *userdata)=0;
+		virtual void unregisterFileReadFinishHook(int id)=0;
+		virtual void registerFileReader(qmpFileReader* reader,std::string name)=0;
+		virtual void unregisterFileReader(std::string name)=0;
 
 		//if desc=="", the option won't be visible in the settings form.
 		//it will only show up in the configuration file.
-		virtual void registerOptionInt(std::string tab,std::string desc,std::string key,int min,int max,int defaultval);
-		virtual int getOptionInt(std::string key);
-		virtual void setOptionInt(std::string key,int val);
-		virtual void registerOptionUint(std::string tab,std::string desc,std::string key,unsigned min,unsigned max,unsigned defaultval);
-		virtual unsigned getOptionUint(std::string key);
-		virtual void setOptionUint(std::string key,unsigned val);
-		virtual void registerOptionBool(std::string tab,std::string desc,std::string key,bool defaultval);
-		virtual bool getOptionBool(std::string key);
-		virtual void setOptionBool(std::string key,bool val);
-		virtual void registerOptionDouble(std::string tab,std::string desc,std::string key,double min,double max,double defaultval);
-		virtual double getOptionDouble(std::string key);
-		virtual void setOptionDouble(std::string key,double val);
-		virtual void registerOptionString(std::string tab,std::string desc,std::string key,std::string defaultval,bool ispath=false);
-		virtual std::string getOptionString(std::string key);
-		virtual void setOptionString(std::string key,std::string val);
-		virtual void registerOptionEnumInt(std::string tab,std::string desc,std::string key,std::vector<std::string> options,int defaultval);
-		virtual int getOptionEnumInt(std::string key);
-		virtual void setOptionEnumInt(std::string key,int val);
+		virtual void registerOptionInt(std::string tab,std::string desc,std::string key,int min,int max,int defaultval)=0;
+		virtual int getOptionInt(std::string key)=0;
+		virtual void setOptionInt(std::string key,int val)=0;
+		virtual void registerOptionUint(std::string tab,std::string desc,std::string key,unsigned min,unsigned max,unsigned defaultval)=0;
+		virtual unsigned getOptionUint(std::string key)=0;
+		virtual void setOptionUint(std::string key,unsigned val)=0;
+		virtual void registerOptionBool(std::string tab,std::string desc,std::string key,bool defaultval)=0;
+		virtual bool getOptionBool(std::string key)=0;
+		virtual void setOptionBool(std::string key,bool val)=0;
+		virtual void registerOptionDouble(std::string tab,std::string desc,std::string key,double min,double max,double defaultval)=0;
+		virtual double getOptionDouble(std::string key)=0;
+		virtual void setOptionDouble(std::string key,double val)=0;
+		virtual void registerOptionString(std::string tab,std::string desc,std::string key,std::string defaultval,bool ispath=false)=0;
+		virtual std::string getOptionString(std::string key)=0;
+		virtual void setOptionString(std::string key,std::string val)=0;
+		virtual void registerOptionEnumInt(std::string tab,std::string desc,std::string key,std::vector<std::string> options,int defaultval)=0;
+		virtual int getOptionEnumInt(std::string key)=0;
+		virtual void setOptionEnumInt(std::string key,int val)=0;
 };
 #ifdef QMP_MAIN
 }
