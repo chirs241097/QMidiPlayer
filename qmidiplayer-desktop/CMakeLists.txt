@@ -58,6 +58,7 @@ set(CMAKE_AUTOUIC ON)
 include_directories(${fluidsynth_INCLUDE_DIRS})
 include_directories(${rtmidi_INCLUDE_DIRS})
 include_directories(${PROJECT_SOURCE_DIR}/include/)
+include_directories(${PROJECT_SOURCE_DIR}/core/)
 
 cmake_host_system_information(RESULT build_host QUERY HOSTNAME)
 add_definitions(-DBUILD_MACHINE=${build_host})

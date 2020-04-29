@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <chrono>
 #include <thread>
-#include <fluidsynth.h>
 #include "qmpmidiplay.hpp"
 #ifdef _WIN32
 #define NOMINMAX
@@ -40,7 +39,6 @@ bool CMidiPlayer::processEvent(const SEvent *e)
 			{
 				if(rpnid[ch]==0)
 				{
-					internalFluid->rpnMessage(ch,0,rpnval[ch]<<7);
 					mididev[mappedoutput[ch]].dev->rpnMessage(ch,0,rpnval[ch]<<7);
 					pbr[ch]=rpnval[ch];
 				}
@@ -230,8 +228,8 @@ void CMidiPlayer::playEvents()
 		if(tcstop||!midiReaders)break;
 		ct=getEvent(tceptr)->time;
 	}
-	while(!tcstop&&(waitvoice&&internalFluid->getPolyphone()>0))std::this_thread::sleep_for(std::chrono::milliseconds(2));
-	finished=1;
+	if(tceptr>=ecnt)
+		finished=1;
 }
 void CMidiPlayer::fileTimer1Pass()
 {
@@ -284,8 +282,7 @@ void CMidiPlayer::fileTimer2Pass()
 CMidiPlayer::CMidiPlayer()
 {
 	midiReaders=new CMidiFileReaderCollection();
-	resumed=false;midiFile=nullptr;internalFluid=new qmpMidiOutFluid();
-	registerMidiOutDevice(internalFluid,"Internal FluidSynth");
+	resumed=false;midiFile=nullptr;
 	waitvoice=true;
 	event_handlers_id=event_read_handlers_id=file_read_finish_hooks_id=0;
 	memset(eventHandlerCB,0,sizeof(eventHandlerCB));
@@ -294,8 +291,7 @@ CMidiPlayer::CMidiPlayer()
 	memset(eventReaderCBuserdata,0,sizeof(eventReaderCBuserdata));
 	memset(fileReadFinishCB,0,sizeof(fileReadFinishCB));
 	memset(fileReadFinishCBuserdata,0,sizeof(fileReadFinishCBuserdata));
-	memset(mappedoutput,0,sizeof(mappedoutput));
-	mididev[0].refcnt=16;
+	memset(mappedoutput,0xff,sizeof(mappedoutput));
 	memset(chstatus,0,sizeof(chstatus));
 	for(int i=0;i<16;++i)
 		memset(chstatus[i],0xff,128*sizeof(uint8_t));
@@ -306,12 +302,6 @@ CMidiPlayer::CMidiPlayer()
 }
 CMidiPlayer::~CMidiPlayer()
 {
-	if(internalFluid)
-	{
-		internalFluid->deviceDeinit();
-		delete internalFluid;
-		internalFluid=nullptr;
-	}
 	if(midiFile)delete midiFile;delete midiReaders;
 }
 void CMidiPlayer::playerPanic(bool reset)
@@ -356,7 +346,7 @@ bool CMidiPlayer::playerLoadFile(const char* fn)
 void CMidiPlayer::playerInit()
 {
 	ctempo=0x7A120;ctsn=4;ctsd=4;cks=0;dpt=ctempo*1000./divs;
-	tceptr=0;tcstop=0;tcpaused=0;finished=0;mute=solo=0;
+	tceptr=0;tcstop=false;tcpaused=0;finished=0;mute=solo=0;
 	for(int i=0;i<16;++i)pbr[i]=2,pbv[i]=8192;
 	sendSysEx=true;memset(rpnid,0xFF,sizeof(rpnid));memset(rpnval,0xFF,sizeof(rpnval));
 	memset(chstatus,0,sizeof(chstatus));
@@ -365,7 +355,7 @@ void CMidiPlayer::playerInit()
 }
 void CMidiPlayer::playerDeinit()
 {
-	tceptr=0;tcstop=1;tcpaused=0;
+	tceptr=0;tcstop=true;tcpaused=0;
 	delete midiFile;midiFile=nullptr;
 }
 void CMidiPlayer::playerThread()
@@ -380,7 +370,7 @@ uint32_t CMidiPlayer::getTCeptr(){return tceptr;}
 void CMidiPlayer::setTCeptr(uint32_t ep,uint32_t st)
 {
 	resumed=true;
-	if(ep==ecnt)tcstop=1;else tceptr=ep;
+	if(ep==ecnt)tcstop=true;else tceptr=ep;
 	for(int i=0;i<16;++i)
 	{
 		qmpMidiOutDevice* dest=mididev[mappedoutput[i]].dev;
@@ -388,16 +378,12 @@ void CMidiPlayer::setTCeptr(uint32_t ep,uint32_t st)
 		{
 			if(~ccstamps[st][i][j])
 			{
-				internalFluid->basicMessage(0xB0|i,j,ccstamps[st][i][j]);
 				dest->basicMessage(0xB0|i,j,ccstamps[st][i][j]);
 				chstatus[i][j]=ccstamps[st][i][j];
 			}
 		}
-		internalFluid->basicMessage(0xC0|i,ccstamps[st][i][128],0);
 		dest->basicMessage(0xC0|i,ccstamps[st][i][128],0);
 		chstatus[i][128]=ccstamps[st][i][128];
-		//fluid_synth_pitch_bend(synth,i,ccstamps[st][i][130]);
-		internalFluid->rpnMessage(i,0,ccstamps[st][i][134]<<7);
 		dest->rpnMessage(i,0,ccstamps[st][i][134]<<7);
 		pbr[i]=ccstamps[st][i][134];
 		ctempo=ccstamps[st][0][131];dpt=ctempo*1000./divs;
@@ -421,13 +407,8 @@ double CMidiPlayer::getPitchBend(int ch){return((int)pbv[ch]-8192)/8192.*pbr[ch]
 uint32_t CMidiPlayer::getTCpaused(){return tcpaused;}
 void CMidiPlayer::setTCpaused(uint32_t ps){tcpaused=ps;}
 uint32_t CMidiPlayer::isFinished(){return finished;}
+bool CMidiPlayer::stopFlag(){return tcstop;}
 void CMidiPlayer::setResumed(){resumed=true;}
-void CMidiPlayer::setWaitVoice(bool wv){waitvoice=wv;}
-
-void CMidiPlayer::registerFluidOptions(qmpPluginAPI *coreapi)
-{
-	internalFluid->registerOptions(coreapi);
-}
 
 void CMidiPlayer::setChannelPreset(int ch,int b,int p)
 {
@@ -471,8 +452,6 @@ void CMidiPlayer::setCC(int ch,int id,int val)
 	mididev[mappedoutput[ch]].dev->basicMessage(0xB0|ch,id,val);
 }
 
-qmpMidiOutFluid* CMidiPlayer::fluid(){return internalFluid;}
-
 void CMidiPlayer::registerMidiOutDevice(qmpMidiOutDevice* dev,std::string name)
 {
 	SMidiDev d;
@@ -508,6 +487,8 @@ qmpMidiOutDevice* CMidiPlayer::getChannelOutputDevice(int ch)
 void CMidiPlayer::setChannelOutput(int ch,int outid)
 {
 	int origoutput=mappedoutput[ch];
+	if(origoutput==outid)
+		return;
 	SMidiDev& dnew=mididev[outid];
 	dnew.dev->onMapped(ch,++dnew.refcnt);
 	for(int i=0;i<124;++i)

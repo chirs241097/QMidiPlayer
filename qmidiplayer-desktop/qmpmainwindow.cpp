@@ -67,6 +67,8 @@ qmpMainWindow::~qmpMainWindow()
 	delete renderf;renderf=nullptr;
 	delete reloadsynf;reloadsynf=nullptr;
 	if(player)delete player;
+	internalfluid->deviceDeinit();
+	delete internalfluid;
 	delete ui;
 }
 
@@ -82,17 +84,24 @@ void qmpMainWindow::init()
 		[this]
 		{
 			player=new CMidiPlayer();
+			internalfluid=new qmpMidiOutFluid();
+			player->registerMidiOutDevice(internalfluid,"Internal FluidSynth");
 			reloadsynf=new qmpReloadSynthFunc(this);
-			player->registerFluidOptions(pmgr->pluginAPI);
-			playerSetup(player->fluid());
-			player->fluid()->deviceInit();
-			loadSoundFont(player->fluid());
+
+			internalfluid->registerOptions(pmgr->pluginAPI);
+			playerSetup(internalfluid);
+			internalfluid->deviceInit();
+			loadSoundFont(internalfluid);
+			for(int i=0;i<16;++i)
+				player->setChannelOutput(i,0);
+
 			auto rtdev=qmpRtMidiManager::getDevices();
 			for(auto &i:rtdev)
 				player->registerMidiOutDevice(i.first,i.second);
 		}
 	);
-	while(f.wait_for(std::chrono::milliseconds(100))==std::future_status::timeout);
+	while(f.wait_for(std::chrono::milliseconds(100))==std::future_status::timeout)
+		QApplication::processEvents();
 	ui->centralWidget->setEnabled(true);
 
 	settingsw->registerSoundFontOption();
@@ -231,7 +240,14 @@ void qmpMainWindow::updateWidgets()
 			timer->stop();stopped=true;playing=false;
 			invokeCallback("main.stop",nullptr);
 			setFuncEnabled("Render",stopped);setFuncEnabled("ReloadSynth",stopped);
-			player->playerDeinit();playerTh->join();
+			player->playerDeinit();
+			auto f=std::async([this]{playerTh->join();});
+			while(f.wait_for(std::chrono::milliseconds(100))==std::future_status::timeout)
+			{
+				QApplication::processEvents();
+				ui->lbCurPoly->setText(QString("%1").arg(internalfluid->getPolyphone(),5,10,QChar('0')));
+				ui->lbMaxPoly->setText(QString("%1").arg(internalfluid->getMaxPolyphone(),5,10,QChar('0')));
+			}
 			delete playerTh;playerTh=nullptr;
 			player->playerPanic(true);
 			chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
@@ -241,7 +257,7 @@ void qmpMainWindow::updateWidgets()
 			ui->lbCurTime->setText("00:00");
 		}
 		else
-			switchTrack(plistw->getNextItem());
+			switchTrack(plistw->getNextItem(),false);
 	}
 	if(renderTh)
 	{
@@ -264,20 +280,35 @@ void qmpMainWindow::updateWidgets()
 		char ts[100];
 		sprintf(ts,"%02d:%02d",(int)(elapsed.count()+offset)/60,(int)(elapsed.count()+offset)%60);
 		ui->lbCurTime->setText(ts);
-		ui->lbCurPoly->setText(QString("%1").arg(player->fluid()->getPolyphone(),5,10,QChar('0')));
-		ui->lbMaxPoly->setText(QString("%1").arg(player->fluid()->getMaxPolyphone(),5,10,QChar('0')));
+		ui->lbCurPoly->setText(QString("%1").arg(internalfluid->getPolyphone(),5,10,QChar('0')));
+		ui->lbMaxPoly->setText(QString("%1").arg(internalfluid->getMaxPolyphone(),5,10,QChar('0')));
 	}
 }
 
 QString qmpMainWindow::getFileName(){return ui->lbFileName->text();}
-void qmpMainWindow::switchTrack(QString s)
+void qmpMainWindow::switchTrack(QString s,bool interrupt)
 {
 	stopped=false;playing=true;
 	setFuncEnabled("Render",stopped);setFuncEnabled("ReloadSynth",stopped);
 	ui->pbPlayPause->setIcon(QIcon(getThemedIcon(":/img/pause.svg")));
-	timer->stop();player->playerDeinit();
+	if(interrupt)
+	{
+		player->playerDeinit();
+		player->playerPanic();
+	}
 	invokeCallback("main.stop",nullptr);
-	if(playerTh){playerTh->join();delete playerTh;playerTh=nullptr;}
+	if(playerTh)
+	{
+		auto f=std::async([this]{playerTh->join();});
+		while(f.wait_for(std::chrono::milliseconds(100))==std::future_status::timeout)
+		{
+			QApplication::processEvents();
+			ui->lbCurPoly->setText(QString("%1").arg(internalfluid->getPolyphone(),5,10,QChar('0')));
+			ui->lbMaxPoly->setText(QString("%1").arg(internalfluid->getMaxPolyphone(),5,10,QChar('0')));
+		}
+		delete playerTh;playerTh=nullptr;
+	}
+	timer->stop();
 	player->playerPanic(true);
 	ui->hsTimer->setValue(0);
 	chnlw->on_pbUnmute_clicked();chnlw->on_pbUnsolo_clicked();
@@ -290,9 +321,13 @@ void qmpMainWindow::switchTrack(QString s)
 	ui->lbFinTime->setText(ts);
 	player->playerInit();
 	invokeCallback("main.start",nullptr);
-	player->fluid()->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
-	player->setWaitVoice(settings->getOptionBool("Midi/WaitVoice"));
-	playerTh=new std::thread(&CMidiPlayer::playerThread,player);
+	internalfluid->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
+	playerTh=new std::thread([this]{
+		player->playerThread();
+		if(settings->getOptionBool("Midi/WaitVoice")&&player->isFinished())
+			while(internalfluid->getPolyphone()>0)
+				std::this_thread::sleep_for(std::chrono::milliseconds(10));
+	});
 #ifdef _WIN32
 	SetThreadPriority((void*)playerTh->native_handle(),THREAD_PRIORITY_TIME_CRITICAL);
 #endif
@@ -415,9 +450,13 @@ void qmpMainWindow::on_pbPlayPause_clicked()
 		ui->lbFinTime->setText(ts);
 		player->playerInit();
 		invokeCallback("main.start",nullptr);
-		player->fluid()->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
-		player->setWaitVoice(settings->getOptionBool("Midi/WaitVoice"));
-		playerTh=new std::thread(&CMidiPlayer::playerThread,player);
+		internalfluid->setGain(ui->vsMasterVol->value()/250.);efxw->sendEfxChange();
+		playerTh=new std::thread([this]{
+			player->playerThread();
+			if(settings->getOptionBool("Midi/WaitVoice")&&player->isFinished())
+				while(internalfluid->getPolyphone()>0)
+					std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		});
 #ifdef _WIN32
 			SetThreadPriority((void*)playerTh->native_handle(),THREAD_PRIORITY_TIME_CRITICAL);
 #endif
@@ -498,7 +537,7 @@ void qmpMainWindow::playerSeek(uint32_t percentage)
 
 void qmpMainWindow::on_vsMasterVol_valueChanged()
 {
-	if(!stopped)player->fluid()->setGain(ui->vsMasterVol->value()/250.);
+	if(!stopped)internalfluid->setGain(ui->vsMasterVol->value()/250.);
 	settings->setOptionRaw("FluidSynth/Gain",ui->vsMasterVol->value());
 }
 
@@ -642,13 +681,14 @@ void qmpMainWindow::reloadSynth()
 	std::future<void> f=std::async(std::launch::async,
 		[this]
 		{
-				player->fluid()->deviceDeinit(true);
-				playerSetup(player->fluid());
-				player->fluid()->deviceInit();
-				loadSoundFont(player->fluid());
+				internalfluid->deviceDeinit(true);
+				playerSetup(internalfluid);
+				internalfluid->deviceInit();
+				loadSoundFont(internalfluid);
 		}
 	);
-	while(f.wait_for(std::chrono::milliseconds(100))==std::future_status::timeout);
+	while(f.wait_for(std::chrono::milliseconds(100))==std::future_status::timeout)
+		QApplication::processEvents();
 	ui->centralWidget->setEnabled(true);
 }
 

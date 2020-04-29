@@ -9,9 +9,7 @@
 #include <utility>
 #include <vector>
 #define QMP_MAIN
-#include "../include/qmpcorepublic.hpp"
-#include "qmpmidioutrtmidi.hpp"
-#include "qmpmidioutfluid.hpp"
+#include "qmpcorepublic.hpp"
 class CMidiPlayer;
 class CSMFReader:public qmpFileReader
 {
@@ -66,12 +64,12 @@ class CMidiPlayer
 		double ftime;
 		bool sendSysEx,waitvoice;
 		uint8_t chstatus[16][130];//0..127: cc 128: pc
-		qmpMidiOutFluid* internalFluid;
 		uint32_t ctempo,ctsn,ctsd,divs,cks;
 		double dpt;//time per tick
 		//raw tempo, timesig num., timesig den., division, keysig
 		//thread control
-		uint32_t tceptr,tcpaused,tcstop,ct;
+		uint32_t tceptr,tcpaused,ct;
+		bool tcstop;
 		uint32_t finished,resumed;
 		uint32_t pbr[16],pbv[16];
 		//playback correction
@@ -123,9 +121,8 @@ class CMidiPlayer
 		uint32_t getTCpaused();
 		void setTCpaused(uint32_t ps);
 		uint32_t isFinished();
+		bool stopFlag();
 		void setResumed();
-		void setWaitVoice(bool wv);
-		void registerFluidOptions(qmpPluginAPI *coreapi);
 
 		double getFtime();
 		void getCurrentTimeSignature(int *n,int *d);
@@ -149,8 +146,6 @@ class CMidiPlayer
 		bool getChannelMask(int ch);
 		uint16_t getCC(int ch,int id);
 		void setCC(int ch,int id,int val);
-
-		qmpMidiOutFluid* fluid();
 
 		void registerMidiOutDevice(qmpMidiOutDevice* dev,std::string name);
 		void unregisterMidiOutDevice(std::string name);

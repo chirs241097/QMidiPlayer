@@ -20,7 +20,8 @@
 #include <future>
 #include <map>
 #include <unordered_map>
-#include "../core/qmpmidiplay.hpp"
+#include "qmpmidioutfluid.hpp"
+#include "qmpmidiplay.hpp"
 #include "qmpplugin.hpp"
 #include "qmpplistwindow.hpp"
 #include "qmpchannelswindow.hpp"
@@ -141,11 +142,12 @@ class qmpMainWindow:public QMainWindow
 		void dragEnterEvent(QDragEnterEvent *event);
 		~qmpMainWindow();
 		CMidiPlayer* getPlayer(){return player;}
+		qmpMidiOutFluid* getFluid(){return internalfluid;}
 		qmpSettings* getSettings(){return settings.get();}
 		QTimer* getTimer(){return timer;}
 		bool isFinalizing(){return fin;}
 		QString getFileName();
-		void switchTrack(QString s);
+		void switchTrack(QString s,bool interrupt=true);
 		std::string getTitle();
 		std::wstring getWTitle();
 		uint32_t getPlaybackPercentage();
@@ -193,6 +195,7 @@ class qmpMainWindow:public QMainWindow
 		std::chrono::steady_clock::time_point st;
 		double offset;
 		CMidiPlayer *player;
+		qmpMidiOutFluid *internalfluid;
 		qmpFileRendererFluid *fluidrenderer;
 		qmpPluginManager *pmgr;
 		QPointer<qmpPlistWindow> plistw;

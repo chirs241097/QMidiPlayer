@@ -144,9 +144,9 @@ uint32_t qmpPluginAPI::getNoteCount()
 uint32_t qmpPluginAPI::getMaxTick()
 {return qmw&&qmw->getPlayer()?qmw->getPlayer()->getMaxTick():0;}
 uint32_t qmpPluginAPI::getCurrentPolyphone()
-{return qmw&&qmw->getPlayer()?qmw->getPlayer()->fluid()->getPolyphone():0;}
+{return qmw&&qmw->getPlayer()?qmw->getFluid()->getPolyphone():0;}
 uint32_t qmpPluginAPI::getMaxPolyphone()
-{return qmw&&qmw->getPlayer()?qmw->getPlayer()->fluid()->getMaxPolyphone():0;}
+{return qmw&&qmw->getPlayer()?qmw->getFluid()->getMaxPolyphone():0;}
 uint32_t qmpPluginAPI::getCurrentTimeStamp()
 {return qmw&&qmw->getPlayer()?qmw->getPlayer()->getTick():0;}
 uint32_t qmpPluginAPI::getCurrentPlaybackPercentage()

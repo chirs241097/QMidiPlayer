@@ -103,7 +103,7 @@ void qmpEfxWindow::sendEfxChange(void *_fs)
 	cfb=ui->sbFeedBack->value();cl=ui->sbLevelC->value()/100.;
 	cr=ui->sbRate->value();cd=ui->sbDepth->value();
 	IFluidSettings* fs=(IFluidSettings*)_fs;
-	if(!_fs)fs=qmpMainWindow::getInstance()->getPlayer()->fluid();
+	if(!_fs)fs=qmpMainWindow::getInstance()->getFluid();
 	fs->setReverbPara(ui->cbEnabledR->isChecked()?1:0,rr,rd,rw,rl);
 	fs->setChorusPara(ui->cbEnabledC->isChecked()?1:0,cfb,cl,cr,cd,ct);
 
