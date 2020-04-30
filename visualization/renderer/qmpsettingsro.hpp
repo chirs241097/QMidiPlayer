@@ -64,6 +64,7 @@ public:
 	void setOptionEnumIntOptName(std::string key,std::string valname);
 
 	void load(const char* path);
+	void setopt(std::string key,std::string val);
 private:
 	std::map<std::string,qmpOptionR> options;
 	std::vector<std::string> optionlist;

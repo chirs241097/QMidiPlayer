@@ -46,7 +46,7 @@ class qmpVisualization:public qmpPluginIntf,public qmpFuncBaseIntf
 		bool rendermode,hidewindow;
 		int herh,heh,hfrf;
 		int uihb,uihs,uihp,uihr,uihk;
-		void(*framecb)(void*,size_t);
+		void(*framecb)(void*,size_t,uint32_t,uint32_t);
 		DWORD* fbcont;
 		std::vector<std::pair<uint32_t,uint32_t>>tspool;
 		int traveld[16][128];bool notestatus[16][128],lastnotestatus[16][128];
@@ -69,7 +69,7 @@ class qmpVisualization:public qmpPluginIntf,public qmpFuncBaseIntf
 		void stop();
 		void pause();
 		void reset();
-		void switchToRenderMode(void(*frameCallback)(void*,size_t),bool _hidewindow);
+		void switchToRenderMode(void(*frameCallback)(void*,size_t,uint32_t,uint32_t),bool _hidewindow);
 
 		void init();
 		void deinit();
@@ -109,7 +109,7 @@ extern "C"{
 	{return new qmpVisualization(api);}
 	EXPORTSYM const char* qmpPluginGetAPIRev()
 	{return QMP_PLUGIN_API_REV;}
-	EXPORTSYM void switchToRenderMode(void(*frameCallback)(void*,size_t),bool hidewindow)
+	EXPORTSYM void switchToRenderMode(void(*frameCallback)(void*,size_t,uint32_t,uint32_t),bool hidewindow)
 	{
 		if(qmpVisualization::instance())
 			qmpVisualization::instance()->switchToRenderMode(frameCallback,hidewindow);

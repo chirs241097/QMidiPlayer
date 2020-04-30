@@ -8,11 +8,12 @@
 #include <dlfcn.h>
 
 #include <QProcess>
+#include <QCommandLineParser>
 #include <QDebug>
 #include <QThread>
 qmpVisRenderCore *qmpVisRenderCore::inst=nullptr;
 
-qmpVisRenderCore::qmpVisRenderCore():QObject(nullptr)
+qmpVisRenderCore::qmpVisRenderCore(QCommandLineParser *_clp):QObject(nullptr),clp(_clp)
 {
 	inst=this;
 	player=new CMidiPlayer();
@@ -21,23 +22,42 @@ qmpVisRenderCore::qmpVisRenderCore():QObject(nullptr)
 	msettings->registerOptionEnumInt("MIDI","Text encoding","Midi/TextEncoding",{"Unicode","Big5","Big5-HKSCS","CP949","EUC-JP","EUC-KR","GB18030","KOI8-R","KOI8-U","Macintosh","Shift-JIS"},0);
 }
 
-void qmpVisRenderCore::loadVisualizationLibrary()
+bool qmpVisRenderCore::loadVisualizationLibrary()
 {
 	mp=dlopen("libvisualization.so",RTLD_LAZY);
-	if(!mp)fprintf(stderr,"failed to load visualization module!\n");
+	if(!mp)
+	{
+		fprintf(stderr,"failed to load the visualization module!\n");
+		return false;
+	}
 	GetInterface_func getintf=reinterpret_cast<GetInterface_func>(dlsym(mp,"qmpPluginGetInterface"));
 	SwitchMode_func switchmode=reinterpret_cast<SwitchMode_func>(dlsym(mp,"switchToRenderMode"));
 	vf=nullptr;
 	vp=getintf(api);
-	switchmode(&qmpVisRenderCore::framefunc,false);
+	switchmode(&qmpVisRenderCore::framefunc,!clp->isSet("show-window"));
 	vp->init();
-	msettings->load("/home/chrisoft/.config/qmprc");
+	return true;
 }
 
 void qmpVisRenderCore::unloadVisualizationLibrary()
 {
 	vp->deinit();
 	dlclose(mp);
+}
+
+void qmpVisRenderCore::loadSettings()
+{
+	if(clp->isSet("config"))
+		msettings->load(clp->value("config").toStdString().c_str());
+	for(auto &o:clp->values("option"))
+	{
+		int sp=o.indexOf('=');
+		if(!~sp)
+			qDebug("invalid option pair: %s",o.toStdString().c_str());
+		QString key=o.left(sp);
+		QString value=o.mid(sp+1);
+		msettings->setopt(key.toStdString(),value.toStdString());
+	}
 }
 
 void qmpVisRenderCore::setMIDIFile(const char *url)
@@ -51,38 +71,92 @@ void qmpVisRenderCore::startRender()
 	ffmpegproc=new QProcess();
 	ffmpegproc->setProgram("ffmpeg");
 	QStringList arguments;
+	arguments.append(split_arguments(clp->value("ffmpeg-pre-args")));
 	arguments
 		<<"-f"<<"rawvideo"
 		<<"-pixel_format"<<"rgba"
-		<<"-video_size"<<"1600x900"
-		<<"-framerate"<<"60"
+		<<"-video_size"<<QString("%1x%2").arg(msettings->getOptionInt("Visualization/wwidth")).arg(msettings->getOptionInt("Visualization/wheight"))
+		<<"-framerate"<<QString::number(msettings->getOptionInt("Visualization/tfps"))
 		<<"-i"<<"pipe:";
-	arguments
-		<<"-vf"<<"vflip"
-		<<"-pix_fmt"<<"yuv420p"
-		<<"-c:v"<<"libx264"
-		<<"-preset"<<"fast"
-		<<"-crf"<<"22";
-	arguments<<"output.mp4";
+	arguments.append(split_arguments(clp->value("ffmpeg-args")));
+	arguments<<clp->value("output-file");
 	ffmpegproc->setArguments(arguments);
-	ffmpegproc->start();
+	QMetaObject::Connection frameconn=connect(this,&qmpVisRenderCore::frameRendered,this,
+	[this,&frameconn](void* px,size_t sz,uint32_t c,uint32_t t)
+	{
+		if(sz)
+		{
+			if(!ffmpegproc->isOpen())return;
+			ffmpegproc->write(static_cast<const char*>(px),static_cast<qint64>(sz));
+			while(ffmpegproc->bytesToWrite()>1<<26)
+				ffmpegproc->waitForBytesWritten();
+		}
+		fprintf(stderr,"Rendered tick %u of %u, %.2f%% done.\r",c,t,100.*c/t);
+		if(c>t)
+		{
+			this->ffmpegproc->closeWriteChannel();
+			disconnect(frameconn);
+			qApp->exit(0);
+		}
+	},Qt::ConnectionType::BlockingQueuedConnection);
 	connect(ffmpegproc,QOverload<int,QProcess::ExitStatus>::of(&QProcess::finished),
-			[this](int x,QProcess::ExitStatus){qDebug("%d",x);qDebug()<<this->ffmpegproc->readAllStandardError();});
-	vf->show();
-	startcb(nullptr,nullptr);
+			[this,&frameconn](int x,QProcess::ExitStatus st){
+				qDebug("%s",this->ffmpegproc->readAllStandardError().data());
+				disconnect(frameconn);
+				if(x||st==QProcess::ExitStatus::CrashExit)
+					qApp->exit(1);
+				else
+					qApp->exit(0);
+	});
+	QMetaObject::invokeMethod(this,[this](){
+		ffmpegproc->start();
+		vf->show();
+		startcb(nullptr,nullptr);
+	},Qt::ConnectionType::QueuedConnection);
 }
 
-void qmpVisRenderCore::framefunc(void *px, size_t sz)
+QStringList qmpVisRenderCore::split_arguments(QString a)
 {
-	if(sz)
+	QStringList ret;
+	QString buf;
+	bool escaped=false;
+	for(int i=0;i<a.length();++i)
 	{
-		inst->ffmpegproc->write((const char*)px,sz);
-		while(inst->ffmpegproc->bytesToWrite()>1<<26)
+		if(a[i]=='\\')
 		{
-			inst->ffmpegproc->waitForBytesWritten();
-			QThread::yieldCurrentThread();
+			if(escaped)
+			{
+				buf+='\\';
+				escaped=false;
+			}
+			else escaped=true;
+		}
+		else if(a[i]==' ')
+		{
+			if(escaped)buf+=' ';
+			else
+			{
+				ret.append(buf);
+				buf.clear();
+			}
+			escaped=false;
+		}
+		else
+		{
+			if(escaped)
+			{
+				buf+='\\';
+				escaped=false;
+			}
+			buf+=a[i];
 		}
 	}
-	else
-		inst->ffmpegproc->closeWriteChannel();
+	if(buf.length())
+		ret.append(buf);
+	return ret;
+}
+
+void qmpVisRenderCore::framefunc(void *px, size_t sz,uint32_t curf,uint32_t totf)
+{
+	emit inst->frameRendered(px,sz,curf,totf);
 }

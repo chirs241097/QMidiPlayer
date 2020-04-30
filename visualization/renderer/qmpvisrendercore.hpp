@@ -9,6 +9,7 @@
 class qmpPluginAPIStub;
 class CMidiPlayer;
 class qmpSettingsRO;
+class QCommandLineParser;
 
 class QProcess;
 
@@ -16,13 +17,17 @@ class qmpVisRenderCore:public QObject
 {
 	Q_OBJECT
 public:
-	qmpVisRenderCore();
-	void loadVisualizationLibrary();
+	qmpVisRenderCore(QCommandLineParser *_clp);
+	bool loadVisualizationLibrary();
 	void unloadVisualizationLibrary();
+	void loadSettings();
 	void setMIDIFile(const char* url);
 	void startRender();
 
 	qmpSettingsRO* settings(){return msettings;}
+
+signals:
+	void frameRendered(void* px,size_t sz,uint32_t current_tick,uint32_t total_ticks);
 
 private:
 	qmpPluginIntf *vp;
@@ -33,11 +38,13 @@ private:
 	CMidiPlayer *player;
 	qmpSettingsRO *msettings;
 	QProcess *ffmpegproc;
+	QCommandLineParser *clp;
+	QStringList split_arguments(QString a);
 	typedef qmpPluginIntf*(*GetInterface_func)(qmpPluginAPI*);
-	typedef void(*SwitchMode_func)(void(*frameCallback)(void*,size_t),bool hidewindow);
+	typedef void(*SwitchMode_func)(void(*frameCallback)(void*,size_t,uint32_t,uint32_t),bool hidewindow);
 
 	friend class qmpPluginAPIStub;
-	static void framefunc(void* px,size_t sz);
+	static void framefunc(void* px, size_t sz, uint32_t curf, uint32_t totf);
 	static qmpVisRenderCore *inst;
 };
 

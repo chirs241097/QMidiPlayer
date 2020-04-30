@@ -208,7 +208,7 @@ void qmpVisualization::reset()
 	}
 }
 
-void qmpVisualization::switchToRenderMode(void(*frameCallback)(void*,size_t),bool _hidewindow)
+void qmpVisualization::switchToRenderMode(void(*frameCallback)(void*,size_t,uint32_t,uint32_t),bool _hidewindow)
 {
 	rendermode=true;
 	framecb=frameCallback;
@@ -709,22 +709,25 @@ bool qmpVisualization::update()
 		}
 	}
 	if(osdpos==4){sm->smRenderEnd();return shouldclose;}
+	uint32_t ltpc=~0u;
 	for(uint32_t i=elb;i<pool.size();++i)
 	{
 		if(pool[i]->tcs>ctk)break;
 		if(pool[i]->ch==998)cts=pool[i]->key;
 		if(pool[i]->ch==997)cks=pool[i]->key;
 		if(pool[i]->ch==996)
-		{
-			ctp=pool[i]->key;
-			if(rendermode)
-			{
-				lstk=ctk;
-				cfr=1;
-			}
-		}
+			ltpc=i;
 		if(pool[i]->ch==995)cpbr[pool[i]->vel]=pool[i]->key;
 		if(pool[i]->ch==994)cpw[pool[i]->vel]=pool[i]->key;
+	}
+	if(~ltpc&&ctp!=pool[ltpc]->key)
+	{
+		ctp=pool[ltpc]->key;
+		if(rendermode)
+		{
+			lstk=pool[ltpc]->tcs;
+			cfr=1;
+		}
 	}
 	int t,r;t=cks;r=(int8_t)((t>>8)&0xFF)+7;t&=0xFF;
 	std::wstring ts(t?minors:majors,2*r,2);
@@ -777,11 +780,11 @@ bool qmpVisualization::update()
 	if(rendermode)
 	{
 		if(ctk>api->getMaxTick())
-			framecb(nullptr,0);
+			framecb(nullptr,0,ctk,api->getMaxTick());
 		else
 		{
 			sm->smPixelCopy(0,0,wwidth,wheight,4*wwidth*wheight,fbcont);
-			framecb(fbcont,4*wwidth*wheight);
+			framecb(fbcont,4*wwidth*wheight,ctk,api->getMaxTick());
 		}
 	}
 	return shouldclose;
@@ -813,6 +816,7 @@ qmpVisualization::qmpVisualization(qmpPluginAPI* _api)
 	api=_api;
 	inst=this;
 	rendermode=false;
+	hidewindow=false;
 }
 qmpVisualization::~qmpVisualization()
 {
@@ -824,7 +828,6 @@ void qmpVisualization::init()
 	h=new CMidiVisualHandler(this);
 	closeh=new CloseHandler(this);
 	rendererTh=nullptr;playing=false;
-	hidewindow=false;
 	memset(rpnid,0xFF,sizeof(rpnid));
 	memset(rpnval,0xFF,sizeof(rpnval));
 	memset(spectra,0,sizeof(spectra));
