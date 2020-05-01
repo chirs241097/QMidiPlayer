@@ -4,6 +4,8 @@
 #include <cstddef>
 
 #include <QObject>
+#include <QVariant>
+#include <QMap>
 #include "qmpcorepublic.hpp"
 
 class qmpPluginAPIStub;
@@ -38,9 +40,13 @@ private:
 	qmpPluginAPIStub *api;
 	CMidiPlayer *player;
 	qmpSettingsRO *msettings;
-	QProcess *ffmpegproc;
+	QProcess *rxproc;
+	QMap<QChar,QVariant> subst;
 	QCommandLineParser *clp;
-	QStringList split_arguments(QString a);
+	QStringList process_arguments(QString a, QMap<QChar,QVariant> subst);
+	int frameno;
+	bool oneshot;
+	QMetaObject::Connection frameconn;
 	typedef qmpPluginIntf*(*GetInterface_func)(qmpPluginAPI*);
 	typedef void(*SwitchMode_func)(void(*frameCallback)(void*,size_t,uint32_t,uint32_t),bool hidewindow);
 

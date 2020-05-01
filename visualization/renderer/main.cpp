@@ -14,9 +14,18 @@ int main(int argc,char **argv)
 	clp.addHelpOption();
 	clp.addVersionOption();
 	clp.addOption({{"f","output-file"},"File name of the output file.","filename","output.mp4"});
-	clp.addOption({"ffmpeg-args","Custom output option arguments for ffmpeg.","args","-vf vflip -pix_fmt yuv420p -c:v libx264 -preset slow -crf 22"});
-	clp.addOption({"ffmpeg-pre-args","Custom arguments passed to ffmpeg before input arguments.","args",""});
-	clp.addOption({"ffmpeg-exec","Specify the path to the ffmpeg executable.","exec","ffmpeg"});
+	clp.addOption({
+		"receiver",
+		"Specify a program and its arguments to process the rendered frames. Supports parameter substitution. See documentation for details.",
+		"command",
+		"ffmpeg -f rawvideo -pixel_format rgba -video_size %wx%h -framerate %r -i pipe: -vf vflip -pix_fmt yuv420p -c:v libx264 -preset slow -crf 22 %o"
+	});
+	clp.addOption({
+		{"e","receiver-execution"},
+		"Execution mode of the receiver command. Valid options are 'one-shot' and 'per-frame'",
+		"mode",
+		"one-shot"
+	});
 	clp.addOption({{"s","show-window"},"Do not hide the visualization window."});
 	clp.addOption({{"c","config"},"Load options from the configuration file.","qmprc file"});
 	clp.addOption({{"o","option"},"Set option for the visualization module.","key-value pair"});

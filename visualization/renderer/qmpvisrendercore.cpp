@@ -4,6 +4,7 @@
 #include "qmpmidiplay.hpp"
 #include "qmpcorepublic.hpp"
 
+#include <algorithm>
 #include <cassert>
 #include <dlfcn.h>
 
@@ -19,6 +20,7 @@ qmpVisRenderCore::qmpVisRenderCore(QCommandLineParser *_clp):QObject(nullptr),cl
 	player=new CMidiPlayer();
 	api=new qmpPluginAPIStub(this);
 	msettings=new qmpSettingsRO();
+	frameno=0;
 	msettings->registerOptionEnumInt("MIDI","Text encoding","Midi/TextEncoding",{"Unicode","Big5","Big5-HKSCS","CP949","EUC-JP","EUC-KR","GB18030","KOI8-R","KOI8-U","Macintosh","Shift-JIS"},0);
 }
 
@@ -72,62 +74,120 @@ void qmpVisRenderCore::setMIDIFile(const char *url)
 void qmpVisRenderCore::startRender()
 {
 	assert(vf);
-	ffmpegproc=new QProcess();
-	ffmpegproc->setProgram("ffmpeg");
-	QStringList arguments;
-	arguments.append(split_arguments(clp->value("ffmpeg-pre-args")));
-	arguments
-		<<"-f"<<"rawvideo"
-		<<"-pixel_format"<<"rgba"
-		<<"-video_size"<<QString("%1x%2").arg(msettings->getOptionInt("Visualization/wwidth")).arg(msettings->getOptionInt("Visualization/wheight"))
-		<<"-framerate"<<QString::number(msettings->getOptionInt("Visualization/tfps"))
-		<<"-i"<<"pipe:";
-	arguments.append(split_arguments(clp->value("ffmpeg-args")));
-	arguments<<clp->value("output-file");
-	ffmpegproc->setArguments(arguments);
-	QMetaObject::Connection frameconn=connect(this,&qmpVisRenderCore::frameRendered,this,
-	[this,&frameconn](void* px,size_t sz,uint32_t c,uint32_t t)
+	subst={
+		{'w',QString::number(msettings->getOptionInt("Visualization/wwidth"))},
+		{'h',QString::number(msettings->getOptionInt("Visualization/wheight"))},
+		{'r',QString::number(msettings->getOptionInt("Visualization/tfps"))},
+		{'i',
+			QStringList()
+				<<"-f"<<"rawvideo"
+				<<"-pixel_format"<<"rgba"
+				<<"-video_size"<<QString("%1x%2").arg(msettings->getOptionInt("Visualization/wwidth")).arg(msettings->getOptionInt("Visualization/wheight"))
+				<<"-framerate"<<QString::number(msettings->getOptionInt("Visualization/tfps"))
+				<<"-i"<<"pipe:"
+		},
+		{'o',clp->value("output-file")}
+	};
+	if(clp->value("receiver-execution")=="per-frame")
+	{
+		subst['o']=clp->value("output-file").replace("%f",QString("%1").arg(frameno,6,10,QChar('0')));
+		oneshot=false;
+	}
+	else
+	{
+		oneshot=true;
+		if(clp->value("receiver-execution")!="one-shot")
+			qWarning("Invalid value set for --receiver-execution. Using default value.");
+	}
+	rxproc=new QProcess();
+	QStringList arguments=process_arguments(clp->value("receiver"),subst);
+	assert(arguments.length()>0);
+	rxproc->setProgram(arguments.front());
+	arguments.pop_front();
+	rxproc->setArguments(arguments);
+	frameconn=connect(this,&qmpVisRenderCore::frameRendered,this,
+	[this](void* px,size_t sz,uint32_t c,uint32_t t)
 	{
 		if(sz)
 		{
-			if(!ffmpegproc->isOpen())return;
-			ffmpegproc->write(static_cast<const char*>(px),static_cast<qint64>(sz));
-			while(ffmpegproc->bytesToWrite()>1<<26)
-				ffmpegproc->waitForBytesWritten();
+			if(!oneshot)
+			{
+				subst['f']=QString("%1").arg(frameno,6,10,QChar('0'));
+				subst['o']=clp->value("output-file").replace("%f",QString("%1").arg(frameno,6,10,QChar('0')));
+				frameno++;
+				QStringList arguments=process_arguments(clp->value("receiver"),subst);
+				arguments.pop_front();
+				rxproc->setArguments(arguments);
+				rxproc->start();
+				rxproc->waitForStarted();
+			}
+			if(!rxproc->isOpen())return;
+			rxproc->write(static_cast<const char*>(px),static_cast<qint64>(sz));
+			while(rxproc->bytesToWrite()>(oneshot?(1<<26):0))
+				rxproc->waitForBytesWritten();
+			if(!oneshot)
+			{
+				rxproc->closeWriteChannel();
+				rxproc->waitForFinished(-1);
+			}
 		}
-		fprintf(stderr,"Rendered tick %u of %u, %.2f%% done.\r",c,t,100.*c/t);
+		fprintf(stderr,"Rendered tick %u of %u, %.2f%% done.\r",c,t,std::min(100.,100.*c/t));
 		if(c>t)
 		{
-			this->ffmpegproc->closeWriteChannel();
+			this->rxproc->closeWriteChannel();
 			disconnect(frameconn);
 			qApp->exit(0);
 		}
 	},Qt::ConnectionType::BlockingQueuedConnection);
-	connect(ffmpegproc,QOverload<int,QProcess::ExitStatus>::of(&QProcess::finished),
-			[this,&frameconn](int x,QProcess::ExitStatus st){
-				qDebug("%s",this->ffmpegproc->readAllStandardError().data());
-				disconnect(frameconn);
-				if(x||st==QProcess::ExitStatus::CrashExit)
-					qApp->exit(1);
-				else
-					qApp->exit(0);
+	connect(rxproc,QOverload<int,QProcess::ExitStatus>::of(&QProcess::finished),
+			[this](int x,QProcess::ExitStatus st){
+				qDebug("%s",this->rxproc->readAllStandardError().data());
+				if(oneshot)
+				{
+					disconnect(frameconn);
+					if(x||st==QProcess::ExitStatus::CrashExit)
+						qApp->exit(1);
+					else
+						qApp->exit(0);
+				}
 	});
 	QMetaObject::invokeMethod(this,[this](){
-		ffmpegproc->start();
+		if(oneshot)
+			rxproc->start();
 		vf->show();
 		startcb(nullptr,nullptr);
 	},Qt::ConnectionType::QueuedConnection);
 }
 
-QStringList qmpVisRenderCore::split_arguments(QString a)
+QStringList qmpVisRenderCore::process_arguments(QString a,QMap<QChar,QVariant> subst)
 {
 	QStringList ret;
 	QString buf;
 	bool escaped=false;
+	bool substi=false;
 	for(int i=0;i<a.length();++i)
 	{
-		if(a[i]=='\\')
+		if(a[i]=='%')
 		{
+			if(escaped)
+			{
+				buf+='%';
+				escaped=false;
+			}
+			else if(substi)
+			{
+				buf+='%';
+				substi=false;
+			}
+			else substi=true;
+		}
+		else if(a[i]=='\\')
+		{
+			if(substi)
+			{
+				buf+='%';
+				substi=false;
+			}
 			if(escaped)
 			{
 				buf+='\\';
@@ -137,22 +197,47 @@ QStringList qmpVisRenderCore::split_arguments(QString a)
 		}
 		else if(a[i]==' ')
 		{
+			if(substi)
+			{
+				buf+='%';
+				substi=false;
+			}
 			if(escaped)buf+=' ';
 			else
 			{
-				ret.append(buf);
+				if(buf.length())
+					ret.append(buf);
 				buf.clear();
 			}
 			escaped=false;
 		}
 		else
 		{
-			if(escaped)
+			if(substi&&subst.contains(a[i]))
 			{
-				buf+='\\';
-				escaped=false;
+				if(subst[a[i]].canConvert(QMetaType::QString))
+					buf+=subst[a[i]].toString();
+				else
+				{
+					if(buf.length())
+					{
+						ret.append(buf);
+						buf.clear();
+					}
+					for(auto &it:subst[a[i]].toStringList())
+						ret.append(it);
+				}
+				substi=false;
 			}
-			buf+=a[i];
+			else
+			{
+				if(escaped)
+				{
+					buf+='\\';
+					escaped=false;
+				}
+				buf+=a[i];
+			}
 		}
 	}
 	if(buf.length())
