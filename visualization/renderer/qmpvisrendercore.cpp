@@ -36,6 +36,7 @@ bool qmpVisRenderCore::loadVisualizationLibrary()
 	vp=getintf(api);
 	switchmode(&qmpVisRenderCore::framefunc,!clp->isSet("show-window"));
 	vp->init();
+	resetcb(nullptr,nullptr);
 	return true;
 }
 
@@ -53,7 +54,10 @@ void qmpVisRenderCore::loadSettings()
 	{
 		int sp=o.indexOf('=');
 		if(!~sp)
+		{
 			qDebug("invalid option pair: %s",o.toStdString().c_str());
+			continue;
+		}
 		QString key=o.left(sp);
 		QString value=o.mid(sp+1);
 		msettings->setopt(key.toStdString(),value.toStdString());

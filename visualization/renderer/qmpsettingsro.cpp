@@ -168,59 +168,7 @@ void qmpSettingsRO::load(const char *path)
 
 void qmpSettingsRO::setopt(std::string key, std::string val)
 {
-	if(options.find(key)==options.end())
-	{
-		std::string nkey="Visualization/"+key;
-		if(options.find(nkey)==options.end())
-		{
-			qDebug("invalid option key %s",key.c_str());
-			return;
-		}
-		else key=nkey;
-	}
-	char *rptr;
-	switch(options[key].type)
-	{
-		case qmpOptionR::ParameterType::parameter_int:
-		{
-			long long v=strtoll(val.c_str(),&rptr,10);
-			if(rptr==val.c_str()||v>INT_MAX||v<INT_MIN)
-				qDebug("invalid value for option %s",key.c_str());
-			setOptionInt(key,static_cast<int>(v));
-		}
-		break;
-		case qmpOptionR::ParameterType::parameter_uint:
-		{
-			long long v=strtoll(val.c_str(),&rptr,10);
-			if(rptr==val.c_str()||v>UINT32_MAX||v<0)
-				qDebug("invalid value for option %s",key.c_str());
-			setOptionUint(key,static_cast<uint32_t>(v));
-		}
-		break;
-		case qmpOptionR::ParameterType::parameter_double:
-		{
-			errno=0;
-			double v=strtod(val.c_str(),&rptr);
-			if(rptr==val.c_str()||errno)
-				qDebug("invalid value for option %s",key.c_str());
-			setOptionDouble(key,v);
-		}
-		break;
-		case qmpOptionR::ParameterType::parameter_bool:
-		{
-			if(val!="true"&&val!="false")
-				qDebug("invalid value for option %s",key.c_str());
-			setOptionBool(key,val=="true");
-		}
-		break;
-		case qmpOptionR::ParameterType::parameter_str:
-		case qmpOptionR::ParameterType::parameter_url:
-			setOptionString(key,val);
-		break;
-		case qmpOptionR::ParameterType::parameter_enum:
-			setOptionEnumIntOptName(key,val);
-		break;
-		default:
-		break;
-	}
+	settings.insert(QString(key.c_str()),QString(val.c_str()));
+	if(key.find("Visualization/")!=0)
+		settings.insert("Visualization/"+QString(key.c_str()),QString(val.c_str()));
 }

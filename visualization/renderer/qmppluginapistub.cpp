@@ -79,12 +79,16 @@ int qmpPluginAPIStub::registerUIHook(std::string e, callback_t cb, void *userdat
 {
 	if(e=="main.start")
 		core->startcb=cb;
+	if(e=="main.reset")
+		core->resetcb=cb;
 	return 0;
 }
 void qmpPluginAPIStub::unregisterUIHook(std::string e, int hook)
 {
 	if(e=="main.start")
 		core->startcb=nullptr;
+	if(e=="main.reset")
+		core->resetcb=nullptr;
 }
 
 void qmpPluginAPIStub::registerMidiOutDevice(qmpMidiOutDevice *dev, std::string name){}

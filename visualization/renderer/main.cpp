@@ -25,9 +25,9 @@ int main(int argc,char **argv)
 	qmpVisRenderCore core(&clp);
 	if(clp.positionalArguments().empty())
 		clp.showHelp(1);
+	core.loadSettings();
 	if(!core.loadVisualizationLibrary())
 		return 1;
-	core.loadSettings();
 	if(clp.positionalArguments().size())
 		core.setMIDIFile(clp.positionalArguments().front().toStdString().c_str());
 	core.startRender();

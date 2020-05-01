@@ -33,6 +33,7 @@ private:
 	qmpPluginIntf *vp;
 	qmpFuncBaseIntf *vf;
 	callback_t startcb;
+	callback_t resetcb;
 	void *mp;
 	qmpPluginAPIStub *api;
 	CMidiPlayer *player;

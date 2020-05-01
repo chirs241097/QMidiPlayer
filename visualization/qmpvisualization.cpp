@@ -129,28 +129,22 @@ void qmpVisualization::showThread()
 	if(!font2.loadTTF((std::string(getenv("windir")?getenv("windir"):"")+"/Fonts/msyh.ttc").c_str(),fontsize))
 	if(!font2.loadTTF((std::string(getenv("windir")?getenv("windir"):"")+"/Fonts/segoeui.ttf").c_str(),fontsize))
 	fprintf(stderr,"W: Font load failed.\n");
-	if(horizontal)
+	if(pos[0]<-1e8)
 	{
-		pos[0]=-20;pos[1]=45;pos[2]=0;
-		rot[0]=0;rot[1]=90;rot[2]=90;
-	}
-	else
-	{
-		pos[0]=0;pos[1]=120;pos[2]=70;
-		rot[0]=0;rot[1]=75;rot[2]=90;
+		if(horizontal)
+		{
+			pos[0]=-20;pos[1]=45;pos[2]=0;
+			rot[0]=0;rot[1]=90;rot[2]=90;
+		}
+		else
+		{
+			pos[0]=0;pos[1]=120;pos[2]=70;
+			rot[0]=0;rot[1]=75;rot[2]=90;
+		}
 	}
 	debug=false;
 	ctk=api->getCurrentTimeStamp();
 	lst=std::chrono::steady_clock::now();
-	if(savevp)
-	{
-		pos[0]=api->getOptionDouble("Visualization/px");
-		pos[1]=api->getOptionDouble("Visualization/py");
-		pos[2]=api->getOptionDouble("Visualization/pz");
-		rot[0]=api->getOptionDouble("Visualization/rx");
-		rot[1]=api->getOptionDouble("Visualization/ry");
-		rot[2]=api->getOptionDouble("Visualization/rz");
-	}
 	sm->smMainLoop();
 	sm->smFinale();
 }
@@ -943,12 +937,12 @@ void qmpVisualization::init()
 	api->registerOptionInt("Visualization-Appearance","Minimum note length","Visualization/minnotelen",20,500,100);
 	api->registerOptionUint("Visualization-Appearance","Chequer board tint (AARRGGBB)","Visualization/chkrtint",0,0xFFFFFFFF,0xFF999999);
 	api->registerOptionString("Visualization-Appearance","Background Image","Visualization/background","",true);
-	api->registerOptionDouble("","","Visualization/px",-999999999,999999999,0);
-	api->registerOptionDouble("","","Visualization/py",-999999999,999999999,120);
-	api->registerOptionDouble("","","Visualization/pz",-999999999,999999999,70);
-	api->registerOptionDouble("","","Visualization/rx",-999999999,999999999,0);
-	api->registerOptionDouble("","","Visualization/ry",-999999999,999999999,75);
-	api->registerOptionDouble("","","Visualization/rz",-999999999,999999999,90);
+	api->registerOptionDouble("","","Visualization/px",-999999999,999999999,-1e9);
+	api->registerOptionDouble("","","Visualization/py",-999999999,999999999,-1e9);
+	api->registerOptionDouble("","","Visualization/pz",-999999999,999999999,-1e9);
+	api->registerOptionDouble("","","Visualization/rx",-999999999,999999999,-1e9);
+	api->registerOptionDouble("","","Visualization/ry",-999999999,999999999,-1e9);
+	api->registerOptionDouble("","","Visualization/rz",-999999999,999999999,-1e9);
 	for(int i=0;i<16;++i)
 	{
 		api->registerOptionUint("","","Visualization/chActiveColor"+std::to_string(i),0,0xFFFFFFFF,accolors[i]);
@@ -979,6 +973,15 @@ void qmpVisualization::init()
 	{
 		accolors[i]=api->getOptionUint("Visualization/chActiveColor"+std::to_string(i));
 		iccolors[i]=api->getOptionUint("Visualization/chInactiveColor"+std::to_string(i));
+	}
+	if(savevp)
+	{
+		pos[0]=api->getOptionDouble("Visualization/px");
+		pos[1]=api->getOptionDouble("Visualization/py");
+		pos[2]=api->getOptionDouble("Visualization/pz");
+		rot[0]=api->getOptionDouble("Visualization/rx");
+		rot[1]=api->getOptionDouble("Visualization/ry");
+		rot[2]=api->getOptionDouble("Visualization/rz");
 	}
 	memset(pss,0,sizeof(pss));
 }
