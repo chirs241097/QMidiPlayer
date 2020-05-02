@@ -9,8 +9,8 @@
 #ifdef _WIN32
 #include <windows.h>
 #define dlopen(a,b) LoadLibraryW(a)
-#define dlsym GetProcAddress
-#define dlclose FreeLibrary
+#define dlsym(a,b) GetProcAddress((HMODULE)a,b)
+#define dlclose(a) FreeLibrary((HMODULE)a)
 #else
 #include <dlfcn.h>
 #endif
@@ -35,13 +35,13 @@ bool qmpVisRenderCore::loadVisualizationLibrary()
 {
 #ifdef _WIN32
 	std::vector<std::wstring> libpath={
-		QCoreApplication::applicationDirPath().toStdWString()+L"/plugins/libvisualization.dll"
+		QCoreApplication::applicationDirPath().toStdWString()+L"/plugins/libvisualization.dll",
 		L"libvisualization.dll",
 		L"../libvisualization.dll"//for debugging only...?
 	};
 #else
 	std::vector<std::string> libpath={
-		QCoreApplication::applicationDirPath().toStdString()+"/plugins/libvisualization.so"
+		QCoreApplication::applicationDirPath().toStdString()+"/plugins/libvisualization.so",
 		QT_STRINGIFY(INSTALL_PREFIX)+std::string("/lib/qmidiplayer/libvisualization.so"),
 		"../libvisualization.so"//for debugging only
 	};
