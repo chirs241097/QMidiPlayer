@@ -69,7 +69,7 @@
 					<li>Enable VSync: Enable vertical synchronization.</li>
 					<li>Save Viewport: Restore last camera configuration when the visualization is started.</li>
 					<li>Window Width/Height: Change the window size. If the size equals to your screen size, the visualization will start in fullscreen mode.</li>
-					<li>FPS: FPS limit of the visualization.</li>
+					<li>Target FPS: FPS limit of the visualization.</li>
 					<li>Supersampling: Supersample anti-aliasing for the 3D visualization scene. 1 means no SSAA.</li>
 					<li>Multisampling: Multisample anti-aliasing for the 3D visualization scene. 0 means no MSAA.</li>
 					<li>FOV: Field of view.</li>
@@ -87,6 +87,122 @@
 				</ul>
 			</li>
 		</ul>
+		<h2>Visualization Renderer</h2>
+		The visualization plugin comes with a standalone application that generates high quality rendering of a midi file.
+		<h3>Command line usage</h3>
+		<pre style="font-variant-ligatures:none;">
+Usage: ./qmpvisrender [options] file
+Renderer a visualization of a midi file.
+
+Options:
+  -h, --help                       Displays help on commandline options.
+  --help-all                       Displays help including Qt specific options.
+  -v, --version                    Displays version information.
+  -f, --output-file &lt;filename&gt;     File name of the output file.
+  --receiver &lt;command&gt;             Specify a program and its arguments to
+                                   process the rendered frames. Supports
+                                   parameter substitution. See documentation for
+                                   details.
+  -e, --receiver-execution &lt;mode&gt;  Execution mode of the receiver command.
+                                   Valid options are 'one-shot' and 'per-frame'
+  -s, --show-window                Do not hide the visualization window.
+  -c, --config &lt;qmprc file&gt;        Load options from the configuration file.
+  -o, --option &lt;key-value pair&gt;    Set option for the visualization module.
+  --list-options                   Show a list of recognized options.
+
+Arguments:
+  file                             MIDI file to render
+		</pre>
+		<h3>Basic usage</h3>
+		You will most likely to load your QMidiPlayer configuration file so that
+		you can get the exact same results as viewed in QMidiPlayer.
+		You should also make sure ffmpeg is ready to use. Then you can run
+		<code>qmpvisrender -c &lt;path-to-configuration-file&gt; &lt;MIDI file to render&gt;</code>
+		and wait for the results. The output file is named output.mp4 and will be found
+		in the current work directory.
+		<h3>Supplementary materials for commandline options</h3>
+		<p>
+		When specifying a value for an option under the "Visualization" category, the category part
+		in the key may be omitted, so "-o Visualization/wwidth=1920" would become "-o wwidth=1920".
+		</p>
+		<p>
+		The renderer performs parameter substitution before invoking the receiver command line.
+		</p>
+		<table>
+		<style>
+		td,th{
+		padding-top:0.5em;
+		padding-bottom:0.5em;
+		}
+		</style>
+		<tr><th>Placeholder</th><th>Substituted with</th><th>Remarks</th></tr>
+		<tr><td><code>%w</code></td><td>width of an output frame in pixels</td><td></td></tr>
+		<tr><td><code>%h</code></td><td>height of an output frame in pixels</td><td></td></tr>
+		<tr><td><code>%r</code></td><td>framerate which the output frames should be played at</td><td></td></tr>
+		<tr><td><code>%i</code></td><td>input format specification for ffmpeg</td><td>shorthand for "-f rawvideo -pixel_format rgba -video_size %wx%h -framerate %r -i pipe:"</td></tr>
+		<tr><td><code>%o</code></td><td>output file name specified by the --output-file option</td><td>If the receiver execution mode is "per-frame", "%f" in the output file name will also be replaced.</td></tr>
+		<tr><td><code>%f</code></td><td>a six-digit frame number</td><td>only works if the receiver execution mode is "per-frame".</td></tr>
+		</table>
+		<p>
+		To add a literal space in the receiver command, put a single backslash before the space.
+		To add a percent sign, either put two consecutive percent signs or use a backslash followed
+		by a percent sign.
+		</p>
+		<p>
+		The default receiver command is <code>ffmpeg %i -vf vflip -pix_fmt yuv420p -c:v libx264 -preset slow -crf 22 %o</code>.
+		In case the output quality doesn't satisfy your needs, consider lowering the number after '-crf' or selecting a even slower
+		profile ('slower' or 'veryslow').
+		</p>
+		<h3>How it works</h3>
+		<p>
+		Notice: you don't have to understand anything under this section to use this tool.
+		You may try out the examples below or simply adhere to the basic usage shown above even this
+		section makes zero sense to you.
+		</p>
+		<p>
+		The renderer feeds a sequence of images into one command or a series of commands that process
+		the images through a pipe. That's it!
+		</p>
+		<p>
+		The data is an stream of raw RGBA values, where each color takes one byte in every pixel. The frame
+		size is the same as used by the visualization module, and the frames should be played back at a fixed
+		frame rate. The pixel data starts from the bottom-left of a frame and follows row-major ordering (so
+		you may want to flip the frame when using the frame with some applications).
+		</p>
+		<p>
+		The renderer supports two modes of receiver program operation. If the mode is set to 'one-shot',
+		the receiver is only started once and gets all rendered frames. If it is set to 'per-frame',
+		the receiver will be started every time a frame is rendered, and will only get one frame to process.
+		</p>
+		<h3>Examples</h3>
+		<p>
+		If you wish to try these examples, make sure you have the required receiver program ready to run.
+		</p>
+		<ol>
+		<li>Render to a vp9 encoded webm video.</li>
+		<pre style="white-space:pre-wrap;">
+qmpvisrender -c ~/.config/qmprc --output-file test.webm --receiver 'ffmpeg %i -vf vflip -c:v libvpx-vp9 -crf 30 -b:v 0 %o' &lt;midi file&gt;
+		</pre>
+		<li>Render to a h264 encoded mp4 video with hardware encoding acceleration using VA-API.</li>
+		<pre style="white-space:pre-wrap;">
+qmpvisrender -c ~/.config/qmprc --output-file test.mp4 --receiver 'ffmpeg -vaapi_device /dev/dri/renderD128 %i -vf vflip,format=nv12,hwupload -c:v h264_vaapi -b:v 5M %o' &lt;midi file&gt;
+		</pre>
+		<li>Render the frames into png files using imagemagick.</li>
+		<pre style="white-space:pre-wrap;">
+qmpvisrender -c ~/.config/qmprc --receiver-execution per-frame --receiver 'convert -size %wx%h -depth 8 RGBA:- -flip pngout/%f.png' &lt;midi file&gt;
+		</pre>
+		<li>Show the visualization window. Discard all rendered frames.</li>
+		<pre style="white-space:pre-wrap;">
+qmpvisrender -c ~/.config/qmprc -s --receiver 'dd of=/dev/null bs=24M' &lt;midi file&gt;
+		</pre>
+		<li>Save the raw frame data.</li>
+		<pre style="white-space:pre-wrap;">
+qmpvisrender -c ~/.config/qmprc --receiver-execution per-frame --receiver 'tee rawoutput/%f.raw' &lt;midi file&gt;
+		</pre>
+		</ol>
+		<h3>Useful stuff to refer to</h3>
+		<a target="_blank" href="https://www.ffmpeg.org/ffmpeg.html">ffmpeg documentation</a>
+		and <a target="_blank" href="https://www.ffmpeg.org/ffmpeg-codecs.html">ffmpeg codecs documentation</a>, if you want to tweak the ffmpeg encoder.
 	</div>
 </body>
 </html>

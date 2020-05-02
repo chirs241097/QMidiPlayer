@@ -18,7 +18,7 @@ int main(int argc,char **argv)
 		"receiver",
 		"Specify a program and its arguments to process the rendered frames. Supports parameter substitution. See documentation for details.",
 		"command",
-		"ffmpeg -f rawvideo -pixel_format rgba -video_size %wx%h -framerate %r -i pipe: -vf vflip -pix_fmt yuv420p -c:v libx264 -preset slow -crf 22 %o"
+		"ffmpeg %i -vf vflip -pix_fmt yuv420p -c:v libx264 -preset slow -crf 22 %o"
 	});
 	clp.addOption({
 		{"e","receiver-execution"},
@@ -29,10 +29,11 @@ int main(int argc,char **argv)
 	clp.addOption({{"s","show-window"},"Do not hide the visualization window."});
 	clp.addOption({{"c","config"},"Load options from the configuration file.","qmprc file"});
 	clp.addOption({{"o","option"},"Set option for the visualization module.","key-value pair"});
+	clp.addOption({"list-options","Show a list of recognized options and quit."});
 	clp.addPositionalArgument("file","MIDI file to render");
 	clp.process(a.arguments());
 	qmpVisRenderCore core(&clp);
-	if(clp.positionalArguments().empty())
+	if(clp.positionalArguments().empty()&&!clp.isSet("list-options"))
 		clp.showHelp(1);
 	core.loadSettings();
 	if(!core.loadVisualizationLibrary())

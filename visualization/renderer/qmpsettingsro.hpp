@@ -65,6 +65,7 @@ public:
 
 	void load(const char* path);
 	void setopt(std::string key,std::string val);
+	void listopt();
 private:
 	std::map<std::string,qmpOptionR> options;
 	std::vector<std::string> optionlist;

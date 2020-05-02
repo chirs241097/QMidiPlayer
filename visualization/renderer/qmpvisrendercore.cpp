@@ -39,6 +39,11 @@ bool qmpVisRenderCore::loadVisualizationLibrary()
 	switchmode(&qmpVisRenderCore::framefunc,!clp->isSet("show-window"));
 	vp->init();
 	resetcb(nullptr,nullptr);
+	if(clp->isSet("list-options"))
+	{
+		msettings->listopt();
+		exit(0);
+	}
 	return true;
 }
 

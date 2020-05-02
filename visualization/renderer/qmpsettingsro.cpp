@@ -1,6 +1,8 @@
 #include <QScopedPointer>
 #include <QSettings>
 
+#include <cstdio>
+
 #include "qmpsettingsro.hpp"
 
 qmpSettingsRO::qmpSettingsRO()
@@ -171,4 +173,54 @@ void qmpSettingsRO::setopt(std::string key, std::string val)
 	settings.insert(QString(key.c_str()),QString(val.c_str()));
 	if(key.find("Visualization/")!=0)
 		settings.insert("Visualization/"+QString(key.c_str()),QString(val.c_str()));
+}
+
+void qmpSettingsRO::listopt()
+{
+	for(auto&k:optionlist)
+	{
+		printf("Option key: %s\n",k.c_str());
+		if(options[k].desc.length())
+			printf("Description: %s\n",options[k].desc.c_str());
+		switch(options[k].type)
+		{
+			case qmpOptionR::ParameterType::parameter_int:
+				printf("Type: int\n");
+				printf("Range: [%d,%d]\n",options[k].minv.toInt(),options[k].maxv.toInt());
+				printf("Default value: %d\n",options[k].defaultval.toInt());
+			break;
+			case qmpOptionR::ParameterType::parameter_uint:
+				printf("Type: uint\n");
+				printf("Range: [%u,%u]\n",options[k].minv.toUInt(),options[k].maxv.toUInt());
+				printf("Default value: %u\n",options[k].defaultval.toUInt());
+			break;
+			case qmpOptionR::ParameterType::parameter_double:
+				printf("Type: double\n");
+				printf("Range: [%.2f,%.2f]\n",options[k].minv.toDouble(),options[k].maxv.toDouble());
+				printf("Default value: %.f2\n",options[k].defaultval.toDouble());
+			break;
+			case qmpOptionR::ParameterType::parameter_bool:
+				printf("Type: bool\n");
+				printf("Default value: %s\n",options[k].defaultval.toBool()?"true":"false");
+			break;
+			case qmpOptionR::ParameterType::parameter_str:
+				printf("Type: str\n");
+				printf("Default value: %s\n",options[k].defaultval.toString().toStdString().c_str());
+			break;
+			case qmpOptionR::ParameterType::parameter_url:
+				printf("Type: url\n");
+				printf("Default value: %s\n",options[k].defaultval.toString().toStdString().c_str());
+			break;
+			case qmpOptionR::ParameterType::parameter_enum:
+				printf("Type: enum\n");
+				printf("Possible values: ");
+				for(size_t i=0;i<options[k].enumlist.size();++i)
+					printf("%s%s",options[k].enumlist[i].c_str(),i==options[k].enumlist.size()-1?"\n":", ");
+				printf("Default value: %s\n",options[k].enumlist[options[k].defaultval.toInt()].c_str());
+			break;
+			default:
+				printf("Type: unknown\n");
+		}
+		puts("");
+	}
 }
