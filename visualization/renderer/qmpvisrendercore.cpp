@@ -6,7 +6,14 @@
 
 #include <algorithm>
 #include <cassert>
+#ifdef _WIN32
+#include <windows.h>
+#define dlopen(a,b) LoadLibraryW(a)
+#define dlsym GetProcAddress
+#define dlclose FreeLibrary
+#else
 #include <dlfcn.h>
+#endif
 
 #include <QProcess>
 #include <QCommandLineParser>
@@ -26,7 +33,24 @@ qmpVisRenderCore::qmpVisRenderCore(QCommandLineParser *_clp):QObject(nullptr),cl
 
 bool qmpVisRenderCore::loadVisualizationLibrary()
 {
-	mp=dlopen("libvisualization.so",RTLD_LAZY);
+#ifdef _WIN32
+	std::vector<std::wstring> libpath={
+		QCoreApplication::applicationDirPath().toStdWString()+L"/plugins/libvisualization.dll"
+		L"libvisualization.dll",
+		L"../libvisualization.dll"//for debugging only...?
+	};
+#else
+	std::vector<std::string> libpath={
+		QCoreApplication::applicationDirPath().toStdString()+"/plugins/libvisualization.so"
+		QT_STRINGIFY(INSTALL_PREFIX)+std::string("/lib/qmidiplayer/libvisualization.so"),
+		"../libvisualization.so"//for debugging only
+	};
+#endif
+	for(auto&l:libpath)
+	{
+		mp=dlopen(l.c_str(),RTLD_LAZY);
+		if(mp)break;
+	}
 	if(!mp)
 	{
 		fprintf(stderr,"failed to load the visualization module!\n");
