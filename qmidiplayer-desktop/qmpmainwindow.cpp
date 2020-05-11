@@ -147,8 +147,8 @@ void qmpMainWindow::init()
 
     if (settings->getOptionBool("Behavior/DialogStatus"))
     {
-        QRect g = settings->getOptionRaw("DialogStatus/MainW", QRect(-999, -999, 999, 999)).toRect();
-        if (g != QRect(-999, -999, 999, 999))
+        QRect g = settings->getOptionRaw("DialogStatus/MainW", QRect()).toRect();
+        if (!g.isNull())
             setGeometry(g);
     }
 

@@ -2,7 +2,7 @@
 #include <QFile>
 #include <QStandardPaths>
 
-#define QMP_CONFIGURATION_FILE_REV 1
+#define QMP_CONFIGURATION_FILE_REV 2
 
 QSettings *qmpSettings::settings = nullptr;
 qmpSettings::qmpSettings()

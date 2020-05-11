@@ -82,8 +82,8 @@ qmpPlistWindow::qmpPlistWindow(QWidget *parent):
         0,
         true
     );
-    if (settings->getOptionRaw("DialogStatus/PListW", QRect(-999, -999, 999, 999)).toRect() != QRect(-999, -999, 999, 999))
-        setGeometry(settings->getOptionRaw("DialogStatus/PListW", QRect(-999, -999, 999, 999)).toRect());
+    if (!settings->getOptionRaw("DialogStatus/PListW", QRect()).toRect().isNull())
+        setGeometry(settings->getOptionRaw("DialogStatus/PListW", QRect()).toRect());
     if (settings->getOptionRaw("DialogStatus/PListWShown", 0).toInt())
     {
         show();
@@ -104,8 +104,8 @@ void qmpPlistWindow::showEvent(QShowEvent *event)
     {
         settings->setOptionRaw("DialogStatus/PListWShown", 1);
     }
-    if (settings->getOptionRaw("DialogStatus/PListW", QRect(-999, -999, 999, 999)).toRect() != QRect(-999, -999, 999, 999))
-        setGeometry(settings->getOptionRaw("DialogStatus/PListW", QRect(-999, -999, 999, 999)).toRect());
+    if (!settings->getOptionRaw("DialogStatus/PListW", QRect()).toRect().isNull())
+        setGeometry(settings->getOptionRaw("DialogStatus/PListW", QRect()).toRect());
     event->accept();
 }
 

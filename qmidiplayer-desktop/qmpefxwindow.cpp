@@ -34,8 +34,8 @@ qmpEfxWindow::qmpEfxWindow(QWidget *parent) :
         0,
         true
     );
-    if (settings->getOptionRaw("DialogStatus/EfxW", QRect(-999, -999, 999, 999)).toRect() != QRect(-999, -999, 999, 999))
-        setGeometry(settings->getOptionRaw("DialogStatus/EfxW", QRect(-999, -999, 999, 999)).toRect());
+    if (!settings->getOptionRaw("DialogStatus/EfxW", QRect()).toRect().isNull())
+        setGeometry(settings->getOptionRaw("DialogStatus/EfxW", QRect()).toRect());
     if (settings->getOptionRaw("DialogStatus/EfxWShown", 0).toInt())
     {
         show();
@@ -104,8 +104,8 @@ void qmpEfxWindow::showEvent(QShowEvent *event)
     }
     initialized = true;
     qmpSettings *settings = qmpMainWindow::getInstance()->getSettings();
-    if (settings->getOptionRaw("DialogStatus/EfxW", QRect(-999, -999, 999, 999)).toRect() != QRect(-999, -999, 999, 999))
-        setGeometry(settings->getOptionRaw("DialogStatus/EfxW", QRect(-999, -999, 999, 999)).toRect());
+    if (!settings->getOptionRaw("DialogStatus/EfxW", QRect()).toRect().isNull())
+        setGeometry(settings->getOptionRaw("DialogStatus/EfxW", QRect()).toRect());
     if (settings->getOptionBool("Behavior/DialogStatus"))
     {
         settings->setOptionRaw("DialogStatus/EfxWShown", 1);

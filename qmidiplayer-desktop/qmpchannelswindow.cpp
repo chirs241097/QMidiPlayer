@@ -300,8 +300,8 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent):
         0,
         true
     );
-    if (mainwindow->getSettings()->getOptionRaw("DialogStatus/ChnlW", QRect(-999, -999, 999, 999)).toRect() != QRect(-999, -999, 999, 999))
-        setGeometry(mainwindow->getSettings()->getOptionRaw("DialogStatus/ChnlW", QRect(-999, -999, 999, 999)).toRect());
+    if (!mainwindow->getSettings()->getOptionRaw("DialogStatus/ChnlW", QRect()).toRect().isNull())
+        setGeometry(mainwindow->getSettings()->getOptionRaw("DialogStatus/ChnlW", QRect()).toRect());
     if (mainwindow->getSettings()->getOptionRaw("DialogStatus/ChnlWShown", 0).toInt())
     {
         show();
@@ -315,8 +315,8 @@ void qmpChannelsWindow::showEvent(QShowEvent *event)
     {
         mainwindow->getSettings()->setOptionRaw("DialogStatus/ChnlWShown", 1);
     }
-    if (mainwindow->getSettings()->getOptionRaw("DialogStatus/ChnlW", QRect(-999, -999, 999, 999)).toRect() != QRect(-999, -999, 999, 999))
-        setGeometry(mainwindow->getSettings()->getOptionRaw("DialogStatus/ChnlW", QRect(-999, -999, 999, 999)).toRect());
+    if (!mainwindow->getSettings()->getOptionRaw("DialogStatus/ChnlW", QRect()).toRect().isNull())
+        setGeometry(mainwindow->getSettings()->getOptionRaw("DialogStatus/ChnlW", QRect()).toRect());
     event->accept();
 }
 
