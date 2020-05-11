@@ -25,14 +25,14 @@
 
 #include <QCommonStyle>
 
-class QDialSkulptureStyle:public QCommonStyle
+class QDialSkulptureStyle : public QCommonStyle
 {
 public:
-	QDialSkulptureStyle(){}
-	virtual ~QDialSkulptureStyle(){}
+    QDialSkulptureStyle() {}
+    virtual ~QDialSkulptureStyle() {}
 
-	virtual void drawComplexControl(ComplexControl cc, const QStyleOptionComplex *opt, QPainter *p,
-									const QWidget *widget=0) const;
+    virtual void drawComplexControl(ComplexControl cc, const QStyleOptionComplex *opt, QPainter *p,
+        const QWidget *widget = nullptr) const;
 
 };
 

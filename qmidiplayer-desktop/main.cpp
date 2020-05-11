@@ -26,56 +26,57 @@
 #include <windows.h>
 #endif
 
-int main(int argc,char **argv)
+int main(int argc, char **argv)
 {
 #ifdef _WIN32
-	if(!LoadLibraryA("libbacktrace.dll"))
-		fputs("Failed to load backtrace library. Stack trace will not be printed if unhandled exception occurs.\n",stderr);
+    if (!LoadLibraryA("libbacktrace.dll"))
+        fputs("Failed to load backtrace library. Stack trace will not be printed if unhandled exception occurs.\n", stderr);
 #endif
-	QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
-	QCoreApplication::setApplicationName("qmidiplayer");
-	QCoreApplication::setApplicationVersion(APP_VERSION);
-	if(!qgetenv("QT_SCALE_FACTOR").length()&&!qgetenv("QT_SCREEN_SCALE_FACTORS").length())
-	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-	qSetMessagePattern("%{time} @ %{file} : %{line}, in %{function} : %{message}");
-	QApplication a(argc,argv);
+    QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+    QCoreApplication::setApplicationName("qmidiplayer");
+    QCoreApplication::setApplicationVersion(APP_VERSION);
+    if (!qgetenv("QT_SCALE_FACTOR").length() && !qgetenv("QT_SCREEN_SCALE_FACTORS").length())
+        QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    qSetMessagePattern("%{time} @ %{file} : %{line}, in %{function} : %{message}");
+    QApplication a(argc, argv);
 
-	QTranslator qtTranslator;
-	qtTranslator.load("qt_"+QLocale::system().name(),
-					  QLibraryInfo::location(QLibraryInfo::TranslationsPath));
-	a.installTranslator(&qtTranslator);
-	QTranslator qmpTranslator;
+    QTranslator qtTranslator;
+    qtTranslator.load("qt_" + QLocale::system().name(),
+        QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+    a.installTranslator(&qtTranslator);
+    QTranslator qmpTranslator;
 #ifndef NON_PORTABLE
-	qmpTranslator.load("qmp_"+QLocale::system().name(),
-					   QCoreApplication::applicationDirPath()+"/translations/");
+    qmpTranslator.load("qmp_" + QLocale::system().name(),
+        QCoreApplication::applicationDirPath() + "/translations/");
 #else
 #define strify(s) #s
-	qmpTranslator.load("qmp_"+QLocale::system().name(),
-					   QString(strify(INSTALL_PREFIX))+"/share/qmidiplayer/translations");
+    qmpTranslator.load("qmp_" + QLocale::system().name(),
+        QString(strify(INSTALL_PREFIX)) + "/share/qmidiplayer/translations");
 #undef strify
 #endif
-	a.installTranslator(&qmpTranslator);
+    a.installTranslator(&qmpTranslator);
 
-	QCommandLineParser clp;
-	clp.setApplicationDescription(QCoreApplication::translate("main","A cross-platform MIDI player."));
-	clp.addHelpOption();
-	clp.addVersionOption();
-	clp.addPositionalArgument("file",QCoreApplication::translate("main","midi files to play (optional)."),"[files...]");
-	clp.addOption(QCommandLineOption("plugin",QCoreApplication::translate("main","Load a plugin from <plugin library>."),"plugin library"));
-	clp.addOption(QCommandLineOption({"l","load-all-files"},QCoreApplication::translate("main","Load all files from the same folder.")));
+    QCommandLineParser clp;
+    clp.setApplicationDescription(QCoreApplication::translate("main", "A cross-platform MIDI player."));
+    clp.addHelpOption();
+    clp.addVersionOption();
+    clp.addPositionalArgument("file", QCoreApplication::translate("main", "midi files to play (optional)."), "[files...]");
+    clp.addOption(QCommandLineOption("plugin", QCoreApplication::translate("main", "Load a plugin from <plugin library>."), "plugin library"));
+    clp.addOption(QCommandLineOption({"l", "load-all-files"}, QCoreApplication::translate("main", "Load all files from the same folder.")));
 #ifdef _WIN32
-	clp.addOption(QCommandLineOption("keep-console",QCoreApplication::translate("main","Keep console window open.")));
+    clp.addOption(QCommandLineOption("keep-console", QCoreApplication::translate("main", "Keep console window open.")));
 #endif
-	clp.process(a);
+    clp.process(a);
 
 #ifdef _WIN32
-	if(!clp.isSet("keep-console"))
-		FreeConsole();
+    if (!clp.isSet("keep-console"))
+        FreeConsole();
 #endif
 
-	qmpMainWindow w(&clp);
-	if(w.parseArgs()==1)return 0;
-	w.init();
+    qmpMainWindow w(&clp);
+    if (w.parseArgs() == 1)
+        return 0;
+    w.init();
 
-	return a.exec();
+    return a.exec();
 }

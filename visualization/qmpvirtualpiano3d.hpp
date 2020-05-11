@@ -16,15 +16,15 @@
 #define BK_DBOTTOM 1.
 class qmpVirtualPiano3D
 {
-	private:
-		smEntity3D *wkcf,*wkeb,*wkd,*wkg,*wka,*bk;
-		smEntity3DBuffer *ebuf;
-		void buildKeys();
-		double traveld[128];
-	public:
-		qmpVirtualPiano3D();
-		~qmpVirtualPiano3D();
-		void render(smvec3d p);
-		void setKeyTravelDist(int k,double td);
+private:
+    smEntity3D *wkcf, *wkeb, *wkd, *wkg, *wka, *bk;
+    smEntity3DBuffer *ebuf;
+    void buildKeys();
+    double traveld[128];
+public:
+    qmpVirtualPiano3D();
+    ~qmpVirtualPiano3D();
+    void render(smvec3d p);
+    void setKeyTravelDist(int k, double td);
 };
 #endif // QMPVIRTUALPIANO3D_H

@@ -10,50 +10,51 @@
 #include <QHideEvent>
 #include "../include/qmpcorepublic.hpp"
 
-namespace Ui {
-	class qmpInfoWindow;
+namespace Ui
+{
+class qmpInfoWindow;
 }
 
 class QClickableLabel : public QLabel
 {
-	Q_OBJECT
-	public:
-		explicit QClickableLabel(QWidget *parent=0):QLabel(parent){}
-	protected:
-		void mousePressEvent(QMouseEvent *e)
-		{
-			QLabel::mousePressEvent(e);
-			if(e->buttons()&Qt::LeftButton)
-				QApplication::clipboard()->setText(text());
-		}
+    Q_OBJECT
+public:
+    explicit QClickableLabel(QWidget *parent = nullptr) : QLabel(parent) {}
+protected:
+    void mousePressEvent(QMouseEvent *e)
+    {
+        QLabel::mousePressEvent(e);
+        if (e->buttons() & Qt::LeftButton)
+            QApplication::clipboard()->setText(text());
+    }
 };
 
 class qmpInfoWindow;
-class qmpInfoFunc:public qmpFuncBaseIntf
+class qmpInfoFunc : public qmpFuncBaseIntf
 {
-	private:
-		qmpInfoWindow *p;
-	public:
-		qmpInfoFunc(qmpInfoWindow *par);
-		void show();
-		void close();
+private:
+    qmpInfoWindow *p;
+public:
+    qmpInfoFunc(qmpInfoWindow *par);
+    void show();
+    void close();
 };
 
 class qmpInfoWindow : public QDialog
 {
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		explicit qmpInfoWindow(QWidget *parent = 0);
-		~qmpInfoWindow();
-		void closeEvent(QCloseEvent *e);
-		void hideEvent(QHideEvent *e);
-	public slots:
-		void updateInfo();
+public:
+    explicit qmpInfoWindow(QWidget *parent = nullptr);
+    ~qmpInfoWindow();
+    void closeEvent(QCloseEvent *e);
+    void hideEvent(QHideEvent *e);
+public slots:
+    void updateInfo();
 
-	private:
-		Ui::qmpInfoWindow *ui;
-		qmpInfoFunc *infof;
+private:
+    Ui::qmpInfoWindow *ui;
+    qmpInfoFunc *infof;
 };
 
 #endif // QMPINFOWINDOW_HPP

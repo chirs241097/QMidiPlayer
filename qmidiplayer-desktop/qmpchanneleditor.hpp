@@ -6,40 +6,41 @@
 #include <QCloseEvent>
 #include "qdialskulpturestyle.hpp"
 
-namespace Ui {
-	class qmpChannelEditor;
+namespace Ui
+{
+class qmpChannelEditor;
 }
 
 class QDial;
-class qmpChannelEditor:public QDialog
+class qmpChannelEditor: public QDialog
 {
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		explicit qmpChannelEditor(QWidget *parent=nullptr);
-		~qmpChannelEditor();
-	protected:
-		void showEvent(QShowEvent *e);
-		void closeEvent(QCloseEvent *e);
-	public slots:
-		void setupWindow(int chid=-1);
+public:
+    explicit qmpChannelEditor(QWidget *parent = nullptr);
+    ~qmpChannelEditor();
+protected:
+    void showEvent(QShowEvent *e);
+    void closeEvent(QCloseEvent *e);
+public slots:
+    void setupWindow(int chid = -1);
 
-	private slots:
-		void commonPressed();
-		void commonReleased();
-		void commonChanged();
-		void on_pbChLeft_clicked();
-		void on_pbChRight_clicked();
+private slots:
+    void commonPressed();
+    void commonReleased();
+    void commonChanged();
+    void on_pbChLeft_clicked();
+    void on_pbChRight_clicked();
 
-	private:
-		Ui::qmpChannelEditor *ui;
-		int ch,knobpressed;
-		void sendCC();
-		void connectSlots();
-		void disconnectSlots();
-		QList<QDial*> dials;
-		QMetaObject::Connection updconn;
-		QCommonStyle* styl;
+private:
+    Ui::qmpChannelEditor *ui;
+    int ch, knobpressed;
+    void sendCC();
+    void connectSlots();
+    void disconnectSlots();
+    QList<QDial *> dials;
+    QMetaObject::Connection updconn;
+    QCommonStyle *styl;
 };
 
 #endif // QMPCHANNELEDITOR_H

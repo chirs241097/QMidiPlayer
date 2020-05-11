@@ -15,88 +15,89 @@
 #include "../core/qmpmidiplay.hpp"
 #include "../core/qmpmidioutrtmidi.hpp"
 
-namespace Ui {
-	class qmpChannelsWindow;
+namespace Ui
+{
+class qmpChannelsWindow;
 }
 
 class qmpChannelsWindow;
 class qmpMainWindow;
 
-class qmpChannelFunc:public qmpFuncBaseIntf
+class qmpChannelFunc : public qmpFuncBaseIntf
 {
-	private:
-		qmpChannelsWindow *p;
-	public:
-		qmpChannelFunc(qmpChannelsWindow *par);
-		void show();
-		void close();
+private:
+    qmpChannelsWindow *p;
+public:
+    qmpChannelFunc(qmpChannelsWindow *par);
+    void show();
+    void close();
 };
 
-class qmpChannelsModel:public QAbstractTableModel
+class qmpChannelsModel : public QAbstractTableModel
 {
-	Q_OBJECT
-	public:
-		explicit qmpChannelsModel(QObject*parent=nullptr);
-		int columnCount(const QModelIndex&parent=QModelIndex())const override;
-		int rowCount(const QModelIndex&parent=QModelIndex())const override;
-		QModelIndex parent(const QModelIndex&child)const override;
-		QVariant data(const QModelIndex&index,int role=Qt::ItemDataRole::DisplayRole)const override;
-		bool setData(const QModelIndex &index,const QVariant &value,int role=Qt::EditRole)override;
-		QVariant headerData(int section,Qt::Orientation orientation,int role=Qt::ItemDataRole::DisplayRole)const override;
-		Qt::ItemFlags flags(const QModelIndex&idx)const override;
-	public slots:
-		void updateChannelActivity();
-		void channelMSClicked(const QModelIndex&idx);
-		void channelMSClearAll(int type);
-	private:
-		int evh;
-		bool updatequeued;
-		bool mute[16],solo[16];
+    Q_OBJECT
+public:
+    explicit qmpChannelsModel(QObject *parent = nullptr);
+    int columnCount(const QModelIndex &parent = QModelIndex())const override;
+    int rowCount(const QModelIndex &parent = QModelIndex())const override;
+    QModelIndex parent(const QModelIndex &child)const override;
+    QVariant data(const QModelIndex &index, int role = Qt::ItemDataRole::DisplayRole)const override;
+    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole)override;
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::ItemDataRole::DisplayRole)const override;
+    Qt::ItemFlags flags(const QModelIndex &idx)const override;
+public slots:
+    void updateChannelActivity();
+    void channelMSClicked(const QModelIndex &idx);
+    void channelMSClearAll(int type);
+private:
+    int evh;
+    bool updatequeued;
+    bool mute[16], solo[16];
 };
 
-class qmpDeviceItemDelegate:public QStyledItemDelegate
+class qmpDeviceItemDelegate: public QStyledItemDelegate
 {
-	Q_OBJECT
-	public:
-		explicit qmpDeviceItemDelegate(bool ignoreInternal=false,QWidget*parent=nullptr);
-		void paint(QPainter*painter,const QStyleOptionViewItem&option,const QModelIndex&index)const override;
-		QSize sizeHint(const QStyleOptionViewItem&option,const QModelIndex&index)const override;
-		QWidget* createEditor(QWidget*parent,const QStyleOptionViewItem&option,const QModelIndex&index)const override;
-		void setEditorData(QWidget*editor,const QModelIndex&index)const override;
-		void setModelData(QWidget*editor,QAbstractItemModel*model,const QModelIndex&index)const override;
-		void updateEditorGeometry(QWidget*editor,const QStyleOptionViewItem&option,const QModelIndex&index)const override;
-	private:
-		QWidget *par;
-		bool nofs;
+    Q_OBJECT
+public:
+    explicit qmpDeviceItemDelegate(bool ignoreInternal = false, QWidget *parent = nullptr);
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index)const override;
+    QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index)const override;
+    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index)const override;
+    void setEditorData(QWidget *editor, const QModelIndex &index)const override;
+    void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index)const override;
+    void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index)const override;
+private:
+    QWidget *par;
+    bool nofs;
 };
 
-class qmpChannelsWindow:public QWidget
+class qmpChannelsWindow: public QWidget
 {
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		explicit qmpChannelsWindow(QWidget *parent=nullptr);
-		~qmpChannelsWindow();
-		void showEvent(QShowEvent *event);
-		void closeEvent(QCloseEvent *event);
-		void selectDefaultDevice();
-	public slots:
-		void showChannelEditorWindow(int chid);
-		void on_pbUnmute_clicked();
-		void on_pbUnsolo_clicked();
+public:
+    explicit qmpChannelsWindow(QWidget *parent = nullptr);
+    ~qmpChannelsWindow();
+    void showEvent(QShowEvent *event);
+    void closeEvent(QCloseEvent *event);
+    void selectDefaultDevice();
+public slots:
+    void showChannelEditorWindow(int chid);
+    void on_pbUnmute_clicked();
+    void on_pbUnsolo_clicked();
 
-	signals:
-		void noteOn();
+signals:
+    void noteOn();
 
-	private:
-		qmpMainWindow* mainwindow;
-		Ui::qmpChannelsWindow *ui;
-		qmpPresetSelector *pselectw;
-		qmpChannelEditor *ceditw;
-		qmpChannelsModel *chmodel;
-		QIcon *cha,*chi;
-		qmpChannelFunc *chnlf;
-		int eh;
+private:
+    qmpMainWindow *mainwindow;
+    Ui::qmpChannelsWindow *ui;
+    qmpPresetSelector *pselectw;
+    qmpChannelEditor *ceditw;
+    qmpChannelsModel *chmodel;
+    QIcon *cha, *chi;
+    qmpChannelFunc *chnlf;
+    int eh;
 };
 
 #endif // QMPCHANNELSWINDOW_H

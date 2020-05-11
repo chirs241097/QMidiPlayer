@@ -5,11 +5,11 @@
 
 int main(int argc, char *argv[])
 {
-	QApplication app(argc, argv);
-	qmlRegisterType<CQMPCoreWrapper>("org.chrisoft.qmpcore",1,0,"CQMPCoreWrapper");
+    QApplication app(argc, argv);
+    qmlRegisterType<CQMPCoreWrapper>("org.chrisoft.qmpcore", 1, 0, "CQMPCoreWrapper");
 
-	QQmlApplicationEngine engine;
-	engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
+    QQmlApplicationEngine engine;
+    engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
 
-	return app.exec();
+    return app.exec();
 }

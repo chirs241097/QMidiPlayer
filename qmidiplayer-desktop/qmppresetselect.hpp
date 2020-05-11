@@ -4,36 +4,37 @@
 #include <QDialog>
 #include <QShowEvent>
 
-namespace Ui {
-	class qmpPresetSelector;
+namespace Ui
+{
+class qmpPresetSelector;
 }
 
-class qmpPresetSelector:public QDialog
+class qmpPresetSelector: public QDialog
 {
-	Q_OBJECT
+    Q_OBJECT
 
-	public:
-		explicit qmpPresetSelector(QWidget *parent = 0);
-		~qmpPresetSelector();
-		void showEvent(QShowEvent* e);
-		void setupWindow(int chid);
+public:
+    explicit qmpPresetSelector(QWidget *parent = 0);
+    ~qmpPresetSelector();
+    void showEvent(QShowEvent *e);
+    void setupWindow(int chid);
 
-	private slots:
+private slots:
 
-		void on_lwBankSelect_currentRowChanged();
+    void on_lwBankSelect_currentRowChanged();
 
-		void on_lwPresetSelect_itemDoubleClicked();
+    void on_lwPresetSelect_itemDoubleClicked();
 
-		void on_buttonBox_accepted();
+    void on_buttonBox_accepted();
 
-		void on_buttonBox_rejected();
+    void on_buttonBox_rejected();
 
-	private:
-		Ui::qmpPresetSelector *ui;
-		char presets[129][128][24];
-		void on_pbCancel_clicked();
-		void on_pbOk_clicked();
-		int ch;
+private:
+    Ui::qmpPresetSelector *ui;
+    char presets[129][128][24];
+    void on_pbCancel_clicked();
+    void on_pbOk_clicked();
+    int ch;
 };
 
 #endif // QMPPRESETSELECT_H

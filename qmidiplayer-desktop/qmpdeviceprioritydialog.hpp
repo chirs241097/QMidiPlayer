@@ -5,32 +5,33 @@
 #include <QShowEvent>
 #include <QStandardItemModel>
 
-namespace Ui {
+namespace Ui
+{
 class qmpDevicePriorityDialog;
 }
 
-class qmpDevicePriorityDialog:public QDialog
+class qmpDevicePriorityDialog : public QDialog
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	explicit qmpDevicePriorityDialog(QWidget *parent=nullptr);
-	~qmpDevicePriorityDialog();
-	void load(void* data);
-	void* save();
+    explicit qmpDevicePriorityDialog(QWidget *parent = nullptr);
+    ~qmpDevicePriorityDialog();
+    void load(void *data);
+    void *save();
 
 private slots:
-	void on_pbUp_clicked();
-	void on_pbDown_clicked();
-	void on_buttonBox_accepted();
+    void on_pbUp_clicked();
+    void on_pbDown_clicked();
+    void on_buttonBox_accepted();
 
-	void on_buttonBox_rejected();
+    void on_buttonBox_rejected();
 
-	private:
-	Ui::qmpDevicePriorityDialog *ui;
-	QStandardItemModel *model;
-	QList<QVariant> setdevs;
-	void setupRegisteredDevices();
+private:
+    Ui::qmpDevicePriorityDialog *ui;
+    QStandardItemModel *model;
+    QList<QVariant> setdevs;
+    void setupRegisteredDevices();
 };
 
 #endif // QMPDEVICEPRIORITYDIALOG_HPP
