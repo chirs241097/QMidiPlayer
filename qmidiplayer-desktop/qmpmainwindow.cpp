@@ -361,6 +361,8 @@ void qmpMainWindow::switchTrack(QString s, bool interrupt)
     QString fns = s;
     setWindowTitle(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.')) + " - QMidiPlayer");
     ui->lbFileName->setText(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.')));
+    if (plistw->getCurrentItem() != fns)
+        plistw->setCurrentItem(fns);
     onfnChanged();
     if (!loadFile(fns))
         return;
@@ -687,7 +689,7 @@ void qmpMainWindow::on_pbNext_clicked()
 
 void qmpMainWindow::selectionChanged()
 {
-    switchTrack(plistw->getSelectedItem());
+    switchTrack(plistw->getCurrentItem());
 }
 
 void qmpMainWindow::on_lbFileName_customContextMenuRequested(const QPoint &pos)
@@ -793,8 +795,8 @@ void qmpMainWindow::startRender()
     free(ifstr);
 #else
     fluidrenderer = new qmpFileRendererFluid(
-        plistw->getSelectedItem().toStdString().c_str(),
-        (plistw->getSelectedItem() + QString(".wav")).toStdString().c_str()
+        plistw->getCurrentItem().toStdString().c_str(),
+        (plistw->getCurrentItem() + QString(".wav")).toStdString().c_str()
     );
     playerSetup(fluidrenderer);
     fluidrenderer->renderInit();

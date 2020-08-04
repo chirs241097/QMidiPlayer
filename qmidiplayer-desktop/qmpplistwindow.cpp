@@ -262,7 +262,7 @@ QString qmpPlistWindow::getFirstItem(bool a)
     int id = 0;
     if (shuffle && !a)
         id = rand() % ui->lwFiles->count();
-    ui->lwFiles->setCurrentRow(id);
+    setCurrentItem(ui->lwFiles->item(id));
     return ui->lwFiles->item(id)->text();
 }
 QString qmpPlistWindow::getLastItem(bool a)
@@ -272,50 +272,72 @@ QString qmpPlistWindow::getLastItem(bool a)
     int id = ui->lwFiles->count() - 1;
     if (shuffle && !a)
         id = rand() % ui->lwFiles->count();
-    ui->lwFiles->setCurrentRow(id);
+    setCurrentItem(ui->lwFiles->item(id));
     return ui->lwFiles->item(id)->text();
 }
 QString qmpPlistWindow::getNextItem()
 {
-    if (ui->lwFiles->count() == 0)
+    if (ui->lwFiles->count() == 0 || getCurrentItemIndex() == -1)
         return QString();
     if (repeat == 1)
-        return ui->lwFiles->item(ui->lwFiles->currentRow())->text();
-    int id = ui->lwFiles->currentRow();
+        return ui->lwFiles->item(getCurrentItemIndex())->text();
+    int id = getCurrentItemIndex();
     ++id;
     id %= ui->lwFiles->count();
     if (shuffle)
         id = rand() % ui->lwFiles->count();
-    ui->lwFiles->setCurrentRow(id);
+    setCurrentItem(ui->lwFiles->item(id));
     return ui->lwFiles->item(id)->text();
 }
 QString qmpPlistWindow::getPrevItem()
 {
-    if (ui->lwFiles->count() == 0)
+    if (ui->lwFiles->count() == 0 || getCurrentItemIndex() == -1)
         return QString();
     if (repeat == 1)
         return ui->lwFiles->item(ui->lwFiles->currentRow())->text();
-    int id = ui->lwFiles->currentRow();
+    int id = getCurrentItemIndex();
     --id;
     id < 0 ? id += ui->lwFiles->count() : 0;
     if (shuffle)
         id = rand() % ui->lwFiles->count();
-    ui->lwFiles->setCurrentRow(id);
+    setCurrentItem(ui->lwFiles->item(id));
     return ui->lwFiles->item(id)->text();
 }
-QString qmpPlistWindow::getSelectedItem()
+QString qmpPlistWindow::getCurrentItem()
 {
-    if (ui->lwFiles->count() == 0)
+    if (ui->lwFiles->count() == 0 || getCurrentItemIndex() == -1)
         return QString();
-    return ui->lwFiles->item(ui->lwFiles->currentRow())->text();
+    return ui->lwFiles->item(getCurrentItemIndex())->text();
 }
+void qmpPlistWindow::setCurrentItem(QString item)
+{
+    for (int i = 0; i < ui->lwFiles->count(); ++i)
+    {
+        if (ui->lwFiles->item(i)->text() == item)
+            ui->lwFiles->item(i)->setData(Qt::ItemDataRole::BackgroundRole, QBrush(QColor(160, 160, 160)));
+        else
+            ui->lwFiles->item(i)->setData(Qt::ItemDataRole::BackgroundRole, QVariant());
+    }
+}
+void qmpPlistWindow::setCurrentItem(QListWidgetItem *item)
+{
+    for (int i = 0; i < ui->lwFiles->count(); ++i)
+    {
+        if (ui->lwFiles->item(i) == item)
+            ui->lwFiles->item(i)->setData(Qt::ItemDataRole::BackgroundRole, QBrush(QColor(160, 160, 160)));
+        else
+            ui->lwFiles->item(i)->setData(Qt::ItemDataRole::BackgroundRole, QVariant());
+    }
+}
+
 int qmpPlistWindow::getRepeat()
 {
     return repeat;
 }
 
-void qmpPlistWindow::on_lwFiles_itemDoubleClicked()
+void qmpPlistWindow::on_lwFiles_itemDoubleClicked(QListWidgetItem *item)
 {
+    setCurrentItem(item);
     emit selectionChanging();
 }
 
@@ -375,6 +397,16 @@ void qmpPlistWindow::on_pbLoad_clicked()
             break;
     }
     delete plist;
+}
+
+int qmpPlistWindow::getCurrentItemIndex()
+{
+    for (int i = 0; i < ui->lwFiles->count(); ++i)
+    {
+        if (ui->lwFiles->item(i)->data(Qt::ItemDataRole::BackgroundRole).value<QBrush>().color() == QColor(160, 160, 160))
+            return i;
+    }
+    return -1;
 }
 qmpPlistFunc::qmpPlistFunc(qmpPlistWindow *par)
 {

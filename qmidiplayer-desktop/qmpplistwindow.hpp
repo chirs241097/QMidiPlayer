@@ -44,7 +44,9 @@ public:
     QString getLastItem(bool a = false);
     QString getNextItem();
     QString getPrevItem();
-    QString getSelectedItem();
+    QString getCurrentItem();
+    void setCurrentItem(QString item);
+    void setCurrentItem(QListWidgetItem *item);
     void emptyList();
     void insertItem(QString i);
     void insertItems(QStringList il);
@@ -59,7 +61,7 @@ private slots:
     void on_pbClear_clicked();
     void on_pbRepeat_clicked();
     void on_pbShuffle_clicked();
-    void on_lwFiles_itemDoubleClicked();
+    void on_lwFiles_itemDoubleClicked(QListWidgetItem *item);
     void on_pbSave_clicked();
     void on_pbLoad_clicked();
 
@@ -68,6 +70,8 @@ private:
     Ui::qmpPlistWindow *ui;
     int shuffle, repeat; //rep 0=off 1=one 2=all
     qmpSettings *settings;
+
+    int getCurrentItemIndex();
 };
 
 #endif // QMPPLISTWINDOW_H
