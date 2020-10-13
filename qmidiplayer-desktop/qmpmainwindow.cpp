@@ -786,8 +786,8 @@ bool qmpMainWindow::isDarkTheme()
 void qmpMainWindow::startRender()
 {
 #ifdef _WIN32
-    char *ofstr = wcsto8bit((plistw->getSelectedItem() + QString(".wav")).toStdWString().c_str());
-    char *ifstr = wcsto8bit(plistw->getSelectedItem().toStdWString().c_str());
+    char *ofstr = wcsto8bit((plistw->getCurrentItem() + QString(".wav")).toStdWString().c_str());
+    char *ifstr = wcsto8bit(plistw->getCurrentItem().toStdWString().c_str());
     fluidrenderer = new qmpFileRendererFluid(ifstr, ofstr);
     playerSetup(fluidrenderer);
     fluidrenderer->renderInit();
