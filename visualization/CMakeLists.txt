@@ -13,8 +13,8 @@ if(WIN32)
     list(APPEND visualization_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/visualization.rc)
 endif(WIN32)
 
-set(BUILD_DUMB ON)
-set(BUILD_EXAMPLE OFF)
+option(BUILD_DUMB "SMELT override: disable sound support" ON)
+option(BUILD_EXAMPLE "SMELT override: build example" OFF)
 add_subdirectory(SMELT)
 
 add_subdirectory(renderer)
@@ -41,7 +41,7 @@ target_link_libraries(visualization
     ${ZLIB_LIBRARIES}
     ${IL_LIBRARIES}
     glfw
-    ${GLEW_LIBRARIES}
+    GLEW::glew
     OpenGL::GL
 )
 

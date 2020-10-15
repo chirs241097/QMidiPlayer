@@ -79,6 +79,16 @@ target_link_libraries(qmidiplayer
     ${CMAKE_DL_LIBS}
 )
 
+if(WIN32)
+    target_link_libraries(qmidiplayer winmm)
+endif()
+
+target_link_directories(qmidiplayer
+PRIVATE
+    ${fluidsynth_LIBRARY_DIRS} 
+    ${rtmidi_LIBRARY_DIRS}
+)
+
 file(GLOB qmpdesktop_TS_FILES translations/*.ts)
 qt5_create_translation(qmpdesktop_QM_FILES ${qmpdesktop_SOURCES} ${qmpdesktop_TS_FILES})
 add_custom_target(translations ALL DEPENDS ${qmpdesktop_QM_FILES})

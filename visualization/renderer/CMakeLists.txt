@@ -23,4 +23,8 @@ target_link_libraries(qmpvisrender
     ${CMAKE_DL_LIBS}
 )
 
+if(WIN32)
+    target_link_libraries(qmpvisrender winmm)
+endif()
+
 install(TARGETS qmpvisrender)
