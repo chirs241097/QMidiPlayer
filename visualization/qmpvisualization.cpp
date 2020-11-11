@@ -1101,6 +1101,9 @@ void qmpVisualization::init()
     closeh = new CloseHandler(this);
     rendererTh = nullptr;
     playing = false;
+    cts = 0x0402;
+    cks = 0;
+    ctp = 500000;
     memset(rpnid, 0xFF, sizeof(rpnid));
     memset(rpnval, 0xFF, sizeof(rpnval));
     memset(spectra, 0, sizeof(spectra));
