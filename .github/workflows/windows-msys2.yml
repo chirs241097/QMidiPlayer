@@ -22,9 +22,10 @@ jobs:
           mkdir dept_workspace && cd dept_workspace
           git clone --depth=1 https://github.com/thestk/rtmidi.git
           cd rtmidi && mkdir build && cd build
-          cmake .. -G Ninja
+          cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=$MINGW_PREFIX
           cmake --build . --target install
           cd ../../../
+          tree
       - name: build qmidiplayer
         run: |
           mkdir build && cd build
