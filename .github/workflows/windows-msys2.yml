@@ -1,0 +1,33 @@
+name: Windows MSYS2 Build
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            git mingw-w64-x86_64-toolchain mingw-w64-x86_64-ninja mingw-w64-x86_64-cmake tree
+            mingw-w64-x86_64-fluidsynth
+            mingw-w64-x86_64-glfw mingw-w64-x86_64-glew mingw-w64-x86_64-freetype mingw-w64-x86_64-devil mingw-w64-x86_64-freeglut mingw-w64-x86_64-zlib
+      - name: build rtmidi
+        run: |
+          mkdir dept_workspace && cd dept_workspace
+          git clone --depth=1 https://github.com/thestk/rtmidi.git
+          cd rtmidi && mkdir build && cd build
+          cmake .. -G Ninja
+          cmake --build . --target install
+          cd ../../../
+      - name: build qmidiplayer
+        run: |
+          mkdir build && cd build
+          cmake .. -G Ninja
+          cmake --build .
+          tree
