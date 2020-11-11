@@ -20,8 +20,6 @@
 #include <future>
 #include <map>
 #include <unordered_map>
-#include "qmpmidioutfluid.hpp"
-#include "qmpmidiplay.hpp"
 #include "qmpplugin.hpp"
 #include "qmpplistwindow.hpp"
 #include "qmpchannelswindow.hpp"
@@ -187,6 +185,11 @@ public:
         else cbc->callBack(cbd, usrd);
     }
 };
+
+class IFluidSettings;
+class qmpMidiOutFluid;
+class qmpFileRendererFluid;
+class CMidiPlayer;
 
 class qmpMainWindow: public QMainWindow
 {

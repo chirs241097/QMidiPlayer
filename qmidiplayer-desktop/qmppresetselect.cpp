@@ -1,6 +1,7 @@
 #include <cstdio>
 #include "qmppresetselect.hpp"
 #include "ui_qmppresetselect.h"
+#include "qmpmidioutfluid.hpp"
 #include "qmpmainwindow.hpp"
 
 qmpPresetSelector::qmpPresetSelector(QWidget *parent) :

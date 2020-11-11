@@ -2,6 +2,7 @@
 #include "qmpefxwindow.hpp"
 #include "ui_qmpefxwindow.h"
 #include "qmpmainwindow.hpp"
+#include "qmpmidioutfluid.hpp"
 
 qmpEfxWindow::qmpEfxWindow(QWidget *parent) :
     QWidget(parent, Qt::Dialog),

@@ -192,7 +192,8 @@ void qmpPlistWindow::on_pbAddFolder_clicked()
     while (di.hasNext())
     {
         QString c = di.next();
-        if ((c.endsWith(".mid") || c.endsWith(".midi") || c.endsWith(".rmi")) && fluid_is_midifile(c.toStdString().c_str()))
+        //TODO: use file readers to do this check?
+        if ((c.endsWith(".mid") || c.endsWith(".midi") || c.endsWith(".rmi")))
             ui->lwFiles->addItem(new QListWidgetItem(c));
     }
 }

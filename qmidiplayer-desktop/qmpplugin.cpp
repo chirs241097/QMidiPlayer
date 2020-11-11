@@ -8,6 +8,7 @@
 #include <QDirIterator>
 #include "qmpplugin.hpp"
 #include "qmpmainwindow.hpp"
+#include "qmpmidioutfluid.hpp"
 #include "qmpsettingswindow.hpp"
 qmpPluginAPIImpl *qmpPluginManager::pluginAPI = nullptr;
 qmpMainWindow *qmpPluginManager::mainwindow = nullptr;

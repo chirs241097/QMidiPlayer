@@ -7,9 +7,10 @@
 #include <QFont>
 #include <QTextCodec>
 #include <QDirIterator>
-#include <QDesktopWidget>
 #include <QMessageBox>
 #include <QCheckBox>
+#include "qmpmidioutfluid.hpp"
+#include "qmpmidiplay.hpp"
 #include "qmpmainwindow.hpp"
 #include "ui_qmpmainwindow.h"
 #define setButtonHeight(x,h) {x->setMaximumHeight(h*(logicalDpiY()/96.));x->setMinimumHeight(h*(logicalDpiY()/96.));}
@@ -778,7 +779,7 @@ bool qmpMainWindow::isDarkTheme()
 {
     if (!settings->getOptionEnumInt("Behavior/IconTheme"))
     {
-        return ui->centralWidget->palette().color(QPalette::Background).lightness() < 128;
+        return ui->centralWidget->palette().color(QPalette::Window).lightness() < 128;
     }
     else return 2 - settings->getOptionEnumInt("Behavior/IconTheme");
 }
