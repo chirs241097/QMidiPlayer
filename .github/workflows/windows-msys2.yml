@@ -15,7 +15,7 @@ jobs:
           update: true
           install: >-
             git mingw-w64-x86_64-toolchain mingw-w64-x86_64-ninja mingw-w64-x86_64-cmake tree
-            mingw-w64-x86_64-fluidsynth
+            mingw-w64-x86_64-qt5 mingw-w64-x86_64-fluidsynth
             mingw-w64-x86_64-glfw mingw-w64-x86_64-glew mingw-w64-x86_64-freetype mingw-w64-x86_64-devil mingw-w64-x86_64-freeglut mingw-w64-x86_64-zlib
       - name: build rtmidi
         run: |
