@@ -134,7 +134,7 @@ void qmpSettingsWindow::registerSoundFontOption()
 {
     QWidget *sfpanel = new QWidget();
     sfpanel->setLayout(new QVBoxLayout);
-    sfpanel->layout()->setMargin(0);
+    sfpanel->layout()->setContentsMargins(0, 0, 0, 0);
     QTableWidget *twsf = new QTableWidget();
     twsf->setColumnCount(2);
     twsf->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeMode::ResizeToContents);
@@ -146,7 +146,7 @@ void qmpSettingsWindow::registerSoundFontOption()
     sfpanel->layout()->addWidget(twsf);
     QWidget *controls = new QWidget();
     controls->setLayout(new QHBoxLayout);
-    controls->layout()->setMargin(0);
+    controls->layout()->setContentsMargins(0, 0, 0, 0);
     QPushButton *pbsfadd = new QPushButton(style()->standardIcon(QStyle::StandardPixmap::SP_DialogOpenButton), QString());
     QPushButton *pbsfrem = new QPushButton(style()->standardIcon(QStyle::StandardPixmap::SP_DialogDiscardButton), QString());
     QPushButton *pbsfmup = new QPushButton(style()->standardIcon(QStyle::StandardPixmap::SP_ArrowUp), QString());
@@ -580,7 +580,7 @@ QGridLayout *qmpSettingsWindow::pageForTab(std::string tab)
 QFileEdit::QFileEdit(QWidget *par): QWidget(par)
 {
     QHBoxLayout *layout = new QHBoxLayout(this);
-    layout->setMargin(0);
+    layout->setContentsMargins(0, 0, 0, 0);
     le = new QLineEdit(this);
     layout->addWidget(le);
     tb = new QToolButton(this);
