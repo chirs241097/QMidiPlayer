@@ -85,7 +85,7 @@ endif()
 
 target_link_directories(qmidiplayer
 PRIVATE
-    ${fluidsynth_LIBRARY_DIRS} 
+    ${fluidsynth_LIBRARY_DIRS}
     ${rtmidi_LIBRARY_DIRS}
 )
 
