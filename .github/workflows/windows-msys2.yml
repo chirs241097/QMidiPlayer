@@ -60,7 +60,7 @@ jobs:
           cp $MINGW_PREFIX/bin/librtmidi.dll ./
           cp $MINGW_PREFIX/bin/libportaudio-2.dll ./
           # standalone visualization renderer
-          cp ../build/renderer/qmpvisrender.exe ./
+          cp ../build/visualization/renderer/qmpvisrender.exe ./
           # copy plugins
           mkdir plugins
           cp ../build/midifmt-plugin/libmidifmt-plugin.dll ./plugins/
