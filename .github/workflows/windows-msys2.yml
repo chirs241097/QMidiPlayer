@@ -31,7 +31,7 @@ jobs:
           cmake --build . --target install
           cd ../../../
           tree
-      - name: install mingw-w64-x86_64-fluidsynth
+      - name: install mingw-w64-x86_64-fluidsynth if needed
         if: steps.build-fluidsynth-sans-glib.outcome == 'failure'
         run: |
           pacman --noconfirm -S mingw-w64-x86_64-fluidsynth
@@ -68,14 +68,31 @@ jobs:
           cp $MINGW_PREFIX/bin/libIL.dll ./
           cp $MINGW_PREFIX/bin/libfreetype-6.dll ./
           # some other dlls
+          cp $MINGW_PREFIX/bin/libstdc++-6.dll ./
+          cp $MINGW_PREFIX/bin/libintl-8.dll ./
           cp $MINGW_PREFIX/bin/libpng16-16.dll ./
           cp $MINGW_PREFIX/bin/libsndfile-1.dll ./
           cp $MINGW_PREFIX/bin/libreadline8.dll ./
           cp $MINGW_PREFIX/bin/libpcre2-16-0.dll ./
+          cp $MINGW_PREFIX/bin/libpcre-1.dll ./
           cp $MINGW_PREFIX/bin/libharfbuzz-0.dll ./
           cp $MINGW_PREFIX/bin/libdouble-conversion.dll ./
           cp $MINGW_PREFIX/bin/libicuuc67.dll ./
+          cp $MINGW_PREFIX/bin/libicudt67.dll ./
           cp $MINGW_PREFIX/bin/libicuin67.dll ./
+          cp $MINGW_PREFIX/bin/libzstd.dll ./
+          cp $MINGW_PREFIX/bin/libFLAC-8.dll ./
+          cp $MINGW_PREFIX/bin/libogg-0.dll ./
+          cp $MINGW_PREFIX/bin/libtermcap-0.dll ./
+          cp $MINGW_PREFIX/bin/libopus-0.dll ./
+          cp $MINGW_PREFIX/bin/libvorbis-0.dll ./
+          cp $MINGW_PREFIX/bin/libvorbis-0.dll ./
+          cp $MINGW_PREFIX/bin/libvorbisenc-2.dll ./
+          cp $MINGW_PREFIX/bin/libgraphite2.dll ./
+          cp $MINGW_PREFIX/bin/libiconv-2.dll ./
+          cp $MINGW_PREFIX/bin/libbz2-1.dll ./
+          cp $MINGW_PREFIX/bin/libbrotlidec.dll ./
+          cp $MINGW_PREFIX/bin/libbrotlicommon.dll ./
           # copy plugins
           mkdir plugins
           cp ../build/midifmt-plugin/libmidifmt-plugin.dll ./plugins/
@@ -85,7 +102,7 @@ jobs:
           cp ../COPYING ./
           # done
           cd ../
-      - name: install libglib-2.0-0.dll
+      - name: install libglib-2.0-0.dll if needed
         if: steps.build-fluidsynth-sans-glib.outcome == 'failure'
         run: |
           cd package_workspace
