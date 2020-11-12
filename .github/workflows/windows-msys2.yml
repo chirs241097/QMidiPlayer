@@ -34,7 +34,7 @@ jobs:
       - name: install mingw-w64-x86_64-fluidsynth
         if: steps.build-fluidsynth-sans-glib.outcome == 'failure'
         run: |
-          pacman -S mingw-w64-x86_64-fluidsynth
+          pacman --noconfirm -S mingw-w64-x86_64-fluidsynth
       - name: build rtmidi
         run: |
           # mkdir dept_workspace
