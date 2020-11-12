@@ -19,7 +19,7 @@ jobs:
             git mingw-w64-x86_64-toolchain mingw-w64-x86_64-ninja mingw-w64-x86_64-cmake tree
             mingw-w64-x86_64-qt5
             mingw-w64-x86_64-glfw mingw-w64-x86_64-glew mingw-w64-x86_64-freetype mingw-w64-x86_64-devil mingw-w64-x86_64-freeglut mingw-w64-x86_64-zlib
-      - name: build fluidsynth-sans-glib
+      - name: Build fluidsynth-sans-glib
         id: build-fluidsynth-sans-glib
         continue-on-error: true
         run: |
@@ -30,12 +30,11 @@ jobs:
           cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=$MINGW_PREFIX
           cmake --build . --target install
           cd ../../../
-          tree
-      - name: install mingw-w64-x86_64-fluidsynth if needed
+      - name: Install mingw-w64-x86_64-fluidsynth if needed
         if: steps.build-fluidsynth-sans-glib.outcome == 'failure'
         run: |
           pacman --noconfirm -S mingw-w64-x86_64-fluidsynth
-      - name: build rtmidi
+      - name: Build rtmidi
         run: |
           # mkdir dept_workspace
           cd dept_workspace
@@ -44,8 +43,7 @@ jobs:
           cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=$MINGW_PREFIX
           cmake --build . --target install
           cd ../../../
-          tree
-      - name: build qmidiplayer
+      - name: Build qmidiplayer
         run: |
           mkdir build && cd build
           cmake .. -G Ninja
@@ -68,6 +66,8 @@ jobs:
           cp $MINGW_PREFIX/bin/libIL.dll ./
           cp $MINGW_PREFIX/bin/libfreetype-6.dll ./
           # some other dlls
+          cp $MINGW_PREFIX/bin/libgcc_s_seh-1.dll ./
+          cp $MINGW_PREFIX/bin/libwinpthread-1.dll ./
           cp $MINGW_PREFIX/bin/libstdc++-6.dll ./
           cp $MINGW_PREFIX/bin/libintl-8.dll ./
           cp $MINGW_PREFIX/bin/libpng16-16.dll ./
