@@ -59,6 +59,14 @@ jobs:
           cp $MINGW_PREFIX/bin/libfluidsynth-2.dll ./
           cp $MINGW_PREFIX/bin/librtmidi.dll ./
           cp $MINGW_PREFIX/bin/libportaudio-2.dll ./
+          # standalone visualization renderer
+          cp ../build/renderer/qmpvisrender.exe ./
+          # copy plugins
+          mkdir plugins
+          cp ../build/midifmt-plugin/libmidifmt-plugin.dll ./plugins/
+          cp ../build/simple-visualization/libsimple-visualization.dll ./plugins/
+          cp ../build/visualization/libvisualization.dll ./plugins/
+          cp ../build/sample-plugin/libsampleplugin.dll ./plugins/
           # visualization plugin depts
           cp $MINGW_PREFIX/bin/glfw3.dll ./
           cp $MINGW_PREFIX/bin/glew32.dll ./
@@ -93,11 +101,6 @@ jobs:
           cp $MINGW_PREFIX/bin/libbz2-1.dll ./
           cp $MINGW_PREFIX/bin/libbrotlidec.dll ./
           cp $MINGW_PREFIX/bin/libbrotlicommon.dll ./
-          # copy plugins
-          mkdir plugins
-          cp ../build/midifmt-plugin/libmidifmt-plugin.dll ./plugins/
-          cp ../build/simple-visualization/libsimple-visualization.dll ./plugins/
-          cp ../build/visualization/libvisualization.dll ./plugins/
           # license file
           cp ../COPYING ./
           # done
