@@ -17,11 +17,22 @@ jobs:
           update: true
           install: >-
             git mingw-w64-x86_64-toolchain mingw-w64-x86_64-ninja mingw-w64-x86_64-cmake tree
-            mingw-w64-x86_64-qt5 mingw-w64-x86_64-fluidsynth
+            mingw-w64-x86_64-qt5
             mingw-w64-x86_64-glfw mingw-w64-x86_64-glew mingw-w64-x86_64-freetype mingw-w64-x86_64-devil mingw-w64-x86_64-freeglut mingw-w64-x86_64-zlib
+      - name: build fluidsynth-sans-glib
+        run: |
+          # no longer need mingw-w64-x86_64-fluidsynth and libglib-2.0-0.dll then.
+          mkdir dept_workspace && cd dept_workspace
+          git clone --depth=1 https://github.com/chirs241097/fluidsynth-sans-glib.git
+          cd fluidsynth-sans-glib && mkdir build && cd build
+          cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=$MINGW_PREFIX
+          cmake --build . --target install
+          cd ../../../
+          tree
       - name: build rtmidi
         run: |
-          mkdir dept_workspace && cd dept_workspace
+          # mkdir dept_workspace
+          cd dept_workspace
           git clone --depth=1 https://github.com/thestk/rtmidi.git
           cd rtmidi && mkdir build && cd build
           cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=$MINGW_PREFIX
@@ -43,8 +54,19 @@ jobs:
           # direct depts
           cp $MINGW_PREFIX/bin/libfluidsynth-2.dll ./
           cp $MINGW_PREFIX/bin/librtmidi.dll ./
+          cp $MINGW_PREFIX/bin/libportaudio-2.dll ./
+          # visualization plugin depts
+          cp $MINGW_PREFIX/bin/glfw3.dll ./
+          cp $MINGW_PREFIX/bin/glew32.dll ./
+          cp $MINGW_PREFIX/bin/zlib1.dll ./
+          cp $MINGW_PREFIX/bin/libIL.dll ./
+          cp $MINGW_PREFIX/bin/libfreetype-6.dll ./
           # some other dlls
+          cp $MINGW_PREFIX/bin/libpng16-16.dll ./
+          cp $MINGW_PREFIX/bin/libsndfile-1.dll ./
+          cp $MINGW_PREFIX/bin/libreadline8.dll ./
           cp $MINGW_PREFIX/bin/libpcre2-16-0.dll ./
+          cp $MINGW_PREFIX/bin/libharfbuzz-0.dll ./
           cp $MINGW_PREFIX/bin/libdouble-conversion.dll ./
           cp $MINGW_PREFIX/bin/libicuuc67.dll ./
           cp $MINGW_PREFIX/bin/libicuin67.dll ./
