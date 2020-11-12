@@ -40,8 +40,19 @@ jobs:
           mkdir package_workspace && cd package_workspace
           cp ../build/qmidiplayer-desktop/qmidiplayer.exe ./
           windeployqt --no-quick-import --no-translations --no-opengl-sw --no-angle --no-system-d3d-compiler ./qmidiplayer.exe
+          # direct depts
           cp $MINGW_PREFIX/bin/libfluidsynth-2.dll ./
           cp $MINGW_PREFIX/bin/librtmidi.dll ./
+          # some other dlls
+          cp $MINGW_PREFIX/bin/libpcre2-16-0.dll ./
+          cp $MINGW_PREFIX/bin/libdouble-conversion.dll ./
+          cp $MINGW_PREFIX/bin/libicuuc67.dll ./
+          cp $MINGW_PREFIX/bin/libicuin67.dll ./
+          # copy plugins
+          mkdir plugins
+          cp ../build/midifmt-plugin/libmidifmt-plugin.dll ./plugins/
+          cp ../build/simple-visualization/libsimple-visualization.dll ./plugins/
+          cp ../build/visualization/libvisualization.dll ./plugins/
       - uses: actions/upload-artifact@v2
         with:
           name: msys2-mingw-w64-x86_64-windows
