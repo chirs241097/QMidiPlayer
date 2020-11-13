@@ -80,6 +80,11 @@ jobs:
           cp $MINGW_PREFIX/bin/liblcms2-2.dll ./
           cp $MINGW_PREFIX/bin/libsquish.dll ./
           cp $MINGW_PREFIX/bin/libtiff-5.dll ./
+          cp $MINGW_PREFIX/bin/libIex-2_5.dll ./
+          cp $MINGW_PREFIX/bin/libIlmThread-2_5.dll ./
+          cp $MINGW_PREFIX/bin/libImath-2_5.dll ./
+          cp $MINGW_PREFIX/bin/libgomp-1.dll ./
+          cp $MINGW_PREFIX/bin/liblzma-5.dll ./
           # some other dlls
           cp $MINGW_PREFIX/bin/libgcc_s_seh-1.dll ./
           cp $MINGW_PREFIX/bin/libwinpthread-1.dll ./
