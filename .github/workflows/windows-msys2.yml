@@ -1,0 +1,128 @@
+name: Windows MSYS2 Build
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            git mingw-w64-x86_64-toolchain mingw-w64-x86_64-ninja mingw-w64-x86_64-cmake tree
+            mingw-w64-x86_64-qt5
+            mingw-w64-x86_64-glfw mingw-w64-x86_64-glew mingw-w64-x86_64-freetype mingw-w64-x86_64-devil mingw-w64-x86_64-freeglut mingw-w64-x86_64-zlib
+      - name: Build fluidsynth-sans-glib
+        id: build-fluidsynth-sans-glib
+        continue-on-error: true
+        run: |
+          # no longer need mingw-w64-x86_64-fluidsynth and libglib-2.0-0.dll then.
+          mkdir dept_workspace && cd dept_workspace
+          git clone --depth=1 https://github.com/chirs241097/fluidsynth-sans-glib.git
+          cd fluidsynth-sans-glib && mkdir build && cd build
+          cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=$MINGW_PREFIX
+          cmake --build . --target install
+          cd ../../../
+      - name: Install mingw-w64-x86_64-fluidsynth if needed
+        if: steps.build-fluidsynth-sans-glib.outcome == 'failure'
+        run: |
+          pacman --noconfirm -S mingw-w64-x86_64-fluidsynth
+      - name: Build rtmidi
+        run: |
+          # mkdir dept_workspace
+          cd dept_workspace
+          git clone --depth=1 https://github.com/thestk/rtmidi.git
+          cd rtmidi && mkdir build && cd build
+          cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=$MINGW_PREFIX
+          cmake --build . --target install
+          cd ../../../
+      - name: Build qmidiplayer
+        run: |
+          mkdir build && cd build
+          cmake .. -G Ninja
+          cmake --build .
+          tree
+          cd ..
+      - name: package qmidiplayer
+        run: |
+          mkdir package_workspace && cd package_workspace
+          cp ../build/qmidiplayer-desktop/qmidiplayer.exe ./
+          windeployqt --no-quick-import --no-translations --no-opengl-sw --no-angle --no-system-d3d-compiler ./qmidiplayer.exe
+          # direct depts
+          cp $MINGW_PREFIX/bin/libfluidsynth-2.dll ./
+          cp $MINGW_PREFIX/bin/librtmidi.dll ./
+          cp $MINGW_PREFIX/bin/libportaudio-2.dll ./
+          # standalone visualization renderer
+          cp ../build/visualization/renderer/qmpvisrender.exe ./
+          # copy plugins
+          mkdir plugins
+          cp ../build/midifmt-plugin/libmidifmt-plugin.dll ./plugins/
+          cp ../build/simple-visualization/libsimple-visualization.dll ./plugins/
+          cp ../build/visualization/libvisualization.dll ./plugins/
+          cp ../build/sample-plugin/libsampleplugin.dll ./plugins/
+          # visualization plugin depts
+          cp $MINGW_PREFIX/bin/glfw3.dll ./
+          cp $MINGW_PREFIX/bin/glew32.dll ./
+          cp $MINGW_PREFIX/bin/zlib1.dll ./
+          cp $MINGW_PREFIX/bin/libfreetype-6.dll ./
+          cp $MINGW_PREFIX/bin/libIL.dll ./
+          cp $MINGW_PREFIX/bin/libHalf-2_5.dll ./
+          cp $MINGW_PREFIX/bin/libIlmImf-2_5.dll ./
+          cp $MINGW_PREFIX/bin/libjasper-4.dll ./
+          cp $MINGW_PREFIX/bin/libjpeg-8.dll ./
+          cp $MINGW_PREFIX/bin/liblcms2-2.dll ./
+          cp $MINGW_PREFIX/bin/libsquish.dll ./
+          cp $MINGW_PREFIX/bin/libtiff-5.dll ./
+          cp $MINGW_PREFIX/bin/libIex-2_5.dll ./
+          cp $MINGW_PREFIX/bin/libIlmThread-2_5.dll ./
+          cp $MINGW_PREFIX/bin/libImath-2_5.dll ./
+          cp $MINGW_PREFIX/bin/libgomp-1.dll ./
+          cp $MINGW_PREFIX/bin/liblzma-5.dll ./
+          # some other dlls
+          cp $MINGW_PREFIX/bin/libgcc_s_seh-1.dll ./
+          cp $MINGW_PREFIX/bin/libwinpthread-1.dll ./
+          cp $MINGW_PREFIX/bin/libstdc++-6.dll ./
+          cp $MINGW_PREFIX/bin/libintl-8.dll ./
+          cp $MINGW_PREFIX/bin/libpng16-16.dll ./
+          cp $MINGW_PREFIX/bin/libsndfile-1.dll ./
+          cp $MINGW_PREFIX/bin/libreadline8.dll ./
+          cp $MINGW_PREFIX/bin/libpcre2-16-0.dll ./
+          cp $MINGW_PREFIX/bin/libpcre-1.dll ./
+          cp $MINGW_PREFIX/bin/libharfbuzz-0.dll ./
+          cp $MINGW_PREFIX/bin/libdouble-conversion.dll ./
+          cp $MINGW_PREFIX/bin/libicuuc67.dll ./
+          cp $MINGW_PREFIX/bin/libicudt67.dll ./
+          cp $MINGW_PREFIX/bin/libicuin67.dll ./
+          cp $MINGW_PREFIX/bin/libzstd.dll ./
+          cp $MINGW_PREFIX/bin/libFLAC-8.dll ./
+          cp $MINGW_PREFIX/bin/libogg-0.dll ./
+          cp $MINGW_PREFIX/bin/libtermcap-0.dll ./
+          cp $MINGW_PREFIX/bin/libopus-0.dll ./
+          cp $MINGW_PREFIX/bin/libvorbis-0.dll ./
+          cp $MINGW_PREFIX/bin/libvorbis-0.dll ./
+          cp $MINGW_PREFIX/bin/libvorbisenc-2.dll ./
+          cp $MINGW_PREFIX/bin/libgraphite2.dll ./
+          cp $MINGW_PREFIX/bin/libiconv-2.dll ./
+          cp $MINGW_PREFIX/bin/libbz2-1.dll ./
+          cp $MINGW_PREFIX/bin/libbrotlidec.dll ./
+          cp $MINGW_PREFIX/bin/libbrotlicommon.dll ./
+          # license file
+          cp ../COPYING ./
+          # done
+          cd ../
+      - name: install libglib-2.0-0.dll if needed
+        if: steps.build-fluidsynth-sans-glib.outcome == 'failure'
+        run: |
+          cd package_workspace
+          cp $MINGW_PREFIX/bin/libglib-2.0-0.dll ./
+      - uses: actions/upload-artifact@v2
+        with:
+          name: msys2-mingw-w64-x86_64-windows
+          path: package_workspace/*
