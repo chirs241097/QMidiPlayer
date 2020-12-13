@@ -20,6 +20,7 @@ public:
     uint32_t getMaxPolyphone();
     uint32_t getCurrentTimeStamp();
     uint32_t getCurrentPlaybackPercentage();
+    PlaybackStatus getPlaybackStatus();
     int getChannelCC(int ch, int cc);
     int getChannelPreset(int ch);
     void playerSeek(uint32_t percentage);

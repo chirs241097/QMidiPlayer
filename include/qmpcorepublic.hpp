@@ -70,6 +70,14 @@ public:
         if (copyright)delete[] copyright;
     }
 };
+struct PlaybackStatus
+{
+    bool paused;
+    uint64_t curtime_ms;
+    uint64_t maxtime_ms;
+    uint64_t curtick;
+    uint64_t maxtick;
+};
 //Generic callback function that can be used for hooking the core.
 //"userdata" is set when you register the callback function.
 //Deprecated. Removing in 0.9.x.
@@ -160,6 +168,7 @@ extern "C" {
         virtual uint32_t getMaxPolyphone() = 0;
         virtual uint32_t getCurrentTimeStamp() = 0;
         virtual uint32_t getCurrentPlaybackPercentage() = 0;
+        virtual PlaybackStatus getPlaybackStatus() = 0;
         virtual int getChannelCC(int ch, int cc) = 0;
         virtual int getChannelPreset(int ch) = 0;
         virtual void playerSeek(uint32_t percentage) = 0;

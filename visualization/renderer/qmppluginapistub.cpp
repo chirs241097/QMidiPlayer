@@ -59,6 +59,11 @@ uint32_t qmpPluginAPIStub::getCurrentPlaybackPercentage()
 {
     return 0;
 }
+
+PlaybackStatus qmpPluginAPIStub::getPlaybackStatus()
+{
+    return {false, 0, 0, 0, 0};
+}
 int qmpPluginAPIStub::getChannelCC(int ch, int cc)
 {
     return 0;

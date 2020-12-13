@@ -228,6 +228,7 @@ public:
     std::wstring getWTitle();
     uint32_t getPlaybackPercentage();
     void playerSeek(uint32_t percentage);
+    PlaybackStatus getPlaybackStatus();
     int parseArgs();
     void registerFunctionality(qmpFuncBaseIntf *i, std::string name, std::string desc, const char *icon, int iconlen, bool checkable);
     void unregisterFunctionality(std::string name);

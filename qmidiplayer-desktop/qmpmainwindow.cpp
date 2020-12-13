@@ -371,7 +371,8 @@ void qmpMainWindow::switchTrack(QString s, bool interrupt)
     sprintf(ts, "%02d:%02d", (int)player->getFtime() / 60, (int)player->getFtime() % 60);
     ui->lbFinTime->setText(ts);
     player->playerInit();
-    invokeCallback("main.start", nullptr);
+    PlaybackStatus ps = getPlaybackStatus();
+    invokeCallback("main.start", &ps);
     internalfluid->setGain(ui->vsMasterVol->value() / 250.);
     efxw->sendEfxChange();
     playerTh = new std::thread([this]
@@ -525,7 +526,8 @@ void qmpMainWindow::on_pbPlayPause_clicked()
         sprintf(ts, "%02d:%02d", (int)player->getFtime() / 60, (int)player->getFtime() % 60);
         ui->lbFinTime->setText(ts);
         player->playerInit();
-        invokeCallback("main.start", nullptr);
+        PlaybackStatus ps = getPlaybackStatus();
+        invokeCallback("main.start", &ps);
         internalfluid->setGain(ui->vsMasterVol->value() / 250.);
         efxw->sendEfxChange();
         playerTh = new std::thread([this]
@@ -556,7 +558,8 @@ void qmpMainWindow::on_pbPlayPause_clicked()
             player->setResumed();
         }
         player->setTCpaused(!playing);
-        invokeCallback("main.pause", nullptr);
+        PlaybackStatus ps = getPlaybackStatus();
+        invokeCallback("main.pause", &ps);
     }
     ui->pbPlayPause->setIcon(QIcon(getThemedIcon(playing ? ":/img/pause.svg" : ":/img/play.svg")));
 }
@@ -594,7 +597,8 @@ void qmpMainWindow::on_hsTimer_sliderReleased()
         sprintf(ts, "%02d:%02d", (int)(offset) / 60, (int)(offset) % 60);
         ui->lbCurTime->setText(ts);
     }
-    invokeCallback("main.seek", nullptr);
+    PlaybackStatus ps = getPlaybackStatus();
+    invokeCallback("main.seek", &ps);
 }
 
 uint32_t qmpMainWindow::getPlaybackPercentage()
@@ -607,7 +611,6 @@ void qmpMainWindow::playerSeek(uint32_t percentage)
         percentage = 100;
     if (percentage < 0)
         percentage = 0;
-    invokeCallback("main.seek", nullptr);
     if (playing)
     {
         if (percentage == 100)
@@ -635,6 +638,15 @@ void qmpMainWindow::playerSeek(uint32_t percentage)
         sprintf(ts, "%02d:%02d", (int)(offset) / 60, (int)(offset) % 60);
         ui->lbCurTime->setText(ts);
     }
+    PlaybackStatus ps = getPlaybackStatus();
+    invokeCallback("main.seek", &ps);
+}
+
+PlaybackStatus qmpMainWindow::getPlaybackStatus()
+{
+    std::chrono::duration<double> elapsed =
+        std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::steady_clock::now() - st);
+    return {!playing, uint64_t((elapsed.count() + offset) * 1000), uint64_t(player->getFtime() * 1000), player->getTick(), player->getMaxTick()};
 }
 
 void qmpMainWindow::on_vsMasterVol_valueChanged()

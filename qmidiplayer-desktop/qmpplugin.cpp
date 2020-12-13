@@ -213,6 +213,11 @@ uint32_t qmpPluginAPIImpl::getCurrentPlaybackPercentage()
 {
     return qmw ? qmw->getPlaybackPercentage() : 0;
 }
+
+PlaybackStatus qmpPluginAPIImpl::getPlaybackStatus()
+{
+    return qmw ? qmw->getPlaybackStatus() : PlaybackStatus{false, 0, 0, 0, 0};
+}
 int qmpPluginAPIImpl::getChannelCC(int ch, int cc)
 {
     return qmw && qmw->getPlayer() ? qmw->getPlayer()->getCC(ch, cc) : 0;
