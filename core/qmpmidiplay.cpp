@@ -268,7 +268,7 @@ void CMidiPlayer::playEvents()
             else
             {
 #ifdef _WIN32
-                w32usleep(uint64_t((ns_sleep + correction) / 1000)));
+                w32usleep(uint64_t((ns_sleep + correction) / 1000));
 #else
                 std::this_thread::sleep_for(std::chrono::nanoseconds(uint64_t(ns_sleep + correction)));
 #endif
