@@ -236,17 +236,43 @@ void CMidiPlayer::playEvents()
             break;
         high_resolution_clock::time_point a = high_resolution_clock::now();
         auto sendtime = a - b;
-        if (sendtime.count() < (getEvent(tceptr)->time - ct)*dpt)
+        if (sendtime.count() < (getEvent(tceptr)->time - ct) * dpt)
         {
             double ns_sleep = (getEvent(tceptr)->time - ct) * dpt - sendtime.count();
             double correction = (getTick() - ttick) * dpt - (b - ttime).count();
             if (correction > 0)
                 correction = 0;
+            if (ns_sleep + correction > 2e8)
+            {
+                high_resolution_clock::time_point t = high_resolution_clock::now();
+                uint64_t tts = uint64_t(ns_sleep + correction);
+                while (tts > 2e8 && !tcstop && midiReaders)
+                {
 #ifdef _WIN32
-            w32usleep((uint64_t)(((getEvent(tceptr)->time - ct)*dpt - sendtime.count()) / 1000));
+                    w32usleep(2e5);
 #else
-            std::this_thread::sleep_for(std::chrono::nanoseconds((uint64_t)(ns_sleep + correction)));
+                    std::this_thread::sleep_for(std::chrono::nanoseconds(uint64_t(2e8)));
 #endif
+                    tts -= uint64_t((high_resolution_clock::now() - t).count());
+                    t = high_resolution_clock::now();
+                }
+                if (tts > 0 && !tcstop && midiReaders)
+                {
+#ifdef _WIN32
+                    w32usleep(tts / 1000);
+#else
+                    std::this_thread::sleep_for(std::chrono::nanoseconds(tts));
+#endif
+                }
+            }
+            else
+            {
+#ifdef _WIN32
+                w32usleep(uint64_t((ns_sleep + correction) / 1000)));
+#else
+                std::this_thread::sleep_for(std::chrono::nanoseconds(uint64_t(ns_sleep + correction)));
+#endif
+            }
         }
         if (tcstop || !midiReaders)
             break;
