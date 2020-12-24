@@ -242,21 +242,21 @@ void CMidiPlayer::playEvents()
             double correction = (getTick() - ttick) * dpt - (b - ttime).count();
             if (correction > 0)
                 correction = 0;
-            if (ns_sleep + correction > 2e8)
+            if (ns_sleep + correction > 2.5e8)
             {
                 high_resolution_clock::time_point t = high_resolution_clock::now();
                 uint64_t tts = uint64_t(ns_sleep + correction);
-                while (tts > 2e8 && !tcstop && midiReaders)
+                std::unique_lock<std::mutex> lock(intmtx);
+                std::cv_status intr = intcv.wait_for(lock, std::chrono::nanoseconds(uint64_t(ns_sleep + correction - 5e7)));
+                if (intr == std::cv_status::no_timeout)
                 {
-#ifdef _WIN32
-                    w32usleep(2e5);
-#else
-                    std::this_thread::sleep_for(std::chrono::nanoseconds(uint64_t(2e8)));
-#endif
-                    tts -= uint64_t((high_resolution_clock::now() - t).count());
-                    t = high_resolution_clock::now();
+                    if (tcstop)
+                    {
+                        break;
+                    }
                 }
-                if (tts > 0 && !tcstop && midiReaders)
+                tts -= uint64_t((high_resolution_clock::now() - t).count());
+                if (tts > 0 && intr == std::cv_status::timeout && !tcstop && midiReaders)
                 {
 #ifdef _WIN32
                     w32usleep(tts / 1000);
@@ -442,6 +442,7 @@ void CMidiPlayer::playerDeinit()
 {
     tceptr = 0;
     tcstop = true;
+    interrupt();
     tcpaused = 0;
     delete midiFile;
     midiFile = nullptr;
@@ -470,6 +471,7 @@ void CMidiPlayer::setTCeptr(uint32_t ep, uint32_t st)
     if (ep == ecnt)
         tcstop = true;
     else tceptr = ep;
+    this->interrupt();
     for (int i = 0; i < 16; ++i)
     {
         qmpMidiOutDevice *dest = mididev[mappedoutput[i]].dev;
@@ -559,6 +561,11 @@ uint32_t CMidiPlayer::getTCpaused()
 void CMidiPlayer::setTCpaused(uint32_t ps)
 {
     tcpaused = ps;
+}
+
+void CMidiPlayer::interrupt()
+{
+    intcv.notify_one();
 }
 uint32_t CMidiPlayer::isFinished()
 {

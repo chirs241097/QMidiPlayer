@@ -21,6 +21,7 @@ target_link_libraries(qmpvisrender
     Qt5::Core
     qmpcore
     ${CMAKE_DL_LIBS}
+    ${CMAKE_THREAD_LIBS_INIT}
 )
 
 if(WIN32)

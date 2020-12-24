@@ -3,7 +3,9 @@
 #define QMPMIDIPLAY_H
 #include <cstring>
 #include <cstdlib>
+#include <condition_variable>
 #include <chrono>
+#include <mutex>
 #include <unordered_map>
 #include <tuple>
 #include <utility>
@@ -70,6 +72,8 @@ private:
     //raw tempo, timesig num., timesig den., division, keysig
     //thread control
     uint32_t tceptr, tcpaused, ct;
+    std::mutex intmtx;
+    std::condition_variable intcv;
     bool tcstop;
     uint32_t finished, resumed;
     uint32_t pbr[16], pbv[16];
@@ -121,6 +125,7 @@ public:
     void setTCeptr(uint32_t ep, uint32_t st);
     uint32_t getTCpaused();
     void setTCpaused(uint32_t ps);
+    void interrupt();
     uint32_t isFinished();
     bool stopFlag();
     void setResumed();
