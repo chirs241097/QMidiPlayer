@@ -18,7 +18,7 @@ jobs:
           install: >-
             git mingw-w64-x86_64-toolchain mingw-w64-x86_64-ninja mingw-w64-x86_64-cmake tree
             mingw-w64-x86_64-qt5
-            mingw-w64-x86_64-glfw mingw-w64-x86_64-glew mingw-w64-x86_64-freetype mingw-w64-x86_64-devil mingw-w64-x86_64-freeglut mingw-w64-x86_64-zlib
+            mingw-w64-x86_64-glfw mingw-w64-x86_64-glew mingw-w64-x86_64-freetype mingw-w64-x86_64-devil mingw-w64-x86_64-freeglut mingw-w64-x86_64-zlib mingw-w64-x86_64-rtmidi
       - name: Build fluidsynth-sans-glib
         id: build-fluidsynth-sans-glib
         continue-on-error: true
@@ -34,15 +34,6 @@ jobs:
         if: steps.build-fluidsynth-sans-glib.outcome == 'failure'
         run: |
           pacman --noconfirm -S mingw-w64-x86_64-fluidsynth
-      - name: Build rtmidi
-        run: |
-          # mkdir dept_workspace
-          cd dept_workspace
-          git clone --depth=1 https://github.com/thestk/rtmidi.git
-          cd rtmidi && mkdir build && cd build
-          cmake .. -G Ninja -DCMAKE_INSTALL_PREFIX=$MINGW_PREFIX
-          cmake --build . --target install
-          cd ../../../
       - name: Build qmidiplayer
         run: |
           mkdir build && cd build
@@ -51,13 +42,14 @@ jobs:
           tree
           cd ..
       - name: package qmidiplayer
+        continue-on-error: true
         run: |
           mkdir package_workspace && cd package_workspace
           cp ../build/qmidiplayer-desktop/qmidiplayer.exe ./
-          windeployqt --no-quick-import --no-translations --no-opengl-sw --no-angle --no-system-d3d-compiler ./qmidiplayer.exe
+          windeployqt -winextras --no-quick-import --no-translations --no-opengl-sw --no-angle --no-system-d3d-compiler ./qmidiplayer.exe
           # direct depts
           cp $MINGW_PREFIX/bin/libfluidsynth-2.dll ./
-          cp $MINGW_PREFIX/bin/librtmidi.dll ./
+          cp $MINGW_PREFIX/bin/librtmidi*.dll ./
           cp $MINGW_PREFIX/bin/libportaudio-2.dll ./
           # standalone visualization renderer
           cp ../build/visualization/renderer/qmpvisrender.exe ./
@@ -67,41 +59,45 @@ jobs:
           cp ../build/simple-visualization/libsimple-visualization.dll ./plugins/
           cp ../build/visualization/libvisualization.dll ./plugins/
           cp ../build/sample-plugin/libsampleplugin.dll ./plugins/
+          cp ../build/windows-extra/libwindowsextra.dll ./plugins/
           # visualization plugin depts
           cp $MINGW_PREFIX/bin/glfw3.dll ./
           cp $MINGW_PREFIX/bin/glew32.dll ./
           cp $MINGW_PREFIX/bin/zlib1.dll ./
-          cp $MINGW_PREFIX/bin/libfreetype-6.dll ./
+          cp $MINGW_PREFIX/bin/libfreetype-*.dll ./
+          cp $MINGW_PREFIX/bin/libdeflate.dll ./
+          cp $MINGW_PREFIX/bin/libwebp-*.dll ./
+          cp $MINGW_PREFIX/bin/libtiff-*.dll ./
           cp $MINGW_PREFIX/bin/libIL.dll ./
-          cp $MINGW_PREFIX/bin/libHalf-2_5.dll ./
-          cp $MINGW_PREFIX/bin/libIlmImf-2_5.dll ./
-          cp $MINGW_PREFIX/bin/libjasper-4.dll ./
-          cp $MINGW_PREFIX/bin/libjpeg-8.dll ./
-          cp $MINGW_PREFIX/bin/liblcms2-2.dll ./
+          cp $MINGW_PREFIX/bin/libHalf-*.dll ./
+          cp $MINGW_PREFIX/bin/libIlmImf-*.dll ./
+          cp $MINGW_PREFIX/bin/libjasper-*.dll ./
+          cp $MINGW_PREFIX/bin/libjpeg-*.dll ./
+          cp $MINGW_PREFIX/bin/liblcms2-*.dll ./
           cp $MINGW_PREFIX/bin/libsquish.dll ./
-          cp $MINGW_PREFIX/bin/libtiff-5.dll ./
-          cp $MINGW_PREFIX/bin/libIex-2_5.dll ./
-          cp $MINGW_PREFIX/bin/libIlmThread-2_5.dll ./
-          cp $MINGW_PREFIX/bin/libImath-2_5.dll ./
-          cp $MINGW_PREFIX/bin/libgomp-1.dll ./
-          cp $MINGW_PREFIX/bin/liblzma-5.dll ./
+          cp $MINGW_PREFIX/bin/libtiff-*.dll ./
+          cp $MINGW_PREFIX/bin/libIex-*.dll ./
+          cp $MINGW_PREFIX/bin/libIlmThread-*.dll ./
+          cp $MINGW_PREFIX/bin/libImath-*.dll ./
+          cp $MINGW_PREFIX/bin/libgomp-*.dll ./
+          cp $MINGW_PREFIX/bin/liblzma-*.dll ./
           # some other dlls
           cp $MINGW_PREFIX/bin/libgcc_s_seh-1.dll ./
           cp $MINGW_PREFIX/bin/libwinpthread-1.dll ./
-          cp $MINGW_PREFIX/bin/libstdc++-6.dll ./
-          cp $MINGW_PREFIX/bin/libintl-8.dll ./
-          cp $MINGW_PREFIX/bin/libpng16-16.dll ./
+          cp $MINGW_PREFIX/bin/libstdc++-*.dll ./
+          cp $MINGW_PREFIX/bin/libintl-*.dll ./
+          cp $MINGW_PREFIX/bin/libpng16-*.dll ./
           cp $MINGW_PREFIX/bin/libsndfile-1.dll ./
           cp $MINGW_PREFIX/bin/libreadline8.dll ./
           cp $MINGW_PREFIX/bin/libpcre2-16-0.dll ./
           cp $MINGW_PREFIX/bin/libpcre-1.dll ./
           cp $MINGW_PREFIX/bin/libharfbuzz-0.dll ./
           cp $MINGW_PREFIX/bin/libdouble-conversion.dll ./
-          cp $MINGW_PREFIX/bin/libicuuc67.dll ./
-          cp $MINGW_PREFIX/bin/libicudt67.dll ./
-          cp $MINGW_PREFIX/bin/libicuin67.dll ./
+          cp $MINGW_PREFIX/bin/libicuuc[!d]*.dll ./
+          cp $MINGW_PREFIX/bin/libicudt[!d]*.dll ./
+          cp $MINGW_PREFIX/bin/libicuin[!d]*.dll ./
           cp $MINGW_PREFIX/bin/libzstd.dll ./
-          cp $MINGW_PREFIX/bin/libFLAC-8.dll ./
+          cp $MINGW_PREFIX/bin/libFLAC-*.dll ./
           cp $MINGW_PREFIX/bin/libogg-0.dll ./
           cp $MINGW_PREFIX/bin/libtermcap-0.dll ./
           cp $MINGW_PREFIX/bin/libopus-0.dll ./
@@ -117,11 +113,11 @@ jobs:
           cp ../COPYING ./
           # done
           cd ../
-      - name: install libglib-2.0-0.dll if needed
+      - name: install libglib-2.0-*.dll if needed
         if: steps.build-fluidsynth-sans-glib.outcome == 'failure'
         run: |
           cd package_workspace
-          cp $MINGW_PREFIX/bin/libglib-2.0-0.dll ./
+          cp $MINGW_PREFIX/bin/libglib-2.0-*.dll ./
       - uses: actions/upload-artifact@v2
         with:
           name: msys2-mingw-w64-x86_64-windows
