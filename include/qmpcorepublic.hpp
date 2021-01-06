@@ -39,7 +39,11 @@ struct SEvent
         iid(_iid), time(_t), type(_tp), p1(_p1), p2(_p2), str(s) {}
     friend bool operator <(const SEvent &a, const SEvent &b)
     {
-        return a.time - b.time ? a.time < b.time : a.iid < b.iid;
+        if (a.time != b.time)
+            return a.time < b.time;
+        else if ((a.type == 0xF0) ^ (b.type == 0xF0))
+            return (a.type == 0xF0) > (b.type == 0xF0);
+        else return a.iid < b.iid;
     }
 };
 //MIDI Track class
