@@ -245,9 +245,9 @@ void CMidiPlayer::playEvents()
             if (ns_sleep + correction > 2.5e8)
             {
                 high_resolution_clock::time_point t = high_resolution_clock::now();
-                uint64_t tts = uint64_t(ns_sleep + correction);
+                int64_t tts = int64_t(ns_sleep + correction);
                 std::unique_lock<std::mutex> lock(intmtx);
-                std::cv_status intr = intcv.wait_for(lock, std::chrono::nanoseconds(uint64_t(ns_sleep + correction - 5e7)));
+                std::cv_status intr = intcv.wait_for(lock, std::chrono::nanoseconds(int64_t(ns_sleep + correction - 1e8)));
                 if (intr == std::cv_status::no_timeout)
                 {
                     if (tcstop)
@@ -255,7 +255,7 @@ void CMidiPlayer::playEvents()
                         break;
                     }
                 }
-                tts -= uint64_t((high_resolution_clock::now() - t).count());
+                tts -= int64_t((high_resolution_clock::now() - t).count());
                 if (tts > 0 && intr == std::cv_status::timeout && !tcstop && midiReaders)
                 {
 #ifdef _WIN32
@@ -263,6 +263,10 @@ void CMidiPlayer::playEvents()
 #else
                     std::this_thread::sleep_for(std::chrono::nanoseconds(tts));
 #endif
+                }
+                else if (tts < 0)
+                {
+                    fputs("ur operating system (or toolchain) suck!!\n", stderr);
                 }
             }
             else
@@ -471,7 +475,6 @@ void CMidiPlayer::setTCeptr(uint32_t ep, uint32_t st)
     if (ep == ecnt)
         tcstop = true;
     else tceptr = ep;
-    this->interrupt();
     for (int i = 0; i < 16; ++i)
     {
         qmpMidiOutDevice *dest = mididev[mappedoutput[i]].dev;
@@ -493,6 +496,7 @@ void CMidiPlayer::setTCeptr(uint32_t ep, uint32_t st)
         ctsd = 1 << ((ccstamps[st][0][132] >> 16) & 0xFF);
         cks = ccstamps[st][0][133];
     }
+    this->interrupt();
 }
 double CMidiPlayer::getFtime()
 {
@@ -565,6 +569,7 @@ void CMidiPlayer::setTCpaused(uint32_t ps)
 
 void CMidiPlayer::interrupt()
 {
+    std::lock_guard<std::mutex> lk(intmtx);
     intcv.notify_one();
 }
 uint32_t CMidiPlayer::isFinished()
