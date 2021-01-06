@@ -2,8 +2,10 @@
 #include <cstdio>
 #include <cstring>
 #include <algorithm>
+#include <chrono>
 #include <deque>
 #include <vector>
+#include <thread>
 #include "RtMidi.h"
 #include "qmpmidioutrtmidi.hpp"
 
@@ -39,11 +41,11 @@ qmpDeviceInitializer *qmpDeviceInitializer::parse(const char *path)
 #define err(e) {delete ret;return fprintf(stderr,"line %d: %s",ln,e),nullptr;}
     FILE *f = fopen(path, "r");
     if (!f)
-        err("file not found")
+        err("file not found");
 
-        //writing such a bad parser makes me want my money for
-        //the credits from "compiler principles" back...
-        auto h2d = [](char c)->char
+    //writing such a bad parser makes me want my money for
+    //the credits from "compiler principles" back...
+    auto h2d = [](char c)->char
     {
         return 'F' >= c && c >= 'A' ?
         c - 'A' + 10 :
@@ -73,75 +75,75 @@ qmpDeviceInitializer *qmpDeviceInitializer::parse(const char *path)
         if (tok.front() == "MAP")
         {
             if (st_inmapping)
-                err("invalid command")
-                st_inmapping = true;
+                err("invalid command");
+            st_inmapping = true;
         }
         else if (tok.front() == "ENDMAP")
         {
             if (!st_inmapping)
-                err("invalid command")
-                st_inmapping = false;
+                err("invalid command");
+            st_inmapping = false;
         }
         else if (tok.front() == "X")
         {
             if (st_inmapping)
-                err("invalid command")
-                tok.pop_front();
+                err("invalid command");
+            tok.pop_front();
             std::string sysx;
-            for (auto &i : tok)
-                sysx += i;
             SEvent ev;
             ev.type = 0xF0;
             ev.str = "";
-            for (auto i = sysx.begin(); i != sysx.end(); ++i)
+            ev.time = 0;
+            for (auto &i : tok)
+                ev.str.push_back(hh2d(i.c_str()));
+            if ((unsigned char)(ev.str.front()) != 0xF0)
+                err("invalid sysx");
+            if ((unsigned char)(ev.str.back()) != 0xF7)
             {
-                char hn = h2d((char)toupper(*i));
-                if (hn < 0)
-                    err("invalid sysex")
-                    if (++i == sysx.end())
-                        err("invalid sysex")
-                        char ln = h2d((char)toupper(*i));
-                ev.str.push_back((char)(hn << 4 | ln));
+                ev.time = (unsigned char)ev.str.back();
+                ev.str.pop_back();
+                if ((unsigned char)(ev.str.back()) != 0xF7)
+                    err("invalid sysx");
             }
             ret->initseq.appendEvent(ev);
         }
         else if (tok.front() == "C")
         {
             if (st_inmapping)
-                err("invalid command")
-                if (tok.size() != 4)
-                    err("invalid control")
-                    int ch = hh2d(tok[1].c_str());
+                err("invalid command");
+            if (tok.size() != 4)
+                err("invalid control");
+            int ch = hh2d(tok[1].c_str());
             int cc = hh2d(tok[2].c_str());
             int cv = hh2d(tok[3].c_str());
             if (!~cc || !~cv)
-                err("invalid control parameters")
-                if (ch == 0xff)
-                {
-                    for (int i = 0; i < 16; ++i)
-                    {
-                        SEvent e;
-                        e.type = (uint8_t)(0xB0 | i);
-                        e.p1 = (uint8_t)cc;
-                        e.p2 = (uint8_t)cv;
-                        ret->initseq.appendEvent(e);
-                    }
-                }
-                else if (ch >= 0 && ch < 0x10)
+                err("invalid control parameters");
+            if (ch == 0xff)
+            {
+                for (int i = 0; i < 16; ++i)
                 {
                     SEvent e;
-                    e.type = (uint8_t)(0xB0 | ch);
+                    e.type = (uint8_t)(0xB0 | i);
                     e.p1 = (uint8_t)cc;
                     e.p2 = (uint8_t)cv;
                     ret->initseq.appendEvent(e);
                 }
-                else err("invalid channel")
-                }
+            }
+            else if (ch >= 0 && ch < 0x10)
+            {
+                SEvent e;
+                e.type = (uint8_t)(0xB0 | ch);
+                e.p1 = (uint8_t)cc;
+                e.p2 = (uint8_t)cv;
+                ret->initseq.appendEvent(e);
+            }
+            else err("invalid channel");
+        }
         else if (tok.front() == "IV")
         {
             if (st_inmapping)
-                err("invalid command")
-                int ci = 0;
+                err("invalid command");
+            int ci = 0;
             tok.pop_front();
             for (auto &tk : tok)
             {
@@ -150,20 +152,20 @@ qmpDeviceInitializer *qmpDeviceInitializer::parse(const char *path)
                     sscanf(tk.c_str(), "%x,%d", &v, &rep);
                 else sscanf(tk.c_str(), "%x", &v);
                 if (v > 0xff || v < 0)
-                    err("invalid init vector value")
+                    err("invalid init vector value");
                     for (int i = 0; i < rep; ++i)
                     {
                         if (ci >= 130)
-                            err("invalid init vector")
-                            ret->initv[ci++] = (uint8_t)v;
+                            err("invalid init vector");
+                        ret->initv[ci++] = (uint8_t)v;
                     }
             }
         }
         else if (tok.front() == "SIV")
         {
             if (st_inmapping)
-                err("invalid command")
-                int ch = hh2d(tok[1].c_str());
+                err("invalid command");
+            int ch = hh2d(tok[1].c_str());
             int cc = hh2d(tok[2].c_str());
             int cv = hh2d(tok[3].c_str());
             ret->sinitv[ch][cc] = uint8_t(cv);
@@ -175,23 +177,23 @@ qmpDeviceInitializer *qmpDeviceInitializer::parse(const char *path)
                 b = b.substr(1, b.length() - 2);
                 split(b, ':', tok);
                 if (tok.size() < 3)
-                    err("invalid bank")
-                    cmsb = strtol(tok[0].c_str(), nullptr, 10);
+                    err("invalid bank");
+                cmsb = strtol(tok[0].c_str(), nullptr, 10);
                 clsb = strtol(tok[1].c_str(), nullptr, 10);
                 ret->banks[cmsb << 7 | clsb] = BankStore{{}, tok[2]};
             }
             else if (b.find('=') != std::string::npos)
             {
                 if (!~cmsb || !~clsb)
-                    err("inst outside a bank")
-                    split(b, '=', tok);
+                    err("inst outside a bank");
+                split(b, '=', tok);
                 if (tok.size() < 2)
-                    err("invalid inst")
-                    int p = strtol(tok[0].c_str(), nullptr, 10);
+                    err("invalid inst");
+                int p = strtol(tok[0].c_str(), nullptr, 10);
                 ret->banks[cmsb << 7 | clsb].presets[p] = tok[1];
             }
-            else err("invalid mapping line")
-            }
+            else err("invalid mapping line");
+        }
     }
 #undef err
 
@@ -268,6 +270,14 @@ void qmpMidiOutRtMidi::extendedMessage(uint32_t length, const char *data)
     catch (RtMidiError &e)
     {
         fprintf(stderr, "Failed to send midi message: %s\n", e.what());
+    }
+    for (auto &msg : devinit->initseq.eventList)
+    {
+        if ((msg.type & 0xF0) == 0xF0 && msg.str == std::string(data, length))
+        {
+            if (msg.time > 0)
+                std::this_thread::sleep_for(std::chrono::milliseconds(msg.time));
+        }
     }
 }
 void qmpMidiOutRtMidi::rpnMessage(uint8_t ch, uint16_t type, uint16_t val)
