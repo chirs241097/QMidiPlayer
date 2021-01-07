@@ -85,6 +85,11 @@ void qmpMidiOutFluid::deviceInit()
     , this);
     if (!adriver)
     {
+        adriver = new_fluid_audio_driver(settings, synth);
+        output_level = 1e9 + 7;
+    }
+    if (!adriver)
+    {
         fputs("Error creating fluidsynth audio driver!", stderr);
         delete_fluid_synth(synth);
         synth = nullptr;

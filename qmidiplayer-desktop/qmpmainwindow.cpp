@@ -379,7 +379,7 @@ void qmpMainWindow::switchTrack(QString s, bool interrupt)
     {
         player->playerThread();
         if (settings->getOptionBool("Midi/WaitVoice") && player->isFinished())
-            while (internalfluid->getOutputLevel() > -100)
+            while (internalfluid->getOutputLevel() > -100 && internalfluid->getPolyphone() > 0)
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
     });
 #ifdef _WIN32
@@ -534,7 +534,7 @@ void qmpMainWindow::on_pbPlayPause_clicked()
         {
             player->playerThread();
             if (settings->getOptionBool("Midi/WaitVoice") && player->isFinished())
-            while (internalfluid->getOutputLevel() > -100)
+            while (internalfluid->getOutputLevel() > -100 && internalfluid->getPolyphone() > 0)
                     std::this_thread::sleep_for(std::chrono::milliseconds(10));
         });
 #ifdef _WIN32
