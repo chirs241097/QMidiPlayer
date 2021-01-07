@@ -65,7 +65,7 @@ private:
     int32_t rpnid[16], rpnval[16];
     uint16_t mute, solo;
     double ftime;
-    bool sendSysEx, waitvoice;
+    bool sendSysEx;
     uint8_t chstatus[16][130];//0..127: cc 128: pc
     uint32_t ctempo, ctsn, ctsd, divs, cks;
     double dpt;//time per tick

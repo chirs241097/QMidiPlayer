@@ -242,6 +242,12 @@ void CMidiPlayer::playEvents()
             double correction = (getTick() - ttick) * dpt - (b - ttime).count();
             if (correction > 0)
                 correction = 0;
+            else if (ns_sleep + correction < 0)
+            {
+                ttick = getTick();
+                ttime = high_resolution_clock::now();
+                ns_sleep = correction = 0;
+            }
             if (ns_sleep + correction > 2.5e8)
             {
                 high_resolution_clock::time_point t = high_resolution_clock::now();
@@ -266,7 +272,7 @@ void CMidiPlayer::playEvents()
                 }
                 else if (tts < 0)
                 {
-                    fputs("ur operating system (or toolchain) suck!!\n", stderr);
+                    // this shouldn't happen... but ok
                 }
             }
             else
@@ -354,7 +360,6 @@ CMidiPlayer::CMidiPlayer()
     midiReaders = new CMidiFileReaderCollection();
     resumed = false;
     midiFile = nullptr;
-    waitvoice = true;
     event_handlers_id = event_read_handlers_id = file_read_finish_hooks_id = 0;
     memset(eventHandlerCB, 0, sizeof(eventHandlerCB));
     memset(eventHandlerCBuserdata, 0, sizeof(eventHandlerCBuserdata));
