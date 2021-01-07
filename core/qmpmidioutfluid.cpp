@@ -81,6 +81,7 @@ void qmpMidiOutFluid::deviceInit()
                 }
             }
             self->output_level = 20 * log10(sqrt(s));
+            return FLUID_OK;
         }
     , this);
     if (!adriver)
