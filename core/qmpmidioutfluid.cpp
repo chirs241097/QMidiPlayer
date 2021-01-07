@@ -1,3 +1,4 @@
+#include <cmath>
 #include <cstdio>
 #include <cstring>
 #include <algorithm>
@@ -66,7 +67,22 @@ void qmpMidiOutFluid::deviceInit()
     fluid_set_log_function(FLUID_WARN, nullptr, nullptr);
     fluid_set_log_function(FLUID_ERR, fluid_default_log_function, nullptr);
     fluid_set_log_function(FLUID_PANIC, fluid_default_log_function, nullptr);
-    adriver = new_fluid_audio_driver(settings, synth);
+    adriver = new_fluid_audio_driver2(settings,
+        [](void *t, int l, int nfx, float *fx[], int nout, float *out[])->int
+        {
+            qmpMidiOutFluid *self = static_cast<qmpMidiOutFluid*>(t);
+            fluid_synth_process(self->synth, l, nfx, fx, nout, out);
+            double s = 0;
+            for (int i = 0; i < nout; ++i)
+            {
+                for (int j = 0; j < l; ++j)
+                {
+                    s += out[i][j] * out[i][j] / l;
+                }
+            }
+            self->output_level = 20 * log10(sqrt(s));
+        }
+    , this);
     if (!adriver)
     {
         fputs("Error creating fluidsynth audio driver!", stderr);
@@ -300,6 +316,11 @@ int qmpMidiOutFluid::getPolyphone()
 int qmpMidiOutFluid::getMaxPolyphone()
 {
     return synth ? fluid_synth_get_polyphony(synth) : 0;
+}
+
+double qmpMidiOutFluid::getOutputLevel()
+{
+    return output_level;
 }
 void qmpMidiOutFluid::setGain(double gain)
 {

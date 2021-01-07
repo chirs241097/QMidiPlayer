@@ -29,6 +29,7 @@ private:
     std::vector<std::string> drivers;
     int default_driver = -1;
     void update_preset_list();
+    double output_level;
 public:
     qmpMidiOutFluid();
     ~qmpMidiOutFluid();
@@ -58,6 +59,7 @@ public:
 
     int getPolyphone();
     int getMaxPolyphone();
+    double getOutputLevel();
     void setGain(double gain);
     void getChannelInfo(int ch, int *b, int *p, char *s);
     void getReverbPara(double *r, double *d, double *w, double *l);
