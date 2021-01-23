@@ -71,7 +71,8 @@ void qmpMidiOutFluid::deviceInit()
         [](void *t, int l, int nfx, float *fx[], int nout, float *out[])->int
         {
             qmpMidiOutFluid *self = static_cast<qmpMidiOutFluid*>(t);
-            fluid_synth_process(self->synth, l, nfx, fx, nout, out);
+            float *fxb[4] = {out[0], out[1], out[0], out[1]};
+            int ret = fluid_synth_process(self->synth, l, nout * 2, fxb, nout, out);
             double s = 0;
             for (int i = 0; i < nout; ++i)
             {
@@ -81,13 +82,15 @@ void qmpMidiOutFluid::deviceInit()
                 }
             }
             self->output_level = 20 * log10(sqrt(s));
-            return FLUID_OK;
+            self->voice_count = fluid_synth_get_active_voice_count(self->synth);
+            return ret;
         }
     , this);
     if (!adriver)
     {
         adriver = new_fluid_audio_driver(settings, synth);
         output_level = 1e9 + 7;
+        voice_count = -1;
     }
     if (!adriver)
     {
@@ -317,6 +320,10 @@ void qmpMidiOutFluid::update_preset_list()
 }
 int qmpMidiOutFluid::getPolyphone()
 {
+    if (~voice_count)
+    {
+        return voice_count;
+    }
     return synth ? fluid_synth_get_active_voice_count(synth) : 0;
 }
 int qmpMidiOutFluid::getMaxPolyphone()

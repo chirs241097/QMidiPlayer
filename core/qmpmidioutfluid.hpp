@@ -30,6 +30,7 @@ private:
     int default_driver = -1;
     void update_preset_list();
     double output_level;
+    int voice_count;
 public:
     qmpMidiOutFluid();
     ~qmpMidiOutFluid();
