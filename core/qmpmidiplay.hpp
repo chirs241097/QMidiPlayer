@@ -141,7 +141,7 @@ public:
     uint32_t getDivision();
     uint32_t getMaxTick();
     double getPitchBend(int ch);
-    double getPitchBendRaw(int ch, uint32_t *pb, uint32_t *pbr);
+    void getPitchBendRaw(int ch, uint32_t *pb, uint32_t *pbr);
     const char *getTitle();
     const char *getCopyright();
 

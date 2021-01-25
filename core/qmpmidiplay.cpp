@@ -556,7 +556,7 @@ double CMidiPlayer::getPitchBend(int ch)
 {
     return ((int)pbv[ch] - 8192) / 8192.*pbr[ch];
 }
-double CMidiPlayer::getPitchBendRaw(int ch, uint32_t *pb, uint32_t *pbr)
+void CMidiPlayer::getPitchBendRaw(int ch, uint32_t *pb, uint32_t *pbr)
 {
     if (pb)
         *pb = this->pbv[ch];
