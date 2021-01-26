@@ -127,7 +127,7 @@ void qmpPluginAPIStub::unregisterFunctionality(std::string name)
         core->vf = nullptr;
 }
 
-int qmpPluginAPIStub::registerUIHook(std::string e, ICallBack *cb, void *userdat) {}
+int qmpPluginAPIStub::registerUIHook(std::string e, ICallBack *cb, void *userdat) {return -1;}
 int qmpPluginAPIStub::registerUIHook(std::string e, callback_t cb, void *userdat)
 {
     if (e == "main.start")
@@ -147,14 +147,14 @@ void qmpPluginAPIStub::unregisterUIHook(std::string e, int hook)
 void qmpPluginAPIStub::registerMidiOutDevice(qmpMidiOutDevice *dev, std::string name) {}
 void qmpPluginAPIStub::unregisterMidiOutDevice(std::string name) {}
 
-int qmpPluginAPIStub::registerEventReaderIntf(ICallBack *cb, void *userdata) {}
+int qmpPluginAPIStub::registerEventReaderIntf(ICallBack *cb, void *userdata) {return -1;}
 void qmpPluginAPIStub::unregisterEventReaderIntf(int intfhandle) {}
-int qmpPluginAPIStub::registerEventHandlerIntf(ICallBack *cb, void *userdata) {}
+int qmpPluginAPIStub::registerEventHandlerIntf(ICallBack *cb, void *userdata) {return -1;}
 void qmpPluginAPIStub::unregisterEventHandlerIntf(int intfhandle) {}
-int qmpPluginAPIStub::registerFileReadFinishedHandlerIntf(ICallBack *cb, void *userdata) {}
+int qmpPluginAPIStub::registerFileReadFinishedHandlerIntf(ICallBack *cb, void *userdata) {return -1;}
 void qmpPluginAPIStub::unregisterFileReadFinishedHandlerIntf(int intfhandle) {}
 
-int qmpPluginAPIStub::registerEventHandler(callback_t cb, void *userdata, bool post) {}
+int qmpPluginAPIStub::registerEventHandler(callback_t cb, void *userdata, bool post) {return -1;}
 void qmpPluginAPIStub::unregisterEventHandler(int id) {}
 int qmpPluginAPIStub::registerEventReadHandler(callback_t cb, void *userdata)
 {
