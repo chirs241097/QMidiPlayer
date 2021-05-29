@@ -186,6 +186,7 @@ void qmpVisualization::showThread()
     debug = false;
     ctk = api->getCurrentTimeStamp();
     lst = std::chrono::steady_clock::now();
+    sm->smSetMouseGrab(false);
     sm->smMainLoop();
     sm->smFinale();
 }
@@ -327,8 +328,10 @@ void qmpVisualization::updateVisualization3D()
         {
             float x, y;
             sm->smGetMouse2f(&x, &y);
-            rot[1] -= (y - lasty) * 0.01;
-            rot[2] += (x - lastx) * 0.01;
+            rot[1] -= (y - lasty) * 0.1;
+            rot[2] += (x - lastx) * 0.1;
+            lastx = x;
+            lasty = y;
             while (rot[1] > 360)
                 rot[1] -= 360;
             while (rot[1] < 0)
