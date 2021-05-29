@@ -271,12 +271,14 @@ void qmpMidiOutRtMidi::extendedMessage(uint32_t length, const char *data)
     {
         fprintf(stderr, "Failed to send midi message: %s\n", e.what());
     }
-    for (auto &msg : devinit->initseq.eventList)
+    if (!devinit)
+        return;
+    for (auto &imsg : devinit->initseq.eventList)
     {
-        if ((msg.type & 0xF0) == 0xF0 && msg.str == std::string(data, length))
+        if ((imsg.type & 0xF0) == 0xF0 && imsg.str == std::string(data, length))
         {
-            if (msg.time > 0)
-                std::this_thread::sleep_for(std::chrono::milliseconds(msg.time));
+            if (imsg.time > 0)
+                std::this_thread::sleep_for(std::chrono::milliseconds(imsg.time));
         }
     }
 }
