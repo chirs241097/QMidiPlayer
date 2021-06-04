@@ -245,6 +245,7 @@ void qmpVisualization::reset()
         delete pool[i];
     pool.clear();
     elb = ctk = lstk = cfr = 0;
+    roffset = 0;
     tspool.clear();
     cts = 0x0402;
     cks = 0;
@@ -909,7 +910,7 @@ bool qmpVisualization::update()
     {
         if (rendermode)
         {
-            ctk = 1e6 * (cfr) / tfps / ctp * api->getDivision() + lstk;
+            ctk = 1e6 * cfr / tfps / ctp * api->getDivision() + lstk;
             ++cfr;
         }
         else
@@ -981,11 +982,22 @@ bool qmpVisualization::update()
     }
     if (~ltpc && ctp != pool[ltpc]->key)
     {
+        uint32_t oldtp = ctp;
         ctp = pool[ltpc]->key;
         if (rendermode)
         {
+            if (ctk > pool[ltpc]->tcs)
+            {
+                double oldtpft = (double)(ctk - pool[ltpc]->tcs) * (oldtp / 1e6 / api->getDivision());
+                roffset += oldtpft;
+            }
             lstk = pool[ltpc]->tcs;
             cfr = 1;
+            while (roffset > 1. / tfps) //usually only run once
+            {
+                ++ cfr;
+                roffset -= 1. / tfps;
+            }
         }
     }
     int t, r;

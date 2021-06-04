@@ -42,6 +42,7 @@ private:
     uint32_t rpnid[16], rpnval[16];
     std::chrono::steady_clock::time_point lst;
     double etps;
+    double roffset;
     bool shouldclose, playing, debug;
     bool rendermode, hidewindow;
     int herh, heh, hfrf;
