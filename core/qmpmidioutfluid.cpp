@@ -99,7 +99,6 @@ void qmpMidiOutFluid::deviceInit()
         synth = nullptr;
         return;
     }
-    fluid_synth_set_chorus(synth, 3, 2.0, 0.3, 8.0, FLUID_CHORUS_MOD_SINE);
     bnk.clear();
     pst.clear();
 }
@@ -359,34 +358,41 @@ void qmpMidiOutFluid::getReverbPara(double *r, double *d, double *w, double *l)
 {
     if (!synth)
         return;
-    *r = fluid_synth_get_reverb_roomsize(synth);
-    *d = fluid_synth_get_reverb_damp(synth);
-    *w = fluid_synth_get_reverb_width(synth);
-    *l = fluid_synth_get_reverb_level(synth);
+    fluid_synth_get_reverb_group_roomsize(synth, 0, r);
+    fluid_synth_get_reverb_group_damp(synth, 0, d);
+    fluid_synth_get_reverb_group_width(synth, 0, w);
+    fluid_synth_get_reverb_group_level(synth, 0, l);
 }
 void qmpMidiOutFluid::setReverbPara(int e, double r, double d, double w, double l)
 {
     if (!synth)
         return;
-    fluid_synth_set_reverb_on(synth, e);
-    fluid_synth_set_reverb(synth, r, d, w, l);
+    fluid_synth_reverb_on(synth, 0, e);
+    fluid_synth_set_reverb_group_roomsize(synth, 0, r);
+    fluid_synth_set_reverb_group_damp(synth, 0, d);
+    fluid_synth_set_reverb_group_width(synth, 0, w);
+    fluid_synth_set_reverb_group_level(synth, 0, l);
 }
 void qmpMidiOutFluid::getChorusPara(int *fb, double *l, double *r, double *d, int *type)
 {
     if (!synth)
         return;
-    *fb = fluid_synth_get_chorus_nr(synth);
-    *l = fluid_synth_get_chorus_level(synth);
-    *r = fluid_synth_get_chorus_speed(synth);
-    *d = fluid_synth_get_chorus_depth(synth);
-    *type = fluid_synth_get_chorus_type(synth);
+    fluid_synth_get_chorus_group_nr(synth, 0, fb);
+    fluid_synth_get_chorus_group_level(synth, 0, l);
+    fluid_synth_get_chorus_group_speed(synth, 0, r);
+    fluid_synth_get_chorus_group_depth(synth, 0, d);
+    fluid_synth_get_chorus_group_type(synth, 0, type);
 }
 void qmpMidiOutFluid::setChorusPara(int e, int fb, double l, double r, double d, int type)
 {
     if (!synth)
         return;
-    fluid_synth_set_chorus_on(synth, e);
-    fluid_synth_set_chorus(synth, fb, l, r, d, type);
+    fluid_synth_chorus_on(synth, 0, e);
+    fluid_synth_set_chorus_group_nr(synth, 0, fb);
+    fluid_synth_set_chorus_group_level(synth, 0, l);
+    fluid_synth_set_chorus_group_speed(synth, 0, r);
+    fluid_synth_set_chorus_group_depth(synth, 0, d);
+    fluid_synth_set_chorus_group_type(synth, 0, type);
 }
 
 qmpFileRendererFluid::qmpFileRendererFluid(const char *_fn, const char *_ofn)
@@ -456,13 +462,20 @@ void qmpFileRendererFluid::setReverbPara(int e, double r, double d, double w, do
 {
     if (!synth)
         return;
-    fluid_synth_set_reverb_on(synth, e);
-    fluid_synth_set_reverb(synth, r, d, w, l);
+    fluid_synth_reverb_on(synth, 0, e);
+    fluid_synth_set_reverb_group_roomsize(synth, 0, r);
+    fluid_synth_set_reverb_group_damp(synth, 0, d);
+    fluid_synth_set_reverb_group_width(synth, 0, w);
+    fluid_synth_set_reverb_group_level(synth, 0, l);
 }
 void qmpFileRendererFluid::setChorusPara(int e, int fb, double l, double r, double d, int type)
 {
     if (!synth)
         return;
-    fluid_synth_set_chorus_on(synth, e);
-    fluid_synth_set_chorus(synth, fb, l, r, d, type);
+    fluid_synth_chorus_on(synth, 0, e);
+    fluid_synth_set_chorus_group_nr(synth, 0, fb);
+    fluid_synth_set_chorus_group_level(synth, 0, l);
+    fluid_synth_set_chorus_group_speed(synth, 0, r);
+    fluid_synth_set_chorus_group_depth(synth, 0, d);
+    fluid_synth_set_chorus_group_type(synth, 0, type);
 }
