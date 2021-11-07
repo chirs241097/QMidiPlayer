@@ -39,6 +39,7 @@ public:
     void reset(uint8_t ch);
     void onMapped(uint8_t ch, int refcnt);
     void onUnmapped(uint8_t ch, int refcnt);
+    bool selectPreset(uint8_t ch, uint16_t bank, uint8_t prog);
     std::vector<std::pair<uint16_t, std::string>> getBankList();
     std::vector<std::pair<uint8_t, std::string>> getPresets(uint16_t bank);
     std::string getPresetName(uint16_t bank, uint8_t preset);

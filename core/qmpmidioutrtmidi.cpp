@@ -343,6 +343,11 @@ void qmpMidiOutRtMidi::onUnmapped(uint8_t ch, int refcnt)
     if (!refcnt && outport)
         outport->closePort();
 }
+
+bool qmpMidiOutRtMidi::selectPreset(uint8_t ch, uint16_t bank, uint8_t prog)
+{
+    return false;
+}
 std::vector<std::pair<uint16_t, std::string>> qmpMidiOutRtMidi::getBankList()
 {
     if (!devinit)

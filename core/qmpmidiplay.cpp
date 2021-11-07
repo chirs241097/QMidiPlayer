@@ -387,8 +387,11 @@ void CMidiPlayer::playerPanic(bool reset)
     for (auto &i : mididev)
         if (i.refcnt)
         {
-            for (uint8_t j = 0; j < 16; ++j)
-                reset ? i.dev->reset(j) : i.dev->panic(j);
+            if (reset)
+                i.dev->reset(0xff);
+            else
+                for (uint8_t j = 0; j < 16; ++j)
+                    i.dev->panic(j);
         }
 }
 bool CMidiPlayer::playerLoadFile(const char *fn)
@@ -596,9 +599,12 @@ void CMidiPlayer::setChannelPreset(int ch, int b, int p)
     chstatus[ch][0] = b >> 7;
     chstatus[ch][32] = b & 0x7F;
     qmpMidiOutDevice *d = mididev[mappedoutput[ch]].dev;
-    d->basicMessage(0xB0 | ch, 0x00, b >> 7);
-    d->basicMessage(0xB0 | ch, 0x20, b & 0x7F);
-    d->basicMessage(0xC0 | ch, p, 0);
+    if (!d->selectPreset(ch, b, p))
+    {
+        d->basicMessage(0xB0 | ch, 0x00, b >> 7);
+        d->basicMessage(0xB0 | ch, 0x20, b & 0x7F);
+        d->basicMessage(0xC0 | ch, p, 0);
+    }
 }
 void CMidiPlayer::dumpFile()
 {

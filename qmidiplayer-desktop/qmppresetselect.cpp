@@ -82,34 +82,14 @@ void qmpPresetSelector::on_pbCancel_clicked()
 void qmpPresetSelector::on_pbOk_clicked()
 {
     CMidiPlayer *plyr = qmpMainWindow::getInstance()->getPlayer();
-    if (plyr->getChannelOutput(ch))
-    {
-        if (ui->spCustomMSB->isEnabled())
-            plyr->setChannelPreset(ch, (ui->spCustomMSB->value() << 7) | ui->spCustomLSB->value(), ui->spCustomPC->value());
-        else
-        {
-            if (!ui->lwBankSelect->currentItem() || !ui->lwPresetSelect->currentItem())
-                return (void)close();
-            int b = ui->lwBankSelect->currentItem()->text().split(' ').first().toInt();
-            int p = ui->lwPresetSelect->currentItem()->text().split(' ').first().toInt();
-            plyr->setChannelPreset(ch, b, p);
-        }
-    }
+    if (ui->spCustomMSB->isEnabled())
+        plyr->setChannelPreset(ch, (ui->spCustomMSB->value() << 7) | ui->spCustomLSB->value(), ui->spCustomPC->value());
     else
     {
         if (!ui->lwBankSelect->currentItem() || !ui->lwPresetSelect->currentItem())
             return (void)close();
-        int b, p;
-        b = ui->lwBankSelect->currentItem()->text().toInt();
-        p = ui->lwPresetSelect->currentItem()->text().split(' ').first().toInt();
-        std::string s = qmpMainWindow::getInstance()->getSettings()->getOptionEnumIntOptName("FluidSynth/BankSelect");
-        if (s == "XG")
-        {
-            if (b == 128)
-                b = 127 << 7;
-        }
-        else if (s == "GS")
-            b <<= 7;
+        int b = ui->lwBankSelect->currentItem()->text().split(' ').first().toInt();
+        int p = ui->lwPresetSelect->currentItem()->text().split(' ').first().toInt();
         plyr->setChannelPreset(ch, b, p);
     }
     qmpMainWindow::getInstance()->invokeCallback("preset.set", nullptr);

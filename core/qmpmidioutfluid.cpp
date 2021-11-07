@@ -206,6 +206,14 @@ void qmpMidiOutFluid::onMapped(uint8_t, int)
 void qmpMidiOutFluid::onUnmapped(uint8_t, int)
 {
 }
+
+bool qmpMidiOutFluid::selectPreset(uint8_t ch, uint16_t bank, uint8_t prog)
+{
+    fluid_synth_set_channel_type(synth, ch, bank == 128 ? CHANNEL_TYPE_DRUM : CHANNEL_TYPE_MELODIC);
+    fluid_synth_bank_select(synth, ch, bank);
+    fluid_synth_program_change(synth, ch, prog);
+    return true;
+}
 std::vector<std::pair<uint16_t, std::string>> qmpMidiOutFluid::getBankList()
 {
     return bnk;
