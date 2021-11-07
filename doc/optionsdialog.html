@@ -26,14 +26,21 @@
 	<h1>Settings Dialog</h1>
 	Options with one asterisk will be applied after QMidiPlayer is restarted.<br>
 	Options with two asterisks will be applied after the internal fluidsynth is restarted.<br>
-	Other options are applied immediately.<br>
+	Other options take effect immediately (or when the next track is played).<br>
 	<img src="../img/options1.png" width="440"><br>
 	<ul>
 		<li>Disable Midi Mapping*: only use the default output device.</li>
 		<li>Send SysEx: whether to send system exclusive messages or not.</li>
 		<li>Wait for remaining voices before stopping:<br>
-		If checked, the player will not stop until the current polyphone reaches 0.<br>
-		Otherwise it will stop immediately after the last event is sent.
+		If checked, the player will not stop until the current polyphone reaches 0 and
+		the output is silent. Otherwise it will stop immediately after the last event is sent.
+		This option is only effective if the internal Fluidsynth output is used.
+		</li>
+		<li>Fluidsynth Device ID: Device ID of the internal Fluidsynth.<br>
+		This will affect how the internal Fluidsynth handles system exclusive messages.
+		The value is 0-based, as they are in actual system exclusive messages.
+		Please note that some synthesizers use an 1-based value for their user interface.
+		For playback of most GS files, this should be set to 16.
 		</li>
 		<li>Text encoding: text encoding used in the midi file.</li>
 		<li>Select MIDI output devices*: Choose the MIDI devices to use for default device selection.<br>
