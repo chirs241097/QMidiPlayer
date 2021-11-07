@@ -84,7 +84,10 @@ void qmpVisualization::showThread()
     sm->smUpdateFunc(h);
     sm->smQuitFunc(closeh);
     sm->smWinTitle("QMidiPlayer Visualization");
-    sm->smSetFPS(vsync ? FPS_VSYNC : tfps);
+    if (rendermode)
+        sm->smSetFPS(0);
+    else
+        sm->smSetFPS(vsync ? FPS_VSYNC : tfps);
     sm->smNoSuspend(true);
     sm->smInit();
     shouldclose = false;
@@ -959,11 +962,6 @@ bool qmpVisualization::update()
             sm->smRenderQuad(&q);
         }
     }
-    if (osdpos == 4)
-    {
-        sm->smRenderEnd();
-        return shouldclose;
-    }
     uint32_t ltpc = ~0u;
     for (uint32_t i = elb; i < pool.size(); ++i)
     {
@@ -1009,21 +1007,24 @@ bool qmpVisualization::update()
     int xp = (osdpos & 1) ? wwidth - step - 1 : 1;
     int yp = osdpos < 2 ? wheight - step * 5 - 4 : step + 4;
     int align = osdpos & 1 ? ALIGN_RIGHT : ALIGN_LEFT;
-    font2.updateString(L"Title: %ls", api->getWTitle().c_str());
-    font2.render(xp, yp, 0.5, 0xFFFFFFFF, align);
-    font2.render(xp - 1, yp - 1, 0.5, 0xFF000000, align);
-    font.updateString(L"Time Sig: %d/%d", cts >> 8, 1 << (cts & 0xFF));
-    font.render(xp, yp += step, 0.5, 0xFFFFFFFF, align);
-    font.render(xp - 1, yp - 1, 0.5, 0xFF000000, align);
-    font.updateString(L"Key Sig: %ls", ts.c_str());
-    font.render(xp, yp += step, 0.5, 0xFFFFFFFF, align);
-    font.render(xp - 1, yp - 1, 0.5, 0xFF000000, align);
-    font.updateString(L"Tempo: %.2f", 60. / (ctp / 1e6));
-    font.render(xp, yp += step, 0.5, 0xFFFFFFFF, align);
-    font.render(xp - 1, yp - 1, 0.5, 0xFF000000, align);
-    font.updateString(L"Current tick: %d", ctk);
-    font.render(xp, yp += step, 0.5, 0xFFFFFFFF, align);
-    font.render(xp - 1, yp - 1, 0.5, 0xFF000000, align);
+    if (osdpos != 4)
+    {
+        font2.updateString(L"Title: %ls", api->getWTitle().c_str());
+        font2.render(xp, yp, 0.5, 0xFFFFFFFF, align);
+        font2.render(xp - 1, yp - 1, 0.5, 0xFF000000, align);
+        font.updateString(L"Time Sig: %d/%d", cts >> 8, 1 << (cts & 0xFF));
+        font.render(xp, yp += step, 0.5, 0xFFFFFFFF, align);
+        font.render(xp - 1, yp - 1, 0.5, 0xFF000000, align);
+        font.updateString(L"Key Sig: %ls", ts.c_str());
+        font.render(xp, yp += step, 0.5, 0xFFFFFFFF, align);
+        font.render(xp - 1, yp - 1, 0.5, 0xFF000000, align);
+        font.updateString(L"Tempo: %.2f", 60. / (ctp / 1e6));
+        font.render(xp, yp += step, 0.5, 0xFFFFFFFF, align);
+        font.render(xp - 1, yp - 1, 0.5, 0xFF000000, align);
+        font.updateString(L"Current tick: %d", ctk);
+        font.render(xp, yp += step, 0.5, 0xFFFFFFFF, align);
+        font.render(xp - 1, yp - 1, 0.5, 0xFF000000, align);
+    }
     if (!rendermode)
     {
         font.updateString(L"FPS: %.2f", sm->smGetFPS());
@@ -1210,12 +1211,12 @@ void qmpVisualization::init()
         memset(rpnval, 0xFF, sizeof(rpnval));
         memset(rpnid, 0xFF, sizeof(rpnid));
         std::sort(this->tspool.begin(), this->tspool.end());
-        for (uint32_t tk = 0, n = 4, s = 0; tk <= this->api->getMaxTick();)
+        for (uint32_t tk = 0, n = 4, s = 0, d = 4; tk <= this->api->getMaxTick();)
         {
             while (tk < (s >= this->tspool.size() ? this->api->getMaxTick() : this->tspool[s].first))
             {
                 this->pool.push_back(new MidiVisualEvent{tk, tk, 0, 0, 999});
-                tk += n * this->api->getDivision();
+                tk += n * this->api->getDivision() * 4 / d;
             }
             tk = (s >= this->tspool.size() ? this->api->getMaxTick() : this->tspool[s].first);
             if (tk == this->api->getMaxTick())
@@ -1224,7 +1225,11 @@ void qmpVisualization::init()
                 ++tk;
                 break;
             }
-            else n = this->tspool[s++].second >> 24;
+            else
+            {
+                n = this->tspool[s].second >> 24;
+                d = 1 << ((this->tspool[s++].second >> 16) & 0xff);
+            }
         }
         std::sort(this->pool.begin(), this->pool.end(), cmp);
     }
