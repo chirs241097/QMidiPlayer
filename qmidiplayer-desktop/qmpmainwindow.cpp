@@ -441,7 +441,7 @@ void qmpMainWindow::playerSetup(IFluidSettings *fs)
         });
     }
     fs->setOptStr("synth.midi-bank-select", bsmode.c_str());
-    fs->setOptInt("synth.device-id", 0x10);
+    fs->setOptInt("synth.device-id", settings->getOptionInt("FluidSynth/DeviceID"));
     player->sendSysX(settings->getOptionBool("Midi/SendSysEx"));
 }
 void qmpMainWindow::loadSoundFont(IFluidSettings *fs)
@@ -489,6 +489,7 @@ void qmpMainWindow::registerMidiOptions()
     settings->registerOptionBool("MIDI", "Disable MIDI Mapping", "Midi/DisableMapping", false);
     settings->registerOptionBool("MIDI", "Send system exclusive messages", "Midi/SendSysEx", true);
     settings->registerOptionBool("MIDI", "Wait for remaining voice before stopping", "Midi/WaitVoice", true);
+    settings->registerOptionInt("MIDI", "Fluidsynth Device ID", "FluidSynth/DeviceID", 0x00, 0x7E, 0x10);
     settings->registerOptionEnumInt("MIDI", "Text encoding", "Midi/TextEncoding", {"Unicode", "Big5", "Big5-HKSCS", "CP949", "EUC-JP", "EUC-KR", "GB18030", "KOI8-R", "KOI8-U", "Macintosh", "Shift-JIS"}, 0);
 }
 
