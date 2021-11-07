@@ -441,6 +441,7 @@ void qmpMainWindow::playerSetup(IFluidSettings *fs)
         });
     }
     fs->setOptStr("synth.midi-bank-select", bsmode.c_str());
+    fs->setOptInt("synth.device-id", 0x10);
     player->sendSysX(settings->getOptionBool("Midi/SendSysEx"));
 }
 void qmpMainWindow::loadSoundFont(IFluidSettings *fs)
