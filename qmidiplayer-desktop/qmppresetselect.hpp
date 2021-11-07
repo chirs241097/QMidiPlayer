@@ -16,7 +16,6 @@ class qmpPresetSelector: public QDialog
 public:
     explicit qmpPresetSelector(QWidget *parent = 0);
     ~qmpPresetSelector();
-    void showEvent(QShowEvent *e);
     void setupWindow(int chid);
 
 private slots:
@@ -31,7 +30,6 @@ private slots:
 
 private:
     Ui::qmpPresetSelector *ui;
-    char presets[129][128][24];
     void on_pbCancel_clicked();
     void on_pbOk_clicked();
     int ch;

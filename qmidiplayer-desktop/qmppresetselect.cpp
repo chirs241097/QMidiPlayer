@@ -16,15 +16,6 @@ qmpPresetSelector::~qmpPresetSelector()
     delete ui;
 }
 
-void qmpPresetSelector::showEvent(QShowEvent *e)
-{
-    memset(presets, 0, sizeof(presets));
-    if (!qmpMainWindow::getInstance()->getFluid()->getSFCount())
-        return e->ignore();
-    ui->lwBankSelect->clear();
-    ui->lwPresetSelect->clear();
-    e->accept();
-}
 void qmpPresetSelector::setupWindow(int chid)
 {
     CMidiPlayer *plyr = qmpMainWindow::getInstance()->getPlayer();
