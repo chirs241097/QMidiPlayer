@@ -27,8 +27,8 @@ void qmpMidiOutFluid::registerOptions(qmpPluginAPI *coreapi)
         if (std::string(driver) == "waveout")
 #else
         if (std::string(driver) == "pulseaudio")
-            me->default_driver = static_cast<int>(me->drivers.size() - 1);
 #endif
+            me->default_driver = static_cast<int>(me->drivers.size() - 1);
         };
     fluid_settings_foreach_option(fsettings, "audio.driver", this, insert_driver);
     delete_fluid_settings(fsettings);
