@@ -29,7 +29,7 @@
 int main(int argc, char **argv)
 {
 #ifdef _WIN32
-    if (!LoadLibraryA("libbacktrace.dll"))
+    if (!LoadLibraryA("backtrace.dll"))
         fputs("Failed to load backtrace library. Stack trace will not be printed if unhandled exception occurs.\n", stderr);
 #endif
     QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
