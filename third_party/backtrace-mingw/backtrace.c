@@ -61,6 +61,7 @@ struct bfd_set {
 struct find_info {
 	asymbol **symbol;
 	bfd_vma counter;
+	bfd_vma base_addr;
 	const char *file;
 	const char *func;
 	unsigned line;
@@ -138,7 +139,7 @@ output_print(struct output_buffer *ob, const char * format, ...)
 	ob->buf[ob->ptr] = '\0';
 	va_list ap;
 	va_start(ap,format);
-	vsnprintf(ob->buf + ob->ptr , ob->sz - ob->ptr , format, ap);
+	vsnprintf(ob->buf + ob->ptr, ob->sz - ob->ptr, format, ap);
 	va_end(ap);
 
 	ob->ptr = strlen(ob->buf + ob->ptr) + ob->ptr;
@@ -152,23 +153,27 @@ lookup_section(bfd *abfd, asection *sec, void *opaque_data)
 	if (data->func)
 		return;
 
-	if (!(bfd_get_section_flags(abfd, sec) & SEC_ALLOC))
+	if (!(bfd_section_flags(sec) & SEC_ALLOC))
 		return;
 
-	bfd_vma vma = bfd_get_section_vma(abfd, sec);
-	if (data->counter < vma || vma + bfd_get_section_size(sec) <= data->counter)
-		return;
+	bfd_vma vma = bfd_section_vma(sec);
+	bfd_vma addr = data->counter;
+	if (addr < vma || addr >= vma + bfd_section_size(sec))
+		addr -= data->base_addr; //relocated?
+		if (addr < vma || addr >= vma + bfd_section_size(sec))
+			return;
 
-	bfd_find_nearest_line(abfd, sec, data->symbol, data->counter - vma, &(data->file), &(data->func), &(data->line));
+	bfd_find_nearest_line(abfd, sec, data->symbol, addr - vma, &(data->file), &(data->func), &(data->line));
 }
 
 static void
-find(struct bfd_ctx * b, DWORD offset, const char **file, const char **func, unsigned *line)
+find_sym(struct bfd_ctx * b, DWORD64 offset, DWORD64 base, const char **file, const char **func, unsigned *line)
 {
 	struct find_info data;
 	data.func = NULL;
 	data.symbol = b->symbol;
 	data.counter = offset;
+	data.base_addr = base;
 	data.file = NULL;
 	data.func = NULL;
 	data.line = 0;
@@ -242,10 +247,10 @@ close_bfd_ctx(struct bfd_ctx *bc)
 }
 
 static struct bfd_ctx *
-get_bc(struct bfd_set *set , const char *procname, int *err)
+get_bc(struct bfd_set *set, const char *procname, int *err)
 {
 	while(set->name) {
-		if (strcmp(set->name , procname) == 0) {
+		if (strcmp(set->name, procname) == 0) {
 			return set->bc;
 		}
 		set = set->next;
@@ -277,15 +282,12 @@ release_set(struct bfd_set *set)
 static void
 _backtrace(struct output_buffer *ob, struct bfd_set *set, int depth , LPCONTEXT context)
 {
-	char procname[MAX_PATH];
-	GetModuleFileNameA(NULL, procname, sizeof procname);
-
 	struct bfd_ctx *bc = NULL;
 	int err = BFD_ERR_OK;
 	DWORD machine_type = 0;
 
-	STACKFRAME frame;
-	memset(&frame,0,sizeof(frame));
+	STACKFRAME64 frame;
+	memset(&frame, 0, sizeof(frame));
 
 #if defined(_M_IX86) || defined(__i386__)
 	machine_type = IMAGE_FILE_MACHINE_I386;
@@ -317,8 +319,8 @@ _backtrace(struct output_buffer *ob, struct bfd_set *set, int depth , LPCONTEXT 
 		&frame,
 		context,
 		0,
-		SymFunctionTableAccess,
-		SymGetModuleBase, 0)) {
+		SymFunctionTableAccess64,
+		SymGetModuleBase64, 0)) {
 
 		--depth;
 		if (depth < 0)
@@ -328,7 +330,7 @@ _backtrace(struct output_buffer *ob, struct bfd_set *set, int depth , LPCONTEXT 
 		symbol->SizeOfStruct = (sizeof *symbol) + 255;
 		symbol->MaxNameLength = 254;
 
-		DWORD module_base = SymGetModuleBase(process, frame.AddrPC.Offset);
+		DWORD64 module_base = SymGetModuleBase64(process, frame.AddrPC.Offset);
 
 		const char * module_name = "[unknown module]";
 		if (module_base &&
@@ -337,17 +339,21 @@ _backtrace(struct output_buffer *ob, struct bfd_set *set, int depth , LPCONTEXT 
 			bc = get_bc(set, module_name, &err);
 		}
 
+		PLOADED_IMAGE exeimg = ImageLoad(module_name, NULL);
+		DWORD64 imbase = exeimg->FileHeader->OptionalHeader.ImageBase;
+		ImageUnload(exeimg);
+
 		const char * source_file = NULL;
 		const char * func = NULL;
 		unsigned line = 0;
 
 		if (bc) {
-			find(bc,frame.AddrPC.Offset,&source_file,&func,&line);
+			find_sym(bc, frame.AddrPC.Offset, module_base - imbase, &source_file, &func, &line);
 		}
 
 		if (source_file == NULL) {
-			DWORD dummy = 0;
-			if (SymGetSymFromAddr(process, frame.AddrPC.Offset, &dummy, symbol)) {
+			DWORD64 dummy = 0;
+			if (SymGetSymFromAddr64(process, frame.AddrPC.Offset, &dummy, symbol)) {
 				source_file = symbol->Name;
 			}
 			else {
@@ -355,14 +361,14 @@ _backtrace(struct output_buffer *ob, struct bfd_set *set, int depth , LPCONTEXT 
 			}
 		}
 		if (func == NULL) {
-			output_print(ob,"0x%08x from %s in %s %s \n",
+			output_print(ob, "0x%08llx from %s in %s %s \n",
 				frame.AddrPC.Offset,
 				module_name,
 				source_file,
 				bfd_errors[err]);
 		}
 		else {
-			output_print(ob,"0x%08x in %s at %s:%d from %s \n",
+			output_print(ob, "0x%08llx in %s at %s:%d from %s \n",
 				frame.AddrPC.Offset,
 				func,
 				source_file,
@@ -387,7 +393,7 @@ exception_filter(LPEXCEPTION_POINTERS info)
 	else {
 		bfd_init();
 		PEXCEPTION_RECORD rec = info->ExceptionRecord;
-		output_print(&ob,"Unhandled exception occured at 0x%08x: %s.\n",
+		output_print(&ob,"Unhandled exception occured at 0x%08llx: %s.\n",
 			rec->ExceptionAddress,
 			exception_name(rec->ExceptionCode)
 		);
@@ -399,14 +405,16 @@ exception_filter(LPEXCEPTION_POINTERS info)
 				output_print(&ob, "The data at memory address 0x%08x could not be %s.\n",
 					rec->ExceptionInformation[1], op);
 			}
-		struct bfd_set *set = calloc(1,sizeof(*set));
-		_backtrace(&ob , set , 128 , info->ContextRecord);
+		struct bfd_set *set = calloc(1, sizeof(*set));
+		_backtrace(&ob, set, 128, info->ContextRecord);
 		release_set(set);
 
 		SymCleanup(GetCurrentProcess());
 	}
 
-	fputs(g_output , stderr);
+	FILE *btf = fopen("backtrace.log", "w");
+	fputs(g_output, btf);
+	fclose(btf);
 
 	return EXCEPTION_CONTINUE_SEARCH;
 }
@@ -436,7 +444,7 @@ __printf__(const char * format, ...) {
 	int value;
 	va_list arg;
 	va_start(arg, format);
-	value = vprintf ( format, arg );
+	value = vprintf(format, arg);
 	va_end(arg);
 	return value;
 }
