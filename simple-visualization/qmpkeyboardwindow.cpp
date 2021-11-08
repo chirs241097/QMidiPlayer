@@ -29,6 +29,7 @@ qmpKeyboardWindow::qmpKeyboardWindow(qmpPluginAPI *_api, QWidget *parent):
     {
         const SEvent *e = (const SEvent *)ee;
         int ch = e->type & 0xF;
+        if (!this->isVisible()) return;
         if ((e->type & 0xF0) == 0x80 || ((e->type & 0xF0) == 0x90 && e->p2 == 0))
             emit keystateupdated(ch, e->p1, false);
         if ((e->type & 0xF0) == 0x90 && e->p2 > 0)
