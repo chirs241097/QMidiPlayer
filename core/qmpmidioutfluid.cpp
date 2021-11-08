@@ -23,7 +23,7 @@ void qmpMidiOutFluid::registerOptions(qmpPluginAPI *coreapi)
     {
         qmpMidiOutFluid *me = static_cast<qmpMidiOutFluid *>(d);
         me->drivers.push_back(std::string(driver));
-#ifdef WIN32
+#ifdef _WIN32
         if (std::string(driver) == "waveout")
 #else
         if (std::string(driver) == "pulseaudio")
@@ -34,14 +34,14 @@ void qmpMidiOutFluid::registerOptions(qmpPluginAPI *coreapi)
     delete_fluid_settings(fsettings);
     coreapi->registerOptionEnumInt("Audio", "Audio Driver", "FluidSynth/AudioDriver", drivers, default_driver);
     coreapi->registerOptionInt("Audio", "Audio Buffer Size", "FluidSynth/BufSize", 64, 8192,
-#ifdef WIN32
+#ifdef _WIN32
         512
 #else
         64
 #endif
     );
     coreapi->registerOptionInt("Audio", "Audio Buffer Count", "FluidSynth/BufCnt", 2, 64,
-#ifdef WIN32
+#ifdef _WIN32
         8
 #else
         16
