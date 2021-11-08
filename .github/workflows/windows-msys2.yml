@@ -48,7 +48,7 @@ jobs:
           cp ../build/qmidiplayer-desktop/qmidiplayer.exe ./
           windeployqt -winextras --no-quick-import --no-translations --no-opengl-sw --no-angle --no-system-d3d-compiler ./qmidiplayer.exe
           # direct depts
-          cp $MINGW_PREFIX/bin/libfluidsynth-2.dll ./
+          cp $MINGW_PREFIX/bin/libfluidsynth-*.dll ./
           cp $MINGW_PREFIX/bin/librtmidi*.dll ./
           cp $MINGW_PREFIX/bin/libportaudio-2.dll ./
           # standalone visualization renderer
