@@ -47,10 +47,6 @@ jobs:
           mkdir package_workspace && cd package_workspace
           cp ../build/qmidiplayer-desktop/qmidiplayer.exe ./
           windeployqt -winextras --no-quick-import --no-translations --no-opengl-sw --no-angle --no-system-d3d-compiler ./qmidiplayer.exe
-          # direct depts
-          cp $MINGW_PREFIX/bin/libfluidsynth-*.dll ./
-          cp $MINGW_PREFIX/bin/librtmidi*.dll ./
-          cp $MINGW_PREFIX/bin/libportaudio-2.dll ./
           # standalone visualization renderer
           cp ../build/visualization/renderer/qmpvisrender.exe ./
           # copy plugins
@@ -60,57 +56,15 @@ jobs:
           cp ../build/visualization/libvisualization.dll ./plugins/
           cp ../build/sample-plugin/libsampleplugin.dll ./plugins/
           cp ../build/windows-extra/libwindowsextra.dll ./plugins/
-          # visualization plugin depts
-          cp $MINGW_PREFIX/bin/glfw3.dll ./
-          cp $MINGW_PREFIX/bin/glew32.dll ./
-          cp $MINGW_PREFIX/bin/zlib1.dll ./
-          cp $MINGW_PREFIX/bin/libfreetype-*.dll ./
-          cp $MINGW_PREFIX/bin/libdeflate.dll ./
-          cp $MINGW_PREFIX/bin/libwebp-*.dll ./
-          cp $MINGW_PREFIX/bin/libtiff-*.dll ./
-          cp $MINGW_PREFIX/bin/libIL.dll ./
-          cp $MINGW_PREFIX/bin/libHalf-*.dll ./
-          cp $MINGW_PREFIX/bin/libIlmImf-*.dll ./
-          cp $MINGW_PREFIX/bin/libjasper-*.dll ./
-          cp $MINGW_PREFIX/bin/libjpeg-*.dll ./
-          cp $MINGW_PREFIX/bin/liblcms2-*.dll ./
-          cp $MINGW_PREFIX/bin/libsquish.dll ./
-          cp $MINGW_PREFIX/bin/libtiff-*.dll ./
-          cp $MINGW_PREFIX/bin/libIex-*.dll ./
-          cp $MINGW_PREFIX/bin/libIlmThread-*.dll ./
-          cp $MINGW_PREFIX/bin/libImath-*.dll ./
-          cp $MINGW_PREFIX/bin/libgomp-*.dll ./
-          cp $MINGW_PREFIX/bin/liblzma-*.dll ./
-          # some other dlls
-          cp $MINGW_PREFIX/bin/libgcc_s_seh-1.dll ./
-          cp $MINGW_PREFIX/bin/libwinpthread-1.dll ./
-          cp $MINGW_PREFIX/bin/libstdc++-*.dll ./
-          cp $MINGW_PREFIX/bin/libintl-*.dll ./
-          cp $MINGW_PREFIX/bin/libpng16-*.dll ./
-          cp $MINGW_PREFIX/bin/libsndfile-1.dll ./
-          cp $MINGW_PREFIX/bin/libreadline8.dll ./
-          cp $MINGW_PREFIX/bin/libpcre2-16-0.dll ./
-          cp $MINGW_PREFIX/bin/libpcre-1.dll ./
-          cp $MINGW_PREFIX/bin/libharfbuzz-0.dll ./
-          cp $MINGW_PREFIX/bin/libdouble-conversion.dll ./
-          cp $MINGW_PREFIX/bin/libicuuc[!d]*.dll ./
-          cp $MINGW_PREFIX/bin/libicudt[!d]*.dll ./
-          cp $MINGW_PREFIX/bin/libicuin[!d]*.dll ./
-          cp $MINGW_PREFIX/bin/libzstd.dll ./
-          cp $MINGW_PREFIX/bin/libFLAC-*.dll ./
-          cp $MINGW_PREFIX/bin/libogg-0.dll ./
-          cp $MINGW_PREFIX/bin/libtermcap-0.dll ./
-          cp $MINGW_PREFIX/bin/libopus-0.dll ./
-          cp $MINGW_PREFIX/bin/libvorbis-0.dll ./
-          cp $MINGW_PREFIX/bin/libvorbis-0.dll ./
-          cp $MINGW_PREFIX/bin/libvorbisenc-2.dll ./
-          cp $MINGW_PREFIX/bin/libgraphite2.dll ./
-          cp $MINGW_PREFIX/bin/libiconv-2.dll ./
-          cp $MINGW_PREFIX/bin/libbz2-1.dll ./
-          cp $MINGW_PREFIX/bin/libbrotlidec.dll ./
-          cp $MINGW_PREFIX/bin/libbrotlicommon.dll ./
           # license file
           cp ../COPYING ./
+          # dependencies
+          ldd ./qmidiplayer.exe > deps-qmidiplayer.txt
+          ldd ./plugins/libvisualization.dll > deps-libvisualization.txt
+          bash -c 'while read -r line; do path=$(cut -d" " -f3 <<<$line); cp -v $path ./; done <<<$(grep ".*mingw.*bin" deps-qmidiplayer.txt); exit 0'
+          bash -c 'while read -r line; do path=$(cut -d" " -f3 <<<$line); cp -v $path ./; done <<<$(grep ".*mingw.*bin" deps-libvisualization.txt); exit 0'
+          rm deps-qmidiplayer.txt
+          rm deps-libvisualization.txt
           # done
           cd ../
       - name: install libglib-2.0-*.dll if needed
