@@ -29,7 +29,7 @@ private:
     smHandler *h, *closeh;
     std::stack<uint32_t> pendingt[16][128], pendingv[16][128];
     SMELT *sm;
-    SMTRG tdscn, tdparticles;
+    SMTRG tdscn, tdparticles, rdrtrg;
     SMTEX chequer, bgtex, particletex, pianotex;
     smTTFont font, font2, fonthdpi;
     qmpVirtualPiano3D *p3d[16];

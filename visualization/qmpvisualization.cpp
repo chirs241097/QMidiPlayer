@@ -149,6 +149,7 @@ void qmpVisualization::showThread()
     nebuf = new smEntity3DBuffer();
     tdscn = sm->smTargetCreate(wwidth * wsupersample, wheight * wsupersample, wmultisample);
     tdparticles = sm->smTargetCreate(wwidth * wsupersample, wheight * wsupersample, wmultisample);
+    rdrtrg = rendermode ? sm->smTargetCreate(wwidth, wheight) : 0;
     if (!api->getOptionString("Visualization/font2").length() || !font.loadTTF(api->getOptionString("Visualization/font2").c_str(), fontsize))
         if (!font.loadTTF("/usr/share/fonts/truetype/freefont/FreeMono.ttf", fontsize))
             if (!font.loadTTF("/usr/share/fonts/gnu-free/FreeMono.otf", fontsize))
@@ -921,7 +922,7 @@ bool qmpVisualization::update()
     }
     if (!flat)
         updateVisualization3D();
-    sm->smRenderBegin2D();
+    sm->smRenderBegin2D(false, rdrtrg);
     sm->smClrscr(0xFF666666);
     q.blend = BLEND_ALPHABLEND;
     for (int i = 0; i < 4; ++i)
@@ -1051,7 +1052,6 @@ bool qmpVisualization::update()
         font.render(xp, yp += 3 * step, 0.5, 0xFFFFFFFF, align);
         font.render(xp - 1, yp - 1, 0.5, 0xFF000000, align);
     }
-    sm->smRenderEnd();
     if (rendermode)
     {
         if (ctk > api->getMaxTick())
@@ -1062,6 +1062,7 @@ bool qmpVisualization::update()
             framecb(fbcont, 4 * wwidth * wheight, ctk, api->getMaxTick());
         }
     }
+    sm->smRenderEnd();
     return shouldclose;
 }
 
