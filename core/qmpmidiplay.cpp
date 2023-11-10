@@ -189,7 +189,7 @@ SEvent *CMidiPlayer::getEvent(uint32_t id)
 }
 void CMidiPlayer::prePlayInit()
 {
-    playerPanic(true);
+    playerReset();
     for (size_t i = 0; i < mididev.size(); ++i)
         if (mididev[i].refcnt)
             mididev[i].dev->reset(0xFF);
@@ -382,16 +382,21 @@ CMidiPlayer::~CMidiPlayer()
         delete midiFile;
     delete midiReaders;
 }
-void CMidiPlayer::playerPanic(bool reset)
+void CMidiPlayer::playerReset()
 {
     for (auto &i : mididev)
         if (i.refcnt)
         {
-            if (reset)
-                i.dev->reset(0xff);
-            else
-                for (uint8_t j = 0; j < 16; ++j)
-                    i.dev->panic(j);
+            i.dev->reset(0xff);
+        }
+}
+void CMidiPlayer::playerPanic()
+{
+    for (auto &i : mididev)
+        if (i.refcnt)
+        {
+            for (uint8_t j = 0; j < 16; ++j)
+                i.dev->panic(j);
         }
 }
 bool CMidiPlayer::playerLoadFile(const char *fn)

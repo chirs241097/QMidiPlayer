@@ -117,7 +117,8 @@ public:
     void playerInit();
     void playerDeinit();
     void playerThread();
-    void playerPanic(bool reset = false);
+    void playerReset();
+    void playerPanic();
 
     //playing control methods
     uint32_t getStamp(int id);

@@ -284,7 +284,8 @@ void qmpMainWindow::updateWidgets()
             }
             delete playerTh;
             playerTh = nullptr;
-            player->playerPanic(true);
+            player->playerPanic();
+            player->playerReset();
             chnlw->on_pbUnmute_clicked();
             chnlw->on_pbUnsolo_clicked();
             ui->pbPlayPause->setIcon(QIcon(getThemedIcon(":/img/play.svg")));
@@ -355,7 +356,8 @@ void qmpMainWindow::switchTrack(QString s, bool interrupt)
         playerTh = nullptr;
     }
     timer->stop();
-    player->playerPanic(true);
+    player->playerPanic();
+    player->playerReset();
     ui->hsTimer->setValue(0);
     chnlw->on_pbUnmute_clicked();
     chnlw->on_pbUnsolo_clicked();
@@ -669,7 +671,8 @@ void qmpMainWindow::on_pbStop_clicked()
         player->playerDeinit();
         setFuncEnabled("Render", stopped);
         setFuncEnabled("ReloadSynth", stopped);
-        player->playerPanic(true);
+        player->playerPanic();
+        player->playerReset();
         if (playerTh)
         {
             playerTh->join();
