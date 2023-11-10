@@ -223,6 +223,11 @@ int qmpMainWindow::parseArgs()
     return 0;
 }
 
+bool qmpMainWindow::startedWithFiles()
+{
+    return !argfiles.empty();
+}
+
 void qmpMainWindow::closeEvent(QCloseEvent *event)
 {
     if (settings->getOptionBool("Behavior/DialogStatus"))

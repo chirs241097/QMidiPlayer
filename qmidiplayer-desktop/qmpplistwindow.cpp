@@ -29,7 +29,7 @@ qmpPlistWindow::qmpPlistWindow(QWidget *parent):
     repeat = 0;
     shuffle = 0;
     settings = qmpMainWindow::getInstance()->getSettings();
-    if (settings->getOptionBool("Behavior/RestorePlaylist"))
+    if (settings->getOptionBool("Behavior/RestorePlaylist") && !qmpMainWindow::getInstance()->startedWithFiles())
     {
         QSettings *plist = new QSettings(QStandardPaths::writableLocation(QStandardPaths::StandardLocation::ConfigLocation) + QString("/qmpplist"),
             QSettings::IniFormat);
@@ -116,14 +116,15 @@ void qmpPlistWindow::closeEvent(QCloseEvent *event)
         settings->setOptionRaw("DialogStatus/PListW", geometry());
     }
     setVisible(false);
-    if (!qmpMainWindow::getInstance()->isFinalizing())
+    auto mw = qmpMainWindow::getInstance();
+    if (!mw->isFinalizing())
         while (ui->lwFiles->count() > 1)
             delete ui->lwFiles->item(0);
-    if (!qmpMainWindow::getInstance()->isFinalizing() && settings->getOptionBool("Behavior/DialogStatus"))
+    if (!mw->isFinalizing() && settings->getOptionBool("Behavior/DialogStatus"))
     {
         settings->setOptionRaw("DialogStatus/PListWShown", 0);
     }
-    if (qmpMainWindow::getInstance()->isFinalizing() && settings->getOptionBool("Behavior/RestorePlaylist"))
+    if (mw->isFinalizing() && settings->getOptionBool("Behavior/RestorePlaylist") && !mw->startedWithFiles())
     {
         QSettings *plist = new QSettings(QStandardPaths::writableLocation(QStandardPaths::StandardLocation::ConfigLocation) + QString("/qmpplist"),
             QSettings::IniFormat);
@@ -135,7 +136,7 @@ void qmpPlistWindow::closeEvent(QCloseEvent *event)
         plist->sync();
         delete plist;
     }
-    qmpMainWindow::getInstance()->setFuncState("Playlist", false);
+    mw->setFuncState("Playlist", false);
     event->accept();
 }
 

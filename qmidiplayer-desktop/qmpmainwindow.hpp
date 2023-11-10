@@ -230,6 +230,7 @@ public:
     void playerSeek(uint32_t percentage);
     PlaybackStatus getPlaybackStatus();
     int parseArgs();
+    bool startedWithFiles();
     void registerFunctionality(qmpFuncBaseIntf *i, std::string name, std::string desc, const char *icon, int iconlen, bool checkable);
     void unregisterFunctionality(std::string name);
     int registerUIHook(std::string e, ICallBack *callback, void *userdat);
