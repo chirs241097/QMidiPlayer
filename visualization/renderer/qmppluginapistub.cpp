@@ -98,6 +98,16 @@ std::wstring qmpPluginAPIStub::getWTitle()
             core->settings()->getOptionEnumIntOptName("Midi/TextEncoding").c_str())->
         toUnicode(core->player->getTitle()).toStdWString();
 }
+
+std::string qmpPluginAPIStub::getFilePath()
+{
+    return "";
+}
+
+std::wstring qmpPluginAPIStub::getWFilePath()
+{
+    return L"";
+}
 std::string qmpPluginAPIStub::getChannelPresetString(int ch)
 {
     return std::string();
@@ -110,6 +120,8 @@ void *qmpPluginAPIStub::getMainWindow()
 {
     return nullptr;
 }
+
+void qmpPluginAPIStub::playbackControl(PlaybackControlCommand cmd, void *data) {}
 void qmpPluginAPIStub::discardCurrentEvent() {}
 void qmpPluginAPIStub::commitEventChange(SEvent d) {}
 void qmpPluginAPIStub::callEventReaderCB(SEvent d) {}

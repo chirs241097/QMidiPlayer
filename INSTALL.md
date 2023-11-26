@@ -35,7 +35,7 @@ make cmake qt5 glfw3 glew devil zlib freetype fluidsynth
 ```
 
 Proceed with normal instructions for Linux with tools replaced by those
-provided by mxe. You have to build and install RtMidi yourself.
+provided by mxe. You will have to build and install RtMidi yourself.
 
 At the moment there are some issues with mxe that may cause a
 build failure:
@@ -48,3 +48,8 @@ build failure:
   FindGLEW.cmake and make sure the section for WIN32 makes sense.
 
 This list may change whenever mxe updates. You are on your own to figure them out.
+
+Another option is to use msys2. The build steps should resemble building on Linux a lot, just
+remember to install dependencies for the correct toolchain. It is however not recommended to
+use msys2 builds as release builds because the libraries provided by msys2 come with a sh*t
+load of unnecessary features enabled for QMidiPlayer.

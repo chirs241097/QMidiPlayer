@@ -335,10 +335,15 @@ QString qmpMainWindow::getFileName()
 {
     return ui->lbFileName->text();
 }
+
+QUrl qmpMainWindow::getFilePath()
+{
+    return filepath;
+}
 void qmpMainWindow::switchTrack(QString s, bool interrupt)
 {
-    stopped = false;
-    playing = true;
+    stopped = true;
+    playing = false;
     setFuncEnabled("Render", stopped);
     setFuncEnabled("ReloadSynth", stopped);
     ui->pbPlayPause->setIcon(QIcon(getThemedIcon(":/img/pause.svg")));
@@ -348,6 +353,8 @@ void qmpMainWindow::switchTrack(QString s, bool interrupt)
         player->playerPanic();
     }
     invokeCallback("main.stop", nullptr);
+    stopped = false;
+    playing = true;
     if (playerTh)
     {
         auto f = std::async([this] {playerTh->join();});
@@ -367,8 +374,9 @@ void qmpMainWindow::switchTrack(QString s, bool interrupt)
     chnlw->on_pbUnmute_clicked();
     chnlw->on_pbUnsolo_clicked();
     QString fns = s;
+    filepath = QUrl::fromLocalFile(fns);
     setWindowTitle(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.')) + " - QMidiPlayer");
-    ui->lbFileName->setText(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.')));
+    ui->lbFileName->setText(filepath.fileName().left(filepath.fileName().lastIndexOf('.')));
     if (plistw->getCurrentItem() != fns)
         plistw->setCurrentItem(fns);
     onfnChanged();
@@ -511,7 +519,6 @@ void qmpMainWindow::registerBehaviorOptions()
 
 void qmpMainWindow::on_pbPlayPause_clicked()
 {
-    playing = !playing;
     if (stopped)
     {
         QString fns = plistw->getFirstItem();
@@ -526,8 +533,9 @@ void qmpMainWindow::on_pbPlayPause_clicked()
             if (!fns.length())
                 return (void)(playing = false);
         }
+        filepath = QUrl::fromLocalFile(fns);
         setWindowTitle(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.')) + " - QMidiPlayer");
-        ui->lbFileName->setText(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.')));
+        ui->lbFileName->setText(filepath.fileName().left(filepath.fileName().lastIndexOf('.')));
         onfnChanged();
         if (!loadFile(fns))
             return;
@@ -535,6 +543,7 @@ void qmpMainWindow::on_pbPlayPause_clicked()
         sprintf(ts, "%02d:%02d", (int)player->getFtime() / 60, (int)player->getFtime() % 60);
         ui->lbFinTime->setText(ts);
         player->playerInit();
+        playing = true;
         PlaybackStatus ps = getPlaybackStatus();
         invokeCallback("main.start", &ps);
         internalfluid->setGain(ui->vsMasterVol->value() / 250.);
@@ -553,24 +562,10 @@ void qmpMainWindow::on_pbPlayPause_clicked()
         offset = 0;
         timer->start(UPDATE_INTERVAL);
         stopped = false;
+        ui->pbPlayPause->setIcon(QIcon(getThemedIcon(":/img/play.svg")));
     }
     else
-    {
-        if (!playing)
-        {
-            player->playerPanic();
-            offset = ui->hsTimer->value() / 100.*player->getFtime();
-        }
-        else
-        {
-            st = std::chrono::steady_clock::now();
-            player->setResumed();
-        }
-        player->setTCpaused(!playing);
-        PlaybackStatus ps = getPlaybackStatus();
-        invokeCallback("main.pause", &ps);
-    }
-    ui->pbPlayPause->setIcon(QIcon(getThemedIcon(playing ? ":/img/pause.svg" : ":/img/play.svg")));
+        setPaused(playing);
 }
 
 void qmpMainWindow::on_hsTimer_sliderPressed()
@@ -630,7 +625,7 @@ void qmpMainWindow::playerSeek(uint32_t percentage)
         player->playerPanic();
         ui->hsTimer->setValue(percentage);
         player->setTCeptr(player->getStamp(percentage), percentage);
-        offset = percentage / 100.*player->getFtime();
+        offset = percentage / 100. * player->getFtime();
         st = std::chrono::steady_clock::now();
     }
     else
@@ -641,7 +636,7 @@ void qmpMainWindow::playerSeek(uint32_t percentage)
             return;
         }
         player->setTCeptr(player->getStamp(percentage), percentage);
-        offset = percentage / 100.*player->getFtime();
+        offset = percentage / 100. * player->getFtime();
         ui->hsTimer->setValue(percentage);
         char ts[100];
         sprintf(ts, "%02d:%02d", (int)(offset) / 60, (int)(offset) % 60);
@@ -655,7 +650,14 @@ PlaybackStatus qmpMainWindow::getPlaybackStatus()
 {
     std::chrono::duration<double> elapsed =
         std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::steady_clock::now() - st);
-    return {!playing, uint64_t((elapsed.count() + offset) * 1000), uint64_t(player->getFtime() * 1000), player->getTick(), player->getMaxTick()};
+    return {
+        .paused=!playing,
+        .stopped=stopped,
+        .curtime_ms=stopped ? 0 : uint64_t((elapsed.count() + offset) * 1000),
+        .maxtime_ms=stopped ? 0 : uint64_t(player->getFtime() * 1000),
+        .curtick=stopped ? 0 : player->getTick(),
+        .maxtick=stopped ? 0 : player->getMaxTick()
+    };
 }
 
 void qmpMainWindow::on_vsMasterVol_valueChanged()
@@ -667,31 +669,7 @@ void qmpMainWindow::on_vsMasterVol_valueChanged()
 
 void qmpMainWindow::on_pbStop_clicked()
 {
-    if (!stopped)
-    {
-        timer->stop();
-        stopped = true;
-        playing = false;
-        invokeCallback("main.stop", nullptr);
-        player->playerDeinit();
-        setFuncEnabled("Render", stopped);
-        setFuncEnabled("ReloadSynth", stopped);
-        player->playerPanic();
-        player->playerReset();
-        if (playerTh)
-        {
-            playerTh->join();
-            delete playerTh;
-            playerTh = nullptr;
-        }
-        chnlw->on_pbUnmute_clicked();
-        chnlw->on_pbUnsolo_clicked();
-        ui->pbPlayPause->setIcon(QIcon(getThemedIcon(":/img/play.svg")));
-        ui->hsTimer->setValue(0);
-        ui->lbCurPoly->setText("00000");
-        ui->lbMaxPoly->setText("00000");
-        ui->lbCurTime->setText("00:00");
-    }
+    stop();
 }
 
 void qmpMainWindow::dialogClosed()
@@ -702,12 +680,12 @@ void qmpMainWindow::dialogClosed()
 
 void qmpMainWindow::on_pbPrev_clicked()
 {
-    switchTrack(plistw->getPrevItem());
+    prevTrack();
 }
 
 void qmpMainWindow::on_pbNext_clicked()
 {
-    switchTrack(plistw->getNextItem());
+    nextTrack();
 }
 
 void qmpMainWindow::selectionChanged()
@@ -852,6 +830,66 @@ void qmpMainWindow::reloadSynth()
 std::map<std::string, qmpFuncPrivate> &qmpMainWindow::getFunc()
 {
     return mfunc;
+}
+
+void qmpMainWindow::setPaused(bool paused)
+{
+    if (stopped)
+        return;
+    playing = !paused;
+    if (paused)
+    {
+        player->playerPanic();
+        offset = ui->hsTimer->value() / 100. * player->getFtime();
+    }
+    else
+    {
+        st = std::chrono::steady_clock::now();
+        player->setResumed();
+    }
+    player->setTCpaused(paused);
+    PlaybackStatus ps = getPlaybackStatus();
+    invokeCallback("main.pause", &ps);
+    ui->pbPlayPause->setIcon(QIcon(getThemedIcon(paused ? ":/img/play.svg" : ":/img/pause.svg")));
+}
+
+void qmpMainWindow::nextTrack()
+{
+    switchTrack(plistw->getNextItem());
+}
+
+void qmpMainWindow::prevTrack()
+{
+    switchTrack(plistw->getPrevItem());
+}
+
+void qmpMainWindow::stop()
+{
+    if (!stopped)
+    {
+        timer->stop();
+        stopped = true;
+        playing = false;
+        invokeCallback("main.stop", nullptr);
+        player->playerDeinit();
+        setFuncEnabled("Render", stopped);
+        setFuncEnabled("ReloadSynth", stopped);
+        player->playerPanic();
+        player->playerReset();
+        if (playerTh)
+        {
+            playerTh->join();
+            delete playerTh;
+            playerTh = nullptr;
+        }
+        chnlw->on_pbUnmute_clicked();
+        chnlw->on_pbUnsolo_clicked();
+        ui->pbPlayPause->setIcon(QIcon(getThemedIcon(":/img/play.svg")));
+        ui->hsTimer->setValue(0);
+        ui->lbCurPoly->setText("00000");
+        ui->lbMaxPoly->setText("00000");
+        ui->lbCurTime->setText("00:00");
+    }
 }
 
 void qmpMainWindow::setupWidget()

@@ -261,6 +261,16 @@ std::wstring qmpPluginAPIImpl::getWTitle()
 {
     return qmw ? qmw->getWTitle() : L"";
 }
+
+std::string qmpPluginAPIImpl::getFilePath()
+{
+    return qmw ? qmw->getFilePath().toString().toStdString() : "";
+}
+
+std::wstring qmpPluginAPIImpl::getWFilePath()
+{
+    return qmw ? qmw->getFilePath().toString().toStdWString() : L"";
+}
 std::string qmpPluginAPIImpl::getChannelPresetString(int ch)
 {
     uint16_t b;
@@ -288,6 +298,42 @@ bool qmpPluginAPIImpl::isDarkTheme()
 void *qmpPluginAPIImpl::getMainWindow()
 {
     return (void *)qmw;
+}
+
+void qmpPluginAPIImpl::playbackControl(PlaybackControlCommand cmd, void *data)
+{
+    if (!qmw) return;
+    switch (cmd)
+    {
+        case PlaybackControlCommand::Pause:
+            qmw->setPaused(true);
+        break;
+        case PlaybackControlCommand::Play:
+            qmw->setPaused(false);
+        break;
+        case PlaybackControlCommand::TogglePause:
+            qmw->setPaused(!qmw->getPlaybackStatus().paused);
+        break;
+        case PlaybackControlCommand::Stop:
+            qmw->stop();
+        break;
+        case PlaybackControlCommand::Seek:
+            qmw->playerSeek(*static_cast<uint32_t*>(data));
+        break;
+        case PlaybackControlCommand::SeekAbs:
+        {
+            double t = *static_cast<double*>(data);
+            uint32_t p = 100. * t / (qmw->getPlaybackStatus().maxtime_ms / 1000.);
+            qmw->playerSeek(p);
+        }
+        break;
+        case PlaybackControlCommand::NextTrack:
+            qmw->nextTrack();
+        break;
+        case PlaybackControlCommand::PrevTrack:
+            qmw->prevTrack();
+        break;
+    }
 }
 
 void qmpPluginAPIImpl::discardCurrentEvent()

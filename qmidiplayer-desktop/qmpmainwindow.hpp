@@ -223,6 +223,7 @@ public:
         return fin;
     }
     QString getFileName();
+    QUrl getFilePath();
     void switchTrack(QString s, bool interrupt = true);
     std::string getTitle();
     std::wstring getWTitle();
@@ -244,6 +245,10 @@ public:
     void setupWidget();
     void invokeCallback(std::string cat, void *callerdat);
     std::map<std::string, qmpFuncPrivate> &getFunc();
+    void setPaused(bool paused);
+    void nextTrack();
+    void prevTrack();
+    void stop();
 
 private slots:
     void on_pbPlayPause_clicked();
@@ -273,6 +278,7 @@ private:
     std::chrono::steady_clock::time_point st;
     double offset;
     CMidiPlayer *player;
+    QUrl filepath;
     qmpMidiOutFluid *internalfluid;
     qmpFileRendererFluid *fluidrenderer;
     qmpPluginManager *pmgr;

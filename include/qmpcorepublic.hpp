@@ -77,6 +77,7 @@ public:
 struct PlaybackStatus
 {
     bool paused;
+    bool stopped;
     uint64_t curtime_ms;
     uint64_t maxtime_ms;
     uint64_t curtick;
@@ -153,6 +154,17 @@ public:
         return "";
     }
 };
+enum PlaybackControlCommand
+{
+    Pause,
+    Play,
+    TogglePause,
+    Stop,
+    Seek,    //uint32_t *percent
+    SeekAbs, //double *second
+    NextTrack,
+    PrevTrack
+};
 #ifdef QMP_MAIN
 extern "C" {
 #endif
@@ -176,23 +188,34 @@ extern "C" {
         virtual PlaybackStatus getPlaybackStatus() = 0;
         virtual int getChannelCC(int ch, int cc) = 0;
         virtual int getChannelPreset(int ch) = 0;
+        //Deprecated. Use playbackControl(Seek, (double*)&percentage) instead.
+        //Removing in 0.9.x.
         virtual void playerSeek(uint32_t percentage) = 0;
         virtual double getPitchBend(int ch) = 0;
         virtual void getPitchBendRaw(int ch, uint32_t *pb, uint32_t *pbr) = 0;
         virtual bool getChannelMask(int ch) = 0;
         virtual std::string getTitle() = 0;
         virtual std::wstring getWTitle() = 0;
+        virtual std::string getFilePath() = 0;
+        virtual std::wstring getWFilePath() = 0;
         virtual std::string getChannelPresetString(int ch) = 0;
         virtual bool isDarkTheme() = 0;
+        //Returns the qmpMainWindow instance. Use this as the parent widget
+        //if your plugin wants to create a child window.
+        //Do NOT call any non-virtual public functions through this pointer
+        //in the plugin.
+        //EXCEPTION: If your plugin links against Qt directly, you may call
+        //non-virtual members of the returned object inherited from Qt.
         virtual void *getMainWindow() = 0;
+        virtual void playbackControl(PlaybackControlCommand cmd, void* data) = 0;
 
         //WARNING!!: This function should be called from event reader callbacks only and
-        //it is somehow dangerous -- other plugins might be unaware of the removal of the
-        //event. The design might be modified afterward.
+        //it is somewhat dangerous -- other plugins might be unaware of the removal of the
+        //event. The design might be modified later.
         virtual void discardCurrentEvent() = 0;
         //WARNING!!: This function should be called from event reader callbacks only and
-        //it is somehow dangerous -- other plugins might be unaware of the event change.
-        //The design might be modified afterward.
+        //it is somewhat dangerous -- other plugins might be unaware of the event change.
+        //The design might be modified later.
         virtual void commitEventChange(SEvent d) = 0;
         //This function should be called from a file reader when it has read a new event
         virtual void callEventReaderCB(SEvent d) = 0;

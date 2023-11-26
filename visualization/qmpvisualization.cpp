@@ -904,9 +904,17 @@ bool qmpVisualization::update()
     if (!rendermode)
     {
         if (sm->smGetKeyState(SMK_RIGHT) == SMKST_HIT)
-            api->playerSeek(api->getCurrentPlaybackPercentage() + (sm->smGetKeyState(SMK_SHIFT) ? 5 : 1));
+        {
+            auto p = api->getCurrentPlaybackPercentage();
+            p += (sm->smGetKeyState(SMK_SHIFT) ? 5 : 1);
+            api->playbackControl(PlaybackControlCommand::Seek, &p);
+        }
         if (sm->smGetKeyState(SMK_LEFT) == SMKST_HIT)
-            api->playerSeek(api->getCurrentPlaybackPercentage() - (sm->smGetKeyState(SMK_SHIFT) ? 5 : 1));
+        {
+            auto p = api->getCurrentPlaybackPercentage();
+            p -= (sm->smGetKeyState(SMK_SHIFT) ? 5 : 1);
+            api->playbackControl(PlaybackControlCommand::Seek, &p);
+        }
         if (sm->smGetKeyState(SMK_B) == SMKST_HIT)
             debug ^= 1;
     }

@@ -29,9 +29,12 @@ public:
     bool getChannelMask(int ch);
     std::string getTitle();
     std::wstring getWTitle();
+    std::string getFilePath();
+    std::wstring getWFilePath();
     std::string getChannelPresetString(int ch);
     bool isDarkTheme();
     void *getMainWindow();
+    void playbackControl(PlaybackControlCommand cmd, void* data);
 
     void discardCurrentEvent();
     void commitEventChange(SEvent d);
