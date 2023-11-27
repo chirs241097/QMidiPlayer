@@ -1,4 +1,3 @@
-#include <QTextCodec>
 #include "qmpinfowindow.hpp"
 #include "ui_qmpinfowindow.h"
 #include "qmpmainwindow.hpp"
@@ -51,20 +50,12 @@ void qmpInfoWindow::updateInfo()
     ui->lbFileName->setText(QString("File name: ") + qmpMainWindow::getInstance()->getFileName());
     if (player->getTitle())
     {
-        if (textencoding != "Unicode")
-            ui->lbTitle->setText(QString("Title: ") +
-                QTextCodec::codecForName(textencoding.c_str())->toUnicode(player->getTitle()));
-        else
-            ui->lbTitle->setText(QString("Title: ") + player->getTitle());
+        ui->lbTitle->setText(QString("Title: %1").arg(qmpMainWindow::decodeString(player->getTitle())));
     }
     else ui->lbTitle->setText(QString("Title: "));
     if (player->getCopyright())
     {
-        if (textencoding != "Unicode")
-            ui->lbCopyright->setText(QString("Copyright: ") +
-                QTextCodec::codecForName(textencoding.c_str())->toUnicode(player->getCopyright()));
-        else
-            ui->lbCopyright->setText(QString("Copyright: ") + player->getCopyright());
+        ui->lbCopyright->setText(QString("Copyright: %1").arg(qmpMainWindow::decodeString(player->getCopyright())));
     }
     else ui->lbCopyright->setText(QString("Copyright: "));
     ui->lbTempo->setText(QString("Tempo: ") + QString::number(player->getTempo(), 'g', 5));

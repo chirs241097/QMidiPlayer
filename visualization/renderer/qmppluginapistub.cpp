@@ -1,9 +1,10 @@
+#include <unicode/ustring.h>
+#include <unicode/unistr.h>
+#include <unicode/ucnv.h>
 #include "qmpmidiplay.hpp"
 #include "qmpvisrendercore.hpp"
 #include "qmpsettingsro.hpp"
 #include "qmppluginapistub.hpp"
-
-#include <QTextCodec>
 
 qmpPluginAPIStub::qmpPluginAPIStub(qmpVisRenderCore *_core):
     core(_core)
@@ -84,19 +85,24 @@ bool qmpPluginAPIStub::getChannelMask(int ch)
 }
 std::string qmpPluginAPIStub::getTitle()
 {
-    if (core->settings()->getOptionEnumIntOptName("Midi/TextEncoding") == "Unicode")
-        return std::string(core->player->getTitle());
-    return QTextCodec::codecForName(
-            core->settings()->getOptionEnumIntOptName("Midi/TextEncoding").c_str())->
-        toUnicode(core->player->getTitle()).toStdString();
+    std::string enc(core->settings()->getOptionEnumIntOptName("Midi/TextEncoding"));
+    icu::UnicodeString us(core->player->getTitle(), enc.c_str());
+    std::string r;
+    us.toUTF8String(r);
+    return r;
 }
 std::wstring qmpPluginAPIStub::getWTitle()
 {
-    if (core->settings()->getOptionEnumIntOptName("Midi/TextEncoding") == "Unicode")
-        return QString(core->player->getTitle()).toStdWString();
-    return QTextCodec::codecForName(
-            core->settings()->getOptionEnumIntOptName("Midi/TextEncoding").c_str())->
-        toUnicode(core->player->getTitle()).toStdWString();
+    std::string enc(core->settings()->getOptionEnumIntOptName("Midi/TextEncoding"));
+    icu::UnicodeString us(core->player->getTitle(), enc.c_str());
+    std::wstring r;
+    int32_t sz;
+    UErrorCode e = U_ZERO_ERROR;
+    u_strToWCS(nullptr, 0, &sz, us.getBuffer(), us.length(), &e);
+    r.resize(sz + 1);
+    e = U_ZERO_ERROR;
+    u_strToWCS(r.data(), r.size(), nullptr, us.getBuffer(), us.length(), &e);
+    return r;
 }
 
 std::string qmpPluginAPIStub::getFilePath()

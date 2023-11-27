@@ -7,7 +7,9 @@
 QSettings *qmpSettings::settings = nullptr;
 qmpSettings::qmpSettings()
 {
+#if QT_VERSION_MAJOR < 6
     qRegisterMetaTypeStreamOperators<QPair<QString, QString>>();
+#endif
     QString confpath = QStandardPaths::writableLocation(QStandardPaths::StandardLocation::ConfigLocation) + QString("/qmprc");
     settings = new QSettings(confpath, QSettings::IniFormat);
     if (settings->value("ConfigurationFileRevision").toInt() != QMP_CONFIGURATION_FILE_REV &&

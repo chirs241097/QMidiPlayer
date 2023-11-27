@@ -56,7 +56,6 @@ QVariantMap QMPPlayer::getMetadata()
 qlonglong QMPPlayer::getPosition()
 {
     ::PlaybackStatus ps = api->getPlaybackStatus();
-    fprintf(stderr, "%lu\n", ps.curtime_ms);
     return ps.curtime_ms * 1000;
 }
 

@@ -57,6 +57,7 @@ set(CMAKE_AUTOUIC ON)
 
 include_directories(${fluidsynth_INCLUDE_DIRS})
 include_directories(${rtmidi_INCLUDE_DIRS})
+include_directories(${ICU_INCLUDE_DIR})
 include_directories(${PROJECT_SOURCE_DIR}/include/)
 include_directories(${PROJECT_SOURCE_DIR}/core/)
 
@@ -71,8 +72,10 @@ add_executable(qmidiplayer
 )
 
 target_link_libraries(qmidiplayer
-    Qt5::Widgets
+    Qt${QT_VERSION_MAJOR}::Widgets
     qmpcore
+    ICU::uc
+    ICU::i18n
     ${fluidsynth_LIBRARIES}
     ${rtmidi_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
@@ -90,7 +93,7 @@ PRIVATE
 )
 
 file(GLOB qmpdesktop_TS_FILES translations/*.ts)
-qt5_create_translation(qmpdesktop_QM_FILES ${qmpdesktop_SOURCES} ${qmpdesktop_TS_FILES})
+qt_create_translation(qmpdesktop_QM_FILES ${qmpdesktop_SOURCES} ${qmpdesktop_TS_FILES})
 add_custom_target(translations ALL DEPENDS ${qmpdesktop_QM_FILES})
 
 install(TARGETS qmidiplayer)

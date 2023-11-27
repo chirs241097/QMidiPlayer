@@ -1,5 +1,4 @@
 #include <cstdio>
-#include <functional>
 #include <set>
 #include <QCheckBox>
 #include <QPushButton>
@@ -14,23 +13,16 @@ qmpChannelsModel::qmpChannelsModel(QObject *parent): QAbstractTableModel(parent)
     evh = qmpMainWindow::getInstance()->getPlayer()->registerEventHandler(
             [this](const void *_e, void *)
     {
+        const SEvent *e = (const SEvent *)(_e);
+        if ((e->type & 0xF0) == 0xC0)
+            emit dataChanged(index(e->type & 0x0F, 4), index(e->type & 0x0F, 4), {Qt::ItemDataRole::DisplayRole});
         if (!updatequeued)
         {
             updatequeued = true;
-            const SEvent *e = (const SEvent *)(_e);
-            if ((e->p1 & 0xF0) == 0xC0)
-                emit dataChanged(index(e->p1 & 0xF0, 4), index(e->p1 & 0xF0, 4), {Qt::ItemDataRole::DisplayRole});
             QMetaObject::invokeMethod(this, &qmpChannelsModel::updateChannelActivity, Qt::ConnectionType::QueuedConnection);
         }
     }
     , nullptr, false);
-    QTimer *t = new QTimer(this);
-    t->setInterval(500);
-    t->setSingleShot(false);
-    connect(t, &QTimer::timeout, [this]()
-    {
-        emit this->dataChanged(this->index(0, 4), this->index(15, 4), {Qt::ItemDataRole::DisplayRole});
-    });
     memset(mute, 0, sizeof(mute));
     memset(solo, 0, sizeof(solo));
 }

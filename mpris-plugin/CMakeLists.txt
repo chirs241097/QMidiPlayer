@@ -13,8 +13,6 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt5 REQUIRED COMPONENTS DBus)
-
 include_directories(${PROJECT_SOURCE_DIR}/include/)
 
 add_library(qmpmpris MODULE
@@ -22,9 +20,9 @@ add_library(qmpmpris MODULE
 )
 
 target_link_libraries(qmpmpris
-    Qt5::Core
-    Qt5::Widgets
-    Qt5::DBus
+    Qt${QT_VERSION_MAJOR}::Core
+    Qt${QT_VERSION_MAJOR}::Widgets
+    Qt${QT_VERSION_MAJOR}::DBus
 )
 
 install(TARGETS qmpmpris LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/qmidiplayer/)

@@ -35,6 +35,14 @@ qmpEfxWindow::qmpEfxWindow(QWidget *parent) :
         0,
         true
     );
+    connect(ui->sbRoom, qOverload<int>(&QSpinBox::valueChanged), this, &qmpEfxWindow::spinValueChange);
+    connect(ui->sbDamp, qOverload<int>(&QSpinBox::valueChanged), this, &qmpEfxWindow::spinValueChange);
+    connect(ui->sbWidth, qOverload<int>(&QSpinBox::valueChanged), this, &qmpEfxWindow::spinValueChange);
+    connect(ui->sbLevelR, qOverload<int>(&QSpinBox::valueChanged), this, &qmpEfxWindow::spinValueChange);
+    connect(ui->sbFeedBack, qOverload<int>(&QSpinBox::valueChanged), this, &qmpEfxWindow::spinValueChange);
+    connect(ui->sbRate, qOverload<double>(&QDoubleSpinBox::valueChanged), this, &qmpEfxWindow::spinValueChange);
+    connect(ui->sbDepth, qOverload<double>(&QDoubleSpinBox::valueChanged), this, &qmpEfxWindow::spinValueChange);
+    connect(ui->sbLevelC, qOverload<int>(&QSpinBox::valueChanged), this, &qmpEfxWindow::spinValueChange);
     if (!settings->getOptionRaw("DialogStatus/EfxW", QRect()).toRect().isNull())
         setGeometry(settings->getOptionRaw("DialogStatus/EfxW", QRect()).toRect());
     if (settings->getOptionRaw("DialogStatus/EfxWShown", 0).toInt())
@@ -216,54 +224,6 @@ void qmpEfxWindow::on_dDepth_valueChanged()
 void qmpEfxWindow::on_dLevelC_valueChanged()
 {
     dailValueChange();
-}
-
-void qmpEfxWindow::on_sbRoom_valueChanged(QString s)
-{
-    s = QString();
-    spinValueChange();
-}
-
-void qmpEfxWindow::on_sbDamp_valueChanged(QString s)
-{
-    s = QString();
-    spinValueChange();
-}
-
-void qmpEfxWindow::on_sbWidth_valueChanged(QString s)
-{
-    s = QString();
-    spinValueChange();
-}
-
-void qmpEfxWindow::on_sbLevelR_valueChanged(QString s)
-{
-    s = QString();
-    spinValueChange();
-}
-
-void qmpEfxWindow::on_sbFeedBack_valueChanged(QString s)
-{
-    s = QString();
-    spinValueChange();
-}
-
-void qmpEfxWindow::on_sbRate_valueChanged(QString s)
-{
-    s = QString();
-    spinValueChange();
-}
-
-void qmpEfxWindow::on_sbDepth_valueChanged(QString s)
-{
-    s = QString();
-    spinValueChange();
-}
-
-void qmpEfxWindow::on_sbLevelC_valueChanged(QString s)
-{
-    s = QString();
-    spinValueChange();
 }
 
 void qmpEfxWindow::on_cbEnabledC_stateChanged()

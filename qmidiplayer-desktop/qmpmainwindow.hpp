@@ -312,6 +312,9 @@ public:
     {
         return ref;
     }
+    static QString decodeString(const char* str);
+    static std::string decodeStdString(const char* str);
+    static std::wstring decodeStdWString(const char* str);
 };
 
 class qmpRenderFunc: public qmpFuncBaseIntf

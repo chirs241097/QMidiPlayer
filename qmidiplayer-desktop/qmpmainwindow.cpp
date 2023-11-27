@@ -1,11 +1,12 @@
 #include <cstdio>
 #include <cmath>
-#include <functional>
+#include <unicode/ustring.h>
+#include <unicode/unistr.h>
+#include <unicode/ucnv.h>
 #include <QUrl>
 #include <QFileInfo>
 #include <QMimeData>
 #include <QFont>
-#include <QTextCodec>
 #include <QDirIterator>
 #include <QMessageBox>
 #include <QCheckBox>
@@ -406,19 +407,11 @@ void qmpMainWindow::switchTrack(QString s, bool interrupt)
 }
 std::string qmpMainWindow::getTitle()
 {
-    if (settings->getOptionEnumIntOptName("Midi/TextEncoding") == "Unicode")
-        return std::string(player->getTitle());
-    return QTextCodec::codecForName(
-        settings->getOptionEnumIntOptName("Midi/TextEncoding").c_str())->
-        toUnicode(player->getTitle()).toStdString();
+    return decodeStdString(player->getTitle());
 }
 std::wstring qmpMainWindow::getWTitle()
 {
-    if (settings->getOptionEnumIntOptName("Midi/TextEncoding") == "Unicode")
-        return QString(player->getTitle()).toStdWString();
-    return QTextCodec::codecForName(
-        settings->getOptionEnumIntOptName("Midi/TextEncoding").c_str())->
-        toUnicode(player->getTitle()).toStdWString();
+    return decodeStdWString(player->getTitle());
 }
 
 void qmpMainWindow::playerSetup(IFluidSettings *fs)
@@ -505,7 +498,16 @@ void qmpMainWindow::registerMidiOptions()
     settings->registerOptionBool("MIDI", "Send system exclusive messages", "Midi/SendSysEx", true);
     settings->registerOptionBool("MIDI", "Wait for remaining voice before stopping", "Midi/WaitVoice", true);
     settings->registerOptionInt("MIDI", "Fluidsynth Device ID", "FluidSynth/DeviceID", 0x00, 0x7E, 0x10);
-    settings->registerOptionEnumInt("MIDI", "Text encoding", "Midi/TextEncoding", {"Unicode", "Big5", "Big5-HKSCS", "CP949", "EUC-JP", "EUC-KR", "GB18030", "KOI8-R", "KOI8-U", "Macintosh", "Shift-JIS"}, 0);
+    UErrorCode e = U_ZERO_ERROR;
+    auto ucnvc = ucnv_countAvailable();
+    std::vector<std::string> converters;
+    for (auto i = 0; i < ucnvc; ++i)
+    {
+        auto n = ucnv_getAvailableName(i);
+        auto sn = ucnv_getStandardName(n, "MIME", &e);
+        if (sn) converters.push_back(std::string(sn));
+    }
+    settings->registerOptionEnumInt("MIDI", "Text encoding", "Midi/TextEncoding", converters, 0);
 }
 
 void qmpMainWindow::registerBehaviorOptions()
@@ -515,6 +517,43 @@ void qmpMainWindow::registerBehaviorOptions()
     settings->registerOptionBool("Behavior", "Save dialog status", "Behavior/DialogStatus", false);
     settings->registerOptionBool("Behavior", "Show labels beside icon in toolbar buttons", "Behavior/ShowButtonLabel", false);
     settings->registerOptionEnumInt("Behavior", "Icon Theme", "Behavior/IconTheme", {"Auto", "Dark", "Light"}, 0);
+}
+
+QString qmpMainWindow::decodeString(const char *str)
+{
+    std::string enc("utf-8");
+    if (ref && ref->settings)
+        enc = ref->settings->getOptionEnumIntOptName("Midi/TextEncoding");
+    icu::UnicodeString us(str, enc.c_str());
+    std::string r;
+    return QString::fromUtf8(us.toUTF8String(r).c_str());
+}
+
+std::string qmpMainWindow::decodeStdString(const char *str)
+{
+    std::string enc("utf-8");
+    if (ref && ref->settings)
+        enc = ref->settings->getOptionEnumIntOptName("Midi/TextEncoding");
+    icu::UnicodeString us(str, enc.c_str());
+    std::string r;
+    us.toUTF8String(r);
+    return r;
+}
+
+std::wstring qmpMainWindow::decodeStdWString(const char *str)
+{
+    std::string enc("utf-8");
+    if (ref && ref->settings)
+        enc = ref->settings->getOptionEnumIntOptName("Midi/TextEncoding");
+    icu::UnicodeString us(str, enc.c_str());
+    std::wstring r;
+    int32_t sz = 0;
+    UErrorCode e = U_ZERO_ERROR;
+    u_strToWCS(nullptr, 0, &sz, us.getBuffer(), us.length(), &e);
+    r.resize(sz + 1);
+    e = U_ZERO_ERROR;
+    u_strToWCS(r.data(), r.size(), nullptr, us.getBuffer(), us.length(), &e);
+    return r;
 }
 
 void qmpMainWindow::on_pbPlayPause_clicked()

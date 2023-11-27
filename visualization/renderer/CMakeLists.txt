@@ -18,8 +18,10 @@ add_executable(qmpvisrender
 )
 
 target_link_libraries(qmpvisrender
-    Qt5::Core
+    Qt${QT_VERSION_MAJOR}::Core
     qmpcore
+    ICU::uc
+    ICU::i18n
     ${CMAKE_DL_LIBS}
     ${CMAKE_THREAD_LIBS_INIT}
 )
