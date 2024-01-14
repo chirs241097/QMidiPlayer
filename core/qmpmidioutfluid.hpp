@@ -4,7 +4,7 @@
 #include <utility>
 #include <vector>
 #include <unordered_map>
-#include "../include/qmpcorepublic.hpp"
+#include "qmpcorepublic.hpp"
 #include <fluidsynth.h>
 class IFluidSettings
 {

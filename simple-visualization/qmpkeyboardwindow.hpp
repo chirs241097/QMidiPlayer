@@ -1,7 +1,7 @@
 #ifndef QMPKEYBOARDWINDOW_HPP
 #define QMPKEYBOARDWINDOW_HPP
 
-#include "../include/qmpcorepublic.hpp"
+#include "qmpcorepublic.hpp"
 
 #include <QWidget>
 

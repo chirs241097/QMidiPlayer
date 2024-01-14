@@ -7,7 +7,7 @@
 #include <QMoveEvent>
 
 #include "qdialskulpturestyle.hpp"
-#include "../include/qmpcorepublic.hpp"
+#include "qmpcorepublic.hpp"
 
 namespace Ui
 {

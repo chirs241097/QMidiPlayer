@@ -3,7 +3,7 @@
 #include <unordered_map>
 #include <vector>
 #define QMP_MAIN
-#include "../include/qmpcorepublic.hpp"
+#include "qmpcorepublic.hpp"
 struct qmpDeviceInitializer
 {
     CMidiTrack initseq;

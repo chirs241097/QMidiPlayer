@@ -1,7 +1,7 @@
 #ifndef SIMPLEVISUALIZATION_HPP
 #define SIMPLEVISUALIZATION_HPP
 
-#include "../include/qmpcorepublic.hpp"
+#include "qmpcorepublic.hpp"
 
 class qmpKeyboardWindow;
 class qmpSimpleVisualization: public qmpPluginIntf, public qmpFuncBaseIntf

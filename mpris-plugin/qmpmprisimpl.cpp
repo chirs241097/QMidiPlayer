@@ -1,6 +1,6 @@
 #include <QMetaEnum>
 
-#include "../include/qmpcorepublic.hpp"
+#include "qmpcorepublic.hpp"
 #include "../qmidiplayer-desktop/qmpmainwindow.hpp"
 #include "qmpmprisimpl.hpp"
 

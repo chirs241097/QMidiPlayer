@@ -10,7 +10,7 @@
 #include <smmath.hpp>
 #include <smttfont.hpp>
 #include "qmpvirtualpiano3d.hpp"
-#include "../include/qmpcorepublic.hpp"
+#include "qmpcorepublic.hpp"
 
 class qmpVisualization;
 struct MidiVisualEvent

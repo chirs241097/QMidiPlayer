@@ -8,7 +8,7 @@
 #include <QDropEvent>
 #include <QDragEnterEvent>
 #include <QListWidgetItem>
-#include "../include/qmpcorepublic.hpp"
+#include "qmpcorepublic.hpp"
 
 namespace Ui
 {

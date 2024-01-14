@@ -2,7 +2,7 @@
 #define MIDIFMTPLUGIN_HPP
 
 #include <cstdio>
-#include "../include/qmpcorepublic.hpp"
+#include "qmpcorepublic.hpp"
 
 class CMidiStreamReader: public qmpFileReader
 {

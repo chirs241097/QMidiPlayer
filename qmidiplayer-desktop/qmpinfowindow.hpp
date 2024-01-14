@@ -8,7 +8,7 @@
 #include <QClipboard>
 #include <QCloseEvent>
 #include <QHideEvent>
-#include "../include/qmpcorepublic.hpp"
+#include "qmpcorepublic.hpp"
 
 namespace Ui
 {

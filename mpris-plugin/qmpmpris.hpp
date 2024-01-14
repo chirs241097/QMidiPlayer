@@ -1,7 +1,7 @@
 #ifndef QMPMPRIS_HPP
 #define QMPMPRIS_HPP
 
-#include "../include/qmpcorepublic.hpp"
+#include "qmpcorepublic.hpp"
 
 class QMPrisWrapper;
 class qmpMPrisPlugin: public qmpPluginIntf

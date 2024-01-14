@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #define QMP_MAIN
-#include "../include/qmpcorepublic.hpp"
+#include "qmpcorepublic.hpp"
 struct qmpPlugin
 {
     std::string name, version, path;

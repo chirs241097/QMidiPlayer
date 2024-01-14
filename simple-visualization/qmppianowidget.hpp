@@ -2,7 +2,6 @@
 #define QMPPIANOWIDGET_HPP
 
 #include <QWidget>
-#include <bitset>
 
 class qmpPianoWidget : public QWidget
 {

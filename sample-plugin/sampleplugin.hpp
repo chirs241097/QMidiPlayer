@@ -1,7 +1,7 @@
 #ifndef SAMPLEPLUGIN_H
 #define SAMPLEPLUGIN_H
 
-#include "../include/qmpcorepublic.hpp"
+#include "qmpcorepublic.hpp"
 
 class qmpSamplePlugin: public qmpPluginIntf
 {

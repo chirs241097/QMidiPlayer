@@ -4,7 +4,7 @@
 #include <QDBusConnection>
 #include <QDBusMessage>
 
-#include "../include/qmpcorepublic.hpp"
+#include "qmpcorepublic.hpp"
 
 QMPrisWrapper::QMPrisWrapper(QString serviceSuffix, qmpPluginAPI *_api, QObject *parent) :
     api(_api),
