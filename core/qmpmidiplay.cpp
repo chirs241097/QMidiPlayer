@@ -20,8 +20,10 @@ bool CMidiPlayer::processEvent(const SEvent *e)
         if (eventHandlerCB[i])
             eventHandlerCB[i]->callBack((void *)&fe, eventHandlerCBuserdata[i]);
     for (auto i = event_handlers.begin(); i != event_handlers.end(); ++i)
-        if (!std::get<2>(i->second))
-            std::get<0>(i->second)((void *)e, std::get<1>(i->second));
+    {
+        auto [f, d, p] = i->second;
+        if (!p) f((void *)e, d);
+    }
     uint8_t ch = e->type & 0x0F;
     if ((e->type & 0xF0) < 0xF0)
         levtt[ch] = std::chrono::system_clock::now();

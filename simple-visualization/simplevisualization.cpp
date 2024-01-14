@@ -8,6 +8,7 @@ qmpSimpleVisualization::qmpSimpleVisualization(qmpPluginAPI *_api)
 void qmpSimpleVisualization::show()
 {
     p->show();
+    p->resetAll();
 }
 void qmpSimpleVisualization::close()
 {
@@ -28,6 +29,8 @@ void qmpSimpleVisualization::init()
     };
     uihs = api->registerUIHook("main.stop", refreshfn, nullptr);
     uihsk = api->registerUIHook("main.seek", refreshfn, nullptr);
+    uihsk = api->registerUIHook("main.start", refreshfn, nullptr);
+    uihsk = api->registerUIHook("main.reset", refreshfn, nullptr);
     uihsk = api->registerUIHook("preset.set", refreshfn, nullptr);
     uihsk = api->registerUIHook("channel.ccchange", refreshfn, nullptr);
 }

@@ -601,7 +601,7 @@ void qmpMainWindow::on_pbPlayPause_clicked()
         offset = 0;
         timer->start(UPDATE_INTERVAL);
         stopped = false;
-        ui->pbPlayPause->setIcon(QIcon(getThemedIcon(":/img/play.svg")));
+        ui->pbPlayPause->setIcon(QIcon(getThemedIcon(":/img/pause.svg")));
     }
     else
         setPaused(playing);

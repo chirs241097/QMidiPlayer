@@ -180,7 +180,7 @@ double qmpPluginAPIImpl::getRealTempo()
 }
 uint32_t qmpPluginAPIImpl::getTimeSig()
 {
-    int n, d = 0, t;
+    int n, d = 0, t = 1;
     qmw &&qmw->getPlayer() ? qmw->getPlayer()->getCurrentTimeSignature(&n, &t) : void(0);
     for (; t >>= 1; ++d);
     return n << 8 | d;

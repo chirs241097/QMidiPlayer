@@ -8,7 +8,8 @@
 #include "ui_qmpchannelswindow.h"
 #include "qmpmainwindow.hpp"
 
-qmpChannelsModel::qmpChannelsModel(QObject *parent): QAbstractTableModel(parent)
+qmpChannelsModel::qmpChannelsModel(QObject *parent): QAbstractTableModel(parent),
+    updatequeued(false)
 {
     evh = qmpMainWindow::getInstance()->getPlayer()->registerEventHandler(
             [this](const void *_e, void *)
