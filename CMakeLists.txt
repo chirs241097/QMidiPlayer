@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10.0)
 
-project(QMidiPlayer VERSION 0.8.7 LANGUAGES C CXX)
+project(QMidiPlayer VERSION 0.8.8 LANGUAGES C CXX)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
