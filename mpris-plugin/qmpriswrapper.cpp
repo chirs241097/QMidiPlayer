@@ -25,12 +25,12 @@ void QMPrisWrapper::post_creation()
     api->registerUIHook("main.stop", [this](const void* a, void* _) {
         tracklist->TrackListReplaced({}, QDBusObjectPath("/"));
         this->notifyPropertyChange(PLAYER_INTERFACE, "Metadata", player->getMetadata());
-        this->notifyPropertyChange(PLAYER_INTERFACE, "PlaybackStatus", player->getPlaybackStatus());
         this->notifyPropertyChange(PLAYER_INTERFACE, "CanPause", player->getCanPause());
         this->notifyPropertyChange(PLAYER_INTERFACE, "CanPlay", player->getCanPlay());
         this->notifyPropertyChange(PLAYER_INTERFACE, "CanSeek", player->getCanSeek());
         this->notifyPropertyChange(PLAYER_INTERFACE, "CanGoNext", player->getCanGoNext());
         this->notifyPropertyChange(PLAYER_INTERFACE, "CanGoPrevious", player->getCanGoPrevious());
+        this->notifyPropertyChange(PLAYER_INTERFACE, "PlaybackStatus", player->getPlaybackStatus());
     }, nullptr);
     api->registerUIHook("main.start", [this](const void* a, void* _) {
         tracklist->TrackListReplaced(tracklist->getTracks(), QDBusObjectPath("/org/chrisoft/qmidiplayer/dummylist/0"));
