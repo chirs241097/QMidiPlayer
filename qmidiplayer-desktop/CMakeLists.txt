@@ -92,9 +92,15 @@ PRIVATE
     ${rtmidi_LIBRARY_DIRS}
 )
 
-file(GLOB qmpdesktop_TS_FILES translations/*.ts)
-qt_create_translation(qmpdesktop_QM_FILES ${qmpdesktop_SOURCES} ${qmpdesktop_TS_FILES})
-add_custom_target(translations ALL DEPENDS ${qmpdesktop_QM_FILES})
+set(qmpdesktop_TS_FILES
+    translations/qmp_zh_CN.ts
+)
+if(${QT_VERSION_MAJOR} EQUAL "5")
+    qt_create_translation(qmpdesktop_QM_FILES ${qmpdesktop_SOURCES} ${qmpdesktop_TS_FILES})
+    add_custom_target(translations ALL DEPENDS ${qmpdesktop_QM_FILES})
+else()
+    qt_add_translations(qmidiplayer TS_FILES ${qmpdesktop_TS_FILES} QM_FILES_OUTPUT_VARIABLE qmpdesktop_QM_FILES)
+endif()
 
 install(TARGETS qmidiplayer)
 
