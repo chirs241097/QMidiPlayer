@@ -22,6 +22,7 @@ endif()
 
 option(USE_QT6 "Build with Qt 6" OFF)
 
+include(GNUInstallDirs)
 include(FindPkgConfig)
 if (USE_QT6)
     find_package(QT NAMES Qt6 REQUIRED)

@@ -2,11 +2,11 @@
 [Desktop Entry]
 Type=Application
 Name=QMidiPlayer
-Version=0.8.1
+Version=1.5
 GenericName=MIDI Player
 Comment=QMidiPlayer is a midi file player based on Fluidsynth and Qt.
 Exec=/usr/bin/qmidiplayer
-Icon=qmidiplyr
+Icon=org.chrisoft.qmidiplayer
 Keywords=audio;sound;
 Categories=Audio;AudioVideo;Midi;X-Alsa;X-Jack;Qt;
 Terminal=false
