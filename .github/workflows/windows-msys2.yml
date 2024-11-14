@@ -74,7 +74,7 @@ jobs:
         run: |
           cd package_workspace
           cp $MINGW_PREFIX/bin/libglib-2.0-*.dll ./
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: msys2-mingw-w64-x86_64-windows
           path: package_workspace/*
