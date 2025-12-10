@@ -15,13 +15,13 @@ endif(WIN32)
 
 option(BUILD_DUMB "SMELT override: disable sound support" ON)
 option(BUILD_EXAMPLE "SMELT override: build example" OFF)
+option(DISABLE_IMAGE_DECODING "SMELT override: Disable all image decoding support" ON)
 add_subdirectory(SMELT)
 
 add_subdirectory(renderer)
 
 find_package(glfw3 REQUIRED)
 find_package(GLEW REQUIRED)
-find_package(DevIL REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(Freetype REQUIRED)
 find_package(OpenGL REQUIRED COMPONENTS OpenGL)
@@ -35,11 +35,11 @@ add_library(visualization MODULE
 )
 
 target_link_libraries(visualization
+    Qt${QT_VERSION_MAJOR}::Gui
     smeltext
     smelt
     ${FREETYPE_LIBRARIES}
     ${ZLIB_LIBRARIES}
-    ${IL_LIBRARIES}
     glfw
     GLEW::glew
     OpenGL::GL

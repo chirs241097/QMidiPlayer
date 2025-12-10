@@ -4,6 +4,10 @@
 #include <cmath>
 #include <algorithm>
 #include <set>
+
+#include <QImageReader>
+#include <QImage>
+
 #include "qmpvisualization.hpp"
 
 int viewdist = 100;
@@ -49,6 +53,24 @@ bool cmp(MidiVisualEvent *a, MidiVisualEvent *b)
         return true;
     return false;
 }
+SMTEX loadTextureQt(SMELT *sm, const char* path)
+{
+    QImageReader ir(path);
+    if (!ir.canRead()) return 0;
+    QImage img(ir.size(), QImage::Format::Format_ARGB32);
+    if (!ir.read(&img)) return 0;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 9, 0)
+    img.flip(Qt::Orientation::Vertical);
+#else
+    img.mirror(false, true);
+#endif
+    QImage converted = img.convertToFormat(QImage::Format::Format_RGBA8888);
+    SMTEX tex = sm->smTextureCreate(converted.width(), converted.height());
+    uint32_t *pix = sm->smTextureLock(tex, 0, 0, converted.width(), converted.height(), false);
+    memcpy(pix, converted.constBits(), converted.sizeInBytes());
+    sm->smTexutreUnlock(tex);
+    return tex;
+}
 void qmpVisualization::showThread()
 {
     wwidth = api->getOptionInt("Visualization/wwidth");
@@ -92,16 +114,16 @@ void qmpVisualization::showThread()
     sm->smInit();
     shouldclose = false;
     sm->smTextureOpt(TPOT_POT, TFLT_LINEAR);
-    chequer = sm->smTextureLoad("chequerboard.png");
+    chequer = loadTextureQt(sm, "chequerboard.png");
     if (!chequer)
-        chequer = sm->smTextureLoad("/usr/share/qmidiplayer/img/chequerboard.png");
-    pianotex = sm->smTextureLoad("kb_128.png");
+        chequer = loadTextureQt(sm, "/usr/share/qmidiplayer/img/chequerboard.png");
+    pianotex = loadTextureQt(sm, "kb_128.png");
     if (!pianotex)
-        pianotex = sm->smTextureLoad("/usr/share/qmidiplayer/img/kb_128.png");
-    particletex = sm->smTextureLoad("particle.png");
+        pianotex = loadTextureQt(sm, "/usr/share/qmidiplayer/img/kb_128.png");
+    particletex = loadTextureQt(sm, "particle.png");
     if (!particletex)
-        particletex = sm->smTextureLoad("/usr/share/qmidiplayer/img/particle.png");
-    bgtex = sm->smTextureLoad(api->getOptionString("Visualization/background").c_str());
+        particletex = loadTextureQt(sm, "/usr/share/qmidiplayer/img/particle.png");
+    bgtex = loadTextureQt(sm, api->getOptionString("Visualization/background").c_str());
     if (rendermode)
         fbcont = new DWORD[wwidth * wheight];
     if (showparticle && !horizontal)
