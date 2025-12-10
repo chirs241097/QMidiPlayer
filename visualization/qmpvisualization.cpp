@@ -66,7 +66,7 @@ SMTEX loadTextureQt(SMELT *sm, const char* path)
 #endif
     QImage converted = img.convertToFormat(QImage::Format::Format_RGBA8888);
     SMTEX tex = sm->smTextureCreate(converted.width(), converted.height());
-    uint32_t *pix = sm->smTextureLock(tex, 0, 0, converted.width(), converted.height(), false);
+    DWORD *pix = sm->smTextureLock(tex, 0, 0, converted.width(), converted.height(), false);
     memcpy(pix, converted.constBits(), converted.sizeInBytes());
     sm->smTexutreUnlock(tex);
     return tex;
