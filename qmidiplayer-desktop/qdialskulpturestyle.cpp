@@ -402,7 +402,7 @@ paintCachedGrip(QPainter *painter, const QStyleOption *option)
         state &= ~(QStyle::State_HasFocus);
         QByteArray colorName = option->palette.color(QPalette::Button).name().toLatin1();
         pixmapName = QString("scp-isg-%1-%2-%3-%4-%5")
-            .arg(state, 0, 16)
+            .arg((int)state, 0, 16)
             .arg(option->direction, 0, 16)
             .arg(QString(colorName))
             .arg(option->rect.width(), 0, 16)
