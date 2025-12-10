@@ -253,7 +253,7 @@ QStringList qmpVisRenderCore::process_arguments(QString a, QMap<QChar, QVariant>
         {
             if (substi && subst.contains(a[i]))
             {
-                if (subst[a[i]].canConvert(QMetaType::QString))
+                if (subst[a[i]].canConvert(QMetaType(QMetaType::QString)))
                     buf += subst[a[i]].toString();
                 else
                 {
