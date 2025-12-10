@@ -3,7 +3,7 @@
  <id>org.chrisoft.qmidiplayer.desktop</id>
  <metadata_license>FSFAP</metadata_license>
  <project_license>GPL-3.0+</project_license>
- <developer_name>Chris Xiong</developer_name>
+ <developer id="org.chrisoft"><name>Chris Xiong</name></developer>
  <name>QMidiPlayer</name>
  <summary>A cross-platform midi file player based on libfluidsynth and Qt.</summary>
  <description>
