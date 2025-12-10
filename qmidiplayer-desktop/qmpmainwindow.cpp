@@ -157,7 +157,7 @@ void qmpMainWindow::init()
     registerFunctionality(renderf, "Render", tr("Render to wave").toStdString(), getThemedIconc(":/img/render.svg"), 0, false);
     registerFunctionality(panicf, "Panic", tr("Panic").toStdString(), getThemedIconc(":/img/panic.svg"), 0, false);
     registerFunctionality(reloadsynf, "ReloadSynth", tr("Restart fluidsynth").toStdString(), getThemedIconc(":/img/repeat-base.svg"), 0, false);
-    const QStringList &qpp = clp->values("plugin");
+    const QStringList &qpp = clp->values("load-plugin");
     std::vector<std::string> pp;
     for (auto &s : qpp)
         pp.push_back(s.toStdString());

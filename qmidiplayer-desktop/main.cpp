@@ -61,7 +61,7 @@ int main(int argc, char **argv)
     clp.addHelpOption();
     clp.addVersionOption();
     clp.addPositionalArgument("file", QCoreApplication::translate("main", "midi files to play (optional)."), "[files...]");
-    clp.addOption(QCommandLineOption("plugin", QCoreApplication::translate("main", "Load a plugin from <plugin library>."), "plugin library"));
+    clp.addOption(QCommandLineOption("load-plugin", QCoreApplication::translate("main", "Load a plugin from <plugin library>."), "plugin library"));
     clp.addOption(QCommandLineOption({"l", "load-all-files"}, QCoreApplication::translate("main", "Load all files from the same folder.")));
 #ifdef _WIN32
     clp.addOption(QCommandLineOption("keep-console", QCoreApplication::translate("main", "Keep console window open.")));
