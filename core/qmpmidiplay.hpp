@@ -127,6 +127,7 @@ public:
     uint32_t getTCpaused();
     void setTCpaused(uint32_t ps);
     void interrupt();
+    void stop();
     uint32_t isFinished();
     bool stopFlag();
     void setResumed();

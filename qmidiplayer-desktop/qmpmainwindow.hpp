@@ -16,8 +16,8 @@
 #include <QApplication>
 #include <QCommandLineParser>
 #include <thread>
+#include <mutex>
 #include <chrono>
-#include <future>
 #include <map>
 #include <unordered_map>
 #include "qmpplugin.hpp"
@@ -274,6 +274,7 @@ private:
     QTimer *timer;
     bool playing, stopped, dragging, fin;
     std::thread *playerTh = nullptr;
+    std::mutex player_thread_joinmtx;
     std::thread *renderTh = nullptr;
     std::chrono::steady_clock::time_point st;
     double offset;

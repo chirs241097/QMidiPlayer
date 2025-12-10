@@ -459,12 +459,11 @@ void CMidiPlayer::playerInit()
 }
 void CMidiPlayer::playerDeinit()
 {
-    tceptr = 0;
-    tcstop = true;
-    interrupt();
-    tcpaused = 0;
-    delete midiFile;
-    midiFile = nullptr;
+    stop();
+    if (midiFile) {
+        delete midiFile;
+        midiFile = nullptr;
+    }
 }
 void CMidiPlayer::playerThread()
 {
@@ -512,6 +511,13 @@ void CMidiPlayer::setTCeptr(uint32_t ep, uint32_t st)
         cks = ccstamps[st][0][133];
     }
     this->interrupt();
+}
+void CMidiPlayer::stop()
+{
+    tceptr = 0;
+    tcstop = true;
+    interrupt();
+    tcpaused = 0;
 }
 double CMidiPlayer::getFtime()
 {
