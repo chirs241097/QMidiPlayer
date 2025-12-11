@@ -210,10 +210,16 @@ QWidget *qmpDeviceItemDelegate::createEditor(QWidget *parent, const QStyleOption
     Q_UNUSED(option)
     Q_UNUSED(index)
     QComboBox *cb = new QComboBox(parent);
+    cb->setProperty("all", false);
     cb->setEditable(false);
-    connect(cb, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [index, cb](int)
+    connect(cb, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [this, cb](int)
     {
-        const_cast<QAbstractItemModel *>(index.model())->setData(index, cb->currentText(), Qt::ItemDataRole::DisplayRole);
+        if (qApp->keyboardModifiers() & Qt::KeyboardModifier::ControlModifier) {
+            cb->setProperty("all", true);
+        }
+        qmpDeviceItemDelegate *d = const_cast<qmpDeviceItemDelegate*>(this);
+        emit d->commitData(cb);
+        emit d->closeEditor(cb);
         cb->hidePopup();
     });
     return cb;
@@ -238,7 +244,11 @@ void qmpDeviceItemDelegate::setEditorData(QWidget *widget, const QModelIndex &in
 void qmpDeviceItemDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index)const
 {
     QComboBox *cb = qobject_cast<QComboBox *>(editor);
-    model->setData(index, cb->currentText(), Qt::ItemDataRole::DisplayRole);
+    if (cb->property("all").toBool()) {
+        for (int i = 0; i < 16; ++i)
+            model->setData(index.siblingAtRow(i), cb->currentText(), Qt::ItemDataRole::DisplayRole);
+    } else
+        model->setData(index, cb->currentText(), Qt::ItemDataRole::DisplayRole);
 }
 void qmpDeviceItemDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index)const
 {
