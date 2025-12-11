@@ -15,6 +15,7 @@
 #include <QPointer>
 #include <QApplication>
 #include <QCommandLineParser>
+#include <functional>
 #include <thread>
 #include <mutex>
 #include <chrono>
@@ -224,7 +225,7 @@ public:
     }
     QString getFileName();
     QUrl getFilePath();
-    void switchTrack(QString s, bool interrupt = true);
+    void switchTrack(QString s);
     std::string getTitle();
     std::wstring getWTitle();
     uint32_t getPlaybackPercentage();
@@ -249,6 +250,7 @@ public:
     void nextTrack();
     void prevTrack();
     void stop();
+    void stop_and(std::function<void()> cb);
 
 private slots:
     void on_pbPlayPause_clicked();
@@ -275,6 +277,7 @@ private:
     bool playing, stopped, dragging, fin;
     std::thread *playerTh = nullptr;
     std::mutex player_thread_joinmtx;
+    std::function<void()> stop_callback;
     std::thread *renderTh = nullptr;
     std::chrono::steady_clock::time_point st;
     double offset;

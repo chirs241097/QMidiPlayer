@@ -236,8 +236,8 @@ void qmpMainWindow::closeEvent(QCloseEvent *event)
     {
         settings->setOptionRaw("DialogStatus/MainW", geometry());
     }
-    on_pbStop_clicked();
     fin = true;
+    on_pbStop_clicked();
     for (auto i = mfunc.begin(); i != mfunc.end(); ++i)
     {
         i->second.i()->close();
@@ -274,40 +274,9 @@ void qmpMainWindow::updateWidgets()
     if (player->isFinished() && playerTh)
     {
         if (!plistw->getRepeat())
-        {
-            timer->stop();
-            stopped = true;
-            playing = false;
-            invokeCallback("main.stop", nullptr);
-            setFuncEnabled("Render", stopped);
-            setFuncEnabled("ReloadSynth", stopped);
-            auto f = std::async([this] {
-                std::unique_lock<std::mutex> l(player_thread_joinmtx);
-                if (playerTh && playerTh->joinable()) {
-                    playerTh->join();
-                    delete playerTh;
-                    playerTh = nullptr;
-                }
-            });
-            while (f.wait_for(std::chrono::milliseconds(100)) == std::future_status::timeout)
-            {
-                QApplication::processEvents();
-                ui->lbCurPoly->setText(QString("%1").arg(internalfluid->getPolyphone(), 5, 10, QChar('0')));
-                ui->lbMaxPoly->setText(QString("%1").arg(internalfluid->getMaxPolyphone(), 5, 10, QChar('0')));
-            }
-            player->playerDeinit();
-            player->playerPanic();
-            player->playerReset();
-            chnlw->on_pbUnmute_clicked();
-            chnlw->on_pbUnsolo_clicked();
-            ui->pbPlayPause->setIcon(QIcon(getThemedIcon(":/img/play.svg")));
-            ui->hsTimer->setValue(0);
-            ui->lbCurPoly->setText("00000");
-            ui->lbMaxPoly->setText("00000");
-            ui->lbCurTime->setText("00:00");
-        }
+            stop();
         else
-            switchTrack(plistw->getNextItem(), false);
+            switchTrack(plistw->getNextItem());
     }
     if (renderTh)
     {
@@ -347,76 +316,48 @@ QUrl qmpMainWindow::getFilePath()
 {
     return filepath;
 }
-void qmpMainWindow::switchTrack(QString s, bool interrupt)
+void qmpMainWindow::switchTrack(QString s)
 {
-    stopped = true;
-    playing = false;
-    setFuncEnabled("Render", stopped);
-    setFuncEnabled("ReloadSynth", stopped);
-    ui->pbPlayPause->setIcon(QIcon(getThemedIcon(":/img/pause.svg")));
-    player->stop();
-    if (interrupt)
-    {
-        player->playerPanic();
-        player->playerReset();
-    }
-    invokeCallback("main.stop", nullptr);
-    stopped = false;
-    playing = true;
-    if (playerTh)
-    {
-        auto f = std::async([this] {
-            std::unique_lock<std::mutex> l(player_thread_joinmtx);
-            if (playerTh && playerTh->joinable()) {
-                playerTh->join();
-                delete playerTh;
-                playerTh = nullptr;
-            }
-        });
-        while (f.wait_for(std::chrono::milliseconds(100)) == std::future_status::timeout)
-        {
-            QApplication::processEvents();
-            ui->lbCurPoly->setText(QString("%1").arg(internalfluid->getPolyphone(), 5, 10, QChar('0')));
-            ui->lbMaxPoly->setText(QString("%1").arg(internalfluid->getMaxPolyphone(), 5, 10, QChar('0')));
+    stop_and([this, s] {
+        if (isFinalizing()) return;
+        QString fns = s;
+        filepath = QUrl::fromLocalFile(fns);
+        setWindowTitle(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.')) + " - QMidiPlayer");
+        ui->lbFileName->setText(filepath.fileName().left(filepath.fileName().lastIndexOf('.')));
+        if (plistw->getCurrentItem() != fns)
+            plistw->setCurrentItem(fns);
+        onfnChanged();
+        if (!loadFile(fns))
+            return;
+        char ts[100];
+        sprintf(ts, "%02d:%02d", (int)player->getFtime() / 60, (int)player->getFtime() % 60);
+        ui->lbFinTime->setText(ts);
+        player->playerInit();
+        PlaybackStatus ps = getPlaybackStatus();
+        invokeCallback("main.start", &ps);
+        internalfluid->setGain(ui->vsMasterVol->value() / 250.);
+        efxw->sendEfxChange();
+        if (playerTh) {
+            //shouldn't ever happen, but this is poorly written concurrency code
+            return;
         }
-    }
-    timer->stop();
-    player->playerDeinit();
-    player->playerPanic();
-    player->playerReset();
-    ui->hsTimer->setValue(0);
-    chnlw->on_pbUnmute_clicked();
-    chnlw->on_pbUnsolo_clicked();
-    QString fns = s;
-    filepath = QUrl::fromLocalFile(fns);
-    setWindowTitle(QUrl::fromLocalFile(fns).fileName().left(QUrl::fromLocalFile(fns).fileName().lastIndexOf('.')) + " - QMidiPlayer");
-    ui->lbFileName->setText(filepath.fileName().left(filepath.fileName().lastIndexOf('.')));
-    if (plistw->getCurrentItem() != fns)
-        plistw->setCurrentItem(fns);
-    onfnChanged();
-    if (!loadFile(fns))
-        return;
-    char ts[100];
-    sprintf(ts, "%02d:%02d", (int)player->getFtime() / 60, (int)player->getFtime() % 60);
-    ui->lbFinTime->setText(ts);
-    player->playerInit();
-    PlaybackStatus ps = getPlaybackStatus();
-    invokeCallback("main.start", &ps);
-    internalfluid->setGain(ui->vsMasterVol->value() / 250.);
-    efxw->sendEfxChange();
-    playerTh = new std::thread([this]
-    {
-        player->playerThread();
-        if (settings->getOptionBool("Midi/WaitVoice") && player->isFinished())
-            while (internalfluid->getOutputLevel() > -100 && internalfluid->getPolyphone() > 0)
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        playerTh = new std::thread([this]
+        {
+            player->playerThread();
+            if (settings->getOptionBool("Midi/WaitVoice") && player->isFinished())
+                while (internalfluid->getOutputLevel() > -100 && internalfluid->getPolyphone() > 0 && !isFinalizing())
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        });
+        stopped = false;
+        playing = true;
+        ui->pbPlayPause->setIcon(QIcon(getThemedIcon(":/img/pause.svg")));
+    #ifdef _WIN32
+        SetThreadPriority((void *)playerTh->native_handle(), THREAD_PRIORITY_TIME_CRITICAL);
+    #endif
+        st = std::chrono::steady_clock::now();
+        offset = 0;
+        timer->start(UPDATE_INTERVAL);
     });
-#ifdef _WIN32
-    SetThreadPriority((void *)playerTh->native_handle(), THREAD_PRIORITY_TIME_CRITICAL);
-#endif
-    st = std::chrono::steady_clock::now();
-    offset = 0;
-    timer->start(UPDATE_INTERVAL);
 }
 std::string qmpMainWindow::getTitle()
 {
@@ -586,7 +527,7 @@ void qmpMainWindow::on_pbPlayPause_clicked()
                 return (void)(playing = false);
         }
         plistw->setCurrentItem(fns);
-        switchTrack(fns, false);
+        switchTrack(fns);
         ui->pbPlayPause->setIcon(QIcon(getThemedIcon(":/img/pause.svg")));
     }
     else
@@ -890,7 +831,11 @@ void qmpMainWindow::prevTrack()
 
 void qmpMainWindow::stop()
 {
-    if (!stopped)
+    stop_and(std::function<void()>());
+}
+void qmpMainWindow::stop_and(std::function<void()> cb)
+{
+    if (!stopped || playerTh)
     {
         timer->stop();
         stopped = true;
@@ -901,19 +846,29 @@ void qmpMainWindow::stop()
         player->stop();
         player->playerPanic();
         player->playerReset();
+        stop_callback = cb;
         auto f = std::async([this] {
-            std::unique_lock<std::mutex> l(player_thread_joinmtx);
-            if (playerTh && playerTh->joinable()) {
-                playerTh->join();
-                delete playerTh;
-                playerTh = nullptr;
+            if (player_thread_joinmtx.try_lock()) {
+                if (playerTh && playerTh->joinable()) {
+                    playerTh->join();
+                    delete playerTh;
+                    playerTh = nullptr;
+                }
+                QMetaObject::invokeMethod(this, [this] {
+                    if (this->stop_callback) this->stop_callback();
+                }, Qt::ConnectionType::QueuedConnection);
+                player_thread_joinmtx.unlock();
             }
         });
-        while (f.wait_for(std::chrono::milliseconds(100)) == std::future_status::timeout)
-        {
-            QApplication::processEvents();
-            ui->lbCurPoly->setText(QString("%1").arg(internalfluid->getPolyphone(), 5, 10, QChar('0')));
-            ui->lbMaxPoly->setText(QString("%1").arg(internalfluid->getMaxPolyphone(), 5, 10, QChar('0')));
+        if (isFinalizing()) {
+            f.wait();
+        } else {
+            while (f.wait_for(std::chrono::milliseconds(100)) == std::future_status::timeout)
+            {
+                QApplication::processEvents();
+                ui->lbCurPoly->setText(QString("%1").arg(internalfluid->getPolyphone(), 5, 10, QChar('0')));
+                ui->lbMaxPoly->setText(QString("%1").arg(internalfluid->getMaxPolyphone(), 5, 10, QChar('0')));
+            }
         }
         player->playerDeinit();
         chnlw->on_pbUnmute_clicked();
@@ -924,6 +879,7 @@ void qmpMainWindow::stop()
         ui->lbMaxPoly->setText("00000");
         ui->lbCurTime->setText("00:00");
     }
+    else if (cb) cb();
 }
 
 void qmpMainWindow::setupWidget()
