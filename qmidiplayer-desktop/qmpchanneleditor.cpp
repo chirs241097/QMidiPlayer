@@ -104,6 +104,12 @@ void qmpChannelEditor::closeEvent(QCloseEvent *e)
     disconnect(updconn);
     e->accept();
 }
+void qmpChannelEditor::mouseDoubleClickEvent(QMouseEvent *e)
+{
+    if (ui->lbBank->underMouse() || ui->lbPreset->underMouse() || ui->lbPresetName->underMouse()) {
+        qobject_cast<qmpChannelsWindow*>(this->parent())->showPresetSelectWindow(ch);
+    }
+}
 
 void qmpChannelEditor::on_pbChLeft_clicked()
 {

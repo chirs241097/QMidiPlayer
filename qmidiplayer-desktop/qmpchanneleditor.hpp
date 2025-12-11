@@ -4,6 +4,7 @@
 #include <QDialog>
 #include <QShowEvent>
 #include <QCloseEvent>
+#include <QMouseEvent>
 #include "qdialskulpturestyle.hpp"
 
 namespace Ui
@@ -22,6 +23,7 @@ public:
 protected:
     void showEvent(QShowEvent *e);
     void closeEvent(QCloseEvent *e);
+    void mouseDoubleClickEvent(QMouseEvent *event);
 public slots:
     void setupWindow(int chid = -1);
 

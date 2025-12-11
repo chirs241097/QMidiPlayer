@@ -24,6 +24,9 @@ qmpChannelsModel::qmpChannelsModel(QObject *parent): QAbstractTableModel(parent)
         }
     }
     , nullptr, false);
+    evh2 = qmpMainWindow::getInstance()->registerUIHook("main.start", [this](const void*, void*) {
+        emit dataChanged(index(0, 4), index(15, 4), {Qt::ItemDataRole::DisplayRole});
+    }, nullptr);
     memset(mute, 0, sizeof(mute));
     memset(solo, 0, sizeof(solo));
 }
@@ -268,10 +271,7 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent):
     connect(ui->tvChannels, &QTableView::activated, [this](const QModelIndex &idx)
     {
         if (idx.column() == 4)
-        {
-            pselectw->show();
-            pselectw->setupWindow(idx.row());
-        }
+            showPresetSelectWindow(idx.row());
     });
     pselectw = new qmpPresetSelector(this);
     ceditw = new qmpChannelEditor(this);
@@ -379,6 +379,12 @@ void qmpChannelsWindow::showChannelEditorWindow(int chid)
 {
     ceditw->show();
     ceditw->setupWindow(chid);
+}
+
+void qmpChannelsWindow::showPresetSelectWindow(int chid)
+{
+    pselectw->show();
+    pselectw->setupWindow(chid);
 }
 
 qmpChannelFunc::qmpChannelFunc(qmpChannelsWindow *par)

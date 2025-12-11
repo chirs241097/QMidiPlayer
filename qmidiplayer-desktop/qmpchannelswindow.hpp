@@ -51,6 +51,7 @@ public slots:
     void channelMSClearAll(int type);
 private:
     int evh;
+    int evh2;
     bool updatequeued;
     bool mute[16], solo[16];
 };
@@ -83,6 +84,7 @@ public:
     void selectDefaultDevice();
 public slots:
     void showChannelEditorWindow(int chid);
+    void showPresetSelectWindow(int chid);
     void on_pbUnmute_clicked();
     void on_pbUnsolo_clicked();
 
