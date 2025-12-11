@@ -147,10 +147,10 @@ void qmpSettingsWindow::registerSoundFontOption()
     QWidget *controls = new QWidget();
     controls->setLayout(new QHBoxLayout);
     controls->layout()->setContentsMargins(0, 0, 0, 0);
-    QPushButton *pbsfadd = new QPushButton(style()->standardIcon(QStyle::StandardPixmap::SP_DialogOpenButton), QString());
-    QPushButton *pbsfrem = new QPushButton(style()->standardIcon(QStyle::StandardPixmap::SP_DialogDiscardButton), QString());
-    QPushButton *pbsfmup = new QPushButton(style()->standardIcon(QStyle::StandardPixmap::SP_ArrowUp), QString());
-    QPushButton *pbsfmdn = new QPushButton(style()->standardIcon(QStyle::StandardPixmap::SP_ArrowDown), QString());
+    QPushButton *pbsfadd = new QPushButton(style()->standardIcon(QStyle::StandardPixmap::SP_DialogOpenButton), tr("Add"));
+    QPushButton *pbsfrem = new QPushButton(style()->standardIcon(QStyle::StandardPixmap::SP_DialogDiscardButton), tr("Remove"));
+    QPushButton *pbsfmup = new QPushButton(style()->standardIcon(QStyle::StandardPixmap::SP_ArrowUp), tr("Move Up"));
+    QPushButton *pbsfmdn = new QPushButton(style()->standardIcon(QStyle::StandardPixmap::SP_ArrowDown), tr("Move Down"));
     controls->layout()->addWidget(pbsfadd);
     controls->layout()->addWidget(pbsfrem);
     controls->layout()->addWidget(pbsfmup);

@@ -71,13 +71,13 @@
          </font>
         </property>
         <property name="contextMenuPolicy">
-         <enum>Qt::CustomContextMenu</enum>
+         <enum>Qt::ContextMenuPolicy::CustomContextMenu</enum>
         </property>
         <property name="text">
          <string>somefile.mid</string>
         </property>
         <property name="alignment">
-         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+         <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
         </property>
         <property name="margin">
          <number>0</number>
@@ -104,7 +104,7 @@
            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Poly&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="alignment">
-           <set>Qt::AlignCenter</set>
+           <set>Qt::AlignmentFlag::AlignCenter</set>
           </property>
          </widget>
         </item>
@@ -126,7 +126,7 @@
            <string>00000</string>
           </property>
           <property name="alignment">
-           <set>Qt::AlignCenter</set>
+           <set>Qt::AlignmentFlag::AlignCenter</set>
           </property>
          </widget>
         </item>
@@ -145,10 +145,10 @@
            </size>
           </property>
           <property name="frameShape">
-           <enum>QFrame::HLine</enum>
+           <enum>QFrame::Shape::HLine</enum>
           </property>
           <property name="frameShadow">
-           <enum>QFrame::Sunken</enum>
+           <enum>QFrame::Shadow::Sunken</enum>
           </property>
          </widget>
         </item>
@@ -170,7 +170,7 @@
            <string>00000</string>
           </property>
           <property name="alignment">
-           <set>Qt::AlignCenter</set>
+           <set>Qt::AlignmentFlag::AlignCenter</set>
           </property>
          </widget>
         </item>
@@ -203,10 +203,10 @@
         <item>
          <spacer name="verticalSpacer">
           <property name="orientation">
-           <enum>Qt::Vertical</enum>
+           <enum>Qt::Orientation::Vertical</enum>
           </property>
           <property name="sizeType">
-           <enum>QSizePolicy::Expanding</enum>
+           <enum>QSizePolicy::Policy::Expanding</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
@@ -237,7 +237,7 @@
          <string>00:00</string>
         </property>
         <property name="alignment">
-         <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+         <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft</set>
         </property>
        </widget>
       </item>
@@ -253,7 +253,7 @@
          <string>00:00</string>
         </property>
         <property name="alignment">
-         <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
+         <set>Qt::AlignmentFlag::AlignBottom|Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing</set>
         </property>
        </widget>
       </item>
@@ -280,7 +280,7 @@ QSlider{height:10px;}</string>
        <number>0</number>
       </property>
       <property name="orientation">
-       <enum>Qt::Horizontal</enum>
+       <enum>Qt::Orientation::Horizontal</enum>
       </property>
      </widget>
     </item>
@@ -293,7 +293,7 @@ QSlider{height:10px;}</string>
        <number>6</number>
       </property>
       <item>
-       <widget class="QPushButton" name="pbPlayPause">
+       <widget class="QToolButton" name="pbPlayPause">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
           <horstretch>0</horstretch>
@@ -328,7 +328,7 @@ QSlider{height:10px;}</string>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pbStop">
+       <widget class="QToolButton" name="pbStop">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
           <horstretch>0</horstretch>
@@ -398,7 +398,7 @@ QSlider{height:10px;}</string>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pbNext">
+       <widget class="QToolButton" name="pbNext">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
           <horstretch>0</horstretch>
@@ -435,10 +435,10 @@ QSlider{height:10px;}</string>
       <item>
        <spacer name="horizontalSpacer">
         <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+         <enum>Qt::Orientation::Horizontal</enum>
         </property>
         <property name="sizeType">
-         <enum>QSizePolicy::Fixed</enum>
+         <enum>QSizePolicy::Policy::Fixed</enum>
         </property>
         <property name="sizeHint" stdset="0">
          <size>
@@ -449,7 +449,7 @@ QSlider{height:10px;}</string>
        </spacer>
       </item>
       <item>
-       <widget class="QPushButton" name="pbAdd">
+       <widget class="QToolButton" name="pbAdd">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
           <horstretch>0</horstretch>
@@ -484,7 +484,7 @@ QSlider{height:10px;}</string>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pbSettings">
+       <widget class="QToolButton" name="pbSettings">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
           <horstretch>0</horstretch>
@@ -552,7 +552,7 @@ QSlider{height:10px;}</string>
          <number>50</number>
         </property>
         <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+         <enum>Qt::Orientation::Horizontal</enum>
         </property>
        </widget>
       </item>
