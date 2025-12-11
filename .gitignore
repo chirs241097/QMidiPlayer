@@ -2,6 +2,7 @@
 *.txt.user
 *.pro.user
 build/
+.cache/
 
 # KDE-generated rubbish
 .directory
