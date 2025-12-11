@@ -203,25 +203,23 @@ public:
     void dropEvent(QDropEvent *event);
     void dragEnterEvent(QDragEnterEvent *event);
     ~qmpMainWindow();
-    CMidiPlayer *getPlayer()
-    {
+    CMidiPlayer *getPlayer() {
         return player;
     }
-    qmpMidiOutFluid *getFluid()
-    {
+    qmpMidiOutFluid *getFluid() {
         return internalfluid;
     }
-    qmpSettings *getSettings()
-    {
+    qmpSettings *getSettings() {
         return settings.get();
     }
-    QTimer *getTimer()
-    {
+    QTimer *getTimer() {
         return timer;
     }
-    bool isFinalizing()
-    {
+    bool isFinalizing() {
         return fin;
+    }
+    bool isStopped() {
+        return stopped;
     }
     QString getFileName();
     QUrl getFilePath();

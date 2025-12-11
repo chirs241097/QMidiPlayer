@@ -47,8 +47,24 @@ void qmpSettingsWindow::hideEvent(QHideEvent *event)
 
 void qmpSettingsWindow::on_buttonBox_accepted()
 {
+    bool sfchanged = false;
+    QTableWidget *twsf = this->findChild<QTableWidget*>("twsf", Qt::FindChildOption::FindChildrenRecursively);
+    if (twsf) sfchanged = twsf->property("dirty").toBool();
     saveOption();
     qmpMainWindow::getInstance()->setupWidget();
+    if (sfchanged) {
+        qmpMainWindow *mw = qmpMainWindow::getInstance();
+        if (mw->isStopped())
+            mw->reloadSynth();
+        else {
+            QMessageBox::StandardButton r =
+                QMessageBox::question(this, tr("Reload FluidSynth?"),
+                                      tr("You have made changes to the SoundFont list. "
+                                         "Do you want to stop the current playback and reload FluidSynth so that these changes will take effect?"));
+            if (r == QMessageBox::StandardButton::Yes)
+                mw->stop_and([mw]{ mw->reloadSynth(); });
+        }
+    }
     emit dialogClosing();
 }
 
@@ -136,6 +152,7 @@ void qmpSettingsWindow::registerSoundFontOption()
     sfpanel->setLayout(new QVBoxLayout);
     sfpanel->layout()->setContentsMargins(0, 0, 0, 0);
     QTableWidget *twsf = new QTableWidget();
+    twsf->setObjectName("twsf");
     twsf->setColumnCount(2);
     twsf->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeMode::ResizeToContents);
     twsf->setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
@@ -170,12 +187,16 @@ void qmpSettingsWindow::registerSoundFontOption()
             sfn->setFlags(Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable);
             sfe->setFlags(Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsUserCheckable);
         }
+        if (sl.size() > 0)
+            twsf->setProperty("dirty", true);
     });
     connect(pbsfrem, &QPushButton::clicked, [twsf]
     {
         QList<QTableWidgetItem *> sl = twsf->selectedItems();
         for (int i = 0; i < sl.size(); ++i)
             twsf->removeRow(twsf->row(sl[i]));
+        if (sl.size() > 0)
+            twsf->setProperty("dirty", true);
     });
     connect(pbsfmup, &QPushButton::clicked, [twsf]
     {
@@ -189,6 +210,7 @@ void qmpSettingsWindow::registerSoundFontOption()
         twsf->setItem(cid - 1, 0, ce);
         twsf->setItem(cid - 1, 1, ci);
         twsf->setCurrentCell(cid - 1, 1);
+        twsf->setProperty("dirty", true);
     });
     connect(pbsfmdn, &QPushButton::clicked, [twsf]
     {
@@ -201,6 +223,11 @@ void qmpSettingsWindow::registerSoundFontOption()
         twsf->setItem(cid + 1, 0, ce);
         twsf->setItem(cid + 1, 1, ci);
         twsf->setCurrentCell(cid + 1, 1);
+        twsf->setProperty("dirty", true);
+    });
+    connect(twsf, &QTableWidget::cellChanged, [twsf](int r, int c) {
+        if (c == 0)
+            twsf->setProperty("dirty", true);
     });
 
     QVariant sf_def_val = QList<QVariant>();
@@ -214,6 +241,7 @@ void qmpSettingsWindow::registerSoundFontOption()
                 sfs = "#" + sfs;
             sflist.push_back(sfs);
         }
+        twsf->setProperty("dirty", false);
         return new QVariant(sflist);
     };
     auto load_func = [twsf](void *data)
@@ -221,6 +249,7 @@ void qmpSettingsWindow::registerSoundFontOption()
         QList<QVariant> sflist = static_cast<QVariant *>(data)->toList();
         twsf->clearContents();
         twsf->setRowCount(0);
+        twsf->setProperty("dirty", false);
         for (int i = 0; i < sflist.size(); ++i)
         {
             twsf->insertRow(i);
