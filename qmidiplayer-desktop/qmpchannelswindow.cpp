@@ -24,9 +24,11 @@ qmpChannelsModel::qmpChannelsModel(QObject *parent): QAbstractTableModel(parent)
         }
     }
     , nullptr, false);
-    evh2 = qmpMainWindow::getInstance()->registerUIHook("main.start", [this](const void*, void*) {
+    auto update_all_presets = [this](const void*, void*) {
         emit dataChanged(index(0, 4), index(15, 4), {Qt::ItemDataRole::DisplayRole});
-    }, nullptr);
+    };
+    qmpMainWindow::getInstance()->registerUIHook("main.start", update_all_presets, nullptr);
+    qmpMainWindow::getInstance()->registerUIHook("main.seek", update_all_presets, nullptr);
     memset(mute, 0, sizeof(mute));
     memset(solo, 0, sizeof(solo));
 }

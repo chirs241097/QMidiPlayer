@@ -51,7 +51,6 @@ public slots:
     void channelMSClearAll(int type);
 private:
     int evh;
-    int evh2;
     bool updatequeued;
     bool mute[16], solo[16];
 };
