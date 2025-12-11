@@ -33,6 +33,7 @@ void qmpPresetSelector::setupWindow(int chid)
         b = plyr->getCC(ch, 0) << 7 | plyr->getCC(ch, 32);
         p = plyr->getCC(ch, 128);
     }
+    initial_pn = p;
     ui->lwBankSelect->blockSignals(true);
     ui->lwBankSelect->clear();
     ui->lwPresetSelect->clear();
@@ -59,7 +60,9 @@ void qmpPresetSelector::setupWindow(int chid)
         for (auto &i : plyr->getChannelOutputDevice(ch)->getBankList())
         {
             snprintf(name, 256, "%03d %s", i.first, i.second.c_str());
-            ui->lwBankSelect->addItem(name);
+            auto item = new QListWidgetItem(name);
+            item->setData(Qt::ItemDataRole::UserRole + 1, i.first);
+            ui->lwBankSelect->addItem(item);
             if (i.first == b)
                 ui->lwBankSelect->setCurrentRow(ui->lwBankSelect->count() - 1);
         }
@@ -67,7 +70,9 @@ void qmpPresetSelector::setupWindow(int chid)
         for (auto &i : plyr->getChannelOutputDevice(ch)->getPresets(b))
         {
             snprintf(name, 256, "%03d %s", i.first, i.second.c_str());
-            ui->lwPresetSelect->addItem(name);
+            auto item = new QListWidgetItem(name);
+            item->setData(Qt::ItemDataRole::UserRole + 1, i.first);
+            ui->lwPresetSelect->addItem(item);
             if (i.first == p)
                 ui->lwPresetSelect->setCurrentRow(ui->lwPresetSelect->count() - 1);
         }
@@ -88,8 +93,8 @@ void qmpPresetSelector::on_pbOk_clicked()
     {
         if (!ui->lwBankSelect->currentItem() || !ui->lwPresetSelect->currentItem())
             return (void)close();
-        int b = ui->lwBankSelect->currentItem()->text().split(' ').first().toInt();
-        int p = ui->lwPresetSelect->currentItem()->text().split(' ').first().toInt();
+        int b = ui->lwBankSelect->currentItem()->data(Qt::ItemDataRole::UserRole + 1).toInt();
+        int p = ui->lwPresetSelect->currentItem()->data(Qt::ItemDataRole::UserRole + 1).toInt();
         plyr->setChannelPreset(ch, b, p);
     }
     qmpMainWindow::getInstance()->invokeCallback("preset.set", nullptr);
@@ -110,11 +115,18 @@ void qmpPresetSelector::on_lwBankSelect_currentRowChanged()
     int b;
     sscanf(ui->lwBankSelect->currentItem()->text().toStdString().c_str(), "%d", &b);
     CMidiPlayer *plyr = qmpMainWindow::getInstance()->getPlayer();
+    QListWidgetItem *scrollref = nullptr;
     for (auto &i : plyr->getChannelOutputDevice(ch)->getPresets(b))
     {
         snprintf(name, 256, "%03d %s", i.first, i.second.c_str());
-        ui->lwPresetSelect->addItem(name);
+        auto item = new QListWidgetItem(name);
+        item->setData(Qt::ItemDataRole::UserRole + 1, i.first);
+        ui->lwPresetSelect->addItem(item);
+        if (i.first < initial_pn)
+            scrollref = item;
     }
+    if (!scrollref) scrollref = ui->lwPresetSelect->item(0);
+    if (scrollref) ui->lwPresetSelect->scrollToItem(scrollref, QAbstractItemView::ScrollHint::PositionAtTop);
 }
 
 void qmpPresetSelector::on_buttonBox_accepted()

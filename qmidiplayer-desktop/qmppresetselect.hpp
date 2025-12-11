@@ -33,6 +33,7 @@ private:
     void on_pbCancel_clicked();
     void on_pbOk_clicked();
     int ch;
+    int initial_pn;
 };
 
 #endif // QMPPRESETSELECT_H
