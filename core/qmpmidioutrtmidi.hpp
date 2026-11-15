@@ -4,6 +4,7 @@
 #include <vector>
 #define QMP_MAIN
 #include "qmpcorepublic.hpp"
+
 struct qmpDeviceInitializer
 {
     CMidiTrack initseq;
@@ -19,7 +20,17 @@ struct qmpDeviceInitializer
     static qmpDeviceInitializer *parse(const char *path);
 };
 
+#ifdef RTMIDI_NAMESPACED
+namespace rt {
+    namespace midi {
+        class RtMidiOut;
+    };
+};
+using rt::midi::RtMidiOut;
+#else
 class RtMidiOut;
+#endif
+
 class qmpMidiOutRtMidi : public qmpMidiOutDevice
 {
 private:

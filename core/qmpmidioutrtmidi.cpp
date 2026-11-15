@@ -9,6 +9,10 @@
 #include "RtMidi.h"
 #include "qmpmidioutrtmidi.hpp"
 
+#ifdef RTMIDI_NAMESPACED
+using rt::midi::RtMidiOut;
+#endif
+
 void split(std::string s, char c, std::deque<std::string> &v)
 {
     v.clear();
