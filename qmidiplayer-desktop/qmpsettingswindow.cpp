@@ -249,7 +249,6 @@ void qmpSettingsWindow::registerSoundFontOption()
         QList<QVariant> sflist = static_cast<QVariant *>(data)->toList();
         twsf->clearContents();
         twsf->setRowCount(0);
-        twsf->setProperty("dirty", false);
         for (int i = 0; i < sflist.size(); ++i)
         {
             twsf->insertRow(i);
@@ -264,6 +263,7 @@ void qmpSettingsWindow::registerSoundFontOption()
             sfe->setFlags(Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsUserCheckable);
             sfe->setCheckState(enabled ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
         }
+        twsf->setProperty("dirty", false);
     };
     settings->registerOptionCustom("SoundFonts", "", "FluidSynth/SoundFonts", sfpanel, &sf_def_val, save_func, load_func);
 }
