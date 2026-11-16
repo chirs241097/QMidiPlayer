@@ -299,7 +299,14 @@ void *qmpPluginAPIImpl::getMainWindow()
 {
     return (void *)qmw;
 }
-
+bool qmpPluginAPIImpl::is_single_window()
+{
+    return qmw ? qmw->is_single_window() : false;
+}
+void *qmpPluginAPIImpl::mdi_area()
+{
+    return qmw ? qmw->mdi_area() : nullptr;
+}
 void qmpPluginAPIImpl::playbackControl(PlaybackControlCommand cmd, void *data)
 {
     if (!qmw) return;

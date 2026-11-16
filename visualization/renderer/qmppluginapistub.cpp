@@ -126,7 +126,14 @@ void *qmpPluginAPIStub::getMainWindow()
 {
     return nullptr;
 }
-
+bool qmpPluginAPIStub::is_single_window()
+{
+    return false;
+}
+void *qmpPluginAPIStub::mdi_area()
+{
+    return nullptr;
+}
 void qmpPluginAPIStub::playbackControl(PlaybackControlCommand cmd, void *data) {}
 void qmpPluginAPIStub::discardCurrentEvent() {}
 void qmpPluginAPIStub::commitEventChange(SEvent d) {}

@@ -11,6 +11,8 @@
 #include <QDirIterator>
 #include <QMessageBox>
 #include <QCheckBox>
+#include <QMdiArea>
+#include <QMdiSubWindow>
 #include "qmpmidioutfluid.hpp"
 #include "qmpmidiplay.hpp"
 #include "qmpmainwindow.hpp"
@@ -29,14 +31,48 @@ char *wcsto8bit(const wchar_t *s)
 #endif
 #define UPDATE_INTERVAL 66
 
+class CloseEventForwarder : public QObject
+{
+    Q_OBJECT
+public:
+    CloseEventForwarder(qmpMainWindow *parent = nullptr) : QObject(parent) {}
+protected:
+    bool eventFilter(QObject *obj, QEvent *event) {
+        if (event->type() == QEvent::Close) {
+            qobject_cast<qmpMainWindow*>(parent())->close();
+            return true;
+        }
+        return QObject::eventFilter(obj, event);
+    }
+};
+
 qmpMainWindow *qmpMainWindow::ref = nullptr;
 
 qmpMainWindow::qmpMainWindow(QCommandLineParser *_clp, QWidget *parent):
     QMainWindow(parent),
-    ui(new Ui::qmpMainWindow),
+    ui(new Ui::qmpMainWindowWidget),
     clp(_clp)
 {
-    ui->setupUi(this);
+    settings.reset(new qmpSettings());
+    settingsw = new qmpSettingsWindow(settings.get(), this);
+    registerMidiOptions();
+    registerBehaviorOptions();
+    single_window_mode = settings->getOptionBool("Behavior/SingleWindow");
+    centw = new QWidget();
+    ui->setupUi(centw);
+    if (single_window_mode) {
+        this->setCentralWidget(new QMdiArea);
+        this->centralWidget()->setMinimumSize(640, 480);
+        swmainw = new QMdiSubWindow(this->centralWidget());
+        swmainw->setWindowTitle("Player");
+        swmainw->resize(1, 1);
+        swmainw->setWidget(centw);
+        swmainw->adjustSize();
+        swmainw->setFixedSize(swmainw->size());
+        swmainw->installEventFilter(new CloseEventForwarder(this));
+    } else {
+        this->setCentralWidget(centw);
+    }
     ui->lbCurPoly->setText("00000");
     ui->lbMaxPoly->setText("00000");
     ui->lbFileName->setText("");
@@ -52,11 +88,11 @@ qmpMainWindow::qmpMainWindow(QCommandLineParser *_clp, QWidget *parent):
     stopped = true;
     dragging = false;
     fin = false;
-    settings.reset(new qmpSettings());
-    settingsw = new qmpSettingsWindow(settings.get(), this);
     player = nullptr;
     timer = nullptr;
     fluidrenderer = nullptr;
+    // ui was created with centw being its parent, so we have to call this manually
+    QMetaObject::connectSlotsByName(this);
 }
 
 qmpMainWindow::~qmpMainWindow()
@@ -102,10 +138,9 @@ qmpMainWindow::~qmpMainWindow()
 void qmpMainWindow::init()
 {
     show();
-    ui->centralWidget->setEnabled(false);
+    centw->setEnabled(false);
 
     pmgr = new qmpPluginManager();
-    registerMidiOptions();
 
     std::future<void> f = std::async(std::launch::async, [this]
     {
@@ -127,10 +162,9 @@ void qmpMainWindow::init()
     });
     while (f.wait_for(std::chrono::milliseconds(100)) == std::future_status::timeout)
         QApplication::processEvents();
-    ui->centralWidget->setEnabled(true);
+    centw->setEnabled(true);
 
     settingsw->registerSoundFontOption();
-    registerBehaviorOptions();
     settingsw->registerCustomizeWidgetOptions();
 
     plistw = new qmpPlistWindow(this);
@@ -151,8 +185,16 @@ void qmpMainWindow::init()
     if (settings->getOptionBool("Behavior/DialogStatus"))
     {
         QRect g = settings->getOptionRaw("DialogStatus/MainW", QRect()).toRect();
-        if (!g.isNull())
-            setGeometry(g);
+        if (!g.isNull()) {
+            if (single_window_mode) {
+                swmainw->setGeometry(g);
+                g = settings->getOptionRaw("DialogStatus/SingleWindowGeom", QRect()).toRect();
+                if (!g.isNull()) {
+                    setGeometry(g);
+                }
+            }
+            else setGeometry(g);
+        }
     }
 
     registerFunctionality(renderf, "Render", tr("Render to wave").toStdString(), getThemedIconc(":/img/render.svg"), 0, false);
@@ -234,7 +276,10 @@ void qmpMainWindow::closeEvent(QCloseEvent *event)
 {
     if (settings->getOptionBool("Behavior/DialogStatus"))
     {
-        settings->setOptionRaw("DialogStatus/MainW", geometry());
+        settings->setOptionRaw("DialogStatus/MainW", single_window_mode ? swmainw->geometry() : geometry());
+        if (single_window_mode) {
+            settings->setOptionRaw("DialogStatus/SingleWindowGeom", geometry());
+        }
     }
     fin = true;
     on_pbStop_clicked();
@@ -284,7 +329,7 @@ void qmpMainWindow::updateWidgets()
         {
             renderTh->join();
             timer->stop();
-            ui->centralWidget->setEnabled(true);
+            centw->setEnabled(true);
             delete renderTh;
             renderTh = nullptr;
             fluidrenderer->renderDeinit();
@@ -468,6 +513,7 @@ void qmpMainWindow::registerBehaviorOptions()
 {
     settings->registerOptionBool("Behavior", "Restore last playlist on startup", "Behavior/RestorePlaylist", false);
     settings->registerOptionBool("Behavior", "Add files in the same folder to playlist", "Behavior/LoadFolder", false);
+    settings->registerOptionBool("Behavior", "Single window mode", "Behavior/SingleWindow", false);
     settings->registerOptionBool("Behavior", "Save dialog status", "Behavior/DialogStatus", false);
     settings->registerOptionBool("Behavior", "Show labels beside icon in toolbar buttons", "Behavior/ShowButtonLabel", false);
     settings->registerOptionEnumInt("Behavior", "Icon Theme", "Behavior/IconTheme", {"Auto", "Dark", "Light"}, 0);
@@ -663,7 +709,7 @@ void qmpMainWindow::on_lbFileName_customContextMenuRequested(const QPoint &pos)
 {
     QMenu menu(ui->lbFileName);
     menu.addActions(ui->lbFileName->actions());
-    menu.exec(this->pos() + ui->lbFileName->pos() + pos);
+    menu.exec(ui->lbFileName->mapToGlobal(pos));
 }
 
 void qmpMainWindow::onfnChanged()
@@ -745,7 +791,7 @@ bool qmpMainWindow::isDarkTheme()
 {
     if (!settings->getOptionEnumInt("Behavior/IconTheme"))
     {
-        return ui->centralWidget->palette().color(QPalette::Window).lightness() < 128;
+        return centw->palette().color(QPalette::Window).lightness() < 128;
     }
     else return 2 - settings->getOptionEnumInt("Behavior/IconTheme");
 }
@@ -769,7 +815,7 @@ void qmpMainWindow::startRender()
     fluidrenderer->renderInit();
 #endif
     loadSoundFont(fluidrenderer);
-    ui->centralWidget->setEnabled(false);
+    centw->setEnabled(false);
     fluidrenderer->setGain(ui->vsMasterVol->value() / 250.);
     efxw->sendEfxChange(fluidrenderer);
     timer->start(UPDATE_INTERVAL);
@@ -778,7 +824,7 @@ void qmpMainWindow::startRender()
 
 void qmpMainWindow::reloadSynth()
 {
-    ui->centralWidget->setEnabled(false);
+    centw->setEnabled(false);
     std::future<void> f = std::async(std::launch::async,
             [this]
     {
@@ -790,7 +836,7 @@ void qmpMainWindow::reloadSynth()
         );
     while (f.wait_for(std::chrono::milliseconds(100)) == std::future_status::timeout)
         QApplication::processEvents();
-    ui->centralWidget->setEnabled(true);
+    centw->setEnabled(true);
 }
 
 std::map<std::string, qmpFuncPrivate> &qmpMainWindow::getFunc()
@@ -928,7 +974,7 @@ void qmpMainWindow::setupWidget()
         pb->setIconSize(QSize(16, 16));
         ui->buttonwidget->layout()->addWidget(pb);
         mfunc[enabled_buttons[i]].setAssignedControl(pb);
-        connect(pb, &QReflectivePushButton::onClick, this, &qmpMainWindow::funcReflector);
+        connect(pb, &QReflectivePushButton::onClick, this, &qmpMainWindow::invoke_func);
     }
     for (unsigned i = 0; i < enabled_actions.size(); ++i)
     {
@@ -941,7 +987,7 @@ void qmpMainWindow::setupWidget()
         );
         ui->lbFileName->addAction(a);
         mfunc[enabled_actions[i]].setAssignedControl(a);
-        connect(a, &QReflectiveAction::onClick, this, &qmpMainWindow::funcReflector);
+        connect(a, &QReflectiveAction::onClick, this, &qmpMainWindow::invoke_func);
     }
     ui->buttonwidget->layout()->setAlignment(Qt::AlignLeft);
 }
@@ -961,7 +1007,7 @@ void qmpMainWindow::on_pbSettings_clicked()
     else settingsw->close();
 }
 
-void qmpMainWindow::funcReflector(std::string reflt)
+void qmpMainWindow::invoke_func(std::string reflt)
 {
     if (mfunc[reflt].isCheckable())
     {
@@ -1004,3 +1050,5 @@ void qmpMainWindow::on_pbAdd_clicked()
     if (plistw->on_pbAdd_clicked())
         switchTrack(plistw->getLastItem());
 }
+
+#include "qmpmainwindow.moc"

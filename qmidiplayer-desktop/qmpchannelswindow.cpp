@@ -4,6 +4,7 @@
 #include <QPushButton>
 #include <QComboBox>
 #include <QTimer>
+#include <QMdiSubWindow>
 #include "qmpchannelswindow.hpp"
 #include "ui_qmpchannelswindow.h"
 #include "qmpmainwindow.hpp"
@@ -16,7 +17,7 @@ qmpChannelsModel::qmpChannelsModel(QObject *parent): QAbstractTableModel(parent)
     {
         const SEvent *e = (const SEvent *)(_e);
         if ((e->type & 0xF0) == 0xC0)
-            emit dataChanged(index(e->type & 0x0F, 4), index(e->type & 0x0F, 4), {Qt::ItemDataRole::DisplayRole});
+            Q_EMIT dataChanged(index(e->type & 0x0F, 4), index(e->type & 0x0F, 4), {Qt::ItemDataRole::DisplayRole});
         if (!updatequeued)
         {
             updatequeued = true;
@@ -24,11 +25,14 @@ qmpChannelsModel::qmpChannelsModel(QObject *parent): QAbstractTableModel(parent)
         }
     }
     , nullptr, false);
-    auto update_all_presets = [this](const void*, void*) {
-        emit dataChanged(index(0, 4), index(15, 4), {Qt::ItemDataRole::DisplayRole});
+    auto update_state_and_presets = [this](const void*, void*) {
+        Q_EMIT dataChanged(index(0, 0), index(15, 0), {Qt::ItemDataRole::DecorationRole});
+        Q_EMIT dataChanged(index(0, 4), index(15, 4), {Qt::ItemDataRole::DisplayRole});
     };
-    qmpMainWindow::getInstance()->registerUIHook("main.start", update_all_presets, nullptr);
-    qmpMainWindow::getInstance()->registerUIHook("main.seek", update_all_presets, nullptr);
+    qmpMainWindow::getInstance()->registerUIHook("main.start", update_state_and_presets, nullptr);
+    qmpMainWindow::getInstance()->registerUIHook("main.seek", update_state_and_presets, nullptr);
+    qmpMainWindow::getInstance()->registerUIHook("main.pause", update_state_and_presets, nullptr);
+    qmpMainWindow::getInstance()->registerUIHook("main.stop", update_state_and_presets, nullptr);
     memset(mute, 0, sizeof(mute));
     memset(solo, 0, sizeof(solo));
 }
@@ -47,13 +51,15 @@ QModelIndex qmpChannelsModel::parent(const QModelIndex &child)const
 }
 QVariant qmpChannelsModel::data(const QModelIndex &index, int role)const
 {
+    CMidiPlayer *plyr = qmpMainWindow::getInstance()->getPlayer();
     switch (index.column())
     {
         case 0:
             if (role == Qt::ItemDataRole::DecorationRole)
             {
                 using namespace std::chrono_literals;
-                bool lit = (std::chrono::system_clock::now() - qmpMainWindow::getInstance()->getPlayer()->getLastEventTS()[index.row()]) < 50ms;
+                bool lit = (std::chrono::system_clock::now() - plyr->getLastEventTS()[index.row()]) < 50ms;
+                lit &= !(plyr->getTCpaused() || plyr->stopFlag() || plyr->isFinished());
                 return lit ? QIcon(":/img/ledon.svg") : QIcon(":/img/ledoff.svg");
             }
             break;
@@ -68,8 +74,8 @@ QVariant qmpChannelsModel::data(const QModelIndex &index, int role)const
         case 3:
             if (role == Qt::ItemDataRole::DisplayRole)
             {
-                std::vector<std::string> devs = qmpMainWindow::getInstance()->getPlayer()->getMidiOutDevices();
-                return QString::fromStdString(devs[qmpMainWindow::getInstance()->getPlayer()->getChannelOutput(index.row())]);
+                std::vector<std::string> devs = plyr->getMidiOutDevices();
+                return QString::fromStdString(devs[plyr->getChannelOutput(index.row())]);
             }
             break;
         case 4:
@@ -81,7 +87,6 @@ QVariant qmpChannelsModel::data(const QModelIndex &index, int role)const
                 uint8_t p;
                 std::string nm;
                 char data[256];
-                CMidiPlayer *plyr = qmpMainWindow::getInstance()->getPlayer();
                 bool r = plyr->getChannelOutputDevice(ch)->getChannelPreset(ch, &b, &p, nm);
                 sprintf(data, "%03d:%03d %s", b, p, nm.c_str());
                 if (!r)
@@ -113,7 +118,7 @@ bool qmpChannelsModel::setData(const QModelIndex &index, const QVariant &value, 
         if (idx == CMidiPlayer::getInstance()->getChannelOutput(index.row()))
             return false;
         CMidiPlayer::getInstance()->setChannelOutput(index.row(), idx);
-        emit dataChanged(index, index, {Qt::DisplayRole});
+        Q_EMIT dataChanged(index, index, {Qt::DisplayRole});
         return true;
     }
     return false;
@@ -152,7 +157,7 @@ Qt::ItemFlags qmpChannelsModel::flags(const QModelIndex &idx)const
 }
 void qmpChannelsModel::updateChannelActivity()
 {
-    emit dataChanged(index(0, 0), index(15, 0), {Qt::ItemDataRole::DecorationRole});
+    Q_EMIT dataChanged(index(0, 0), index(15, 0), {Qt::ItemDataRole::DecorationRole});
     updatequeued = false;
 }
 void qmpChannelsModel::channelMSClicked(const QModelIndex &idx)
@@ -162,7 +167,7 @@ void qmpChannelsModel::channelMSClicked(const QModelIndex &idx)
         x[3 - idx.column()][idx.row()] = 0;
     qmpMainWindow::getInstance()->getPlayer()->setMute(idx.row(), mute[idx.row()]);
     qmpMainWindow::getInstance()->getPlayer()->setSolo(idx.row(), solo[idx.row()]);
-    emit dataChanged(index(idx.row(), 1), index(idx.row(), 2), {Qt::ItemDataRole::CheckStateRole});
+    Q_EMIT dataChanged(index(idx.row(), 1), index(idx.row(), 2), {Qt::ItemDataRole::CheckStateRole});
 }
 void qmpChannelsModel::channelMSClearAll(int type)
 {
@@ -171,14 +176,14 @@ void qmpChannelsModel::channelMSClearAll(int type)
         memset(mute, 0, sizeof(mute));
         for (int i = 0; i < 16; ++i)
             qmpMainWindow::getInstance()->getPlayer()->setMute(i, 0);
-        emit dataChanged(index(0, 1), index(15, 1), {Qt::ItemDataRole::CheckStateRole});
+        Q_EMIT dataChanged(index(0, 1), index(15, 1), {Qt::ItemDataRole::CheckStateRole});
     }
     if (type == 2)
     {
         memset(solo, 0, sizeof(solo));
         for (int i = 0; i < 16; ++i)
             qmpMainWindow::getInstance()->getPlayer()->setSolo(i, 0);
-        emit dataChanged(index(0, 2), index(15, 2), {Qt::ItemDataRole::CheckStateRole});
+        Q_EMIT dataChanged(index(0, 2), index(15, 2), {Qt::ItemDataRole::CheckStateRole});
     }
 }
 
@@ -220,8 +225,8 @@ QWidget *qmpDeviceItemDelegate::createEditor(QWidget *parent, const QStyleOption
             cb->setProperty("all", true);
         }
         qmpDeviceItemDelegate *d = const_cast<qmpDeviceItemDelegate*>(this);
-        emit d->commitData(cb);
-        emit d->closeEditor(cb);
+        Q_EMIT d->commitData(cb);
+        Q_EMIT d->closeEditor(cb);
         cb->hidePopup();
     });
     return cb;
@@ -262,7 +267,13 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent):
     QWidget(parent, Qt::Dialog),
     ui(new Ui::qmpChannelsWindow)
 {
+    if (qmpMainWindow::getInstance()->is_single_window()) {
+        subw = new QMdiSubWindow(qmpMainWindow::getInstance()->mdi_area());
+        subw->setWidget(this);
+        subw->resize(1, 1);
+    } else subw = nullptr;
     ui->setupUi(this);
+    if (subw) subw->adjustSize();
     mainwindow = qmpMainWindow::getInstance();
     ui->tvChannels->setHorizontalHeader(new QHeaderView(Qt::Orientation::Horizontal));
     ui->tvChannels->setModel(chmodel = new qmpChannelsModel(ui->tvChannels));
@@ -294,7 +305,7 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent):
     {
         const SEvent *e = (const SEvent *)ee;
         if ((e->type & 0xF0) == 0x90 && e->p2 > 0 && (e->flags & 0x01))
-            emit this->noteOn();
+            Q_EMIT this->noteOn();
     }
     , nullptr, false);
     qmpMainWindow::getInstance()->registerFunctionality(
@@ -305,11 +316,14 @@ qmpChannelsWindow::qmpChannelsWindow(QWidget *parent):
         0,
         true
     );
-    if (!mainwindow->getSettings()->getOptionRaw("DialogStatus/ChnlW", QRect()).toRect().isNull())
-        setGeometry(mainwindow->getSettings()->getOptionRaw("DialogStatus/ChnlW", QRect()).toRect());
+    if (!mainwindow->getSettings()->getOptionRaw("DialogStatus/ChnlW", QRect()).toRect().isNull()) {
+        if (qmpMainWindow::getInstance()->is_single_window())
+            subw->setGeometry(mainwindow->getSettings()->getOptionRaw("DialogStatus/ChnlW", QRect()).toRect());
+        else setGeometry(mainwindow->getSettings()->getOptionRaw("DialogStatus/ChnlW", QRect()).toRect());
+    }
     if (mainwindow->getSettings()->getOptionRaw("DialogStatus/ChnlWShown", 0).toInt())
     {
-        show();
+        chnlf->show();
         qmpMainWindow::getInstance()->setFuncState("Channel", true);
     }
 }
@@ -320,8 +334,11 @@ void qmpChannelsWindow::showEvent(QShowEvent *event)
     {
         mainwindow->getSettings()->setOptionRaw("DialogStatus/ChnlWShown", 1);
     }
-    if (!mainwindow->getSettings()->getOptionRaw("DialogStatus/ChnlW", QRect()).toRect().isNull())
-        setGeometry(mainwindow->getSettings()->getOptionRaw("DialogStatus/ChnlW", QRect()).toRect());
+    if (!mainwindow->getSettings()->getOptionRaw("DialogStatus/ChnlW", QRect()).toRect().isNull()) {
+        if (qmpMainWindow::getInstance()->is_single_window())
+            subw->setGeometry(mainwindow->getSettings()->getOptionRaw("DialogStatus/ChnlW", QRect()).toRect());
+        else setGeometry(mainwindow->getSettings()->getOptionRaw("DialogStatus/ChnlW", QRect()).toRect());
+    }
     event->accept();
 }
 
@@ -329,7 +346,10 @@ void qmpChannelsWindow::closeEvent(QCloseEvent *event)
 {
     if (mainwindow->getSettings()->getOptionBool("Behavior/DialogStatus"))
     {
-        mainwindow->getSettings()->setOptionRaw("DialogStatus/ChnlW", geometry());
+        if (qmpMainWindow::getInstance()->is_single_window())
+            mainwindow->getSettings()->setOptionRaw("DialogStatus/ChnlW", subw->geometry());
+        else
+            mainwindow->getSettings()->setOptionRaw("DialogStatus/ChnlW", geometry());
     }
     setVisible(false);
     if (!qmpMainWindow::getInstance()->isFinalizing() && mainwindow->getSettings()->getOptionBool("Behavior/DialogStatus"))
@@ -365,6 +385,11 @@ void qmpChannelsWindow::selectDefaultDevice()
                 mainwindow->getPlayer()->setChannelOutput(ch, j);
         }
     }
+}
+
+void qmpChannelsWindow::refresh()
+{
+    chmodel->updateChannelActivity();
 }
 
 qmpChannelsWindow::~qmpChannelsWindow()
@@ -405,9 +430,11 @@ qmpChannelFunc::qmpChannelFunc(qmpChannelsWindow *par)
 }
 void qmpChannelFunc::show()
 {
+    if (p->subw) p->subw->show();
     p->show();
 }
 void qmpChannelFunc::close()
 {
+    if (p->subw) p->subw->close();
     p->close();
 }

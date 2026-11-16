@@ -45,7 +45,7 @@ public:
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole)override;
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::ItemDataRole::DisplayRole)const override;
     Qt::ItemFlags flags(const QModelIndex &idx)const override;
-public slots:
+public Q_SLOTS:
     void updateChannelActivity();
     void channelMSClicked(const QModelIndex &idx);
     void channelMSClearAll(int type);
@@ -71,6 +71,8 @@ private:
     bool nofs;
 };
 
+class QMdiSubWindow;
+
 class qmpChannelsWindow: public QWidget
 {
     Q_OBJECT
@@ -81,7 +83,8 @@ public:
     void showEvent(QShowEvent *event);
     void closeEvent(QCloseEvent *event);
     void selectDefaultDevice();
-public slots:
+public Q_SLOTS:
+    void refresh();
     void showChannelEditorWindow(int chid);
     void showPresetSelectWindow(int chid);
     void on_pbUnmute_clicked();
@@ -99,6 +102,9 @@ private:
     QIcon *cha, *chi;
     qmpChannelFunc *chnlf;
     int eh;
+    QMdiSubWindow* subw;
+
+    friend class qmpChannelFunc;
 };
 
 #endif // QMPCHANNELSWINDOW_H

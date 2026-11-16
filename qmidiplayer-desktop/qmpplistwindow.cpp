@@ -7,6 +7,7 @@
 #include <QUrl>
 #include <QMimeData>
 #include <QStandardPaths>
+#include <QMdiSubWindow>
 #include "qmpplistwindow.hpp"
 #include "ui_qmpplistwindow.h"
 #include "qmpmainwindow.hpp"
@@ -16,7 +17,13 @@ qmpPlistWindow::qmpPlistWindow(QWidget *parent):
     QWidget(parent, Qt::Dialog),
     ui(new Ui::qmpPlistWindow)
 {
+    if (qmpMainWindow::getInstance()->is_single_window()) {
+        subw = new QMdiSubWindow(qmpMainWindow::getInstance()->mdi_area());
+        subw->setWidget(this);
+        subw->resize(1, 1);
+    } else subw = nullptr;
     ui->setupUi(this);
+    if (subw) subw->adjustSize();
     setButtonHeight(ui->pbAdd, 36);
     setButtonHeight(ui->pbAddFolder, 36);
     setButtonHeight(ui->pbClear, 36);
@@ -82,11 +89,14 @@ qmpPlistWindow::qmpPlistWindow(QWidget *parent):
         0,
         true
     );
-    if (!settings->getOptionRaw("DialogStatus/PListW", QRect()).toRect().isNull())
-        setGeometry(settings->getOptionRaw("DialogStatus/PListW", QRect()).toRect());
+    if (!settings->getOptionRaw("DialogStatus/PListW", QRect()).toRect().isNull()) {
+        if (qmpMainWindow::getInstance()->is_single_window())
+            subw->setGeometry(settings->getOptionRaw("DialogStatus/PListW", QRect()).toRect());
+        else setGeometry(settings->getOptionRaw("DialogStatus/PListW", QRect()).toRect());
+    }
     if (settings->getOptionRaw("DialogStatus/PListWShown", 0).toInt())
     {
-        show();
+        plistf->show();
         qmpMainWindow::getInstance()->setFuncState("Playlist", true);
     }
 }
@@ -104,8 +114,11 @@ void qmpPlistWindow::showEvent(QShowEvent *event)
     {
         settings->setOptionRaw("DialogStatus/PListWShown", 1);
     }
-    if (!settings->getOptionRaw("DialogStatus/PListW", QRect()).toRect().isNull())
-        setGeometry(settings->getOptionRaw("DialogStatus/PListW", QRect()).toRect());
+    if (!settings->getOptionRaw("DialogStatus/PListW", QRect()).toRect().isNull()) {
+        if (qmpMainWindow::getInstance()->is_single_window())
+            subw->setGeometry(settings->getOptionRaw("DialogStatus/PListW", QRect()).toRect());
+        else setGeometry(settings->getOptionRaw("DialogStatus/PListW", QRect()).toRect());
+    }
     event->accept();
 }
 
@@ -113,7 +126,9 @@ void qmpPlistWindow::closeEvent(QCloseEvent *event)
 {
     if (settings->getOptionBool("Behavior/DialogStatus"))
     {
-        settings->setOptionRaw("DialogStatus/PListW", geometry());
+        if (qmpMainWindow::getInstance()->is_single_window())
+            settings->setOptionRaw("DialogStatus/PListW", subw->geometry());
+        else settings->setOptionRaw("DialogStatus/PListW", geometry());
     }
     setVisible(false);
     auto mw = qmpMainWindow::getInstance();
@@ -416,9 +431,11 @@ qmpPlistFunc::qmpPlistFunc(qmpPlistWindow *par)
 }
 void qmpPlistFunc::show()
 {
+    if (p->subw) p->subw->show();
     p->show();
 }
 void qmpPlistFunc::close()
 {
+    if (p->subw) p->subw->close();
     p->close();
 }

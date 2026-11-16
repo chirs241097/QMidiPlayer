@@ -34,6 +34,8 @@ public:
     std::string getChannelPresetString(int ch);
     bool isDarkTheme();
     void *getMainWindow();
+    bool is_single_window();
+    void *mdi_area();
     void playbackControl(PlaybackControlCommand cmd, void* data);
 
     void discardCurrentEvent();

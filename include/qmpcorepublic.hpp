@@ -207,6 +207,8 @@ extern "C" {
         //EXCEPTION: If your plugin links against Qt directly, you may call
         //non-virtual members of the returned object inherited from Qt.
         virtual void *getMainWindow() = 0;
+        virtual bool is_single_window() = 0;
+        virtual void *mdi_area() = 0;
         virtual void playbackControl(PlaybackControlCommand cmd, void* data) = 0;
 
         //WARNING!!: This function should be called from event reader callbacks only and

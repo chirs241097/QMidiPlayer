@@ -1,17 +1,26 @@
+#include <QMdiSubWindow>
+
 #include "qmpinfowindow.hpp"
 #include "ui_qmpinfowindow.h"
 #include "qmpmainwindow.hpp"
-#include "qmpsettingswindow.hpp"
 
 const char *minors = "abebbbf c g d a e b f#c#g#d#a#";
 const char *majors = "CbGbDbAbEbBbF C G D A E B F#C#";
 const char *standards = "?  GM GM2GS XG ";
 
 qmpInfoWindow::qmpInfoWindow(QWidget *parent) :
-    QDialog(parent),
+    QWidget(parent, Qt::Dialog),
     ui(new Ui::qmpInfoWindow)
 {
+    if (qmpMainWindow::getInstance()->is_single_window()) {
+        subw = new QMdiSubWindow(qmpMainWindow::getInstance()->mdi_area());
+        subw->setWidget(this);
+        subw->resize(1, 1);
+    } else subw = nullptr;
     ui->setupUi(this);
+    if (subw) {
+        subw->adjustSize();
+    }
     qmpMainWindow::getInstance()->registerFunctionality(
         infof = new qmpInfoFunc(this),
         std::string("FileInfo"),
@@ -40,7 +49,6 @@ void qmpInfoWindow::hideEvent(QHideEvent *e)
     qmpMainWindow::getInstance()->setFuncState("FileInfo", false);
     e->accept();
 }
-
 
 void qmpInfoWindow::updateInfo()
 {
@@ -81,9 +89,11 @@ qmpInfoFunc::qmpInfoFunc(qmpInfoWindow *par)
 }
 void qmpInfoFunc::show()
 {
+    if (p->subw) p->subw->show();
     p->show();
 }
 void qmpInfoFunc::close()
 {
+    if (p->subw) p->subw->close();
     p->close();
 }

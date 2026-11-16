@@ -6,7 +6,6 @@
 #include <QShowEvent>
 #include <QMoveEvent>
 
-#include "qdialskulpturestyle.hpp"
 #include "qmpcorepublic.hpp"
 
 namespace Ui
@@ -26,6 +25,9 @@ public:
     void close();
 };
 
+class QCommonStyle;
+class QMdiSubWindow;
+
 class qmpEfxWindow : public QWidget
 {
     Q_OBJECT
@@ -36,8 +38,9 @@ public:
     void closeEvent(QCloseEvent *event);
     void showEvent(QShowEvent *event);
     void sendEfxChange(void *_fs = nullptr);
+    QSize sizeHint() const override;
 
-private slots:
+private Q_SLOTS:
     void on_dRoom_valueChanged();
     void on_dDamp_valueChanged();
     void on_dWidth_valueChanged();
@@ -60,6 +63,9 @@ private:
     double cl, cr, cd;
     QCommonStyle *styl;
     qmpEfxFunc *efxf;
+    QMdiSubWindow* subw;
+
+    friend class qmpEfxFunc;
 };
 
 #endif // QMPEFXWINDOW_HPP

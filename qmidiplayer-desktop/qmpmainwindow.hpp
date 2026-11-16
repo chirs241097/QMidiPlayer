@@ -34,7 +34,7 @@
 
 namespace Ui
 {
-class qmpMainWindow;
+class qmpMainWindowWidget;
 }
 
 class QClickableSlider : public QSlider
@@ -192,6 +192,8 @@ class qmpMidiOutFluid;
 class qmpFileRendererFluid;
 class CMidiPlayer;
 
+class QMdiSubWindow;
+
 class qmpMainWindow: public QMainWindow
 {
     Q_OBJECT
@@ -220,6 +222,12 @@ public:
     }
     bool isStopped() {
         return stopped;
+    }
+    bool is_single_window() {
+        return single_window_mode;
+    }
+    QWidget* mdi_area() {
+        return single_window_mode ? centralWidget() : nullptr;
     }
     QString getFileName();
     QUrl getFilePath();
@@ -250,9 +258,10 @@ public:
     void stop();
     void stop_and(std::function<void()> cb);
 
-private slots:
-    void on_pbPlayPause_clicked();
+private Q_SLOTS:
     void updateWidgets();
+    void invoke_func(std::string reflt);
+    void on_pbPlayPause_clicked();
     void on_hsTimer_sliderPressed();
     void on_hsTimer_sliderReleased();
     void on_vsMasterVol_valueChanged();
@@ -261,18 +270,20 @@ private slots:
     void on_pbNext_clicked();
     void on_lbFileName_customContextMenuRequested(const QPoint &pos);
     void on_pbSettings_clicked();
-    void funcReflector(std::string reflt);
     void on_pushButton_clicked();
     void on_pbAdd_clicked();
 
-public slots:
+public Q_SLOTS:
     void dialogClosed();
     void selectionChanged();
 
 private:
-    Ui::qmpMainWindow *ui;
+    Ui::qmpMainWindowWidget *ui;
     QTimer *timer;
     bool playing, stopped, dragging, fin;
+    bool single_window_mode;
+    QMdiSubWindow *swmainw;
+    QWidget *centw;
     std::thread *playerTh = nullptr;
     std::mutex player_thread_joinmtx;
     std::function<void()> stop_callback;

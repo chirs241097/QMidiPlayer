@@ -28,6 +28,8 @@ public:
     void close();
 };
 
+class QMdiSubWindow;
+
 class qmpPlistWindow: public QWidget
 {
     Q_OBJECT
@@ -50,12 +52,12 @@ public:
     void emptyList();
     void insertItem(QString i);
     void insertItems(QStringList il);
-signals:
+Q_SIGNALS:
     void selectionChanging();
 
-public slots:
+public Q_SLOTS:
     int on_pbAdd_clicked();
-private slots:
+private Q_SLOTS:
     void on_pbAddFolder_clicked();
     void on_pbRemove_clicked();
     void on_pbClear_clicked();
@@ -70,8 +72,10 @@ private:
     Ui::qmpPlistWindow *ui;
     int shuffle, repeat; //rep 0=off 1=one 2=all
     qmpSettings *settings;
+    QMdiSubWindow *subw;
 
     int getCurrentItemIndex();
+    friend class qmpPlistFunc;
 };
 
 #endif // QMPPLISTWINDOW_H

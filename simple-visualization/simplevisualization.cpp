@@ -7,11 +7,13 @@ qmpSimpleVisualization::qmpSimpleVisualization(qmpPluginAPI *_api)
 }
 void qmpSimpleVisualization::show()
 {
+    if (p->subw) ((QWidget*)p->subw)->show();
     p->show();
     p->resetAll();
 }
 void qmpSimpleVisualization::close()
 {
+    if (p->subw) ((QWidget*)p->subw)->close();
     p->close();
 }
 void qmpSimpleVisualization::init()

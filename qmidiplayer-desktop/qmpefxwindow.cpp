@@ -1,5 +1,7 @@
 #include <cmath>
+#include <QMdiSubWindow>
 #include "qmpefxwindow.hpp"
+#include "qdialskulpturestyle.hpp"
 #include "ui_qmpefxwindow.h"
 #include "qmpmainwindow.hpp"
 #include "qmpmidioutfluid.hpp"
@@ -8,7 +10,16 @@ qmpEfxWindow::qmpEfxWindow(QWidget *parent) :
     QWidget(parent, Qt::Dialog),
     ui(new Ui::qmpEfxWindow)
 {
+    if (qmpMainWindow::getInstance()->is_single_window()) {
+        subw = new QMdiSubWindow(qmpMainWindow::getInstance()->mdi_area());
+        subw->setWidget(this);
+        subw->resize(1, 1);
+    } else subw = nullptr;
     ui->setupUi(this);
+    if (subw) {
+        subw->adjustSize();
+        subw->setFixedSize(subw->size());
+    }
     initialized = false;
     styl = new QDialSkulptureStyle();
     QList<QDial *> dials = findChildren<QDial *>();
@@ -43,11 +54,15 @@ qmpEfxWindow::qmpEfxWindow(QWidget *parent) :
     connect(ui->sbRate, qOverload<double>(&QDoubleSpinBox::valueChanged), this, &qmpEfxWindow::spinValueChange);
     connect(ui->sbDepth, qOverload<double>(&QDoubleSpinBox::valueChanged), this, &qmpEfxWindow::spinValueChange);
     connect(ui->sbLevelC, qOverload<int>(&QSpinBox::valueChanged), this, &qmpEfxWindow::spinValueChange);
-    if (!settings->getOptionRaw("DialogStatus/EfxW", QRect()).toRect().isNull())
-        setGeometry(settings->getOptionRaw("DialogStatus/EfxW", QRect()).toRect());
+    if (!settings->getOptionRaw("DialogStatus/EfxW", QRect()).toRect().isNull()) {
+        if (qmpMainWindow::getInstance()->is_single_window())
+            subw->setGeometry(settings->getOptionRaw("DialogStatus/EfxW", QRect()).toRect());
+        else setGeometry(settings->getOptionRaw("DialogStatus/EfxW", QRect()).toRect());
+
+    }
     if (settings->getOptionRaw("DialogStatus/EfxWShown", 0).toInt())
     {
-        show();
+        efxf->show();
         qmpMainWindow::getInstance()->setFuncState("Effects", true);
     }
 }
@@ -65,7 +80,10 @@ void qmpEfxWindow::closeEvent(QCloseEvent *event)
     qmpSettings *settings = qmpMainWindow::getInstance()->getSettings();
     if (settings->getOptionBool("Behavior/DialogStatus"))
     {
-        settings->setOptionRaw("DialogStatus/EfxW", geometry());
+        if (qmpMainWindow::getInstance()->is_single_window())
+            settings->setOptionRaw("DialogStatus/EfxW", subw->geometry());
+        else
+            settings->setOptionRaw("DialogStatus/EfxW", geometry());
     }
     setVisible(false);
     if (!qmpMainWindow::getInstance()->isFinalizing() && settings->getOptionBool("Behavior/DialogStatus"))
@@ -113,8 +131,11 @@ void qmpEfxWindow::showEvent(QShowEvent *event)
     }
     initialized = true;
     qmpSettings *settings = qmpMainWindow::getInstance()->getSettings();
-    if (!settings->getOptionRaw("DialogStatus/EfxW", QRect()).toRect().isNull())
-        setGeometry(settings->getOptionRaw("DialogStatus/EfxW", QRect()).toRect());
+    if (!settings->getOptionRaw("DialogStatus/EfxW", QRect()).toRect().isNull()) {
+        if (qmpMainWindow::getInstance()->is_single_window())
+            subw->setGeometry(settings->getOptionRaw("DialogStatus/EfxW", QRect()).toRect());
+        else setGeometry(settings->getOptionRaw("DialogStatus/EfxW", QRect()).toRect());
+    }
     if (settings->getOptionBool("Behavior/DialogStatus"))
     {
         settings->setOptionRaw("DialogStatus/EfxWShown", 1);
@@ -154,6 +175,12 @@ void qmpEfxWindow::sendEfxChange(void *_fs)
     settings->setOptionRaw("Effects/ChorusRate", cr);
     settings->setOptionRaw("Effects/ChorusDepth", cd);
     settings->setOptionRaw("Effects/ChorusType", ct);
+}
+
+QSize qmpEfxWindow::sizeHint() const
+{
+    // layout returns a strangly inflated sizeHint...
+    return this->minimumSize();
 }
 
 void qmpEfxWindow::dailValueChange()
@@ -252,9 +279,11 @@ qmpEfxFunc::qmpEfxFunc(qmpEfxWindow *par)
 }
 void qmpEfxFunc::show()
 {
+    if (p->subw) p->subw->show();
     p->show();
 }
 void qmpEfxFunc::close()
 {
+    if (p->subw) p->subw->close();
     p->close();
 }

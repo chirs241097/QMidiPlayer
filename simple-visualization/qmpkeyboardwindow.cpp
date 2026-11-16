@@ -3,12 +3,19 @@
 #include <QCloseEvent>
 #include <QLabel>
 #include <QFontDatabase>
+#include <QMdiSubWindow>
 #include "qmppianowidget.hpp"
 #include "qmpkeyboardwindow.hpp"
 
 qmpKeyboardWindow::qmpKeyboardWindow(qmpPluginAPI *_api, QWidget *parent):
     QWidget(parent, Qt::Dialog), api(_api)
 {
+    subw = nullptr;
+    if (api->is_single_window()) {
+        subw = new QMdiSubWindow((QWidget*)api->mdi_area());
+        subw->setWidget(this);
+        subw->setMinimumSize(560, 650);
+    }
     setWindowTitle("Keyboard");
     QGridLayout *grid;
     setLayout(grid = new QGridLayout());

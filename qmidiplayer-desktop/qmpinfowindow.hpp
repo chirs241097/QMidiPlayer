@@ -1,7 +1,7 @@
 #ifndef QMPINFOWINDOW_HPP
 #define QMPINFOWINDOW_HPP
 
-#include <QDialog>
+#include <QWidget>
 #include <QLabel>
 #include <QMouseEvent>
 #include <QApplication>
@@ -40,7 +40,9 @@ public:
     void close();
 };
 
-class qmpInfoWindow : public QDialog
+class QMdiSubWindow;
+
+class qmpInfoWindow : public QWidget
 {
     Q_OBJECT
 
@@ -55,6 +57,9 @@ public slots:
 private:
     Ui::qmpInfoWindow *ui;
     qmpInfoFunc *infof;
+    QMdiSubWindow *subw;
+
+    friend class qmpInfoFunc;
 };
 
 #endif // QMPINFOWINDOW_HPP
