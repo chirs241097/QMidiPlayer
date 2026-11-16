@@ -25,5 +25,5 @@ const char *qmpMPrisPlugin::pluginGetName()
 }
 const char *qmpMPrisPlugin::pluginGetVersion()
 {
-    return "0.8.8";
+    return PLUGIN_VERSION;
 }
