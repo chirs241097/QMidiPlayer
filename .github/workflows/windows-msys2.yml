@@ -8,17 +8,20 @@ jobs:
       run:
         shell: msys2 {0}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: true
       - uses: msys2/setup-msys2@v2
         with:
-          msystem: MINGW64
+          msystem: ucrt64
           update: true
           install: >-
-            git mingw-w64-x86_64-toolchain mingw-w64-x86_64-ninja mingw-w64-x86_64-cmake tree
-            mingw-w64-x86_64-qt6
-            mingw-w64-x86_64-glfw mingw-w64-x86_64-glew mingw-w64-x86_64-freetype mingw-w64-x86_64-devil mingw-w64-x86_64-freeglut mingw-w64-x86_64-zlib mingw-w64-x86_64-rtmidi
+            git
+            tree
+          pacboy: >-
+            toolchain:p ninja:p cmake:p
+            qt6:p
+            glfw:p glew:p freetype:p devil:p freeglut:p zlib:p rtmidi:p
       - name: Build fluidsynth-sans-glib
         id: build-fluidsynth-sans-glib
         continue-on-error: true
@@ -33,7 +36,7 @@ jobs:
       - name: Install mingw-w64-x86_64-fluidsynth if needed
         if: steps.build-fluidsynth-sans-glib.outcome == 'failure'
         run: |
-          pacman --noconfirm -S mingw-w64-x86_64-fluidsynth
+          pacboy --noconfirm -S fluidsynth:p
       - name: Build qmidiplayer
         run: |
           mkdir build && cd build
@@ -74,7 +77,7 @@ jobs:
         run: |
           cd package_workspace
           cp $MINGW_PREFIX/bin/libglib-2.0-*.dll ./
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: msys2-mingw-w64-x86_64-windows
           path: package_workspace/*
