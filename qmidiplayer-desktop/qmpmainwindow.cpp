@@ -55,9 +55,7 @@ qmpMainWindow::qmpMainWindow(QCommandLineParser *_clp, QWidget *parent):
 {
     settings.reset(new qmpSettings());
     settingsw = new qmpSettingsWindow(settings.get(), this);
-    registerMidiOptions();
-    registerBehaviorOptions();
-    single_window_mode = settings->getOptionBool("Behavior/SingleWindow");
+    single_window_mode = settings->getOptionRaw("Behavior/SingleWindow", false).toBool();
     centw = new QWidget();
     ui->setupUi(centw);
     if (single_window_mode) {
@@ -141,6 +139,7 @@ void qmpMainWindow::init()
     centw->setEnabled(false);
 
     pmgr = new qmpPluginManager();
+    registerMidiOptions();
 
     std::future<void> f = std::async(std::launch::async, [this]
     {
@@ -165,6 +164,7 @@ void qmpMainWindow::init()
     centw->setEnabled(true);
 
     settingsw->registerSoundFontOption();
+    registerBehaviorOptions();
     settingsw->registerCustomizeWidgetOptions();
 
     plistw = new qmpPlistWindow(this);
