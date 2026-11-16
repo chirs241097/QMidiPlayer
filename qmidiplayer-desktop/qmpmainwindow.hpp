@@ -50,7 +50,7 @@ protected:
         {
             double p = e->pos().x() / (double)width();
             setValue(p * (maximum() - minimum()) + minimum());
-            emit sliderReleased();
+            Q_EMIT sliderReleased();
         }
     }
 };
@@ -60,7 +60,7 @@ class QReflectiveAction : public QAction
     Q_OBJECT
 private:
     std::string reflt;
-signals:
+Q_SIGNALS:
     void onClick(std::string s);
 public:
     explicit QReflectiveAction(const QIcon &icon, const QString &text, const std::string &ref):
@@ -75,7 +75,7 @@ class QReflectivePushButton : public QPushButton
     Q_OBJECT
 private:
     std::string reflt;
-signals:
+Q_SIGNALS:
     void onClick(std::string s);
 public:
     explicit QReflectivePushButton(const QIcon &icon, const QString &text, const std::string &ref):

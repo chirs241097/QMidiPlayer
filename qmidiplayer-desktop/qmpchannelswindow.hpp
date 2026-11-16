@@ -90,7 +90,7 @@ public Q_SLOTS:
     void on_pbUnmute_clicked();
     void on_pbUnsolo_clicked();
 
-signals:
+Q_SIGNALS:
     void noteOn();
 
 private:

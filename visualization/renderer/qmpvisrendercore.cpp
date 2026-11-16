@@ -285,5 +285,5 @@ QStringList qmpVisRenderCore::process_arguments(QString a, QMap<QChar, QVariant>
 
 void qmpVisRenderCore::framefunc(void *px, size_t sz, uint32_t curf, uint32_t totf)
 {
-    emit inst->frameRendered(px, sz, curf, totf);
+    Q_EMIT inst->frameRendered(px, sz, curf, totf);
 }

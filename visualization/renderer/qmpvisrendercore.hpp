@@ -31,7 +31,7 @@ public:
         return msettings;
     }
 
-signals:
+Q_SIGNALS:
     void frameRendered(void *px, size_t sz, uint32_t current_tick, uint32_t total_ticks);
 
 private:

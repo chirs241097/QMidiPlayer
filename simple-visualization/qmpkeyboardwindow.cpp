@@ -38,9 +38,9 @@ qmpKeyboardWindow::qmpKeyboardWindow(qmpPluginAPI *_api, QWidget *parent):
         int ch = e->type & 0xF;
         if (!this->isVisible()) return;
         if ((e->type & 0xF0) == 0x80 || ((e->type & 0xF0) == 0x90 && e->p2 == 0))
-            emit keystateupdated(ch, e->p1, false);
+            Q_EMIT keystateupdated(ch, e->p1, false);
         if ((e->type & 0xF0) == 0x90 && e->p2 > 0)
-            emit keystateupdated(ch, e->p1, e->p2 > 0);
+            Q_EMIT keystateupdated(ch, e->p1, e->p2 > 0);
         if ((e->type & 0xF0) == 0xB0 || (e->type & 0xF0) == 0xC0)
             lb[ch]->setText(
                 QString::fromStdString(api->getChannelPresetString(ch)) +

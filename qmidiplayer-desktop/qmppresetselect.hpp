@@ -18,7 +18,7 @@ public:
     ~qmpPresetSelector();
     void setupWindow(int chid);
 
-private slots:
+private Q_SLOTS:
 
     void on_lwBankSelect_currentRowChanged();
 

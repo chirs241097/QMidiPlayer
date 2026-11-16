@@ -51,7 +51,7 @@ public:
     ~qmpInfoWindow();
     void closeEvent(QCloseEvent *e);
     void hideEvent(QHideEvent *e);
-public slots:
+public Q_SLOTS:
     void updateInfo();
 
 private:

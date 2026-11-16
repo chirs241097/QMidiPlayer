@@ -36,12 +36,12 @@ void qmpSettingsWindow::closeEvent(QCloseEvent *event)
 {
     setVisible(false);
     loadOption();
-    emit dialogClosing();
+    Q_EMIT dialogClosing();
     event->accept();
 }
 void qmpSettingsWindow::hideEvent(QHideEvent *event)
 {
-    emit dialogClosing();
+    Q_EMIT dialogClosing();
     event->accept();
 }
 
@@ -65,13 +65,13 @@ void qmpSettingsWindow::on_buttonBox_accepted()
                 mw->stop_and([mw]{ mw->reloadSynth(); });
         }
     }
-    emit dialogClosing();
+    Q_EMIT dialogClosing();
 }
 
 void qmpSettingsWindow::on_buttonBox_rejected()
 {
     loadOption();
-    emit dialogClosing();
+    Q_EMIT dialogClosing();
 }
 
 void qmpSettingsWindow::updatePluginList(qmpPluginManager *pmgr)

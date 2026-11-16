@@ -18,7 +18,7 @@ public:
     void load(void *data);
     void *save();
 
-private slots:
+private Q_SLOTS:
     void on_tbAdd_clicked();
     void on_tbRemove_clicked();
     void on_buttonBox_accepted();

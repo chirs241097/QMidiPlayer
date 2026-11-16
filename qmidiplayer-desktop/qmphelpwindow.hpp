@@ -19,7 +19,7 @@ public:
     explicit qmpHelpWindow(QWidget *parent = nullptr);
     ~qmpHelpWindow();
 
-private slots:
+private Q_SLOTS:
     void on_textBrowser_sourceChanged(const QUrl &src);
 
 private:

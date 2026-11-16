@@ -73,7 +73,7 @@ public:
     virtual bool setShuffle(bool shuffle);
     virtual void setVolume(double volume);
 
-public slots:
+public Q_SLOTS:
     virtual void Next();
     virtual void Previous();
     virtual void Pause();
@@ -84,7 +84,7 @@ public slots:
     virtual void SetPosition(QDBusObjectPath o, qlonglong t);
     virtual void OpenUri(QString s);
 
-signals:
+Q_SIGNALS:
     void Seeked(qlonglong t);
 };
 
@@ -94,12 +94,12 @@ class QMPrisTrackList : public QDBusAbstractAdaptor
     Q_CLASSINFO("D-Bus Interface", "org.mpris.MediaPlayer2.TrackList")
     Q_PROPERTY(QList<QDBusObjectPath> Tracks READ getTracks)
     Q_PROPERTY(bool CanEditTracks READ getCanEditTracks)
-public slots:
+public Q_SLOTS:
     virtual QList<QVariantMap> GetTracksMetaData(QList<QDBusObjectPath> trackIds);
     virtual void AddTrack(QString uri, QDBusObjectPath after, bool setCurrent);
     virtual void RemoveTrack(QDBusObjectPath trackId);
     virtual void GoTo(QDBusObjectPath trackId);
-signals:
+Q_SIGNALS:
     void TrackListReplaced(QList<QDBusObjectPath> tracks, QDBusObjectPath currentTrack);
     void TrackAdded(QVariantMap metadata, QDBusObjectPath after);
     void TrackRemoved(QDBusObjectPath track);
@@ -125,7 +125,7 @@ class QMPrisMediaPlayer2 : public QDBusAbstractAdaptor
     Q_PROPERTY(QStringList SupportedUriSchemes READ getSupportedUriSchemes)
     Q_PROPERTY(QStringList SupportedMimeTypes READ getSupportedMimeTypes)
 
-public slots:
+public Q_SLOTS:
     virtual void Raise();
     virtual void Quit();
 

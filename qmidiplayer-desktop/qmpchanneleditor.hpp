@@ -24,10 +24,10 @@ protected:
     void showEvent(QShowEvent *e);
     void closeEvent(QCloseEvent *e);
     void mouseDoubleClickEvent(QMouseEvent *event);
-public slots:
+public Q_SLOTS:
     void setupWindow(int chid = -1);
 
-private slots:
+private Q_SLOTS:
     void commonPressed();
     void commonReleased();
     void commonChanged();

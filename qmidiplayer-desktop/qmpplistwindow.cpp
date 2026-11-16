@@ -355,7 +355,7 @@ int qmpPlistWindow::getRepeat()
 void qmpPlistWindow::on_lwFiles_itemDoubleClicked(QListWidgetItem *item)
 {
     setCurrentItem(item);
-    emit selectionChanging();
+    Q_EMIT selectionChanging();
 }
 
 void qmpPlistWindow::on_pbSave_clicked()

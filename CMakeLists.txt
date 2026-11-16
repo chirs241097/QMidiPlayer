@@ -37,6 +37,7 @@ add_definitions(-DPLUGIN_VERSION=\"${PROJECT_VERSION}\")
 add_definitions(-DRC_VER_MAJOR=${PROJECT_VERSION_MAJOR})
 add_definitions(-DRC_VER_MINOR=${PROJECT_VERSION_MINOR})
 add_definitions(-DRC_VER_PATCH=${PROJECT_VERSION_PATCH})
+add_definitions(-DQT_NO_KEYWORDS)
 
 add_subdirectory(core)
 add_subdirectory(qmidiplayer-desktop)

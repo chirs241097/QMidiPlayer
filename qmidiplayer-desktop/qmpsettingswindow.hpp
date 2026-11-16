@@ -30,7 +30,7 @@ class QFileEdit : public QWidget
 private:
     QLineEdit *le;
     QToolButton *tb;
-private slots:
+private Q_SLOTS:
     void chooseFile();
 public:
     QFileEdit(QWidget *par = nullptr);
@@ -100,10 +100,10 @@ public:
     void registerSoundFontOption();
     void registerPluginOption(qmpPluginManager *pmgr);
     void registerExtraMidiOptions();
-signals:
+Q_SIGNALS:
     void dialogClosing();
 
-private slots:
+private Q_SLOTS:
     void on_buttonBox_accepted();
     void on_buttonBox_rejected();
 

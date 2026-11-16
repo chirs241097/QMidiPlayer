@@ -18,7 +18,7 @@ public:
     void load(void *data);
     void *save();
 
-private slots:
+private Q_SLOTS:
     void on_pbAdd_clicked();
 
     void on_pbRemove_clicked();

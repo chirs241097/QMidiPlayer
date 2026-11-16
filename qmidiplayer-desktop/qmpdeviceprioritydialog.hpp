@@ -20,7 +20,7 @@ public:
     void load(void *data);
     void *save();
 
-private slots:
+private Q_SLOTS:
     void on_pbUp_clicked();
     void on_pbDown_clicked();
     void on_buttonBox_accepted();
