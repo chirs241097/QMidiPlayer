@@ -36,6 +36,7 @@ int main(int argc, char **argv)
     QCoreApplication::setApplicationVersion(APP_VERSION);
     qSetMessagePattern("%{time} @ %{file} : %{line}, in %{function} : %{message}");
     QApplication a(argc, argv);
+    a.setWindowIcon(QIcon(":/img/qmidiplyr.png"));
 
     QTranslator qtTranslator;
     qtTranslator.load("qt_" + QLocale::system().name(),
